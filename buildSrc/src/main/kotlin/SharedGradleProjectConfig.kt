@@ -6,14 +6,16 @@ import org.gradle.api.Project
 class SharedGradleProjectConfig : Plugin<Project> {
     override fun apply(target: Project) {
         applyPlugins(target)
+        setProjectConfig(target)
     }
 
     private fun applyPlugins(project: Project) {
         project.apply {
             plugin("android-library")
             plugin("kotlin-android")
-            plugin("kotlin-kapt")
+            plugin("org.jetbrains.kotlin.plugin.compose")
             plugin("com.google.dagger.hilt.android")
+            plugin("kotlin-kapt")
         }
     }
 
@@ -23,8 +25,15 @@ class SharedGradleProjectConfig : Plugin<Project> {
 
             defaultConfig{
                 minSdk = ProjectConfig.MIN_SDK
-                targetSdk = ProjectConfig.TARGET_SDK
                 testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+            }
+
+            testOptions {
+                targetSdk = ProjectConfig.TARGET_SDK
+            }
+
+            lint {
+                targetSdk = ProjectConfig.TARGET_SDK
             }
 
             compileOptions{
