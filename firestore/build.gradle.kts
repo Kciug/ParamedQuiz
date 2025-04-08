@@ -16,4 +16,5 @@ dependencies {
     coreKtx()
     firebase()
     daggerHilt()
+    tests()
 }
