@@ -6,18 +6,19 @@ plugins {
     id("com.google.gms.google-services")
 
     id("kotlin-kapt")
+    kotlin("kapt")
 }
 
 android {
     namespace = "com.rafalskrzypczyk.paramedquiz"
-    compileSdk = 35
+    compileSdk = ProjectConfig.COMPILE_SDK
 
     defaultConfig {
-        applicationId = "com.rafalskrzypczyk.paramedquiz"
-        minSdk = 24
-        targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        applicationId = ProjectConfig.APP_ID
+        minSdk = ProjectConfig.MIN_SDK
+        targetSdk = ProjectConfig.TARGET_SDK
+        versionCode = ProjectConfig.VERSION_CODE
+        versionName = ProjectConfig.VERSION_NAME
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
