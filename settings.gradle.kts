@@ -23,3 +23,4 @@ rootProject.name = "ParamedQuiz"
 include(":app")
 include(":firestore")
 include(":core")
+include(":auth")

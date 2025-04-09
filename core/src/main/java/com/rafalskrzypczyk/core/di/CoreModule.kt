@@ -2,7 +2,12 @@ package com.rafalskrzypczyk.core.di
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
+import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesService
+import com.rafalskrzypczyk.core.user_management.UserManager
+import com.rafalskrzypczyk.core.user_management.UserManagerImpl
 import com.rafalskrzypczyk.core.utils.ResourceProvider
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -26,4 +31,16 @@ class CoreModule {
             Context.MODE_PRIVATE
         )
     }
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+abstract class CoreModuleBinds {
+    @Binds
+    @Singleton
+    abstract fun bindSharedPreferencesApi(sharedPreferencesService: SharedPreferencesService): SharedPreferencesApi
+
+    @Binds
+    @Singleton
+    abstract fun bindUserManager(manager: UserManagerImpl): UserManager
 }
