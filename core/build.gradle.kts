@@ -6,14 +6,13 @@ plugins {
 apply<SharedGradleProjectConfig>()
 
 android {
-    namespace = "com.rafalskrzypczyk.firestore"
+    namespace = "com.rafalskrzypczyk.core"
 }
 
 dependencies {
-    implementation(project(":core"))
-
     coreKtx()
-    firebase()
-    daggerHilt()
+    ui()
     tests()
+    daggerHilt()
+    kotlinxSerialization()
 }
