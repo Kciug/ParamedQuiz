@@ -27,6 +27,7 @@
             <option value="$PROJECT_DIR$/core" />
             <option value="$PROJECT_DIR$/firestore" />
             <option value="$PROJECT_DIR$/home" />
+            <option value="$PROJECT_DIR$/signup" />
           </set>
         </option>
         <option name="resolveExternalAnnotations" value="false" />
