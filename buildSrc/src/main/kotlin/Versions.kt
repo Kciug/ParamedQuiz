@@ -5,6 +5,7 @@ object Versions {
     const val NAVIGATION_COMPOSE = "2.8.9"
     const val VIEWMODEL_COMPOSE = "2.8.7"
     const val MATERIAL_ICONS_EXT = "1.7.8"
+    const val MATERIAL3 = "1.3.1"
 
     const val JUNIT = "4.13.2"
     const val JUNIT_VERSION = "1.2.1"

@@ -9,7 +9,7 @@ object Dependencies {
     const val COMPOSE_UI_GRAPHICS = "androidx.compose.ui:ui-graphics"
     const val COMPOSE_UI_TOOLING = "androidx.compose.ui:ui-tooling"
     const val COMPOSE_UI_TOOLING_PREVIEW = "androidx.compose.ui:ui-tooling-preview"
-    const val COMPOSE_MATERIAL3 = "androidx.compose.material3:material3"
+    const val COMPOSE_MATERIAL3 = "androidx.compose.material3:material3:${Versions.MATERIAL3}"
     const val COMPOSE_NAVIGATION = "androidx.navigation:navigation-compose:${Versions.NAVIGATION_COMPOSE}"
     const val COMPOSE_RUNTIME = "androidx.compose.runtime:runtime"
     const val COMPOSE_VIEWMODEL = "androidx.lifecycle:lifecycle-viewmodel-compose:${Versions.VIEWMODEL_COMPOSE}"
@@ -41,15 +41,18 @@ object Dependencies {
 
 fun DependencyHandler.coreKtx() = implementation(Dependencies.ANDROID_CORE_KTX)
 
+fun DependencyHandler.composeRuntime() = {
+    implementation(Dependencies.COMPOSE_RUNTIME)
+}
+
 fun DependencyHandler.ui() {
-    implementation(platform(Dependencies.COMPOSE_BOM))
+    implementation(Dependencies.COMPOSE_BOM)
     implementation(Dependencies.COMPOSE_UI)
     implementation(Dependencies.COMPOSE_UI_GRAPHICS)
     implementation(Dependencies.COMPOSE_UI_TOOLING)
     implementation(Dependencies.COMPOSE_UI_TOOLING_PREVIEW)
     implementation(Dependencies.COMPOSE_MATERIAL3)
     implementation(Dependencies.COMPOSE_NAVIGATION)
-    implementation(Dependencies.COMPOSE_RUNTIME)
     implementation(Dependencies.COMPOSE_VIEWMODEL)
     implementation(Dependencies.ICONS_EXT)
 }

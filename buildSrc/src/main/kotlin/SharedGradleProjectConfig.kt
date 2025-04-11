@@ -41,7 +41,7 @@ class SharedGradleProjectConfig : Plugin<Project> {
                 targetCompatibility = JavaVersion.VERSION_11
             }
 
-            buildFeatures{
+            buildFeatures {
                 compose = true
             }
         }

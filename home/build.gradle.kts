@@ -6,7 +6,7 @@ plugins {
 apply<SharedGradleProjectConfig>()
 
 android {
-    namespace = "com.rafalskrzypczyk.auth"
+    namespace = "com.rafalskrzypczyk.home"
 
     kotlinOptions {
         jvmTarget = "11"
@@ -15,10 +15,11 @@ android {
 
 dependencies {
     implementation(project(":core"))
-    implementation(project(":firestore"))
+    implementation(project(":auth"))
 
     coreKtx()
     implementation(Dependencies.COMPOSE_RUNTIME)
+    ui()
     firebase()
     daggerHilt()
     tests()
