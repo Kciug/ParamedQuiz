@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 
 @Composable
 fun ButtonPrimary(
@@ -80,11 +81,13 @@ fun ButtonTertiary(
 @Preview
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 private fun ButtonPrimaryPreview() {
-    Surface {
-        ButtonPrimary(
-            title = "Placeholder",
-            onClick = {},
-        )
+    ParamedQuizTheme {
+        Surface {
+            ButtonPrimary(
+                title = "Placeholder",
+                onClick = {},
+            )
+        }
     }
 }
 
@@ -92,11 +95,13 @@ private fun ButtonPrimaryPreview() {
 @Preview
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 private fun ButtonSecondaryPreview() {
-    Surface {
-        ButtonSecondary(
-            title = "Placeholder",
-            onClick = {},
-        )
+   ParamedQuizTheme {
+        Surface {
+            ButtonSecondary(
+                title = "Placeholder",
+                onClick = {},
+            )
+        }
     }
 }
 
@@ -104,10 +109,12 @@ private fun ButtonSecondaryPreview() {
 @Preview
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 private fun ButtonTertiaryPreview() {
-    Surface {
-        ButtonTertiary(
-            title = "Placeholder",
-            onClick = {},
-        )
+    ParamedQuizTheme {
+        Surface {
+            ButtonTertiary(
+                title = "Placeholder",
+                onClick = {},
+            )
+        }
     }
 }

@@ -49,7 +49,9 @@ hilt {
 }
 
 dependencies {
+    implementation(project(":core"))
     implementation(project(":home"))
+    implementation(project(":signup"))
 
     coreKtx()
     implementation(Dependencies.COMPOSE_RUNTIME)

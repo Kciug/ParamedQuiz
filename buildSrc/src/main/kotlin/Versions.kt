@@ -15,6 +15,7 @@ object Versions {
     const val TURBINE = "1.2.0"
 
     const val HILT = "2.55"
+    const val HILT_VM = "1.0.0-alpha03"
 
     const val FIREBASE_BOM = "33.10.0"
 

@@ -27,6 +27,7 @@ object Dependencies {
     const val HILT_ANDROID = "com.google.dagger:hilt-android:${Versions.HILT}"
     const val HILT_COMPILER = "com.google.dagger:hilt-android-compiler:${Versions.HILT}"
     const val HILT_AGP = "com.google.dagger:hilt-android-gradle-plugin:${Versions.HILT}"
+    const val HILT_NAVIGATION = "androidx.hilt:hilt-navigation-compose:${Versions.HILT_VM}"
 
     //FIREBASE BOM
     const val FIREBASE_BOM = "com.google.firebase:firebase-bom:${Versions.FIREBASE_BOM}"
@@ -68,6 +69,7 @@ fun DependencyHandler.tests() {
 
 fun DependencyHandler.daggerHilt() {
     implementation(Dependencies.HILT_ANDROID)
+    implementation(Dependencies.HILT_NAVIGATION)
     kapt(Dependencies.HILT_COMPILER)
 }
 

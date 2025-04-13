@@ -30,11 +30,13 @@ import androidx.compose.ui.unit.dp
 import com.rafalskrzypczyk.core.ui.TitleTopBar
 
 @Composable
-fun MainMenuScreen() {
+fun MainMenuScreen(
+    onNavigateToUserPanel: () -> Unit
+) {
     Scaffold (
         topBar = {
             TitleTopBar(
-                onNavigateToUserProfile = {},
+                onNavigateToUserProfile = { onNavigateToUserPanel() },
                 userImageId = null
             )
         }
@@ -116,6 +118,7 @@ fun MainMenuButton(buttonText: String, buttonAction: () -> Unit) {
 private fun MainMenuPreview() {
     Surface {
         MainMenuScreen(
+            onNavigateToUserPanel = {}
         )
     }
 }

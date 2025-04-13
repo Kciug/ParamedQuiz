@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import com.rafalskrzypczyk.signup.signupNavGraph
 
 @Composable
 fun AppNavHost(navController: NavHostController) {
@@ -41,6 +42,10 @@ fun AppNavHost(navController: NavHostController) {
             )
         }
     ) {
-        mainMenuDestination()
+        signupNavGraph(navController)
+
+        mainMenuDestination(
+            onNavigateToUserPanel = { navController.navigateToSignup() }
+        )
     }
 }

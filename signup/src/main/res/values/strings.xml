@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_signup">Zaloguj się</string>
+    <string name="title_register">Załóż konto</string>
+    <string name="title_reset_password">Odzyskaj dostęp</string>
+
+    <string name="desc_login">Logowanie</string>
+
+    <string name="label_login">Zaloguj się do swojego konta</string>
+    <string name="label_register">Stwórz swoje konto!</string>
+    <string name="label_reset_password">Stwórz swoje konto!</string>
+
+    <string name="hint_email">email</string>
+    <string name="hint_password">hasło</string>
+
+    <string name="btn_login">Log in</string>
+    <string name="btn_reset_password">Nie pamiętam hasła</string>
+</resources>
