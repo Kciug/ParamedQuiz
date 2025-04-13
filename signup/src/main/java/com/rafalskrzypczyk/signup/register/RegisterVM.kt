@@ -1,4 +1,4 @@
-package com.rafalskrzypczyk.signup.login
+package com.rafalskrzypczyk.signup.register
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -15,29 +15,27 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class LoginVM @Inject constructor(
+class RegisterVM @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
     private val _state = MutableStateFlow<AuthenticationState>(AuthenticationState())
     val state: StateFlow<AuthenticationState> = _state.asStateFlow()
 
-    fun onEvent(event: LoginUIEvents) {
-        when(event) {
-            LoginUIEvents.ClearError -> _state.update { it.copy(error = null) }
-            is LoginUIEvents.LoginWithCredentials -> loginWithCredentials(event.email, event.password)
+    fun onEvent(event: RegisterUIEvents) {
+        when (event) {
+            RegisterUIEvents.ClearError -> _state.update { it.copy(error = null) }
+            is RegisterUIEvents.RegisterWithCredentials -> registerWithCredentials(event.name ,event.email, event.password)
         }
     }
 
-    fun loginWithCredentials(email: String, password: String) {
+    fun registerWithCredentials(name: String, email: String, password: String) {
         viewModelScope.launch {
-            authRepository.loginWithEmailAndPassword(email, password).collectLatest { response ->
+            authRepository.registerWithEmailAndPassword(email, password, name).collectLatest { response ->
                 when(response) {
-                    is Response.Error -> _state.update {
-                        it.copy(
-                            isLoading = false,
-                            error = response.error
-                        )
-                    }
+                    is Response.Error -> _state.update { it.copy(
+                        error = response.error,
+                        isLoading = false
+                    ) }
                     Response.Loading -> _state.update { it.copy(isLoading = true) }
                     is Response.Success -> _state.update { it.copy(authenticationSuccessfull = true) }
                 }

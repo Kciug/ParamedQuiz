@@ -10,9 +10,12 @@
     <string name="label_register">Stwórz swoje konto!</string>
     <string name="label_reset_password">Stwórz swoje konto!</string>
 
-    <string name="hint_email">email</string>
-    <string name="hint_password">hasło</string>
+    <string name="hint_email">Email</string>
+    <string name="hint_password">Hasło</string>
+    <string name="hint_password_confirmation">Powtórz hasło</string>
+    <string name="hint_user_name">Nazwa</string>
 
     <string name="btn_login">Log in</string>
+    <string name="btn_register">Utwórz konto</string>
     <string name="btn_reset_password">Nie pamiętam hasła</string>
 </resources>

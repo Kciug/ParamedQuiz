@@ -1,4 +1,4 @@
-package com.rafalskrzypczyk.signup.login
+package com.rafalskrzypczyk.signup
 
 data class AuthenticationState(
     val isLoading: Boolean = false,

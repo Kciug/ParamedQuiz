@@ -1,6 +1,5 @@
-package com.rafalskrzypczyk.signup.login
+package com.rafalskrzypczyk.signup.register
 
-import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -13,10 +12,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -31,30 +28,25 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rafalskrzypczyk.core.composables.ButtonPrimary
-import com.rafalskrzypczyk.core.composables.ButtonSecondary
-import com.rafalskrzypczyk.core.composables.ButtonTertiary
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.ErrorDialog
 import com.rafalskrzypczyk.core.composables.Loading
 import com.rafalskrzypczyk.core.composables.PasswordTextFieldPrimary
 import com.rafalskrzypczyk.core.composables.TextFieldPrimary
-import com.rafalskrzypczyk.core.composables.TextPrimary
-import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.signup.R
 import com.rafalskrzypczyk.signup.SignupTopBar
 
 @Composable
-fun LoginScreen(
-    viewModel: LoginVM = hiltViewModel(),
+fun RegisterScreen(
+    viewModel: RegisterVM = hiltViewModel(),
     onUserAuthenticated: () -> Unit,
     onNavigateBack: () -> Unit,
-    onResetPassword: () -> Unit,
-    onRegister: () -> Unit
+    onExitPressed: () -> Unit
 ) {
-    val state = viewModel.state.collectAsState()
+    val state = viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(state) {
         if (state.value.authenticationSuccessfull) onUserAuthenticated()
@@ -63,8 +55,9 @@ fun LoginScreen(
     Scaffold (
         topBar = {
             SignupTopBar(
-                title = stringResource(R.string.title_signup),
-                onExit = { onNavigateBack() }
+                title = stringResource(R.string.title_register),
+                onNavigateBack = onNavigateBack,
+                onExit = onExitPressed
             )
         }
     ) { innerPadding ->
@@ -73,31 +66,30 @@ fun LoginScreen(
         if(state.value.isLoading){
             Loading()
         } else {
-            LoginScreenContent(
+            RegisterScreenContent(
                 modifier = modifier,
                 onEvent = { viewModel.onEvent(it) },
-                onResetPassword = onResetPassword,
-                onRegister = onRegister
             )
         }
 
         if(state.value.error != null) ErrorDialog(state.value.error!!) {
-            viewModel.onEvent(LoginUIEvents.ClearError)
+            viewModel.onEvent(RegisterUIEvents.ClearError)
         }
     }
 }
 
 @Composable
-fun LoginScreenContent(
+fun RegisterScreenContent(
     modifier: Modifier,
-    onEvent: (LoginUIEvents) -> Unit,
-    onResetPassword: () -> Unit,
-    onRegister: () -> Unit
-) {
+    onEvent: (RegisterUIEvents) -> Unit,
+){
+    var nameText by rememberSaveable { mutableStateOf("") }
     var emailText by rememberSaveable { mutableStateOf("") }
     var passwordText by rememberSaveable { mutableStateOf("") }
+    var passwordConfirmationText by rememberSaveable { mutableStateOf("") }
 
-    Column (
+
+    Column(
         modifier = modifier
             .fillMaxSize()
             .padding(Dimens.COLUMN_PADDING)
@@ -107,7 +99,7 @@ fun LoginScreenContent(
         verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING, Alignment.CenterVertically)
     ) {
         Image(
-            painter = painterResource(com.rafalskrzypczyk.core.R.drawable.account),
+            painter = painterResource(com.rafalskrzypczyk.core.R.drawable.email),
             contentDescription = stringResource(R.string.desc_login),
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -117,7 +109,13 @@ fun LoginScreenContent(
                 .size(Dimens.IMAGE_SIZE)
         )
 
-        TextPrimary(stringResource(R.string.label_login))
+        TextFieldPrimary(
+            textValue = nameText,
+            onValueChange = { nameText = it },
+            hint = stringResource(R.string.hint_user_name),
+            keyboardType = KeyboardType.Text,
+            imeAction = ImeAction.Next
+        )
 
         TextFieldPrimary(
             textValue = emailText,
@@ -131,39 +129,20 @@ fun LoginScreenContent(
             password = passwordText,
             onPasswordChange = { passwordText = it },
             hint = stringResource(R.string.hint_password),
+            imeAction = ImeAction.Next
+        )
+
+        PasswordTextFieldPrimary(
+            password = passwordConfirmationText,
+            onPasswordChange = { passwordConfirmationText = it },
+            hint = stringResource(R.string.hint_password_confirmation),
             imeAction = ImeAction.Done
         )
 
-        ButtonTertiary(
-            title = stringResource(R.string.btn_reset_password),
-            onClick = { onResetPassword() }
-        )
-
         ButtonPrimary(
-            title = stringResource(R.string.btn_login),
-            onClick = { onEvent(LoginUIEvents.LoginWithCredentials(emailText, passwordText)) },
-            enabled = passwordText.isNotBlank() && emailText.isNotBlank()
-        )
-
-        ButtonSecondary(
             title = stringResource(R.string.btn_register),
-            onClick = { onRegister() }
+            onClick = { onEvent(RegisterUIEvents.RegisterWithCredentials(nameText, emailText, passwordText)) },
+            enabled = passwordText.isNotBlank() && passwordText == passwordConfirmationText
         )
-    }
-}
-
-@Composable
-@Preview
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
-private fun LoginScreenPreview() {
-    ParamedQuizTheme {
-        Surface {
-            LoginScreenContent(
-                modifier = Modifier,
-                onEvent = {},
-                onResetPassword = {},
-                onRegister = {}
-            )
-        }
     }
 }

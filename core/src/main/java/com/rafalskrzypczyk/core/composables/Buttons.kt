@@ -22,9 +22,11 @@ import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 fun ButtonPrimary(
     title: String,
     onClick: () -> Unit,
+    enabled: Boolean = true,
     modifier: Modifier = Modifier) {
     Button(
         onClick = onClick,
+        enabled = enabled,
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight()

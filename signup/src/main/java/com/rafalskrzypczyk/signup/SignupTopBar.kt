@@ -30,11 +30,13 @@ fun SignupTopBar(
             Text(title)
         },
         navigationIcon = {
-            IconButton(onClick = { onNavigateBack?.invoke() } ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                    contentDescription = null
-                )
+            onNavigateBack?.let {
+                IconButton(onClick = it) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                        contentDescription = null
+                    )
+                }
             }
         },
         actions = {
