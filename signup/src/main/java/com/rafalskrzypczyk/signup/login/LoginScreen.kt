@@ -56,7 +56,7 @@ fun LoginScreen(
 ) {
     val state = viewModel.state.collectAsState()
 
-    LaunchedEffect(state) {
+    LaunchedEffect(state.value.isSuccess) {
         if (state.value.isSuccess) onUserAuthenticated()
     }
 

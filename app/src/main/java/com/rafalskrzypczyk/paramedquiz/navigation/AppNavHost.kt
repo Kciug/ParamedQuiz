@@ -11,7 +11,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 
 @Composable
-fun AppNavHost(navController: NavHostController) {
+fun AppNavHost(
+    navController: NavHostController,
+    userLoggedInProvider: () -> Boolean
+) {
     NavHost(
         modifier = Modifier.background(MaterialTheme.colorScheme.background),
         navController = navController,
@@ -43,11 +46,19 @@ fun AppNavHost(navController: NavHostController) {
     ) {
         signupDestination(
             onExit = { navController.popBackStack() },
-            onAuthenticated = { navController.popBackStack() }
+            onAuthenticated = { navController.navigateToUserPage() }
         )
 
         mainMenuDestination(
-            onNavigateToUserPanel = { navController.navigateToSignup() }
+            onNavigateToUserPanel = {
+                if (userLoggedInProvider()) navController.navigateToUserPage()
+                else navController.navigateToSignup()
+            }
+        )
+
+        userPageDestination(
+            onNavigateBack = { navController.popBackStack() },
+            onSignOut = { navController.navigateToSignup() }
         )
     }
 }

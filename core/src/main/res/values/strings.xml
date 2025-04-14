@@ -2,4 +2,10 @@
 <resources>
     <string name="error_unknown">Nieznany błąd.</string>
     <string name="error_no_data">Nie znaleziono danych.</string>
+
+    <string name="desc_user_avatar">Awatar użytkownika</string>
+
+    <string name="placeholder_short">Placeholder</string>
+    <string name="placeholder_long">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</string>
+    <string name="placeholder_number">123</string>
 </resources>

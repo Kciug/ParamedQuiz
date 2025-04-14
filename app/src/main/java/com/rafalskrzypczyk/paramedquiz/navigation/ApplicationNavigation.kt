@@ -1,9 +1,13 @@
 package com.rafalskrzypczyk.paramedquiz.navigation
 
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.rafalskrzypczyk.home_screen.presentation.home_screen.MainMenuScreen
+import com.rafalskrzypczyk.home_screen.presentation.home_screen.user_page.UserPageScreen
+import com.rafalskrzypczyk.home_screen.presentation.home_screen.user_page.UserPageVM
 import com.rafalskrzypczyk.signup.SignupNavHost
 import kotlinx.serialization.Serializable
 
@@ -22,10 +26,12 @@ fun NavGraphBuilder.signupDestination(
     }
 }
 
-fun NavController.navigateToSignup(){
+fun NavController.navigateToSignup() {
     navigate(
         route = Signup
-    )
+    ) {
+        popUpTo<UserPage> { inclusive = true }
+    }
 }
 
 @Serializable
@@ -38,5 +44,33 @@ fun NavGraphBuilder.mainMenuDestination(
         MainMenuScreen(
             onNavigateToUserPanel = { onNavigateToUserPanel() }
         )
+    }
+}
+
+@Serializable
+object UserPage
+
+fun NavGraphBuilder.userPageDestination(
+    onNavigateBack: () -> Unit,
+    onSignOut: () -> Unit
+) {
+    composable<UserPage> {
+        val viewModel = hiltViewModel<UserPageVM>()
+        val state = viewModel.state.collectAsStateWithLifecycle()
+
+        UserPageScreen(
+            state = state.value,
+            onEvent = viewModel::onEvent,
+            onNavigateBack = onNavigateBack,
+            onSignOut = onSignOut
+        )
+    }
+}
+
+fun NavController.navigateToUserPage(){
+    navigate(
+        route = UserPage
+    ) {
+        popUpTo<Signup> { inclusive = true }
     }
 }

@@ -52,7 +52,7 @@ fun RegisterScreen(
 ) {
     val state = viewModel.state.collectAsStateWithLifecycle()
 
-    LaunchedEffect(state) {
+    LaunchedEffect(state.value.isSuccess) {
         if (state.value.isSuccess) onUserAuthenticated()
     }
 
