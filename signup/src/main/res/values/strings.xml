@@ -8,7 +8,8 @@
 
     <string name="label_login">Zaloguj się do swojego konta</string>
     <string name="label_register">Stwórz swoje konto!</string>
-    <string name="label_reset_password">Stwórz swoje konto!</string>
+    <string name="label_reset_password">Odzyskaj hasło</string>
+    <string name="label_reset_password_success">Na podany adres e-mail został wysłany link do resetowania hasła. Sprawdź swoją skrzynkę odbiorczą (oraz folder spam), aby kontynuować.</string>
 
     <string name="hint_email">Email</string>
     <string name="hint_password">Hasło</string>
@@ -18,4 +19,5 @@
     <string name="btn_login">Log in</string>
     <string name="btn_register">Utwórz konto</string>
     <string name="btn_reset_password">Nie pamiętam hasła</string>
+    <string name="btn_reset_password_back">Wróć do logowania</string>
 </resources>

@@ -37,7 +37,7 @@ class RegisterVM @Inject constructor(
                         isLoading = false
                     ) }
                     Response.Loading -> _state.update { it.copy(isLoading = true) }
-                    is Response.Success -> _state.update { it.copy(authenticationSuccessfull = true) }
+                    is Response.Success -> _state.update { it.copy(isSuccess = true) }
                 }
             }
         }

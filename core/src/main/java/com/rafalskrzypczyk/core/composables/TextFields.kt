@@ -94,7 +94,7 @@ private fun BaseTextField(
     TextField(
         value = textValue,
         onValueChange = onValueChange,
-        placeholder = { Text(text = hint) },
+        placeholder = { Text(hint) },
         keyboardOptions = KeyboardOptions(
             keyboardType = keyboardType,
             imeAction = imeAction,
@@ -110,7 +110,7 @@ private fun BaseTextField(
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
             disabledIndicatorColor = Color.Transparent
-        )
+        ),
     )
 }
 

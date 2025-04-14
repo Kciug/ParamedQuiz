@@ -1,4 +1,4 @@
-package com.rafalskrzypczyk.signup.login
+package com.rafalskrzypczyk.signup.reset_password
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -15,22 +15,22 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class LoginVM @Inject constructor(
+class ResetPasswordVM @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
     private val _state = MutableStateFlow<AuthenticationState>(AuthenticationState())
     val state: StateFlow<AuthenticationState> = _state.asStateFlow()
 
-    fun onEvent(event: LoginUIEvents) {
+    fun onEvent(event: ResetPasswordUIEvents) {
         when(event) {
-            LoginUIEvents.ClearError -> _state.update { it.copy(error = null) }
-            is LoginUIEvents.LoginWithCredentials -> loginWithCredentials(event.email, event.password)
+            ResetPasswordUIEvents.ClearError -> _state.update { it.copy(error = null) }
+            is ResetPasswordUIEvents.SendResetPasswordEmail -> sendResetPasswordEmail(event.email)
         }
     }
 
-    fun loginWithCredentials(email: String, password: String) {
+    private fun sendResetPasswordEmail(email: String) {
         viewModelScope.launch {
-            authRepository.loginWithEmailAndPassword(email, password).collectLatest { response ->
+            authRepository.sendPasswordResetToEmail(email).collectLatest { response ->
                 when(response) {
                     is Response.Error -> _state.update {
                         it.copy(
@@ -38,8 +38,12 @@ class LoginVM @Inject constructor(
                             error = response.error
                         )
                     }
+                    is Response.Success -> _state.update {
+                        it.copy(
+                            isSuccess = true,
+                            isLoading = false
+                        ) }
                     Response.Loading -> _state.update { it.copy(isLoading = true) }
-                    is Response.Success -> _state.update { it.copy(isSuccess = true) }
                 }
             }
         }

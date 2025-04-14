@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.rafalskrzypczyk.signup.login.LoginScreen
 import com.rafalskrzypczyk.signup.register.RegisterScreen
+import com.rafalskrzypczyk.signup.reset_password.ResetPasswordScreen
 import kotlinx.serialization.Serializable
 
 @Composable
@@ -24,7 +25,7 @@ fun SignupNavHost(
         loginDestination(
             onUserAuthenticated = onSignupFinished,
             onExitPressed = onExitPressed,
-            onResetPassword = {},
+            onResetPassword = { signupNavController.navigateToResetPassword() },
             onRegister = { signupNavController.navigateToRegister() }
         )
 
@@ -32,6 +33,11 @@ fun SignupNavHost(
             onBackPressed = { signupNavController.popBackStack() },
             onExitPressed = onExitPressed,
             onUserAuthenticated = onSignupFinished
+        )
+
+        resetPasswordDestination(
+            onBackPressed = { signupNavController.popBackStack() },
+            onExitPressed = onExitPressed,
         )
     }
 }
@@ -75,6 +81,27 @@ fun NavGraphBuilder.registerDestination(
 fun NavController.navigateToRegister() {
     navigate(
         route = Register
+    )
+}
+
+@Serializable
+object ResetPassword
+
+fun NavGraphBuilder.resetPasswordDestination(
+    onBackPressed: () -> Unit,
+    onExitPressed: () -> Unit,
+) {
+    composable<ResetPassword> {
+        ResetPasswordScreen(
+            onNavigateBack = onBackPressed,
+            onExitPressed = onExitPressed,
+        )
+    }
+}
+
+fun NavController.navigateToResetPassword() {
+    navigate(
+        route = ResetPassword
     )
 }
 

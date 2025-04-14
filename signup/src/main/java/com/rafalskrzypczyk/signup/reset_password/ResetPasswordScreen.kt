@@ -1,4 +1,4 @@
-package com.rafalskrzypczyk.signup.login
+package com.rafalskrzypczyk.signup.reset_password
 
 import android.content.res.Configuration
 import androidx.compose.foundation.Image
@@ -14,9 +14,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -31,73 +30,60 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rafalskrzypczyk.core.composables.ButtonPrimary
-import com.rafalskrzypczyk.core.composables.ButtonSecondary
-import com.rafalskrzypczyk.core.composables.ButtonTertiary
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.ErrorDialog
 import com.rafalskrzypczyk.core.composables.Loading
-import com.rafalskrzypczyk.core.composables.PasswordTextFieldPrimary
 import com.rafalskrzypczyk.core.composables.TextFieldPrimary
-import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.signup.R
 import com.rafalskrzypczyk.signup.SignupTopBar
 
 @Composable
-fun LoginScreen(
-    viewModel: LoginVM = hiltViewModel(),
-    onUserAuthenticated: () -> Unit,
+fun ResetPasswordScreen(
+    viewModel: ResetPasswordVM = hiltViewModel(),
     onNavigateBack: () -> Unit,
-    onResetPassword: () -> Unit,
-    onRegister: () -> Unit
+    onExitPressed: () -> Unit,
 ) {
-    val state = viewModel.state.collectAsState()
-
-    LaunchedEffect(state) {
-        if (state.value.isSuccess) onUserAuthenticated()
-    }
+    val state = viewModel.state.collectAsStateWithLifecycle()
 
     Scaffold (
         topBar = {
             SignupTopBar(
-                title = stringResource(R.string.title_signup),
-                onExit = { onNavigateBack() }
+                title = stringResource(R.string.title_register),
+                onNavigateBack = onNavigateBack,
+                onExit = onExitPressed
             )
         }
     ) { innerPadding ->
         val modifier = Modifier.padding(innerPadding)
 
-        if(state.value.isLoading){
-            Loading()
-        } else {
-            LoginScreenContent(
-                modifier = modifier,
-                onEvent = { viewModel.onEvent(it) },
-                onResetPassword = onResetPassword,
-                onRegister = onRegister
-            )
-        }
+        if(state.value.isLoading) Loading()
+        else ResetPasswordScreenContent(
+            modifier = modifier,
+            isSuccess = state.value.isSuccess,
+            onEvent = { viewModel.onEvent(it) },
+            onNavigateBack = onNavigateBack,
+        )
 
         if(state.value.error != null) ErrorDialog(state.value.error!!) {
-            viewModel.onEvent(LoginUIEvents.ClearError)
+            viewModel.onEvent(ResetPasswordUIEvents.ClearError)
         }
     }
 }
 
 @Composable
-fun LoginScreenContent(
+fun ResetPasswordScreenContent(
     modifier: Modifier,
-    onEvent: (LoginUIEvents) -> Unit,
-    onResetPassword: () -> Unit,
-    onRegister: () -> Unit
+    isSuccess: Boolean,
+    onEvent: (ResetPasswordUIEvents) -> Unit,
+    onNavigateBack: () -> Unit,
 ) {
-    var emailText by rememberSaveable { mutableStateOf("") }
-    var passwordText by rememberSaveable { mutableStateOf("") }
-
-    Column (
+    Column(
         modifier = modifier
             .fillMaxSize()
             .padding(Dimens.COLUMN_PADDING)
@@ -107,7 +93,7 @@ fun LoginScreenContent(
         verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING, Alignment.CenterVertically)
     ) {
         Image(
-            painter = painterResource(com.rafalskrzypczyk.core.R.drawable.account),
+            painter = painterResource(com.rafalskrzypczyk.core.R.drawable.email),
             contentDescription = stringResource(R.string.desc_login),
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -117,52 +103,84 @@ fun LoginScreenContent(
                 .size(Dimens.IMAGE_SIZE)
         )
 
-        TextPrimary(stringResource(R.string.label_login))
+        if(isSuccess) {
+            ResetPasswordSuccessContent(
+                onNavigateBack = onNavigateBack,
+            )
+        } else {
+            ResetPasswordInput(
+                onEvent = onEvent,
+            )
+        }
+    }
+}
 
-        TextFieldPrimary(
-            textValue = emailText,
-            onValueChange = { emailText = it },
-            hint = stringResource(R.string.hint_email),
-            keyboardType = KeyboardType.Email,
-            imeAction = ImeAction.Next
-        )
+@Composable
+fun ResetPasswordInput(
+    onEvent: (ResetPasswordUIEvents) -> Unit,
+) {
+    var emailText by rememberSaveable { mutableStateOf("") }
+    
+    Text(stringResource(R.string.label_reset_password))
 
-        PasswordTextFieldPrimary(
-            password = passwordText,
-            onPasswordChange = { passwordText = it },
-            hint = stringResource(R.string.hint_password),
-            imeAction = ImeAction.Done
-        )
+    TextFieldPrimary(
+        textValue = emailText,
+        onValueChange = { emailText = it },
+        hint = stringResource(R.string.hint_email),
+        keyboardType = KeyboardType.Email,
+        imeAction = ImeAction.Done
+    )
 
-        ButtonTertiary(
-            title = stringResource(R.string.btn_reset_password),
-            onClick = { onResetPassword() }
-        )
+    ButtonPrimary(
+        title = stringResource(R.string.btn_register),
+        onClick = { onEvent(ResetPasswordUIEvents.SendResetPasswordEmail(emailText)) },
+        enabled = emailText.isNotBlank()
+    )
+}
 
-        ButtonPrimary(
-            title = stringResource(R.string.btn_login),
-            onClick = { onEvent(LoginUIEvents.LoginWithCredentials(emailText, passwordText)) },
-            enabled = passwordText.isNotBlank() && emailText.isNotBlank()
-        )
+@Composable
+fun ResetPasswordSuccessContent(
+    onNavigateBack: () -> Unit,
+) {
+    Text(
+        text = stringResource(R.string.label_reset_password_success),
+        textAlign = TextAlign.Center,
+        modifier = Modifier.padding(horizontal = Dimens.COLUMN_PADDING)
+    )
 
-        ButtonSecondary(
-            title = stringResource(R.string.btn_register),
-            onClick = { onRegister() }
-        )
+    ButtonPrimary(
+        title = stringResource(R.string.btn_reset_password_back),
+        onClick = onNavigateBack,
+    )
+}
+
+@Composable
+@Preview
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+private fun ResetPasswordInputPreview() {
+    ParamedQuizTheme {
+        Surface {
+            ResetPasswordScreenContent(
+                modifier = Modifier,
+                isSuccess = false,
+                onEvent = {},
+                onNavigateBack = {},
+            )
+        }
     }
 }
 
 @Composable
 @Preview
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
-private fun LoginScreenPreview() {
+private fun ResetPasswordSuccessPreview() {
     ParamedQuizTheme {
         Surface {
-            LoginScreenContent(
+            ResetPasswordScreenContent(
                 modifier = Modifier,
+                isSuccess = true,
                 onEvent = {},
-                onResetPassword = {},
-                onRegister = {}
+                onNavigateBack = {},
             )
         }
     }
