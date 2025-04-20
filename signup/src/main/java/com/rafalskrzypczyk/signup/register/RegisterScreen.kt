@@ -96,7 +96,7 @@ fun RegisterScreenContent(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(Dimens.COLUMN_PADDING)
+            .padding(Dimens.DEFAULT_PADDING)
             .verticalScroll(rememberScrollState())
             .imePadding(),
         horizontalAlignment = Alignment.CenterHorizontally,

@@ -4,8 +4,12 @@
     <string name="error_no_data">Nie znaleziono danych.</string>
 
     <string name="desc_user_avatar">Awatar użytkownika</string>
+    <string name="desc_settings">Ustawienia</string>
+    <string name="desc_success">Sukces</string>
 
     <string name="placeholder_short">Placeholder</string>
     <string name="placeholder_long">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</string>
     <string name="placeholder_number">123</string>
+    <string name="placeholder_email">example@example.com</string>
+    <string name="placeholder_name">Example User</string>
 </resources>

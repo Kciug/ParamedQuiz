@@ -1,6 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="title_user_page">Moje konto</string>
+    <string name="title_settings">Ustawienia</string>
+    <string name="title_change_username">Zmień nazwę</string>
+    <string name="title_change_password">Zmień hasło</string>
+    <string name="title_delete_account">Usuń konto</string>
 
     <string name="btn_logout">Wyloguj</string>
+    <string name="btn_change_username">Zmień nazwę</string>
+    <string name="btn_change_password">Zmień hasło</string>
+    <string name="btn_delete_account">Usuń konto</string>
+
+    <string name="hint_new_username">Twoja nowa nazwa</string>
+    <string name="hint_old_password">Aktualne hasło</string>
+    <string name="hint_new_password">Nowe hasło</string>
+    <string name="hint_password_repeat">Powtórz nowe hasło</string>
+
+    <string name="desc_expand">Rozwiń element</string>
+
+    <string name="validation_username_the_same">Nowa nazwa użytkownika jest taka sama jak dotychczasowa.</string>
+    <string name="validation_password_not_match">Nowe hasła nie są takie same.</string>
+    <string name="validation_password_the_same">Nowe hasło jest takie samo jak dotychczasowe.</string>
+
+    <string name="error_user_data_not_found">Nie znaleziono danych użytkownika.</string>
+
+    <string name="username_changed">Twoja nazwa została zmieniona.</string>
+    <string name="password_changed">Twoje hasło zostało zmienione.</string>
+    <string name="account_deleted">Twoje konto zostało usunięte.</string>
 </resources>

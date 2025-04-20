@@ -58,6 +58,12 @@ fun AppNavHost(
 
         userPageDestination(
             onNavigateBack = { navController.popBackStack() },
+            onUserSettings = { navController.navigateToUserSettings() },
+            onSignOut = { navController.navigateToSignup() }
+        )
+
+        userSettingsDestination(
+            onNavigateBack = { navController.popBackStack() },
             onSignOut = { navController.navigateToSignup() }
         )
     }

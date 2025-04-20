@@ -8,6 +8,8 @@ import androidx.navigation.compose.composable
 import com.rafalskrzypczyk.home_screen.presentation.home_screen.MainMenuScreen
 import com.rafalskrzypczyk.home_screen.presentation.home_screen.user_page.UserPageScreen
 import com.rafalskrzypczyk.home_screen.presentation.home_screen.user_page.UserPageVM
+import com.rafalskrzypczyk.home_screen.presentation.home_screen.user_settings.UserSettingsScreen
+import com.rafalskrzypczyk.home_screen.presentation.home_screen.user_settings.UserSettingsVM
 import com.rafalskrzypczyk.signup.SignupNavHost
 import kotlinx.serialization.Serializable
 
@@ -27,9 +29,7 @@ fun NavGraphBuilder.signupDestination(
 }
 
 fun NavController.navigateToSignup() {
-    navigate(
-        route = Signup
-    ) {
+    navigate(route = Signup) {
         popUpTo<UserPage> { inclusive = true }
     }
 }
@@ -52,6 +52,7 @@ object UserPage
 
 fun NavGraphBuilder.userPageDestination(
     onNavigateBack: () -> Unit,
+    onUserSettings: () -> Unit,
     onSignOut: () -> Unit
 ) {
     composable<UserPage> {
@@ -62,6 +63,7 @@ fun NavGraphBuilder.userPageDestination(
             state = state.value,
             onEvent = viewModel::onEvent,
             onNavigateBack = onNavigateBack,
+            onUserSettings = onUserSettings,
             onSignOut = onSignOut
         )
     }
@@ -73,4 +75,28 @@ fun NavController.navigateToUserPage(){
     ) {
         popUpTo<Signup> { inclusive = true }
     }
+}
+
+@Serializable
+object UserSettings
+
+fun NavGraphBuilder.userSettingsDestination(
+    onNavigateBack: () -> Unit,
+    onSignOut: () -> Unit
+) {
+    composable<UserSettings> {
+        val viewModel = hiltViewModel<UserSettingsVM>()
+        val state = viewModel.state.collectAsStateWithLifecycle()
+
+        UserSettingsScreen(
+            state = state.value,
+            onEvent = viewModel::onEvent,
+            onNavigateBack = onNavigateBack,
+            onSignOut = onSignOut
+        )
+    }
+}
+
+fun NavController.navigateToUserSettings() {
+    navigate(route = UserSettings)
 }

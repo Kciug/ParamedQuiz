@@ -86,7 +86,7 @@ fun ResetPasswordScreenContent(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(Dimens.COLUMN_PADDING)
+            .padding(Dimens.DEFAULT_PADDING)
             .verticalScroll(rememberScrollState())
             .imePadding(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -145,7 +145,7 @@ fun ResetPasswordSuccessContent(
     Text(
         text = stringResource(R.string.label_reset_password_success),
         textAlign = TextAlign.Center,
-        modifier = Modifier.padding(horizontal = Dimens.COLUMN_PADDING)
+        modifier = Modifier.padding(horizontal = Dimens.DEFAULT_PADDING)
     )
 
     ButtonPrimary(

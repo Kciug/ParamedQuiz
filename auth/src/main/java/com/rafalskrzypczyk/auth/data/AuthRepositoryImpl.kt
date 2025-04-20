@@ -1,5 +1,6 @@
 package com.rafalskrzypczyk.auth.data
 
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.rafalskrzypczyk.auth.domain.AuthRepository
 import com.rafalskrzypczyk.auth.domain.toDTO
@@ -97,12 +98,45 @@ class AuthRepositoryImpl @Inject constructor(
         awaitClose { this.cancel() }
     }
 
+    override fun reauthenticate(
+        email: String,
+        password: String,
+    ): Flow<Response<Unit>> = callbackFlow {
+        trySend(Response.Loading)
+        val user = firebaseAuth.currentUser!!
+        val credential = EmailAuthProvider.getCredential(email, password)
+        user.reauthenticate(credential).addOnSuccessListener {
+            trySend(Response.Success(Unit))
+        }.addOnFailureListener {
+            trySend(Response.Error(it.localizedMessage ?: resourcesProvider.getString(R.string.error_unknown)))
+        }
+        awaitClose { this.cancel() }
+    }
+
     override fun changePassword(newPassword: String): Flow<Response<Unit>> = callbackFlow {
         trySend(Response.Loading)
         firebaseAuth.currentUser?.updatePassword(newPassword)?.addOnSuccessListener {
             trySend(Response.Success(Unit))
         }?.addOnFailureListener {
             trySend(Response.Error(it.localizedMessage ?: resourcesProvider.getString(R.string.error_unknown)))
+        }
+        awaitClose { this.cancel() }
+    }
+
+    override fun changeUserName(newUsername: String): Flow<Response<UserData>> = callbackFlow {
+        trySend(Response.Loading)
+        userManager.getCurrentLoggedUser()?.let {
+            val updatedUserData = it.copy(name = newUsername)
+            firestoreApi.updateUserData(updatedUserData.toDTO()).collectLatest {
+                when (it) {
+                    is Response.Error -> trySend(Response.Error(it.error))
+                    Response.Loading -> trySend(Response.Loading)
+                    is Response.Success -> {
+                        userManager.saveUserDataInLocal(updatedUserData)
+                        trySend(Response.Success(updatedUserData))
+                    }
+                }
+            }
         }
         awaitClose { this.cancel() }
     }

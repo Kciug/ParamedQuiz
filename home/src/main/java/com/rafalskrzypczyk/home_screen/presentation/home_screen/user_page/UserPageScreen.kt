@@ -1,5 +1,6 @@
 package com.rafalskrzypczyk.home_screen.presentation.home_screen.user_page
 
+import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -10,6 +11,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -36,6 +41,7 @@ fun UserPageScreen(
     state: UserPageState,
     onEvent: (UserPageUIEvents) -> Unit,
     onNavigateBack: () -> Unit,
+    onUserSettings: () -> Unit,
     onSignOut: () -> Unit
 ) {
     Scaffold(
@@ -43,7 +49,14 @@ fun UserPageScreen(
             NavigationTopBar(
                 title = stringResource(com.rafalskrzypczyk.home.R.string.title_user_page),
                 onNavigateBack = onNavigateBack
-            )
+            ) {
+                IconButton(onClick = { onUserSettings() }) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = stringResource(R.string.desc_settings)
+                    )
+                }
+            }
         }
     ) { innerPadding ->
         val modifier = Modifier.padding(innerPadding)
@@ -51,7 +64,7 @@ fun UserPageScreen(
         Column(
             modifier = modifier
                 .fillMaxSize()
-                .padding(Dimens.COLUMN_PADDING),
+                .padding(Dimens.DEFAULT_PADDING),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
@@ -100,8 +113,9 @@ fun UserPageUserDetails(
     }
 }
 
-@Preview
 @Composable
+@Preview
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 private fun UserPagePreview() {
     Surface {
         UserPageScreen(
@@ -110,7 +124,8 @@ private fun UserPagePreview() {
             ),
             onEvent = {},
             onNavigateBack = {},
-            onSignOut = {}
+            onSignOut = {},
+            onUserSettings = {}
         )
     }
 }

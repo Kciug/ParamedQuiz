@@ -1,5 +1,6 @@
 package com.rafalskrzypczyk.core.ui
 
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -17,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 fun NavigationTopBar(
     title: String,
     onNavigateBack: () -> Unit,
+    actions: @Composable (RowScope.() -> Unit) = {}
 ) {
     TopAppBar(
         colors = TopAppBarDefaults.topAppBarColors(
@@ -35,5 +37,6 @@ fun NavigationTopBar(
                 )
             }
         },
+        actions = actions
     )
 }
