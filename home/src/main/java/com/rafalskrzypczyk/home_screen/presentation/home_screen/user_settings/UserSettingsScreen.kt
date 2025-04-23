@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -104,8 +103,6 @@ private fun UserSettingsContent(
     Column (modifier = modifier) {
         UserSettingsUserDetails(userName = state.userName, userEmail = state.userEmail)
 
-        HorizontalDivider(modifier = Modifier.padding(top = Dimens.SMALL_PADDING))
-
         UserSettingsList(
             modifier = Modifier.weight(1f),
             settingsList = settingsList
@@ -130,7 +127,8 @@ private fun UserSettingsUserDetails(
 ) {
     Row (
         modifier = modifier
-            .padding(Dimens.SMALL_PADDING)
+            .padding(horizontal = Dimens.DEFAULT_PADDING)
+            .padding(vertical = Dimens.SMALL_PADDING)
             .wrapContentHeight(),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -162,11 +160,14 @@ private fun UserSettingsList(
     var expandedElementId by remember { mutableStateOf<Int?>(null) }
 
     LazyColumn (
-        modifier = modifier.fillMaxSize()
+        modifier = modifier
+            .fillMaxSize()
+            .padding(Dimens.DEFAULT_PADDING)
     ) {
         settingsList.forEachIndexed { index, element ->
             item {
                 UserSettingsItem(
+                    modifier = Modifier.padding(vertical = Dimens.ELEMENTS_SPACING_SMALL),
                     title = element.title,
                     onClick = { expandedElementId = if(expandedElementId == index) null else index },
                     isExpanded = expandedElementId == index,

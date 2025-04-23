@@ -10,6 +10,7 @@ object Dimens {
     val SMALL_PADDING = 5.dp
 
     val ELEMENTS_SPACING = 15.dp
+    val ELEMENTS_SPACING_SMALL = 5.dp
     val ELEVATION = 5.dp
     val IMAGE_SIZE = 150.dp
     val IMAGE_SIZE_SMALL = 48.dp

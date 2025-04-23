@@ -1,6 +1,7 @@
 package com.rafalskrzypczyk.home_screen.presentation.home_screen.user_settings
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -8,9 +9,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowRight
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -22,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -36,22 +38,24 @@ import com.rafalskrzypczyk.home.R
 
 @Composable
 fun UserSettingsItem(
+    modifier: Modifier = Modifier,
     title: String,
     content: @Composable () -> Unit,
     onClick: () -> Unit,
     isExpanded: Boolean
 ) {
     Column (
-        modifier = Modifier
+        modifier = modifier
             .animateContentSize()
             .wrapContentHeight()
-
+            .clip(shape = RoundedCornerShape(Dimens.BUTTON_RADIUS))
+            .background(MaterialTheme.colorScheme.surfaceContainer)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(Dimens.SMALL_PADDING)
+                .padding(Dimens.DEFAULT_PADDING)
                 .clickable { onClick() }
         ) {
             Icon(
@@ -60,11 +64,7 @@ fun UserSettingsItem(
                 modifier = Modifier.rotate(if(isExpanded) 90f else 0f)
             )
 
-            Text(
-                text = title,
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.weight(1f)
-            )
+            Text(text = title,)
         }
 
         if(isExpanded) {
@@ -78,8 +78,6 @@ fun UserSettingsItem(
                 content()
             }
         }
-
-        HorizontalDivider()
     }
 }
 
