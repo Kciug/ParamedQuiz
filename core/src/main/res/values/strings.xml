@@ -1,15 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="error_unknown">Nieznany błąd.</string>
+    <string name="error_unknown">Wystąpił nieznany błąd. Spróbuj później</string>
     <string name="error_no_data">Nie znaleziono danych.</string>
 
     <string name="desc_user_avatar">Awatar użytkownika</string>
     <string name="desc_settings">Ustawienia</string>
     <string name="desc_success">Sukces</string>
 
+    <string name="title_error_dialog">Błąd</string>
+
     <string name="placeholder_short">Placeholder</string>
     <string name="placeholder_long">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</string>
     <string name="placeholder_number">123</string>
     <string name="placeholder_email">example@example.com</string>
     <string name="placeholder_name">Example User</string>
+
+    <string name="fb_error_invalid_credentials">Błędne dane logowania.</string>
+    <string name="fb_error_email_already_in_use">Konto o podanym adresie e-mail już istnieje.</string>
+    <string name="fb_error_weak_password">Hasło jest zbyt słabe. Wprowadź silniejsze hasło.</string>
+    <string name="fb_error_too_many_requests">Przeprowadzono zbyt wiele prób logowania. Spróbuj ponownie później.</string>
+    <string name="fb_error_invalid_email">Adres e-mail ma niepoprawny format.</string>
+    <string name="fb_error_invalid_password">Podane hasło jest nieprawidłowe. Hasło musi zawierać przynajmniej 6 znaków.</string>
+    <string name="fb_error_operation_not_allowed">Rejestracja z użyciem adresu e-mail jest wyłączona.</string>
+    <string name="fb_error_permission_denied">Brak uprawnień do wykonania tej operacji.</string>
+    <string name="fb_error_unavailable">Usługa jest chwilowo niedostępna. Spróbuj ponownie później.</string>
+    <string name="fb_error_aborted">Operacja została przerwana.</string>
+    <string name="fb_error_not_found">Nie znaleziono danych.</string>
+    <string name="fb_error_deadline_exceeded">Przekroczono czas oczekiwania.</string>
 </resources>

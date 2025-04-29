@@ -2,14 +2,14 @@ package com.rafalskrzypczyk.auth.data
 
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthException
 import com.rafalskrzypczyk.auth.domain.AuthRepository
 import com.rafalskrzypczyk.auth.domain.toDTO
 import com.rafalskrzypczyk.auth.domain.toDomain
-import com.rafalskrzypczyk.core.R
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.user_management.UserData
 import com.rafalskrzypczyk.core.user_management.UserManager
-import com.rafalskrzypczyk.core.utils.ResourceProvider
+import com.rafalskrzypczyk.core.utils.FirebaseError
 import com.rafalskrzypczyk.firestore.domain.FirestoreApi
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
@@ -24,7 +24,7 @@ class AuthRepositoryImpl @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
     private val firestoreApi: FirestoreApi,
     private val userManager: UserManager,
-    private val resourcesProvider: ResourceProvider,
+    private val firebaseError: FirebaseError,
 ) : AuthRepository {
     override fun isUserLoggedIn(): Boolean = firebaseAuth.currentUser != null
 
@@ -48,7 +48,7 @@ class AuthRepositoryImpl @Inject constructor(
                 }
             }
         } catch (e: Exception) {
-            send(Response.Error(e.localizedMessage ?: resourcesProvider.getString(R.string.error_unknown)))
+            send(Response.Error(firebaseError.localizedError((e as? FirebaseAuthException)?.errorCode ?: "")))
         }
     }
 
@@ -80,7 +80,7 @@ class AuthRepositoryImpl @Inject constructor(
                 }
             }
         } catch (e: Exception) {
-            send(Response.Error(e.localizedMessage ?: resourcesProvider.getString(R.string.error_unknown)))
+            send(Response.Error(firebaseError.localizedError((e as? FirebaseAuthException)?.errorCode ?: "")))
         }
     }
 
@@ -93,7 +93,7 @@ class AuthRepositoryImpl @Inject constructor(
         trySend(Response.Loading)
         firebaseAuth.sendPasswordResetEmail(email)
             .addOnFailureListener {
-                trySend(Response.Error(it.localizedMessage ?: resourcesProvider.getString(R.string.error_unknown)))
+                trySend(Response.Error(firebaseError.localizedError((it as? FirebaseAuthException)?.errorCode ?: "")))
             }.addOnSuccessListener {
                 trySend(Response.Success(Unit))
             }
@@ -110,7 +110,7 @@ class AuthRepositoryImpl @Inject constructor(
         user.reauthenticate(credential).addOnSuccessListener {
             trySend(Response.Success(Unit))
         }.addOnFailureListener {
-            trySend(Response.Error(it.localizedMessage ?: resourcesProvider.getString(R.string.error_unknown)))
+            trySend(Response.Error(firebaseError.localizedError((it as? FirebaseAuthException)?.errorCode ?: "")))
         }
         awaitClose { this.cancel() }
     }
@@ -120,7 +120,7 @@ class AuthRepositoryImpl @Inject constructor(
         firebaseAuth.currentUser?.updatePassword(newPassword)?.addOnSuccessListener {
             trySend(Response.Success(Unit))
         }?.addOnFailureListener {
-            trySend(Response.Error(it.localizedMessage ?: resourcesProvider.getString(R.string.error_unknown)))
+            trySend(Response.Error(firebaseError.localizedError((it as? FirebaseAuthException)?.errorCode ?: "")))
         }
         awaitClose { this.cancel() }
     }
@@ -146,7 +146,7 @@ class AuthRepositoryImpl @Inject constructor(
     override fun deleteUser(): Flow<Response<Unit>> = callbackFlow {
         trySend(Response.Loading)
         firebaseAuth.currentUser?.delete()?.addOnFailureListener {
-            trySend(Response.Error(it.localizedMessage ?: resourcesProvider.getString(R.string.error_unknown)))
+            trySend(Response.Error(firebaseError.localizedError((it as? FirebaseAuthException)?.errorCode ?: "")))
         }
 
         firestoreApi.deleteUserData(userManager.getCurrentLoggedUser()!!.id).collectLatest {
