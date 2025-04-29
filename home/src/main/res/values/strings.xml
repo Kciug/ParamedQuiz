@@ -27,4 +27,6 @@
     <string name="username_changed">Twoja nazwa została zmieniona.</string>
     <string name="password_changed">Twoje hasło zostało zmienione.</string>
     <string name="account_deleted">Twoje konto zostało usunięte.</string>
+
+    <string name="text_delete_account_warning">Usunięcie konta spowoduje usunięcie wszystkich zapisanych danych i wyników.</string>
 </resources>

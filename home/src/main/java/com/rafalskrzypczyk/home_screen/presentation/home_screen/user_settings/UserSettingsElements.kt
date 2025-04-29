@@ -29,6 +29,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import com.rafalskrzypczyk.core.composables.ButtonPrimary
@@ -106,7 +107,8 @@ fun UserSettingsChangeUserName(
     if(validationMessage.isNullOrEmpty().not()) {
         Text(
             text = validationMessage,
-            color = MaterialTheme.colorScheme.error
+            color = MaterialTheme.colorScheme.error,
+            textAlign = TextAlign.Center
         )
     }
 
@@ -150,7 +152,8 @@ fun UserSettingsChangePassword(
     if(validationMessage.isNullOrEmpty().not()) {
         Text(
             text = validationMessage,
-            color = MaterialTheme.colorScheme.error
+            color = MaterialTheme.colorScheme.error,
+            textAlign = TextAlign.Center
         )
     }
 
@@ -166,6 +169,12 @@ fun UserSettingsDeleteAccount(
     onDeleteAccount: (String) -> Unit
 ) {
     var password by remember { mutableStateOf("") }
+
+    Text(
+        text = stringResource(R.string.text_delete_account_warning),
+        color = MaterialTheme.colorScheme.error,
+        textAlign = TextAlign.Center
+    )
 
     PasswordTextFieldPrimary(
         password = password,
