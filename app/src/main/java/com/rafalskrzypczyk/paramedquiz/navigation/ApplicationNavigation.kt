@@ -53,7 +53,6 @@ object UserPage
 fun NavGraphBuilder.userPageDestination(
     onNavigateBack: () -> Unit,
     onUserSettings: () -> Unit,
-    onSignOut: () -> Unit
 ) {
     composable<UserPage> {
         val viewModel = hiltViewModel<UserPageVM>()
@@ -64,7 +63,6 @@ fun NavGraphBuilder.userPageDestination(
             onEvent = viewModel::onEvent,
             onNavigateBack = onNavigateBack,
             onUserSettings = onUserSettings,
-            onSignOut = onSignOut
         )
     }
 }
@@ -82,7 +80,7 @@ object UserSettings
 
 fun NavGraphBuilder.userSettingsDestination(
     onNavigateBack: () -> Unit,
-    onSignOut: () -> Unit
+    onSignOut: () -> Unit,
 ) {
     composable<UserSettings> {
         val viewModel = hiltViewModel<UserSettingsVM>()
@@ -92,7 +90,7 @@ fun NavGraphBuilder.userSettingsDestination(
             state = state.value,
             onEvent = viewModel::onEvent,
             onNavigateBack = onNavigateBack,
-            onSignOut = onSignOut
+            onSignOut = onSignOut,
         )
     }
 }

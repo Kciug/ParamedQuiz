@@ -1,7 +1,6 @@
 package com.rafalskrzypczyk.home_screen.presentation.home_screen.user_page
 
 import androidx.lifecycle.ViewModel
-import com.rafalskrzypczyk.auth.domain.AuthRepository
 import com.rafalskrzypczyk.core.user_management.UserManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,19 +11,14 @@ import javax.inject.Inject
 
 @HiltViewModel
 class UserPageVM @Inject constructor(
-    private val userManager: UserManager,
-    private val authRepository: AuthRepository
+    private val userManager: UserManager
 ) : ViewModel() {
     private val _state = MutableStateFlow(UserPageState())
     val state: StateFlow<UserPageState> = _state.asStateFlow()
 
-    init {
-        getUserData()
-    }
-
     fun onEvent(event: UserPageUIEvents) {
         when(event) {
-            UserPageUIEvents.SignOut -> authRepository.signOut()
+            UserPageUIEvents.RefreshUserData -> getUserData()
         }
     }
 

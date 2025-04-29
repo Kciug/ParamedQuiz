@@ -45,7 +45,7 @@ fun UserSettingsScreen(
     state: UserSettingsState,
     onEvent: (UserSettingsUIEvents) -> Unit,
     onNavigateBack: () -> Unit,
-    onSignOut: () -> Unit
+    onSignOut: () -> Unit,
 ) {
     val settingsList = listOf(
         UserSettingsElement(stringResource(R.string.title_change_username)) {
@@ -191,7 +191,7 @@ private fun UserSettingsPreview() {
                 ),
                 onEvent = {},
                 onNavigateBack = {},
-                onSignOut = {}
+                onSignOut = {},
             )
         }
     }

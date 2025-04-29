@@ -20,6 +20,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,7 +32,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.rafalskrzypczyk.core.R
-import com.rafalskrzypczyk.core.composables.ButtonSecondary
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.ui.NavigationTopBar
 
@@ -41,9 +41,12 @@ fun UserPageScreen(
     state: UserPageState,
     onEvent: (UserPageUIEvents) -> Unit,
     onNavigateBack: () -> Unit,
-    onUserSettings: () -> Unit,
-    onSignOut: () -> Unit
+    onUserSettings: () -> Unit
 ) {
+    LaunchedEffect(Unit) {
+        onEvent.invoke(UserPageUIEvents.RefreshUserData)
+    }
+
     Scaffold(
         topBar = {
             NavigationTopBar(
@@ -69,14 +72,6 @@ fun UserPageScreen(
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             UserPageUserDetails(state.userName)
-
-            ButtonSecondary(
-                title = stringResource(com.rafalskrzypczyk.home.R.string.btn_logout),
-                onClick = {
-                    onEvent.invoke(UserPageUIEvents.SignOut)
-                    onSignOut.invoke()
-                },
-            )
         }
     }
 }
@@ -122,10 +117,9 @@ private fun UserPagePreview() {
             state = UserPageState(
                 userName = stringResource(R.string.placeholder_short)
             ),
-            onEvent = {},
             onNavigateBack = {},
-            onSignOut = {},
-            onUserSettings = {}
+            onUserSettings = {},
+            onEvent = {}
         )
     }
 }
