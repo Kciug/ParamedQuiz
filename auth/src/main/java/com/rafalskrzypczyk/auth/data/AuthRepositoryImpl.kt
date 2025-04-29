@@ -61,6 +61,8 @@ class AuthRepositoryImpl @Inject constructor(
             send(Response.Loading)
 
             val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
+            result.user!!.sendEmailVerification()
+
             val newUser = UserData(
                 result.user!!.uid,
                 email,
@@ -143,12 +145,21 @@ class AuthRepositoryImpl @Inject constructor(
 
     override fun deleteUser(): Flow<Response<Unit>> = callbackFlow {
         trySend(Response.Loading)
-        firebaseAuth.currentUser?.delete()?.addOnSuccessListener {
-            userManager.clearUserDataLocal()
-            trySend(Response.Success(Unit))
-        }?.addOnFailureListener {
+        firebaseAuth.currentUser?.delete()?.addOnFailureListener {
             trySend(Response.Error(it.localizedMessage ?: resourcesProvider.getString(R.string.error_unknown)))
         }
+
+        firestoreApi.deleteUserData(userManager.getCurrentLoggedUser()!!.id).collectLatest {
+            when (it) {
+                is Response.Error -> trySend(Response.Error(it.error))
+                Response.Loading -> trySend(Response.Loading)
+                is Response.Success -> {
+                    userManager.clearUserDataLocal()
+                    trySend(Response.Success(Unit))
+                }
+            }
+        }
+
         awaitClose { this.cancel() }
     }
 }
