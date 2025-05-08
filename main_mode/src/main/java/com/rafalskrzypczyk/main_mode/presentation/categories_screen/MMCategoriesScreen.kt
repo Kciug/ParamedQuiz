@@ -31,7 +31,7 @@ fun MMCategoriesScreen(
     onEvent: (MMCategoriesUIEvents) -> Unit,
     onNavigateBack: () -> Unit,
     onUserPanel: () -> Unit,
-    onStartCategory: (Long) -> Unit
+    onStartCategory: (Long, String) -> Unit
 ) {
     LaunchedEffect(Unit) {
         onEvent(MMCategoriesUIEvents.GetData)
@@ -75,7 +75,7 @@ fun MMCategoriesScreen(
 private fun MMCategoriesScreenContent(
     modifier: Modifier = Modifier,
     categories: List<CategoryUIM>,
-    onStartCategory: (Long) -> Unit,
+    onStartCategory: (Long, String) -> Unit,
     onUnlockCategory: (Long) -> Unit
 ) {
     LazyColumn(
@@ -97,7 +97,7 @@ private fun MMCategoriesScreenContent(
 @Composable
 private fun CategoryItem(
     category: CategoryUIM,
-    onStartCategory: (Long) -> Unit,
+    onStartCategory: (Long, String) -> Unit,
     onUnlockCategory: (Long) -> Unit,
 ) {
     Column(
@@ -110,7 +110,7 @@ private fun CategoryItem(
                 RoundedCornerShape(Dimens.RADIUS_DEFAULT)
             )
             .clip(shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT))
-            .clickable { onStartCategory(category.id) }
+            .clickable { onStartCategory(category.id, category.title) }
             .padding(Dimens.DEFAULT_PADDING)
     ) {
         Text(

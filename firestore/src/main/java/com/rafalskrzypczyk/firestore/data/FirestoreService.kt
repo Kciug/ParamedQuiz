@@ -1,6 +1,5 @@
 package com.rafalskrzypczyk.firestore.data
 
-import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.SetOptions
