@@ -30,7 +30,7 @@ fun ButtonPrimary(
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .clip(shape = RoundedCornerShape(Dimens.BUTTON_RADIUS)),
+            .clip(shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT)),
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = Color.White

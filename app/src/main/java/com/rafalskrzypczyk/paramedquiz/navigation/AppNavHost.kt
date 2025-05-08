@@ -53,7 +53,8 @@ fun AppNavHost(
             onNavigateToUserPanel = {
                 if (userLoggedInProvider()) navController.navigateToUserPage()
                 else navController.navigateToSignup()
-            }
+            },
+            onNavigateToMainMode = { navController.navigateToMainMode() }
         )
 
         userPageDestination(
@@ -64,6 +65,14 @@ fun AppNavHost(
         userSettingsDestination(
             onNavigateBack = { navController.popBackStack() },
             onSignOut = { navController.navigateToSignup() },
+        )
+
+        mainModeDestination(
+            onExit = { navController.popBackStack() },
+            onUserPanel = {
+                if (userLoggedInProvider()) navController.navigateToUserPage()
+                else navController.navigateToSignup()
+            }
         )
     }
 }

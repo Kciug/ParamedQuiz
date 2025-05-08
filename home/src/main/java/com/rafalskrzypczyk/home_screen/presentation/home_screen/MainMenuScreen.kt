@@ -24,21 +24,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.rafalskrzypczyk.core.R
+import com.rafalskrzypczyk.core.composables.UserProfileIconAction
 import com.rafalskrzypczyk.core.ui.TitleTopBar
 
 @Composable
 fun MainMenuScreen(
-    onNavigateToUserPanel: () -> Unit
+    onNavigateToUserPanel: () -> Unit,
+    onNavigateToMainMode: () -> Unit
 ) {
     Scaffold (
         topBar = {
-            TitleTopBar(
-                onNavigateToUserProfile = { onNavigateToUserPanel() },
-                userImageId = null
-            )
+            TitleTopBar(stringResource(R.string.app_name)) {
+                UserProfileIconAction(
+                    userImage = null,
+                    onNavigateToUserProfile = onNavigateToUserPanel
+                )
+            }
         }
     ) { innerPadding ->
         val modifier = Modifier.padding(innerPadding)
@@ -68,7 +74,7 @@ fun MainMenuScreen(
             ){
                 MainMenuButton(
                     buttonText = "Quiz",
-                    buttonAction = {  }
+                    buttonAction = { onNavigateToMainMode() }
                 )
                 MainMenuButton(
                     buttonText = "Wiedza w akcji",
@@ -118,7 +124,8 @@ fun MainMenuButton(buttonText: String, buttonAction: () -> Unit) {
 private fun MainMenuPreview() {
     Surface {
         MainMenuScreen(
-            onNavigateToUserPanel = {}
+            onNavigateToUserPanel = {},
+            onNavigateToMainMode = {}
         )
     }
 }

@@ -53,6 +53,7 @@ dependencies {
     implementation(project(":home"))
     implementation(project(":signup"))
     implementation(project(":auth"))
+    implementation(project(":main_mode"))
 
     coreKtx()
     implementation(Dependencies.COMPOSE_RUNTIME)

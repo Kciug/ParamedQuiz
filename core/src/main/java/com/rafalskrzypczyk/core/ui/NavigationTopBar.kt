@@ -18,7 +18,7 @@ import androidx.compose.ui.graphics.Color
 fun NavigationTopBar(
     title: String,
     onNavigateBack: () -> Unit,
-    actions: @Composable (RowScope.() -> Unit) = {}
+    actions: @Composable RowScope.() -> Unit = {}
 ) {
     TopAppBar(
         colors = TopAppBarDefaults.topAppBarColors(

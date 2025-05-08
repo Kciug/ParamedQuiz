@@ -27,6 +27,7 @@
             <option value="$PROJECT_DIR$/core" />
             <option value="$PROJECT_DIR$/firestore" />
             <option value="$PROJECT_DIR$/home" />
+            <option value="$PROJECT_DIR$/main_mode" />
             <option value="$PROJECT_DIR$/signup" />
           </set>
         </option>

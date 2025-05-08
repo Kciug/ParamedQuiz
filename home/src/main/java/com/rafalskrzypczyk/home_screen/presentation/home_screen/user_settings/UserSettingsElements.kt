@@ -52,7 +52,7 @@ fun UserSettingsItem(
         modifier = modifier
             .animateContentSize()
             .wrapContentHeight()
-            .clip(shape = RoundedCornerShape(Dimens.BUTTON_RADIUS))
+            .clip(shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT))
             .background(MaterialTheme.colorScheme.surfaceContainer)
             .clickable(
                 onClick = onClick,

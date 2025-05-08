@@ -10,6 +10,7 @@ import com.rafalskrzypczyk.home_screen.presentation.home_screen.user_page.UserPa
 import com.rafalskrzypczyk.home_screen.presentation.home_screen.user_page.UserPageVM
 import com.rafalskrzypczyk.home_screen.presentation.home_screen.user_settings.UserSettingsScreen
 import com.rafalskrzypczyk.home_screen.presentation.home_screen.user_settings.UserSettingsVM
+import com.rafalskrzypczyk.main_mode.navigation.MainModeNavHost
 import com.rafalskrzypczyk.signup.SignupNavHost
 import kotlinx.serialization.Serializable
 
@@ -38,11 +39,13 @@ fun NavController.navigateToSignup() {
 object MainMenu
 
 fun NavGraphBuilder.mainMenuDestination(
-    onNavigateToUserPanel: () -> Unit
+    onNavigateToUserPanel: () -> Unit,
+    onNavigateToMainMode: () -> Unit
 ) {
     composable<MainMenu> {
         MainMenuScreen(
-            onNavigateToUserPanel = { onNavigateToUserPanel() }
+            onNavigateToUserPanel = { onNavigateToUserPanel() },
+            onNavigateToMainMode = { onNavigateToMainMode() }
         )
     }
 }
@@ -97,4 +100,23 @@ fun NavGraphBuilder.userSettingsDestination(
 
 fun NavController.navigateToUserSettings() {
     navigate(route = UserSettings)
+}
+
+@Serializable
+object MainMode
+
+fun NavGraphBuilder.mainModeDestination(
+    onExit: () -> Unit,
+    onUserPanel: () -> Unit
+) {
+    composable<MainMode> {
+        MainModeNavHost(
+            onExit = onExit,
+            onUserPanel = onUserPanel
+        )
+    }
+}
+
+fun NavController.navigateToMainMode() {
+    navigate(route = MainMode)
 }

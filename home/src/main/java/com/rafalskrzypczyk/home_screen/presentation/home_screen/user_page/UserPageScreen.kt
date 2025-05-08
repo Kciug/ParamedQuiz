@@ -105,7 +105,7 @@ fun UserPageUserDetails(
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(shape = RoundedCornerShape(Dimens.BUTTON_RADIUS))
+                .clip(shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT))
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .padding(vertical = Dimens.SMALL_PADDING)
         )

@@ -1,9 +1,11 @@
 package com.rafalskrzypczyk.firestore.data
 
+import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.Source
+import com.rafalskrzypczyk.core.R
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.utils.ResourceProvider
 import com.rafalskrzypczyk.firestore.domain.FirestoreApi
@@ -11,15 +13,14 @@ import com.rafalskrzypczyk.firestore.domain.models.CategoryDTO
 import com.rafalskrzypczyk.firestore.domain.models.QuestionDTO
 import com.rafalskrzypczyk.firestore.domain.models.SwipeQuestionDTO
 import com.rafalskrzypczyk.firestore.domain.models.UserDataDTO
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.flow.catch
-import javax.inject.Inject
-import com.rafalskrzypczyk.core.R
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.tasks.await
+import javax.inject.Inject
 
 class FirestoreService @Inject constructor(
     private val firestore: FirebaseFirestore,

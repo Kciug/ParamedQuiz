@@ -103,7 +103,7 @@ private fun BaseTextField(
         trailingIcon = trailingIcon,
         modifier = modifier
             .fillMaxWidth()
-            .clip(shape = RoundedCornerShape(Dimens.BUTTON_RADIUS)),
+            .clip(shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT)),
         colors = TextFieldDefaults.colors(
             focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
             unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
