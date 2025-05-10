@@ -13,5 +13,5 @@ fun Category.toUIM() : CategoryUIM = CategoryUIM(
     id = id,
     title = title,
     subtitle = subtitle,
-    questionCount = questionCount
+    questionCount = questionsCount
 )

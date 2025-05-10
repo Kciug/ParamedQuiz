@@ -5,13 +5,15 @@
 
     <string name="ic_desc_answer_correctness">Poprawność odpowiedzi</string>
     <string name="ic_desc_category_finished">Ukończono kategorię</string>
+    <string name="desc_questions_number">Ilość pytań</string>
+    <string name="desc_category_locked">Kategoria nieodblokowana</string>
 
     <string name="btn_submit">Zatwierdź</string>
     <string name="btn_next_question">Następne pytanie</string>
     <string name="btn_back">Wróć</string>
 
     <string name="answer_correct">Poprawna odpowiedź!</string>
-    <string name="answer_incorrect">Niestety! Nie udało się...</string>
+    <string name="answer_incorrect">Niestety! Nie udało się…</string>
     <string name="question_correct_answers_single">Poprawna odpowiedź:</string>
     <string name="question_correct_answers_plural">Poprawne odpowiedzi:</string>
     <string name="category_finished_title">Hura! To było ostatnie pytanie!</string>

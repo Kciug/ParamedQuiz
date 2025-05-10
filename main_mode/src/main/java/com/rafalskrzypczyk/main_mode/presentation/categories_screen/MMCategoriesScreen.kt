@@ -4,11 +4,17 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Quiz
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -64,10 +70,6 @@ fun MMCategoriesScreen(
                 onUnlockCategory = { onEvent(MMCategoriesUIEvents.OnUnlockCategory(it)) }
             )
         }
-
-        if(state.unlockCategory){
-
-        }
     }
 }
 
@@ -120,6 +122,28 @@ private fun CategoryItem(
         )
         if (category.subtitle.isNullOrEmpty().not()) {
             Text(category.subtitle)
+        }
+        HorizontalDivider(modifier = Modifier.padding(vertical = Dimens.DEFAULT_PADDING))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row {
+                Icon(
+                    imageVector = Icons.Outlined.Quiz,
+                    contentDescription = stringResource(R.string.desc_questions_number),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = category.questionCount.toString(),
+                    modifier = Modifier.padding(start = Dimens.SMALL_PADDING)
+                )
+            }
+            Icon(
+                imageVector = Icons.Outlined.Lock,
+                contentDescription = stringResource(R.string.desc_category_locked),
+                tint = MaterialTheme.colorScheme.primary
+            )
         }
     }
 }

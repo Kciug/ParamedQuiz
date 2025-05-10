@@ -4,5 +4,5 @@ data class CategoryDTO(
     val id: Long = -1,
     val title: String = "",
     val subtitle: String? = null,
-    val questionCount: Int = 0,
+    val questionsCount: Int = 0,
 )
