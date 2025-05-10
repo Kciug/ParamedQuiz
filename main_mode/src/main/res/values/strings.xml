@@ -1,4 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="title_categories">Kategorie</string>
+
+    <string name="ic_desc_answer_correctness">Poprawność odpowiedzi</string>
+
+    <string name="btn_submit">Zatwierdź</string>
+    <string name="btn_next_question">Następne pytanie</string>
+
+    <string name="answer_correct">Poprawna odpowiedź!</string>
+    <string name="answer_incorrect">Niestety! Nie udało się...</string>
+    <string name="question_correct_answers_single">Poprawna odpowiedź:</string>
+    <string name="question_correct_answers_plural">Poprawne odpowiedzi:</string>
 </resources>
