@@ -8,8 +8,12 @@
     <string name="desc_user_avatar">Awatar użytkownika</string>
     <string name="desc_settings">Ustawienia</string>
     <string name="desc_success">Sukces</string>
+    <string name="desc_error">Błąd</string>
+    <string name="desc_warning">Ostrzeżenie</string>
+    <string name="desc_info">Informacja</string>
+    <string name="desc_confirmation">Wymagane potwierdzenie</string>
 
-    <string name="title_error_dialog">Błąd</string>
+    <string name="title_error_dialog">Wystąpił błąd</string>
 
     <string name="placeholder_short">Placeholder</string>
     <string name="placeholder_long">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</string>
@@ -29,4 +33,8 @@
     <string name="fb_error_aborted">Operacja została przerwana.</string>
     <string name="fb_error_not_found">Nie znaleziono danych.</string>
     <string name="fb_error_deadline_exceeded">Przekroczono czas oczekiwania.</string>
+
+    <string name="btn_confirm_OK">OK</string>
+    <string name="btn_confirm_positive">Tak</string>
+    <string name="btn_confirm_negative">Nie</string>
 </resources>

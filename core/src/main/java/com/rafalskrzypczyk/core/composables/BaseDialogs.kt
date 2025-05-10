@@ -3,7 +3,8 @@ package com.rafalskrzypczyk.core.composables
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
+import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
@@ -17,6 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.rafalskrzypczyk.core.R
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 
+
 @Composable
 fun ErrorDialog(
     errorMessage: String,
@@ -24,7 +26,7 @@ fun ErrorDialog(
 ) {
     AlertDialog(
         icon = {
-            Icon(Icons.Outlined.Info, contentDescription = "Alert")
+            Icon(Icons.Outlined.ErrorOutline, contentDescription = stringResource(R.string.desc_error))
         },
         title = {
             Text(text = stringResource(id = R.string.title_error_dialog))
@@ -39,7 +41,44 @@ fun ErrorDialog(
         onDismissRequest = onInteraction,
         confirmButton = {
             TextButton(onClick = onInteraction) {
-                Text(text = "OK")
+                Text(text = stringResource(R.string.btn_confirm_OK))
+            }
+        }
+    )
+}
+
+@Composable
+fun ConfirmationDialog(
+    title: String,
+    message: String? = null,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        icon = {
+            Icon(Icons.AutoMirrored.Default.HelpOutline, contentDescription = stringResource(R.string.desc_confirmation))
+        },
+        title = {
+            Text(text = title)
+        },
+        text = {
+            message?.let {
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = message,
+                    textAlign = TextAlign.Center
+                )
+            }
+        },
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(text = stringResource(R.string.btn_confirm_positive))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = stringResource(R.string.btn_confirm_negative))
             }
         }
     )
@@ -51,7 +90,23 @@ fun ErrorDialog(
 private fun ErrorDialogPreview() {
     ParamedQuizTheme {
         Surface {
-            ErrorDialog("Placeholder") { }
+            ErrorDialog("Przykładowy błąd") { }
+        }
+    }
+}
+
+@Composable
+@Preview
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+private fun ConfirmationDialogPreview() {
+    ParamedQuizTheme {
+        Surface {
+            ConfirmationDialog(
+                title = "Czy napewno?",
+                message = "Należy się okreslić.",
+                onConfirm = { },
+                onDismiss = { }
+            )
         }
     }
 }

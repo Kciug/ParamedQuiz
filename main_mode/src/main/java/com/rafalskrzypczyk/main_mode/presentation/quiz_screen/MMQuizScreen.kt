@@ -1,6 +1,7 @@
 package com.rafalskrzypczyk.main_mode.presentation.quiz_screen
 
 import android.content.res.Configuration
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -17,11 +18,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.SportsScore
 import androidx.compose.material.icons.outlined.Cancel
 import androidx.compose.material.icons.outlined.CheckCircleOutline
 import androidx.compose.material3.Icon
@@ -37,12 +40,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.ButtonPrimary
+import com.rafalskrzypczyk.core.composables.ButtonSecondary
+import com.rafalskrzypczyk.core.composables.ConfirmationDialog
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.ErrorDialog
 import com.rafalskrzypczyk.core.composables.Loading
@@ -57,6 +63,10 @@ fun MMQuizScreen(
     onEvent: (MMQuizUIEvents) -> Unit,
     onNavigateBack: () -> Unit,
 ) {
+    BackHandler {
+        onEvent.invoke(MMQuizUIEvents.OnBackPressed)
+    }
+
     Scaffold (
         topBar = {
             NavigationTopBar(
@@ -118,6 +128,18 @@ fun MMQuizScreen(
                     }
                 }
             }
+        }
+
+        if(state.isQuizFinished) {
+            QuizFinishScreen(onNavigateBack = onNavigateBack)
+        }
+
+        if(state.showExitConfirmation) {
+            ConfirmationDialog(
+                title = stringResource(R.string.title_confirmation_exit_quiz),
+                onConfirm = { onNavigateBack() },
+                onDismiss = { onEvent.invoke(MMQuizUIEvents.OnBackDiscarded) }
+            )
         }
     }
 }
@@ -240,6 +262,40 @@ private fun SubmitSection(
         ButtonPrimary(
             title = stringResource(R.string.btn_next_question),
             onClick = onNextQuestion
+        )
+    }
+}
+
+@Composable
+private fun QuizFinishScreen(
+    onNavigateBack: () -> Unit
+) {
+    Column (
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(Dimens.DEFAULT_PADDING),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ){
+        Icon(
+            imageVector = Icons.Default.SportsScore,
+            contentDescription = stringResource(R.string.ic_desc_category_finished),
+            tint = Color.Green,
+            modifier = Modifier.size(Dimens.SIZE_MEDIUM)
+        )
+        Text(
+            text = stringResource(R.string.category_finished_title),
+            textAlign = TextAlign.Center,
+            fontWeight = FontWeight.Bold,
+        )
+        Text(
+            text = stringResource(R.string.category_finished_message),
+            textAlign = TextAlign.Center,
+        )
+        ButtonSecondary(
+            title = stringResource(R.string.btn_back),
+            onClick = onNavigateBack
         )
     }
 }

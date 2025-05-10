@@ -1,14 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="title_categories">Kategorie</string>
+    <string name="title_confirmation_exit_quiz">Wyjść z quizu?</string>
 
     <string name="ic_desc_answer_correctness">Poprawność odpowiedzi</string>
+    <string name="ic_desc_category_finished">Ukończono kategorię</string>
 
     <string name="btn_submit">Zatwierdź</string>
     <string name="btn_next_question">Następne pytanie</string>
+    <string name="btn_back">Wróć</string>
 
     <string name="answer_correct">Poprawna odpowiedź!</string>
     <string name="answer_incorrect">Niestety! Nie udało się...</string>
     <string name="question_correct_answers_single">Poprawna odpowiedź:</string>
     <string name="question_correct_answers_plural">Poprawne odpowiedzi:</string>
+    <string name="category_finished_title">Hura! To było ostatnie pytanie!</string>
+    <string name="category_finished_message">Udało Ci się ukończyć pytania dla tej kategorii. Wróć do ekranu wyboru kategorii aby wybrać kolejną!</string>
 </resources>

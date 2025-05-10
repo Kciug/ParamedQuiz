@@ -19,4 +19,5 @@ object Dimens {
     val IMAGE_SIZE_SMALL = 48.dp
 
     val SIZE_SMALL = 24.dp
+    val SIZE_MEDIUM = 50.dp
 }
