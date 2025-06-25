@@ -5,4 +5,5 @@ import javax.inject.Inject
 
 data class MMCategoriesUseCases @Inject constructor(
     val getAllCategories: GetAllCategoriesUC,
+    val getUpdatedCategories: GetUpdatedCategoriesUC
 )

@@ -34,9 +34,24 @@ class MMCategoriesVM @Inject constructor(
                 when(response) {
                     is Response.Error -> _state.update { it.copy(responseState = ResponseState.Error(response.error)) }
                     Response.Loading -> _state.update { it.copy(responseState = ResponseState.Loading) }
-                    is Response.Success -> _state.update {
-                        it.copy(responseState = ResponseState.Success, categories = response.data.map { it.toUIM() })
+                    is Response.Success -> {
+                        attachCategoriesListener()
+                        _state.update {
+                            it.copy(
+                                responseState = ResponseState.Success,
+                                categories = response.data.map { it.toUIM() })
+                        }
                     }
+                }
+            }
+        }
+    }
+
+    private fun attachCategoriesListener() {
+        viewModelScope.launch {
+            useCases.getUpdatedCategories().collectLatest { data ->
+                _state.update {
+                    it.copy(categories = data.map { it.toUIM() } )
                 }
             }
         }

@@ -13,5 +13,5 @@ fun CategoryDTO.toDomain() : Category = Category(
     id = id,
     title = title,
     subtitle = subtitle,
-    questionsCount = questionsCount
+    questionsCount = questionCount
 )

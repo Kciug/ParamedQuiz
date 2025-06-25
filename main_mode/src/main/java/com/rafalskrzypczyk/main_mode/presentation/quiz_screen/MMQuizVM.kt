@@ -36,6 +36,7 @@ class MMQuizVM @Inject constructor(
                 when (response) {
                     is Response.Success -> {
                         questions = response.data
+                        attachQuestionsListener()
                         initializeView()
                     }
                     is Response.Error -> { _state.update { it.copy(responseState = ResponseState.Error(response.error)) }}
@@ -52,6 +53,24 @@ class MMQuizVM @Inject constructor(
             is MMQuizUIEvents.OnAnswerClicked -> onAnswerClicked(event.answerId)
             MMQuizUIEvents.OnSubmitAnswer -> submitAnswer()
             MMQuizUIEvents.OnNextQuestion -> displayNextQuestion()
+        }
+    }
+
+    private fun attachQuestionsListener() {
+        viewModelScope.launch {
+            val updatedQuestions = mutableListOf<Question>()
+            useCases.getUpdatedQuestions().collectLatest { data ->
+                questions.forEach { question ->
+                    val updatedQuestion = data.firstOrNull { it.id == question.id }
+                    if(updatedQuestion != null) {
+                        updatedQuestions.add(updatedQuestion)
+                    } else {
+                        updatedQuestions.add(question)
+                    }
+                }
+                questions = updatedQuestions
+                displayQuestion()
+            }
         }
     }
 
