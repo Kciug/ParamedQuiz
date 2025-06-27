@@ -12,6 +12,8 @@ import com.rafalskrzypczyk.home_screen.presentation.home_screen.user_settings.Us
 import com.rafalskrzypczyk.home_screen.presentation.home_screen.user_settings.UserSettingsVM
 import com.rafalskrzypczyk.main_mode.navigation.MainModeNavHost
 import com.rafalskrzypczyk.signup.SignupNavHost
+import com.rafalskrzypczyk.swipe_mode.presentation.SwipeModeScreen
+import com.rafalskrzypczyk.swipe_mode.presentation.SwipeModeVM
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -40,12 +42,14 @@ object MainMenu
 
 fun NavGraphBuilder.mainMenuDestination(
     onNavigateToUserPanel: () -> Unit,
-    onNavigateToMainMode: () -> Unit
+    onNavigateToMainMode: () -> Unit,
+    onNavigateToSwipeMode: () -> Unit
 ) {
     composable<MainMenu> {
         MainMenuScreen(
             onNavigateToUserPanel = { onNavigateToUserPanel() },
-            onNavigateToMainMode = { onNavigateToMainMode() }
+            onNavigateToMainMode = { onNavigateToMainMode() },
+            onNavigateToSwipeMode = { onNavigateToSwipeMode() }
         )
     }
 }
@@ -119,4 +123,26 @@ fun NavGraphBuilder.mainModeDestination(
 
 fun NavController.navigateToMainMode() {
     navigate(route = MainMode)
+}
+
+@Serializable
+object SwipeMode
+
+fun NavGraphBuilder.swipeModeDestination(
+    onNavigateBack: () -> Unit
+) {
+    composable<SwipeMode> {
+        val viewModel = hiltViewModel<SwipeModeVM>()
+        val state = viewModel.state.collectAsStateWithLifecycle()
+
+        SwipeModeScreen(
+            state = state.value,
+            onEvent = viewModel::onEvent,
+            onNavigateBack = onNavigateBack
+        )
+    }
+}
+
+fun NavController.navigateToSwipeMode() {
+    navigate(route = SwipeMode)
 }

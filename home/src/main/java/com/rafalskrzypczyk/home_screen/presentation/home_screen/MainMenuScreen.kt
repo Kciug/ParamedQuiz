@@ -35,7 +35,8 @@ import com.rafalskrzypczyk.core.ui.TitleTopBar
 @Composable
 fun MainMenuScreen(
     onNavigateToUserPanel: () -> Unit,
-    onNavigateToMainMode: () -> Unit
+    onNavigateToMainMode: () -> Unit,
+    onNavigateToSwipeMode: () -> Unit
 ) {
     Scaffold (
         topBar = {
@@ -78,7 +79,7 @@ fun MainMenuScreen(
                 )
                 MainMenuButton(
                     buttonText = "Wiedza w akcji",
-                    buttonAction = {  }
+                    buttonAction = { onNavigateToSwipeMode() }
                 )
                 MainMenuButton(
                     buttonText = "Obliczenia",
@@ -125,7 +126,8 @@ private fun MainMenuPreview() {
     Surface {
         MainMenuScreen(
             onNavigateToUserPanel = {},
-            onNavigateToMainMode = {}
+            onNavigateToMainMode = {},
+            onNavigateToSwipeMode = {}
         )
     }
 }

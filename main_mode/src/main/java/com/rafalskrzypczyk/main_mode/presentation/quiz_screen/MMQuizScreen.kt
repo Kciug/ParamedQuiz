@@ -136,7 +136,7 @@ fun MMQuizScreen(
 
         if(state.showExitConfirmation) {
             ConfirmationDialog(
-                title = stringResource(R.string.title_confirmation_exit_quiz),
+                title = stringResource(com.rafalskrzypczyk.core.R.string.dialog_title_confirm_exit_quiz),
                 onConfirm = { onNavigateBack() },
                 onDismiss = { onEvent.invoke(MMQuizUIEvents.OnBackDiscarded) }
             )

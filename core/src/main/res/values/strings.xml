@@ -37,4 +37,9 @@
     <string name="btn_confirm_OK">OK</string>
     <string name="btn_confirm_positive">Tak</string>
     <string name="btn_confirm_negative">Nie</string>
+
+    <string name="title_main_mode">MediQuiz</string>
+    <string name="title_swipe_mode">Wiedza w Akcji</string>
+
+    <string name="dialog_title_confirm_exit_quiz">Wyjść z quizu?</string>
 </resources>

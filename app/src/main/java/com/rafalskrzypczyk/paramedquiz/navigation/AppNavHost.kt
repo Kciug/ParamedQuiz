@@ -54,7 +54,8 @@ fun AppNavHost(
                 if (userLoggedInProvider()) navController.navigateToUserPage()
                 else navController.navigateToSignup()
             },
-            onNavigateToMainMode = { navController.navigateToMainMode() }
+            onNavigateToMainMode = { navController.navigateToMainMode() },
+            onNavigateToSwipeMode = { navController.navigateToSwipeMode() }
         )
 
         userPageDestination(
@@ -73,6 +74,9 @@ fun AppNavHost(
                 if (userLoggedInProvider()) navController.navigateToUserPage()
                 else navController.navigateToSignup()
             }
+        )
+        swipeModeDestination(
+            onNavigateBack = { navController.popBackStack() }
         )
     }
 }
