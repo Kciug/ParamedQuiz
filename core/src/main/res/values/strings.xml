@@ -42,4 +42,7 @@
     <string name="title_swipe_mode">Wiedza w Akcji</string>
 
     <string name="dialog_title_confirm_exit_quiz">Wyjść z quizu?</string>
+
+    <string name="finish_title">Ukończyłeś quiz!</string>
+    <string name="btn_back">Wróć</string>
 </resources>

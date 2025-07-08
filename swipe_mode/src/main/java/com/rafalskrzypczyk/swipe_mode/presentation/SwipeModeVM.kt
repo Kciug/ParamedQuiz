@@ -60,11 +60,12 @@ class SwipeModeVM @Inject constructor(
             return
         }
 
-        val remainingQuestions = questions.subList(0, questions.size - currentQuestionIndex - 1)
+        val remainingQuestions = questions.subList(0, questions.size - currentQuestionIndex)
         _state.update {
             it.copy(
                 currentQuestionNumber = currentQuestionIndex + 1,
                 questionsPair = remainingQuestions.takeLast(2).map { it.toPresentation() },
+                answerResult = SwipeQuizResult.NONE
             )
         }
     }
@@ -77,17 +78,25 @@ class SwipeModeVM @Inject constructor(
     private fun submitAnswer(questionId: Long, isCorrect: Boolean) {
         val answeredQuestion = questions.first { questionId == it.id }
         if(answeredQuestion.isCorrect == isCorrect) {
-            _state.update { it.copy(answerResult = SwipeQuizResult.CORRECT) }
-            updateStreak()
+            _state.update { it.copy(
+                answerResult = SwipeQuizResult.CORRECT,
+                correctAnswers = it.correctAnswers + 1
+            ) }
+            updateStreak(true)
         } else {
             _state.update { it.copy(answerResult = SwipeQuizResult.INCORRECT) }
+            updateStreak(false)
         }
         displayNextQuestion()
     }
 
-    private fun updateStreak() {
-        currentStreak++
-        bestStreak = maxOf(currentStreak, bestStreak)
+    private fun updateStreak(isAnswerCorrect: Boolean) {
+        if(isAnswerCorrect) {
+            currentStreak++
+            bestStreak = maxOf(currentStreak, bestStreak)
+        } else {
+            currentStreak = 0
+        }
         _state.update { it.copy(currentStreak = currentStreak, bestStreak = bestStreak) }
     }
 }

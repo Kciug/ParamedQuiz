@@ -2,4 +2,8 @@
 <resources>
     <string name="swipe_button_true">Prawda</string>
     <string name="swipe_button_false">Fałsz</string>
+    <string name="label_stats_correct_answers">Poprawne</string>
+    <string name="label_stats_streak">Seria</string>
+    <string name="label_stats_best_streak">Rekord</string>
+    <string name="ic_desc_result">Wynik</string>
 </resources>
