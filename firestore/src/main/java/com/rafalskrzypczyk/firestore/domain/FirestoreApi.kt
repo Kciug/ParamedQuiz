@@ -3,6 +3,7 @@ package com.rafalskrzypczyk.firestore.domain
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.firestore.domain.models.CategoryDTO
 import com.rafalskrzypczyk.firestore.domain.models.QuestionDTO
+import com.rafalskrzypczyk.firestore.domain.models.ScoreDTO
 import com.rafalskrzypczyk.firestore.domain.models.SwipeQuestionDTO
 import com.rafalskrzypczyk.firestore.domain.models.UserDataDTO
 import kotlinx.coroutines.flow.Flow
@@ -19,4 +20,7 @@ interface FirestoreApi {
 
     fun getSwipeQuestions() : Flow<Response<List<SwipeQuestionDTO>>>
     fun getUpdatedSwipeQuestions() : Flow<List<SwipeQuestionDTO>>
+
+    fun getUserScore(userId: String) : Flow<Response<ScoreDTO>>
+    fun updateUserScore(userId: String, score: ScoreDTO) : Flow<Response<Unit>>
 }

@@ -28,6 +28,7 @@
             <option value="$PROJECT_DIR$/firestore" />
             <option value="$PROJECT_DIR$/home" />
             <option value="$PROJECT_DIR$/main_mode" />
+            <option value="$PROJECT_DIR$/score" />
             <option value="$PROJECT_DIR$/signup" />
             <option value="$PROJECT_DIR$/swipe_mode" />
           </set>

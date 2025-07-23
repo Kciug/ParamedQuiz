@@ -7,7 +7,7 @@ plugins {
 apply<SharedGradleProjectConfig>()
 
 android {
-    namespace = "com.rafalskrzypczyk.main_mode"
+    namespace = "com.rafalskrzypczyk.score"
     kotlinOptions {
         jvmTarget = "11"
     }
@@ -16,12 +16,8 @@ android {
 dependencies {
     implementation(project(":core"))
     implementation(project(":firestore"))
-    implementation(project(":auth"))
-    implementation(project(":score"))
 
     coreKtx()
-    implementation(Dependencies.COMPOSE_RUNTIME)
-    ui()
     daggerHilt()
     tests()
     kotlinxSerialization()

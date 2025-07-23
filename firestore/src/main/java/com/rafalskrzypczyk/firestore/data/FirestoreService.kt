@@ -10,6 +10,7 @@ import com.rafalskrzypczyk.core.utils.ResourceProvider
 import com.rafalskrzypczyk.firestore.domain.FirestoreApi
 import com.rafalskrzypczyk.firestore.domain.models.CategoryDTO
 import com.rafalskrzypczyk.firestore.domain.models.QuestionDTO
+import com.rafalskrzypczyk.firestore.domain.models.ScoreDTO
 import com.rafalskrzypczyk.firestore.domain.models.SwipeQuestionDTO
 import com.rafalskrzypczyk.firestore.domain.models.UserDataDTO
 import kotlinx.coroutines.channels.awaitClose
@@ -73,6 +74,23 @@ class FirestoreService @Inject constructor(
     override fun getUpdatedSwipeQuestions(): Flow<List<SwipeQuestionDTO>> = attachFirestoreListener(FirestoreCollections.SWIPE_QUESTIONS)
         .map { it.toObjects(SwipeQuestionDTO::class.java) }
 
+    override fun getUserScore(userId: String): Flow<Response<ScoreDTO>> = flow {
+        emit(Response.Loading)
+        val result = firestore.collection(FirestoreCollections.USER_SCORE)
+            .document(userId)
+            .get()
+            .await()
+            .toObject(ScoreDTO::class.java)
+        emit(result?.let { Response.Success(it) } ?: Response.Error(resourceProvider.getString(R.string.error_no_data)))
+    }.catch { emit(Response.Error(it.localizedMessage ?: resourceProvider.getString(R.string.error_unknown))) }
+
+    override fun updateUserScore(
+        userId: String,
+        score: ScoreDTO,
+    ): Flow<Response<Unit>> = flow {
+        emit(Response.Loading)
+        emit(modifyFirestoreDocument(userId, score, FirestoreCollections.USER_DATA_COLLECTION))
+    }
 
     private suspend fun getFirestoreData(collection: String): QuerySnapshot? {
         return firestore.collection(collection)

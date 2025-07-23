@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package com.rafalskrzypczyk.main_mode.di
 
 import com.rafalskrzypczyk.main_mode.data.MainModeRepositoryImpl
