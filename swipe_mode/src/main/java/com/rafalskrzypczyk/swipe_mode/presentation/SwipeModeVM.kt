@@ -77,7 +77,10 @@ class SwipeModeVM @Inject constructor(
 
     private fun submitAnswer(questionId: Long, isCorrect: Boolean) {
         val answeredQuestion = questions.first { questionId == it.id }
-        if(answeredQuestion.isCorrect == isCorrect) {
+
+        val answeredCorrectly = answeredQuestion.isCorrect == isCorrect
+
+        if(answeredCorrectly) {
             _state.update { it.copy(
                 answerResult = SwipeQuizResult.CORRECT,
                 correctAnswers = it.correctAnswers + 1
@@ -88,6 +91,7 @@ class SwipeModeVM @Inject constructor(
             updateStreak(false)
         }
         displayNextQuestion()
+        useCases.updateScore(questionId, answeredCorrectly)
     }
 
     private fun updateStreak(isAnswerCorrect: Boolean) {
