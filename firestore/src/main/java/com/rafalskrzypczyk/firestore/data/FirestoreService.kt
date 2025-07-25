@@ -89,7 +89,7 @@ class FirestoreService @Inject constructor(
         score: ScoreDTO,
     ): Flow<Response<Unit>> = flow {
         emit(Response.Loading)
-        emit(modifyFirestoreDocument(userId, score, FirestoreCollections.USER_DATA_COLLECTION))
+        emit(modifyFirestoreDocument(userId, score, FirestoreCollections.USER_SCORE))
     }
 
     private suspend fun getFirestoreData(collection: String): QuerySnapshot? {

@@ -135,6 +135,7 @@ class MMQuizVM @Inject constructor(
                 correctAnswers = questions[currentQuestionIndex].answers.filter { it.isCorrect }.map { it.answerText }
             )
         }
+        useCases.updateScore(questions[currentQuestionIndex].id, isAnswerCorrect)
     }
 
     private fun evaluateAnswers() : Boolean {

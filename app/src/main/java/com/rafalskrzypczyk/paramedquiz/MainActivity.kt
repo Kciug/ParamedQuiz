@@ -9,6 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import com.rafalskrzypczyk.auth.domain.AuthRepository
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.paramedquiz.navigation.AppNavHost
+import com.rafalskrzypczyk.score.ScoreManager
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -18,6 +19,9 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var authRepository: AuthRepository
 
+    @Inject
+    lateinit var scoreManager: ScoreManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -26,6 +30,11 @@ class MainActivity : ComponentActivity() {
                 Navigation()
             }
         }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        scoreManager.forceSync()
     }
 
     @Composable

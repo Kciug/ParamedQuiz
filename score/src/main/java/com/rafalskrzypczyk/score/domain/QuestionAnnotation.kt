@@ -6,7 +6,16 @@ data class QuestionAnnotation(
     val questionId: Long,
     val timesSeen: Long,
     val timesCorrect: Long,
-)
+) {
+    companion object {
+        fun new(questionId: Long, answeredCorrectly: Boolean): QuestionAnnotation =
+            QuestionAnnotation(
+                questionId = questionId,
+                timesSeen = 1,
+                timesCorrect = if (answeredCorrectly) 1 else 0
+            )
+    }
+}
 
 fun QuestionAnnotationDTO.toDomain() = QuestionAnnotation(
     questionId = questionId,

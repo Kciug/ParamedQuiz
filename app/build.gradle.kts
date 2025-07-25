@@ -55,6 +55,7 @@ dependencies {
     implementation(project(":auth"))
     implementation(project(":main_mode"))
     implementation(project(":swipe_mode"))
+    implementation(project(":score"))
 
     coreKtx()
     implementation(Dependencies.COMPOSE_RUNTIME)
