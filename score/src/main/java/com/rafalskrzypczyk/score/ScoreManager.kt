@@ -84,6 +84,7 @@ class ScoreManager @Inject constructor(
     }
 
     fun onUserLogOut() {
+        forceSync()
         clearScore()
     }
 }

@@ -11,6 +11,7 @@ import com.rafalskrzypczyk.core.user_management.UserData
 import com.rafalskrzypczyk.core.user_management.UserManager
 import com.rafalskrzypczyk.core.utils.FirebaseError
 import com.rafalskrzypczyk.firestore.domain.FirestoreApi
+import com.rafalskrzypczyk.score.ScoreManager
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -25,6 +26,7 @@ class AuthRepositoryImpl @Inject constructor(
     private val firestoreApi: FirestoreApi,
     private val userManager: UserManager,
     private val firebaseError: FirebaseError,
+    private val scoreManager: ScoreManager
 ) : AuthRepository {
     override fun isUserLoggedIn(): Boolean = firebaseAuth.currentUser != null
 
@@ -43,6 +45,7 @@ class AuthRepositoryImpl @Inject constructor(
                     is Response.Success -> {
                         val userData = it.data.toDomain(result.user!!.email ?: "")
                         userManager.saveUserDataInLocal(userData)
+                        scoreManager.onUserLogIn()
                         send(Response.Success(userData))
                     }
                 }
@@ -87,6 +90,7 @@ class AuthRepositoryImpl @Inject constructor(
     override fun signOut() {
         firebaseAuth.signOut()
         userManager.clearUserDataLocal()
+        scoreManager.onUserLogOut()
     }
 
     override fun sendPasswordResetToEmail(email: String): Flow<Response<Unit>> = callbackFlow {
