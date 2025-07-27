@@ -23,4 +23,5 @@ interface FirestoreApi {
 
     fun getUserScore(userId: String) : Flow<Response<ScoreDTO>>
     fun updateUserScore(userId: String, score: ScoreDTO) : Flow<Response<Unit>>
+    fun deleteUserScore(userId: String) : Flow<Response<Unit>>
 }

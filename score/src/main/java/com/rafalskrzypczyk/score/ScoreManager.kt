@@ -1,9 +1,10 @@
 package com.rafalskrzypczyk.score
 
+import android.util.Log
 import com.rafalskrzypczyk.core.api_response.Response
-import com.rafalskrzypczyk.core.user_management.UserManager
 import com.rafalskrzypczyk.score.domain.Score
 import com.rafalskrzypczyk.score.domain.ScoreRepository
+import com.rafalskrzypczyk.score.domain.isEmpty
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -13,7 +14,6 @@ import javax.inject.Inject
 
 class ScoreManager @Inject constructor(
     private val repository: ScoreRepository,
-    private val userManager: UserManager,
     private val ioScope: CoroutineScope
 ) {
     private var score: Score = Score(0, emptyList())
@@ -24,28 +24,23 @@ class ScoreManager @Inject constructor(
     private var isDirty = false
 
     init {
-        if(userManager.getCurrentLoggedUser() != null) {
-            fetchUserScore()
-        } else {
-            clearScore()
-        }
+        fetchUserScore()
     }
 
     private fun fetchUserScore() {
         ioScope.launch {
-            userManager.getCurrentLoggedUser()?.let {
-                repository.getUserScore(it.id).collectLatest {
-                    if (it is Response.Success) {
-                        score = it.data
-                    }
+            repository.getUserScore().collectLatest {
+                if(it is Response.Success) {
+                    score = it.data
+                    isDirty = false
                 }
             }
         }
     }
 
     private suspend fun syncScore() {
-        userManager.getCurrentLoggedUser()?.let {
-            repository.saveUserScore(it.id, score).collectLatest { }
+        repository.saveUserScore(score).collectLatest {
+            //TODO handle response
         }
         isDirty = false
     }
@@ -59,7 +54,7 @@ class ScoreManager @Inject constructor(
     }
 
     private fun clearScore() {
-        score = Score(0, emptyList())
+        score = Score.empty()
     }
 
     fun getScore() : Score = score
@@ -79,6 +74,14 @@ class ScoreManager @Inject constructor(
         }
     }
 
+    fun onUserRegister() {
+        if(!score.isEmpty()) {
+            Log.d("KURWA", "SCORE IS NOT EMPTY")
+            forceSync()
+            repository.clearLocalScoreData()
+        }
+    }
+
     fun onUserLogIn() {
         fetchUserScore()
     }
@@ -86,5 +89,9 @@ class ScoreManager @Inject constructor(
     fun onUserLogOut() {
         forceSync()
         clearScore()
+    }
+
+    fun onUserDelete() {
+        repository.deleteUserScore()
     }
 }

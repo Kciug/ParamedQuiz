@@ -1,8 +1,9 @@
 package com.rafalskrzypczyk.score.di
 
-import com.rafalskrzypczyk.core.user_management.UserManager
 import com.rafalskrzypczyk.score.ScoreManager
 import com.rafalskrzypczyk.score.ScoreRepositoryImpl
+import com.rafalskrzypczyk.score.ScoreStorage
+import com.rafalskrzypczyk.score.ScoreStorageSharedPrefs
 import com.rafalskrzypczyk.score.domain.ScoreRepository
 import dagger.Binds
 import dagger.Module
@@ -20,6 +21,12 @@ abstract class ScoreModule {
     abstract fun bindScoreRepository(
         mainModeRepositoryImpl: ScoreRepositoryImpl
     ): ScoreRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindScoreStorage(
+        scoreStorageSharedPrefs: ScoreStorageSharedPrefs
+    ): ScoreStorage
 }
 
 @Module
@@ -29,7 +36,6 @@ class ScoreModuleProvider {
     @Singleton
     fun provideScoreManager(
         repository: ScoreRepository,
-        userManager: UserManager,
         ioScope: CoroutineScope
-    ): ScoreManager = ScoreManager(repository, userManager, ioScope)
+    ): ScoreManager = ScoreManager(repository, ioScope)
 }

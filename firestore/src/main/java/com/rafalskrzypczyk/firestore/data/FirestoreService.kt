@@ -92,6 +92,11 @@ class FirestoreService @Inject constructor(
         emit(modifyFirestoreDocument(userId, score, FirestoreCollections.USER_SCORE))
     }
 
+    override fun deleteUserScore(userId: String): Flow<Response<Unit>> = flow {
+        emit(Response.Loading)
+        emit(deleteFirestoreDocument(userId, FirestoreCollections.USER_SCORE))
+    }
+
     private suspend fun getFirestoreData(collection: String): QuerySnapshot? {
         return firestore.collection(collection)
             .get(Source.CACHE)

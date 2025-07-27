@@ -14,19 +14,21 @@ class SharedPreferencesService @Inject constructor(
         const val DEFAULT_STRING_VALUE = ""
     }
 
-    override fun setCurrentUser(userData: UserData?) {
+    override fun setCurrentUser(userData: UserData) {
         sharedPreferences.edit()
             .putString(KEY_CURRENT_USER, Json.encodeToString(userData))
             .apply()
     }
 
     override fun getCurrentUser(): UserData? {
-        val json = sharedPreferences.getString(KEY_CURRENT_USER, DEFAULT_STRING_VALUE)
+        val json = sharedPreferences.getString(KEY_CURRENT_USER, null)
         if (json.isNullOrEmpty()) return null
         return Json.decodeFromString<UserData>(json)
     }
 
     override fun clearUserData() {
-        setCurrentUser(null)
+        sharedPreferences.edit()
+            .remove(KEY_CURRENT_USER)
+            .apply()
     }
 }

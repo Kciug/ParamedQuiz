@@ -78,6 +78,7 @@ class AuthRepositoryImpl @Inject constructor(
                     is Response.Error -> send(it)
                     is Response.Success -> {
                         userManager.saveUserDataInLocal(newUser)
+                        scoreManager.onUserRegister()
                         send(Response.Success(newUser))
                     }
                 }
@@ -159,6 +160,7 @@ class AuthRepositoryImpl @Inject constructor(
                 Response.Loading -> trySend(Response.Loading)
                 is Response.Success -> {
                     userManager.clearUserDataLocal()
+                    scoreManager.onUserDelete()
                     trySend(Response.Success(Unit))
                 }
             }
