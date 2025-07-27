@@ -5,6 +5,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -12,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CurrencyBitcoin
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -34,6 +37,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.rafalskrzypczyk.core.R
 import com.rafalskrzypczyk.core.composables.Dimens
+import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.ui.NavigationTopBar
 
 
@@ -72,7 +76,7 @@ fun UserPageScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            UserPageUserDetails(state.userName)
+            UserPageUserDetails(state.userName, state.score)
         }
     }
 }
@@ -80,6 +84,7 @@ fun UserPageScreen(
 @Composable
 fun UserPageUserDetails(
     userName: String,
+    score: String
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -109,6 +114,18 @@ fun UserPageUserDetails(
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .padding(vertical = Dimens.SMALL_PADDING)
         )
+
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Text("STRIKE")
+            Spacer(Modifier.weight(1f))
+            Row {
+                Icon(
+                    imageVector = Icons.Default.CurrencyBitcoin,
+                    contentDescription = stringResource(com.rafalskrzypczyk.home.R.string.desc_points)
+                )
+                TextPrimary(score)
+            }
+        }
     }
 }
 
@@ -119,7 +136,8 @@ private fun UserPagePreview() {
     Surface {
         UserPageScreen(
             state = UserPageState(
-                userName = stringResource(R.string.placeholder_short)
+                userName = stringResource(R.string.placeholder_short),
+                score = "1234"
             ),
             onNavigateBack = {},
             onUserSettings = {},

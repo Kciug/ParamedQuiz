@@ -16,6 +16,7 @@ android {
 dependencies {
     implementation(project(":core"))
     implementation(project(":auth"))
+    implementation(project(":score"))
 
     coreKtx()
     implementation(Dependencies.COMPOSE_RUNTIME)

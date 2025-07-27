@@ -17,6 +17,7 @@
     <string name="hint_password_repeat">Powtórz nowe hasło</string>
 
     <string name="desc_expand">Rozwiń element</string>
+    <string name="desc_points">Punkty</string>
 
     <string name="validation_username_the_same">Nowa nazwa użytkownika jest taka sama jak dotychczasowa.</string>
     <string name="validation_password_not_match">Nowe hasła nie są takie same.</string>
