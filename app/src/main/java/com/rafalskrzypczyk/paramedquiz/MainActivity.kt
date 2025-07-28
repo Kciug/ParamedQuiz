@@ -5,8 +5,14 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.navigation.compose.rememberNavController
 import com.rafalskrzypczyk.auth.domain.AuthRepository
+import com.rafalskrzypczyk.core.composables.ErrorDialog
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.paramedquiz.navigation.AppNavHost
 import com.rafalskrzypczyk.score.ScoreManager
@@ -27,7 +33,24 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ParamedQuizTheme {
+                var showErrorDialog by remember { mutableStateOf(false) }
+                var errorMessage by remember { mutableStateOf("") }
+
+                LaunchedEffect(Unit) {
+                    scoreManager.errorFlow.collect { msg ->
+                        errorMessage = msg
+                        showErrorDialog = true
+                    }
+                }
+
                 Navigation()
+
+                if (showErrorDialog) {
+                    ErrorDialog(errorMessage) {
+                        showErrorDialog = false
+                        errorMessage = ""
+                    }
+                }
             }
         }
     }

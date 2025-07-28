@@ -1,6 +1,5 @@
 package com.rafalskrzypczyk.score
 
-import android.util.Log
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.score.domain.Score
 import com.rafalskrzypczyk.score.domain.ScoreRepository
@@ -8,6 +7,9 @@ import com.rafalskrzypczyk.score.domain.isEmpty
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -17,6 +19,9 @@ class ScoreManager @Inject constructor(
     private val ioScope: CoroutineScope
 ) {
     private var score: Score = Score(0, emptyList())
+
+    private val _errorFlow = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    val errorFlow: SharedFlow<String> = _errorFlow.asSharedFlow()
 
     private var syncJob: Job? = null
     private val syncJobDebounce = 30000L
@@ -34,15 +39,16 @@ class ScoreManager @Inject constructor(
                     score = it.data
                     isDirty = false
                 }
+                if(it is Response.Error) _errorFlow.emit(it.error)
             }
         }
     }
 
     private suspend fun syncScore() {
         repository.saveUserScore(score).collectLatest {
-            //TODO handle response
+            if(it is Response.Error) _errorFlow.emit(it.error)
+            if(it is Response.Success) isDirty = false
         }
-        isDirty = false
     }
 
     private fun syncDebounced() {
@@ -76,7 +82,6 @@ class ScoreManager @Inject constructor(
 
     fun onUserRegister() {
         if(!score.isEmpty()) {
-            Log.d("KURWA", "SCORE IS NOT EMPTY")
             forceSync()
             repository.clearLocalScoreData()
         }
