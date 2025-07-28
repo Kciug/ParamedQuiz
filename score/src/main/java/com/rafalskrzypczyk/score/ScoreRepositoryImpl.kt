@@ -17,18 +17,6 @@ class ScoreRepositoryImpl @Inject constructor(
     private val userManager: UserManager,
     private val scoreStorage: ScoreStorage
 ) : ScoreRepository {
-//    override fun getUserScore(userId: String): Flow<Response<Score>> = firestore.getUserScore(userId).map {
-//        when(it) {
-//            is Response.Success -> Response.Success(it.data.toDomain())
-//            is Response.Error -> Response.Error(it.error)
-//            Response.Loading -> Response.Loading
-//        }
-//    }
-
-    //    override fun saveUserScore(
-//        userId: String,
-//        score: Score,
-//    ): Flow<Response<Unit>> = firestore.updateUserScore(userId, score.toDTO())
     override fun getUserScore(): Flow<Response<Score>> {
         val user = userManager.getCurrentLoggedUser()
 
