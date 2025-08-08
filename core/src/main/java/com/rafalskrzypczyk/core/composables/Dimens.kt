@@ -17,8 +17,11 @@ object Dimens {
     val ELEMENTS_SPACING_SMALL = 5.dp
     val ELEVATION = 5.dp
     val IMAGE_SIZE = 150.dp
+    val IMAGE_SIZE_MEDIUM = 100.dp
     val IMAGE_SIZE_SMALL = 48.dp
 
     val SIZE_SMALL = 24.dp
     val SIZE_MEDIUM = 50.dp
+
+    val NOTIFICATION_DOT = 8.dp
 }
