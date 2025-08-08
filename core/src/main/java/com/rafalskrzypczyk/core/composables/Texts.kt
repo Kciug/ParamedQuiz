@@ -14,7 +14,7 @@ import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 fun TextPrimary(
     text: String,
     modifier: Modifier = Modifier,
-    color: Color = Color.Unspecified
+    color: Color = MaterialTheme.colorScheme.onBackground
 ) {
     Text(
         modifier = modifier,
@@ -27,7 +27,7 @@ fun TextPrimary(
 fun TextHeadline(
     text: String,
     modifier: Modifier = Modifier,
-    color: Color = Color.Unspecified
+    color: Color = MaterialTheme.colorScheme.onBackground
 ) {
     Text(
         modifier = modifier,

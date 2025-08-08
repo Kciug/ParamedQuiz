@@ -39,7 +39,7 @@ fun QuizModeButton(
             modifier = modifier
                 .padding(top = Dimens.IMAGE_SIZE_MEDIUM / 4)
                 .heightIn(min = Dimens.IMAGE_SIZE_MEDIUM / 4 * 3),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             onClick = onClick,
             shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT),
         ) {
@@ -84,7 +84,7 @@ fun AdditionalModeButton(
         Card (
             modifier = modifier
                 .padding(top = Dimens.IMAGE_SIZE_MEDIUM / 4),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             onClick = onClick,
             shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT),
             border = if (highlighted) {

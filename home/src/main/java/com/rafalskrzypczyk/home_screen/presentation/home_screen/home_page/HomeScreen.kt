@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -46,16 +47,12 @@ fun HomeScreen(
         val modifier = Modifier.padding(innerPadding)
 
         Column(
-            modifier = modifier.fillMaxSize(),
+            modifier = modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            HomeScreenUserPanel(
-                userScore = state.userScore,
-                userStreak = state.userStreak,
-                isUserLoggedIn = state.isUserLoggedIn,
-                userAvatar = null
-            )
             Column(modifier = Modifier
                 .fillMaxSize(),
                 verticalArrangement = Arrangement.Bottom
@@ -139,6 +136,7 @@ fun HomeScreenQuizModesMenu(
 
 @Preview
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(heightDp = 360, widthDp = 800)
 @Composable
 private fun HomeScreenPreview() {
     ParamedQuizTheme {
