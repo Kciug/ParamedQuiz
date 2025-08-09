@@ -100,6 +100,12 @@ fun HomeScreenAddonsMenu(
                 imageRes = com.rafalskrzypczyk.core.R.drawable.frontfolks_logo_256,
                 highlighted = false,
             ) { onNavigateToReview() }
+            AdditionalModeButton(
+                modifier = cardWidthModifier,
+                title = "Pierwsza pomoc",
+                imageRes = com.rafalskrzypczyk.core.R.drawable.frontfolks_logo_256,
+                highlighted = false,
+            ) { }
 
             Spacer(modifier = Modifier.width(Dimens.DEFAULT_PADDING - Dimens.SMALL_PADDING))
         }

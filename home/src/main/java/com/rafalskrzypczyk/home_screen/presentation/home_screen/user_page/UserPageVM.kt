@@ -1,6 +1,7 @@
 package com.rafalskrzypczyk.home_screen.presentation.home_screen.user_page
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.core.user_management.UserManager
 import com.rafalskrzypczyk.score.ScoreManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -8,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -33,11 +35,13 @@ class UserPageVM @Inject constructor(
                 )
             }
         }
-        scoreManager.getScore().let { score ->
-            _state.update {
-                it.copy(
-                    score = score.score.toString()
-                )
+        viewModelScope.launch {
+            scoreManager.getScoreFlow().collect {
+                _state.update {
+                    it.copy(
+                        score = it.score
+                    )
+                }
             }
         }
     }

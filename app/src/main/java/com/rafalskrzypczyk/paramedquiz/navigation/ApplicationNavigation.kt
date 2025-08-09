@@ -5,7 +5,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.rafalskrzypczyk.home_screen.presentation.home_screen.MainMenuScreen
+import com.rafalskrzypczyk.home_screen.presentation.home_screen.home_page.HomeScreen
+import com.rafalskrzypczyk.home_screen.presentation.home_screen.home_page.HomeScreenVM
 import com.rafalskrzypczyk.home_screen.presentation.home_screen.user_page.UserPageScreen
 import com.rafalskrzypczyk.home_screen.presentation.home_screen.user_page.UserPageVM
 import com.rafalskrzypczyk.home_screen.presentation.home_screen.user_settings.UserSettingsScreen
@@ -46,10 +47,14 @@ fun NavGraphBuilder.mainMenuDestination(
     onNavigateToSwipeMode: () -> Unit
 ) {
     composable<MainMenu> {
-        MainMenuScreen(
-            onNavigateToUserPanel = { onNavigateToUserPanel() },
-            onNavigateToMainMode = { onNavigateToMainMode() },
-            onNavigateToSwipeMode = { onNavigateToSwipeMode() }
+        val viewModel = hiltViewModel<HomeScreenVM>()
+        val state = viewModel.state.collectAsStateWithLifecycle()
+
+        HomeScreen(
+            state = state.value,
+            onNavigateToUserPanel = onNavigateToUserPanel,
+            onNavigateToMainMode = onNavigateToMainMode,
+            onNavigateToSwipeMode = onNavigateToSwipeMode
         )
     }
 }

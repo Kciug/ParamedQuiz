@@ -50,7 +50,7 @@ class ScoreManagerTest {
         scoreManager.onUserLogIn()
         advanceUntilIdle()
 
-        assertEquals(expectedScore, scoreManager.getScore())
+        assertEquals(expectedScore, scoreManager.getScoreFlow())
     }
 
     @Test
@@ -75,7 +75,7 @@ class ScoreManagerTest {
         advanceTimeBy(30000)
         advanceUntilIdle()
 
-        assertEquals(updatedScore, scoreManager.getScore())
+        assertEquals(updatedScore, scoreManager.getScoreFlow())
     }
 
     @Test
@@ -95,7 +95,7 @@ class ScoreManagerTest {
         scoreManager.forceSync()
         advanceUntilIdle()
 
-        assertEquals(score, scoreManager.getScore())
+        assertEquals(score, scoreManager.getScoreFlow())
     }
 
     @Test
