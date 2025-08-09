@@ -31,9 +31,6 @@
 
     <string name="text_delete_account_warning">Usunięcie konta spowoduje usunięcie wszystkich zapisanych danych i wyników.</string>
 
-    <string name="desc_user_score">Punkty</string>
-    <string name="desc_user_streak">Seria</string>
-
     <string name="title_quiz_mode">Quiz</string>
     <string name="title_swipe_mode">Wiedza w akcji</string>
 </resources>

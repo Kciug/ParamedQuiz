@@ -7,7 +7,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.sp
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 
 @Composable
@@ -52,6 +54,21 @@ fun TextCaption(
 }
 
 @Composable
+fun TextScore(
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.onBackground
+) {
+    Text(
+        modifier = modifier,
+        text = text,
+        color = color,
+        fontWeight = FontWeight.Bold,
+        fontSize = 18.sp
+    )
+}
+
+@Composable
 @Preview
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 private fun TextPrimaryPreview() {
@@ -85,6 +102,20 @@ private fun TextCaptionPreview() {
         Surface {
             TextCaption(
                 text = "Placeholder",
+            )
+        }
+    }
+}
+
+@Composable
+@Preview
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+private fun TextScorePreview() {
+    ParamedQuizTheme {
+        Surface {
+            TextScore(
+                text = "2137",
+                color = MaterialTheme.colorScheme.primary
             )
         }
     }

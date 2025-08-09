@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -83,7 +84,8 @@ fun AdditionalModeButton(
     Box {
         Card (
             modifier = modifier
-                .padding(top = Dimens.IMAGE_SIZE_MEDIUM / 4),
+                .padding(top = Dimens.IMAGE_SIZE_MEDIUM / 4)
+                .widthIn(min = Dimens.IMAGE_SIZE_MEDIUM + Dimens.DEFAULT_PADDING * 2),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             onClick = onClick,
             shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT),
@@ -124,19 +126,6 @@ fun AdditionalModeButton(
                     .align(Alignment.TopEnd)
                     .padding(top = Dimens.IMAGE_SIZE_MEDIUM / 4)
             )
-
-//            Icon(
-//                imageVector = Icons.Default.,
-//                contentDescription = null,
-//                tint = highlightedColor,
-//                modifier = Modifier
-//                    .align(Alignment.TopEnd)
-//                    .padding(top = Dimens.IMAGE_SIZE_MEDIUM / 4)
-//                    .background(
-//                        color = MaterialTheme.colorScheme.surfaceContainer,
-//                        shape = CircleShape
-//                    )
-//            )
         }
     }
 }

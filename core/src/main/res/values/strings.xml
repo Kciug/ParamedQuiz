@@ -45,4 +45,7 @@
 
     <string name="finish_title">Ukończyłeś quiz!</string>
     <string name="btn_back">Wróć</string>
+
+    <string name="desc_user_score">Punkty</string>
+    <string name="desc_user_streak">Seria</string>
 </resources>

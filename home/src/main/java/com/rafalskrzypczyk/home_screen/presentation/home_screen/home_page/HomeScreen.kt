@@ -50,22 +50,17 @@ fun HomeScreen(
             modifier = modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.SpaceBetween,
+            verticalArrangement = Arrangement.Bottom,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(modifier = Modifier
-                .fillMaxSize(),
-                verticalArrangement = Arrangement.Bottom
-            ) {
-                HomeScreenAddonsMenu(
-                    onNavigateToDailyExercise = {},
-                    onNavigateToReview = {}
-                )
-                HomeScreenQuizModesMenu(
-                    onNavigateToMainMode = onNavigateToMainMode,
-                    onNavigateToSwipeMode = onNavigateToSwipeMode
-                )
-            }
+            HomeScreenAddonsMenu(
+                onNavigateToDailyExercise = {},
+                onNavigateToReview = {}
+            )
+            HomeScreenQuizModesMenu(
+                onNavigateToMainMode = onNavigateToMainMode,
+                onNavigateToSwipeMode = onNavigateToSwipeMode
+            )
         }
     }
 }
@@ -76,6 +71,11 @@ fun HomeScreenAddonsMenu(
     onNavigateToDailyExercise: () -> Unit,
     onNavigateToReview: () -> Unit
 ) {
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val screenWidth = configuration.screenWidthDp.dp
+    val cardWidthModifier = if(isLandscape) Modifier else Modifier.width(screenWidth * 0.4f)
+
     Column(modifier = modifier.fillMaxWidth()) {
         TextHeadline(
             text = "Praktyka na dziś?",
@@ -86,8 +86,6 @@ fun HomeScreenAddonsMenu(
             modifier = Modifier.horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(Dimens.SMALL_PADDING)
         ) {
-            val cardWidthModifier = Modifier.width(LocalConfiguration.current.screenWidthDp.dp * 0.4f)
-
             Spacer(modifier = Modifier.width(Dimens.DEFAULT_PADDING - Dimens.SMALL_PADDING))
 
             AdditionalModeButton(
