@@ -15,25 +15,31 @@ val manropeFamily = FontFamily(
     Font(R.font.manrope_extra_bold, FontWeight.Bold)
 )
 
+val interFamily = FontFamily(
+    Font(R.font.inter_24pt_extra_light, FontWeight.Light),
+    Font(R.font.inter_24pt_light, FontWeight.Normal),
+    Font(R.font.inter_24pt_medium, FontWeight.Bold),
+)
+
 // Set of Material typography styles to start with
 val Typography = Typography(
     bodyLarge = TextStyle(
-        fontFamily = manropeFamily,
+        fontFamily = interFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.5.sp
     ),
     headlineSmall = TextStyle(
-        fontFamily = manropeFamily,
+        fontFamily = interFamily,
         fontWeight = FontWeight.Bold,
         fontSize = 22.sp,
         lineHeight = 28.sp,
         letterSpacing = 0.6.sp
     ),
     labelSmall = TextStyle(
-        fontFamily = manropeFamily,
-        fontWeight = FontWeight.Medium,
+        fontFamily = interFamily,
+        fontWeight = FontWeight.Light,
         fontSize = 11.sp,
         lineHeight = 16.sp,
         letterSpacing = 0.5.sp
