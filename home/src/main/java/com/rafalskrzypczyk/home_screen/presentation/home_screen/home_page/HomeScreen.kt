@@ -41,7 +41,7 @@ fun HomeScreen(
                 userStreak = state.userStreak,
                 isUserLoggedIn = state.isUserLoggedIn,
                 userAvatar = null
-            )
+            ) { onNavigateToUserPanel() }
         }
     ) { innerPadding ->
         val modifier = Modifier.padding(innerPadding)

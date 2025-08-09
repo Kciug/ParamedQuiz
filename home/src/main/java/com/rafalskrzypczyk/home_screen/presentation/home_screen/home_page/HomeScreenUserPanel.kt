@@ -2,6 +2,7 @@ package com.rafalskrzypczyk.home_screen.presentation.home_screen.home_page
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -32,7 +33,8 @@ fun HomeScreenUserPanel(
     userScore: Int,
     userStreak: Int,
     isUserLoggedIn: Boolean,
-    userAvatar: String?
+    userAvatar: String?,
+    onNavigateToUserPanel: () -> Unit
 ) {
     Row(
         modifier = modifier
@@ -49,7 +51,7 @@ fun HomeScreenUserPanel(
         )
         UserStreakLabel(value = userStreak)
         Box(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f).clickable(onClick = onNavigateToUserPanel),
             contentAlignment = Alignment.CenterEnd
         ) {
             if(isUserLoggedIn){
@@ -76,7 +78,7 @@ private fun HomeScreenUserPanelPreview() {
                 userStreak = 10,
                 isUserLoggedIn = true,
                 userAvatar = null
-            )
+            ) {}
         }
     }
 }
@@ -92,7 +94,7 @@ private fun HomeScreenUserPanelPreviewLoggedOut() {
                 userStreak = 15,
                 isUserLoggedIn = false,
                 userAvatar = null
-            )
+            ) {}
         }
     }
 }
