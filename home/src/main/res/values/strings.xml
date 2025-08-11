@@ -31,6 +31,15 @@
 
     <string name="text_delete_account_warning">Usunięcie konta spowoduje usunięcie wszystkich zapisanych danych i wyników.</string>
 
-    <string name="title_quiz_mode">Quiz</string>
-    <string name="title_swipe_mode">Wiedza w akcji</string>
+    <string name="title_quiz_modes">Czas na quiz!</string>
+    <string name="title_addons">Praktyka na dziś?</string>
+
+    <string name="title_mode_quiz">Quiz</string>
+    <string name="mode_quiz_desc">Zdobywaj wiedzę grając w quiz!</string>
+    <string name="title_mode_swipe">Wiedza w akcji</string>
+    <string name="mode_swipe_desc">Szybkie pytania, szybkie decyzje!</string>
+
+    <string name="title_addon_daily_exercises">Zadania dzienne</string>
+    <string name="title_addon_review">Powtórki</string>
+    <string name="title_addon_first_aid">Pierwsza pomoc</string>
 </resources>

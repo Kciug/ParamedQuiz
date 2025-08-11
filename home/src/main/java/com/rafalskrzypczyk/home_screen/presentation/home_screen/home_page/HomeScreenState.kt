@@ -4,4 +4,6 @@ data class HomeScreenState(
     val isUserLoggedIn: Boolean = false,
     val userScore: Int = 0,
     val userStreak: Int = 0,
+    val userAvatar: String? = null,
+    val isNewDailyExerciseAvailable: Boolean = false,
 )

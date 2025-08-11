@@ -19,6 +19,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.rafalskrzypczyk.core.composables.Dimens
@@ -26,6 +27,8 @@ import com.rafalskrzypczyk.core.composables.NotificationDot
 import com.rafalskrzypczyk.core.composables.TextHeadline
 import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
+
+
 
 @Composable
 fun QuizModeButton(
@@ -70,14 +73,19 @@ fun QuizModeButton(
     }
 }
 
+data class Addon(
+    val title: String,
+    val description: String? = null,
+    val color: Color? = null,
+    val imageRes: Int,
+    val highlighted: Boolean = false,
+    val onClick: () -> Unit,
+)
+
 @Composable
-fun AdditionalModeButton(
+fun AddonButton(
     modifier: Modifier = Modifier,
-    title: String,
-    description: String? = null,
-    imageRes: Int,
-    highlighted: Boolean = false,
-    onClick: () -> Unit,
+    addon: Addon
 ) {
     val highlightedColor = MaterialTheme.colorScheme.primary
 
@@ -86,10 +94,12 @@ fun AdditionalModeButton(
             modifier = modifier
                 .padding(top = Dimens.IMAGE_SIZE_MEDIUM / 4)
                 .widthIn(min = Dimens.IMAGE_SIZE_MEDIUM + Dimens.DEFAULT_PADDING * 2),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            onClick = onClick,
+            colors = CardDefaults.cardColors(
+                containerColor = if(addon.color != null) addon.color else MaterialTheme.colorScheme.surface
+            ),
+            onClick = addon.onClick,
             shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT),
-            border = if (highlighted) {
+            border = if (addon.highlighted) {
                 BorderStroke(Dimens.OUTLINE_THICKNESS, highlightedColor)
             } else {
                 null
@@ -106,21 +116,21 @@ fun AdditionalModeButton(
                     ),
                 verticalArrangement = Arrangement.SpaceEvenly,
             ) {
-                TextHeadline(title)
-                description?.let {
-                    TextPrimary(description)
+                TextHeadline(addon.title)
+                addon.description?.let {
+                    TextPrimary(it)
                 }
             }
         }
         Image(
-            painter = painterResource(id = imageRes),
-            contentDescription = title,
+            painter = painterResource(id = addon.imageRes),
+            contentDescription = addon.title,
             modifier = Modifier
                 .size(Dimens.IMAGE_SIZE_MEDIUM)
                 .padding(start = Dimens.DEFAULT_PADDING)
                 .align(Alignment.TopStart)
         )
-        if (highlighted) {
+        if (addon.highlighted) {
             NotificationDot(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
@@ -152,10 +162,13 @@ private fun QuizModeButtonPreview() {
 private fun AdditionalModeButtonPreview() {
     ParamedQuizTheme {
         Surface {
-            AdditionalModeButton(
-                title = "Powtórki",
-                imageRes = com.rafalskrzypczyk.core.R.drawable.frontfolks_logo_256,
-                onClick = {}
+            AddonButton(
+                addon = Addon(
+                    title = "Powtórki",
+                    description = "Przygotuj się do quizu",
+                    imageRes = com.rafalskrzypczyk.core.R.drawable.frontfolks_logo_256,
+                    onClick = {}
+                )
             )
         }
     }
@@ -167,11 +180,14 @@ private fun AdditionalModeButtonPreview() {
 private fun AdditionalModeButtonHighlightedPreview() {
     ParamedQuizTheme {
         Surface {
-            AdditionalModeButton(
-                title = "Powtórki",
-                imageRes = com.rafalskrzypczyk.core.R.drawable.frontfolks_logo_256,
-                onClick = {},
-                highlighted = true,
+            AddonButton(
+                addon = Addon(
+                    title = "Powtórki",
+                    description = "Przygotuj się do quizu",
+                    imageRes = com.rafalskrzypczyk.core.R.drawable.frontfolks_logo_256,
+                    highlighted = true,
+                    onClick = {}
+                )
             )
         }
     }
