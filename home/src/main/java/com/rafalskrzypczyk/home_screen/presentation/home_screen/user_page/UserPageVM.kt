@@ -36,10 +36,10 @@ class UserPageVM @Inject constructor(
             }
         }
         viewModelScope.launch {
-            scoreManager.getScoreFlow().collect {
+            scoreManager.getScoreFlow().collect { score ->
                 _state.update {
                     it.copy(
-                        score = it.score
+                        userScore = score.score.toInt()
                     )
                 }
             }

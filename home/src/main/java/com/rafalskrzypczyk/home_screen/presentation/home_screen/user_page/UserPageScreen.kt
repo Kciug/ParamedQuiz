@@ -4,41 +4,38 @@ import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CurrencyBitcoin
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.rafalskrzypczyk.core.R
 import com.rafalskrzypczyk.core.composables.Dimens
-import com.rafalskrzypczyk.core.composables.TextPrimary
-import com.rafalskrzypczyk.core.ui.NavigationTopBar
+import com.rafalskrzypczyk.core.composables.NavTopBar
+import com.rafalskrzypczyk.core.composables.SettingsButton
+import com.rafalskrzypczyk.core.composables.TextHeadline
+import com.rafalskrzypczyk.core.composables.UserPointsLabel
+import com.rafalskrzypczyk.core.composables.UserStreakLabel
+import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 
 
 @Composable
@@ -54,43 +51,65 @@ fun UserPageScreen(
 
     Scaffold(
         topBar = {
-            NavigationTopBar(
-                title = stringResource(com.rafalskrzypczyk.home.R.string.title_user_page),
-                onNavigateBack = onNavigateBack
-            ) {
-                IconButton(onClick = { onUserSettings() }) {
-                    Icon(
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = stringResource(R.string.desc_settings)
-                    )
-                }
-            }
+            NavTopBar(
+                actions = { SettingsButton { onUserSettings() } }
+            ) { onNavigateBack() }
         }
     ) { innerPadding ->
         val modifier = Modifier.padding(innerPadding)
 
         Column(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(Dimens.DEFAULT_PADDING),
+            modifier = modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            UserPageUserDetails(state.userName, state.score)
+            UserPageUserDetails(
+                userName = state.userName,
+                userPoints = state.userScore,
+                userStreak = state.userStreak
+            )
         }
     }
 }
 
 @Composable
 fun UserPageUserDetails(
+    modifier: Modifier = Modifier,
     userName: String,
-    score: String
+    userPoints: Int,
+    userStreak: Int
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
+    Box(
+        modifier = modifier
     ) {
+        Column (
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = Dimens.IMAGE_SIZE / 2)
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.surface,
+                            MaterialTheme.colorScheme.background
+                        )
+                    ),
+                    shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT)
+                )
+                .padding(top = Dimens.IMAGE_SIZE / 2 + Dimens.DEFAULT_PADDING),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
+        ) {
+            TextHeadline(userName)
+            Row (
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                UserPointsLabel(value = userPoints)
+                UserStreakLabel(value = userStreak)
+            }
+        }
+
         Image(
             painter = painterResource(R.drawable.avatar_default),
             contentDescription = stringResource(R.string.desc_user_avatar),
@@ -100,32 +119,8 @@ fun UserPageUserDetails(
                 .clip(CircleShape)
                 .background(Color.Transparent)
                 .size(Dimens.IMAGE_SIZE)
+                .align(Alignment.TopCenter)
         )
-
-        HorizontalDivider(Modifier.padding(Dimens.SMALL_PADDING))
-
-        Text(
-            text = userName,
-            textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT))
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .padding(vertical = Dimens.SMALL_PADDING)
-        )
-
-        Row(modifier = Modifier.fillMaxWidth()) {
-            Text("STRIKE")
-            Spacer(Modifier.weight(1f))
-            Row {
-                Icon(
-                    imageVector = Icons.Default.CurrencyBitcoin,
-                    contentDescription = stringResource(com.rafalskrzypczyk.home.R.string.desc_points)
-                )
-                TextPrimary(score)
-            }
-        }
     }
 }
 
@@ -133,15 +128,18 @@ fun UserPageUserDetails(
 @Preview
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 private fun UserPagePreview() {
-    Surface {
-        UserPageScreen(
-            state = UserPageState(
-                userName = stringResource(R.string.placeholder_short),
-                score = "1234"
-            ),
-            onNavigateBack = {},
-            onUserSettings = {},
-            onEvent = {}
-        )
+    ParamedQuizTheme {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            UserPageScreen(
+                state = UserPageState(
+                    userName = stringResource(R.string.placeholder_short),
+                    userScore = 2137,
+                    userStreak = 15
+                ),
+                onNavigateBack = {},
+                onUserSettings = {},
+                onEvent = {}
+            )
+        }
     }
 }

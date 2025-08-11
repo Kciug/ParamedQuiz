@@ -4,5 +4,6 @@ data class UserPageState (
     val error: String? = null,
     val userName: String = "",
     val userEmail: String = "",
-    val score: String = ""
+    val userScore: Int = 0,
+    val userStreak: Int = 0
 )
