@@ -7,6 +7,9 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -15,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 
@@ -23,7 +27,8 @@ fun ButtonPrimary(
     title: String,
     onClick: () -> Unit,
     enabled: Boolean = true,
-    modifier: Modifier = Modifier) {
+    modifier: Modifier = Modifier
+) {
     Button(
         onClick = onClick,
         enabled = enabled,
@@ -44,7 +49,8 @@ fun ButtonPrimary(
 fun ButtonSecondary(
     title: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier) {
+    modifier: Modifier = Modifier
+) {
     OutlinedButton(
         onClick = onClick,
         modifier = modifier
@@ -64,7 +70,8 @@ fun ButtonSecondary(
 fun ButtonTertiary(
     title: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier) {
+    modifier: Modifier = Modifier
+) {
     Button(
         onClick = onClick,
         modifier = modifier
@@ -76,6 +83,27 @@ fun ButtonTertiary(
         )
     ) {
         Text(text = title)
+    }
+}
+
+@Composable
+fun ActionButton(
+    modifier: Modifier = Modifier,
+    icon: ImageVector,
+    description: String,
+    enabled: Boolean = true,
+    onClick: () -> Unit,
+) {
+    IconButton(
+        modifier = modifier,
+        onClick = onClick,
+        enabled = enabled,
+        colors = IconButtonDefaults.iconButtonColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = description
+        )
     }
 }
 

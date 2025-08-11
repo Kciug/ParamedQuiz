@@ -12,6 +12,7 @@
     <string name="desc_warning">Ostrzeżenie</string>
     <string name="desc_info">Informacja</string>
     <string name="desc_confirmation">Wymagane potwierdzenie</string>
+    <string name="desc_back">Cofnij</string>
 
     <string name="title_error_dialog">Wystąpił błąd</string>
 
