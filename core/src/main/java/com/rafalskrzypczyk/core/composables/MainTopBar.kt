@@ -5,10 +5,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -26,7 +32,8 @@ fun MainTopBar(
     userStreak: Int,
     isUserLoggedIn: Boolean,
     userAvatar: String?,
-    onNavigateToUserPanel: () -> Unit
+    onNavigateBack: (() -> Unit)? = null,
+    onNavigateToUserPanel: () -> Unit,
 ) {
     Row (
         modifier = modifier
@@ -45,11 +52,29 @@ fun MainTopBar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
+        if(onNavigateBack != null) {
+            Box(
+                modifier = Modifier.weight(1f),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                IconButton(onClick = onNavigateBack) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                        contentDescription = null
+                    )
+                }
+            }
+        }
         UserPointsLabel(
             modifier = Modifier.weight(1f),
             value = userScore
         )
-        UserStreakLabel(value = userStreak)
+        if(onNavigateBack != null) {
+            Spacer(modifier = Modifier.width(Dimens.DEFAULT_PADDING))
+        }
+        UserStreakLabel(
+            value = userStreak,
+        )
         Box(
             modifier = Modifier.weight(1f),
             contentAlignment = Alignment.CenterEnd
@@ -89,6 +114,23 @@ private fun MainTopBarLoggedOutPreview() {
                 userStreak = 15,
                 isUserLoggedIn = false,
                 userAvatar = null
+            ) {}
+        }
+    }
+}
+
+@Composable
+@Preview
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+private fun MainTopBarNavigationPreview() {
+    ParamedQuizTheme {
+        Surface {
+            MainTopBar(
+                userScore = 2137995,
+                userStreak = 15,
+                isUserLoggedIn = false,
+                userAvatar = null,
+                onNavigateBack = { }
             ) {}
         }
     }
