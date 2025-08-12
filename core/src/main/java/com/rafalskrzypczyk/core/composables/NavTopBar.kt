@@ -34,21 +34,31 @@ fun NavTopBar(
         title?.let {
             TextHeadline(title)
         }
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            content = actions
-        )
+        actions()
     }
 }
 
 @Composable
 @Preview
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
-private fun NavTopBarPreview() {
+private fun NavTopBarWithActionPreview() {
     ParamedQuizTheme {
         Surface(color = MaterialTheme.colorScheme.background) {
             NavTopBar(
                 actions = { ExitButton { } },
+            ) { }
+        }
+    }
+}
+
+@Composable
+@Preview
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+private fun NavTopBarWithTitlePreview() {
+    ParamedQuizTheme {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            NavTopBar(
+                title = "Test",
             ) { }
         }
     }

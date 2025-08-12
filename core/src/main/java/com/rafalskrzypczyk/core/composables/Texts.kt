@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
@@ -16,12 +17,14 @@ import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 fun TextPrimary(
     text: String,
     modifier: Modifier = Modifier,
-    color: Color = MaterialTheme.colorScheme.onBackground
+    color: Color = MaterialTheme.colorScheme.onBackground,
+    textAlign: TextAlign? = TextAlign.Unspecified
 ) {
     Text(
         modifier = modifier,
         text = text,
-        color = color
+        color = color,
+        textAlign = textAlign
     )
 }
 

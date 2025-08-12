@@ -14,10 +14,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,7 +34,9 @@ import com.rafalskrzypczyk.core.composables.ButtonSecondary
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.ErrorDialog
 import com.rafalskrzypczyk.core.composables.Loading
-import com.rafalskrzypczyk.core.ui.NavigationTopBar
+import com.rafalskrzypczyk.core.composables.NavTopBar
+import com.rafalskrzypczyk.core.composables.TextCaption
+import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.home.R
 
@@ -63,10 +63,7 @@ fun UserSettingsScreen(
 
     Scaffold (
         topBar = {
-            NavigationTopBar(
-                title = stringResource(R.string.title_settings),
-                onNavigateBack = onNavigateBack,
-            )
+            NavTopBar(title = stringResource(R.string.title_settings)) { onNavigateBack() }
         }
     ) { innerPadding ->
         val modifier = Modifier.padding(innerPadding)
@@ -137,6 +134,7 @@ private fun UserSettingsUserDetails(
             contentDescription = stringResource(com.rafalskrzypczyk.core.R.string.desc_user_avatar),
             contentScale = ContentScale.Crop,
             modifier = Modifier
+                .padding(start = Dimens.ELEMENTS_SPACING)
                 .height(Dimens.IMAGE_SIZE_SMALL)
                 .clip(CircleShape)
                 .aspectRatio(1f)
@@ -146,8 +144,8 @@ private fun UserSettingsUserDetails(
         Spacer(modifier = Modifier.width(Dimens.ELEMENTS_SPACING))
 
         Column {
-            Text(text = userName, style = MaterialTheme.typography.bodyLarge)
-            Text(text = userEmail, style = MaterialTheme.typography.bodySmall)
+            TextPrimary(text = userName)
+            TextCaption(text = userEmail)
         }
     }
 }

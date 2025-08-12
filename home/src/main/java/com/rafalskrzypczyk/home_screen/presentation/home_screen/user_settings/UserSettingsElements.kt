@@ -16,7 +16,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -37,6 +36,7 @@ import com.rafalskrzypczyk.core.composables.ButtonSecondary
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.PasswordTextFieldPrimary
 import com.rafalskrzypczyk.core.composables.TextFieldPrimary
+import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.home.R
 
@@ -53,7 +53,7 @@ fun UserSettingsItem(
             .animateContentSize()
             .wrapContentHeight()
             .clip(shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT))
-            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .background(MaterialTheme.colorScheme.surface)
             .clickable(
                 onClick = onClick,
                 interactionSource = remember { MutableInteractionSource() },
@@ -72,7 +72,7 @@ fun UserSettingsItem(
                 modifier = Modifier.rotate(if(isExpanded) 90f else 0f)
             )
 
-            Text(text = title)
+            TextPrimary(title)
         }
 
         if(isExpanded) {
@@ -105,7 +105,7 @@ fun UserSettingsChangeUserName(
     )
 
     if(validationMessage.isNullOrEmpty().not()) {
-        Text(
+        TextPrimary(
             text = validationMessage,
             color = MaterialTheme.colorScheme.error,
             textAlign = TextAlign.Center
@@ -150,7 +150,7 @@ fun UserSettingsChangePassword(
     )
 
     if(validationMessage.isNullOrEmpty().not()) {
-        Text(
+        TextPrimary(
             text = validationMessage,
             color = MaterialTheme.colorScheme.error,
             textAlign = TextAlign.Center
@@ -170,7 +170,7 @@ fun UserSettingsDeleteAccount(
 ) {
     var password by remember { mutableStateOf("") }
 
-    Text(
+    TextPrimary(
         text = stringResource(R.string.text_delete_account_warning),
         color = MaterialTheme.colorScheme.error,
         textAlign = TextAlign.Center
@@ -201,7 +201,7 @@ private fun UserSettingsItemPreview() {
             UserSettingsItem(
                 title = stringResource(com.rafalskrzypczyk.core.R.string.placeholder_short),
                 content = {
-                    Text(text = stringResource(com.rafalskrzypczyk.core.R.string.placeholder_long))
+                    TextPrimary(text = stringResource(com.rafalskrzypczyk.core.R.string.placeholder_long))
                     ButtonSecondary(
                         title = stringResource(com.rafalskrzypczyk.core.R.string.placeholder_long),
                         onClick = {  }
