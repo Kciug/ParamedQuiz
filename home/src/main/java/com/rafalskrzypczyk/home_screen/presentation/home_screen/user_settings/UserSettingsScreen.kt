@@ -113,6 +113,7 @@ private fun UserSettingsContent(
             },
             modifier = Modifier.padding(Dimens.ELEMENTS_SPACING)
         )
+        BrandingElement()
     }
 }
 
