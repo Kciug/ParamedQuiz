@@ -19,7 +19,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -47,11 +46,11 @@ fun HomeScreen(
             title = stringResource(R.string.title_addon_review),
             imageRes = com.rafalskrzypczyk.core.R.drawable.frontfolks_logo_256,
         ) {},
-        Addon(
-            title = stringResource(R.string.title_addon_first_aid),
-            imageRes = com.rafalskrzypczyk.core.R.drawable.frontfolks_logo_256,
-            color = Color.Blue
-        ) {}
+//        Addon(
+//            title = stringResource(R.string.title_addon_first_aid),
+//            imageRes = com.rafalskrzypczyk.core.R.drawable.frontfolks_logo_256,
+//            color = Color.Blue
+//        ) {}
     )
 
     Scaffold(

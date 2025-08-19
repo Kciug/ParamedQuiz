@@ -42,4 +42,8 @@
     <string name="title_addon_daily_exercises">Zadania dzienne</string>
     <string name="title_addon_review">Powtórki</string>
     <string name="title_addon_first_aid">Pierwsza pomoc</string>
+
+    <string name="branding_created_with">Stworzono z</string>
+    <string name="branding_frontfolks">frontfolks</string>
+    <string name="desc_branding_love">miłością</string>
 </resources>
