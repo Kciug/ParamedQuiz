@@ -22,13 +22,25 @@ class MMCategoriesVM @Inject constructor(
 
     fun onEvent(event: MMCategoriesUIEvents) {
         when(event) {
-            MMCategoriesUIEvents.GetData -> getAllCategories()
+            MMCategoriesUIEvents.GetData -> loadData()
             is MMCategoriesUIEvents.OnUnlockCategory -> onUnlockCategory(event.categoryId)
             MMCategoriesUIEvents.DiscardUnlockCategory -> discardUnlockCategory()
         }
     }
 
-    private fun getAllCategories() {
+    private fun loadData() {
+        viewModelScope.launch {
+            useCases.getUserScore().collectLatest { userScore ->
+                _state.update {
+                    it.copy(
+                        userScore = userScore.score.toInt(),
+                        userStreak = 0,
+                        isUserLoggedIn = useCases.checkIsUserLoggedIn()
+                    )
+                }
+            }
+        }
+
         viewModelScope.launch {
             useCases.getAllCategories().collectLatest { response ->
                 when(response) {

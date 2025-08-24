@@ -5,13 +5,17 @@ import com.rafalskrzypczyk.main_mode.domain.models.Category
 data class CategoryUIM(
     val id: Long,
     val title: String,
-    val subtitle: String? = null,
-    val questionCount: Int,
+    val description: String,
+    val questionCount: String,
+    val unlocked: Boolean = true,
+    val progress: Float,
 )
 
-fun Category.toUIM() : CategoryUIM = CategoryUIM(
+fun Category.toUIM(progress: Float = 0f) : CategoryUIM = CategoryUIM(
     id = id,
     title = title,
-    subtitle = subtitle,
-    questionCount = questionsCount
+    description = subtitle,
+    questionCount = questionsCount.toString(),
+    unlocked = unlocked,
+    progress = progress
 )

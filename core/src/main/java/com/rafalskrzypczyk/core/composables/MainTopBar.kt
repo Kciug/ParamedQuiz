@@ -88,6 +88,57 @@ fun MainTopBar(
 }
 
 @Composable
+fun MainTopBarWithNav(
+    modifier: Modifier = Modifier,
+    userScore: Int,
+    userStreak: Int,
+    isUserLoggedIn: Boolean,
+    userAvatar: String?,
+    onNavigateBack: () -> Unit,
+    onNavigateToUserPanel: () -> Unit,
+) {
+    Row (
+        modifier = modifier
+            .fillMaxWidth()
+            .statusBarsPadding()
+            .clip(RoundedCornerShape(bottomStart = Dimens.RADIUS_DEFAULT, bottomEnd = Dimens.RADIUS_DEFAULT))
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.background,
+                        MaterialTheme.colorScheme.surface
+                    )
+                ),
+            )
+            .padding(Dimens.DEFAULT_PADDING),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(onClick = onNavigateBack) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                contentDescription = null
+            )
+        }
+        Row(
+            modifier = Modifier.weight(1f),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            UserPointsLabel(
+                value = userScore
+            )
+            UserStreakLabel(
+                value = userStreak,
+            )
+        }
+        UserAvatarAction(
+            isUserLoggedIn = isUserLoggedIn,
+            userAvatar = userAvatar
+        ) { onNavigateToUserPanel() }
+    }
+}
+
+@Composable
 @Preview
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 private fun MainTopBarPreview() {
@@ -125,10 +176,10 @@ private fun MainTopBarLoggedOutPreview() {
 private fun MainTopBarNavigationPreview() {
     ParamedQuizTheme {
         Surface {
-            MainTopBar(
+            MainTopBarWithNav (
                 userScore = 2137995,
                 userStreak = 15,
-                isUserLoggedIn = false,
+                isUserLoggedIn = true,
                 userAvatar = null,
                 onNavigateBack = { }
             ) {}
