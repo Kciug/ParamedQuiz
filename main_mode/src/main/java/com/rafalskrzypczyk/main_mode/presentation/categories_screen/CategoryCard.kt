@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -48,18 +47,20 @@ fun CategoryCard(
         onClick = onClick
     ) {
         Box {
-            Column {
+            Column(
+                modifier = Modifier.padding(Dimens.DEFAULT_PADDING),
+                verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
+            ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(end = Dimens.DEFAULT_PADDING),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextHeadline(
                         modifier = Modifier
-                            .height(Dimens.RADIUS_DEFAULT * 2)
-                            .clip(RoundedCornerShape(Dimens.RADIUS_DEFAULT))
+                            .clip(RoundedCornerShape(Dimens.RADIUS_INNER_DEFAULT))
                             .background(color = MaterialTheme.colorScheme.primary)
-                            .padding(Dimens.DEFAULT_PADDING)
+                            .padding(horizontal = Dimens.DEFAULT_PADDING, vertical = Dimens.SMALL_PADDING)
                             .wrapContentHeight(Alignment.CenterVertically),
                         text = category.title,
                         color = MaterialTheme.colorScheme.onPrimary
@@ -74,23 +75,15 @@ fun CategoryCard(
                         )
                     }
                 }
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(Dimens.DEFAULT_PADDING),
-                    verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
-                ) {
-                    TextPrimary(text = category.description)
-                    if(category.progress > 0) {
-                        LinearProgressIndicator(
-                            modifier = Modifier.fillMaxWidth(),
-                            progress = { category.progress },
-                            color = MaterialTheme.colorScheme.primary,
-                            trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                            drawStopIndicator = {}
-                        )
-                    }
+                TextPrimary(text = category.description)
+                if(category.progress > 0) {
+                    LinearProgressIndicator(
+                        modifier = Modifier.fillMaxWidth(),
+                        progress = { category.progress },
+                        color = MaterialTheme.colorScheme.primary,
+                        trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                        drawStopIndicator = {}
+                    )
                 }
             }
 

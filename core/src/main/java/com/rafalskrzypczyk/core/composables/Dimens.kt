@@ -5,6 +5,7 @@ import androidx.compose.ui.unit.dp
 object Dimens {
     val RADIUS_DEFAULT = 32.dp
     val RADIUS_SMALL = 16.dp
+    val RADIUS_INNER_DEFAULT = 17.dp
     val OUTLINE_THICKNESS = 2.dp
     val OUTLINE_THICKNESS_LARGE = 10.dp
 
