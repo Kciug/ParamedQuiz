@@ -17,18 +17,19 @@ val Secondary = Color(0xFFFF6478)
 
 val Tertiary = Color(0xFF00BFA6)
 
-val Background = Color(0xFFF8F9FF)    // Jasne, lekko chłodne tło
-val Surface = Color(0xFFFFFFFF)       // Białe karty/powierzchnie
+val Background = Color(0xFFF8F9FF)
+val Surface = Color(0xFFF0F2FA)
+val SurfaceContainer = Color(0xFFE8EAF5)
+val SurfaceVariant = Color(0xFFD6DAE9)
 
-val OnPrimary = Color(0xFFFFFFFF)     // Tekst na Primary
+val OnPrimary = Color(0xFFFFFFFF)
 val OnSecondary = Color(0xFFFFFFFF)
 val OnTertiary = Color(0xFFFFFFFF)
-val OnBackground = Color(0xFF1C1C28)  // Tekst na tle
-val OnSurface = Color(0xFF1C1C28)     // Tekst na kartach
+val OnBackground = Color(0xFF1C1C28)
+val OnSurface = Color(0xFF1C1C28)
 
 val Error = Color(0xFFFF4D4D)
 val OnError = Color(0xFFFFFFFF)
-
 
 // === DARK MODE ===
 val PrimaryDark = Color(0xFF6464FF)
@@ -37,8 +38,10 @@ val SecondaryDark = Color(0xFFFF6478)
 
 val TertiaryDark = Color(0xFF00BFA6)
 
-val BackgroundDark = Color(0xFF0F0F1A)   // Główne tło w trybie ciemnym
-val SurfaceDark = Color(0xFF1A1A26)      // Karty/powierzchnie
+val BackgroundDark = Color(0xFF0F0F1A)
+val SurfaceDark = Color(0xFF1A1A26)
+val SurfaceContainerDark = Color(0xFF242436) // Trochę jaśniejsze niż SurfaceDark
+val SurfaceVariantDark = Color(0xFF3A3A55)
 
 val OnPrimaryDark = Color(0xFFFFFFFF)
 val OnSecondaryDark = Color(0xFFFFFFFF)

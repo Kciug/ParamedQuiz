@@ -30,6 +30,8 @@ class MMQuizVM @Inject constructor(
     private var questions: List<Question> = emptyList()
     private var currentQuestionIndex: Int = 0
 
+    private var correctAnswers: Int = 0
+
     init {
         viewModelScope.launch {
             useCases.getQuestionsForCategory(categoryId).collectLatest { response ->
@@ -42,6 +44,11 @@ class MMQuizVM @Inject constructor(
                     is Response.Error -> { _state.update { it.copy(responseState = ResponseState.Error(response.error)) }}
                     Response.Loading -> { _state.update { it.copy(responseState = ResponseState.Loading) }}
                 }
+            }
+        }
+        viewModelScope.launch {
+            useCases.getUserScore().collectLatest { score ->
+                _state.update { it.copy(userScore = score.score.toInt()) }
             }
         }
     }
@@ -95,11 +102,7 @@ class MMQuizVM @Inject constructor(
         _state.update {
             it.copy(
                 currentQuestionNumber = currentQuestionIndex + 1,
-                questionText = nextQuestion.questionText,
-                answers = nextQuestion.answers.map { answer -> answer.toUIM() },
-                isAnswerSubmitted = false,
-                isAnswerCorrect = false,
-                correctAnswers = emptyList(),
+                question = nextQuestion.toUIM()
             )
         }
     }
@@ -118,34 +121,29 @@ class MMQuizVM @Inject constructor(
     }
 
     private fun onAnswerClicked(answerId: Long) {
-        val updatedAnswers = state.value.answers.map { answer ->
+        val updatedAnswers = state.value.question.answers.map { answer ->
             if(answer.id == answerId) answer.copy(isSelected = !answer.isSelected)
             else answer
         }
 
-        _state.update { it.copy(answers = updatedAnswers) }
+        _state.update { it.copy(question = it.question.updateAnswers(updatedAnswers)) }
     }
 
     private fun submitAnswer() {
-        val isAnswerCorrect = evaluateAnswers()
+        val isAnswerCorrect = useCases.evaluateAnswers(
+            questions[currentQuestionIndex],
+            state.value.question.answers.filter { it.isSelected }.map { it.id }
+        )
+
+        correctAnswers = if(isAnswerCorrect) correctAnswers + 1 else correctAnswers
+
         _state.update {
             it.copy(
-                isAnswerSubmitted = true,
-                isAnswerCorrect = isAnswerCorrect,
-                correctAnswers = questions[currentQuestionIndex].answers.filter { it.isCorrect }.map { it.answerText }
+                question = it.question.submitAnswer(isAnswerCorrect),
+                correctAnswers = correctAnswers
             )
         }
+
         useCases.updateScore(questions[currentQuestionIndex].id, isAnswerCorrect)
-    }
-
-    private fun evaluateAnswers() : Boolean {
-        val selectedAnswers = state.value.answers.filter { it.isSelected }
-        val correctAnswers = questions[currentQuestionIndex].answers.filter { it.isCorrect }
-
-        if(selectedAnswers.size != correctAnswers.size) return false
-        correctAnswers.forEach { correctAnswer ->
-            if(selectedAnswers.none { it.id == correctAnswer.id }) return false
-        }
-        return true
     }
 }

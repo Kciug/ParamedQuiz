@@ -2,6 +2,7 @@ package com.rafalskrzypczyk.core.composables
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,20 +23,26 @@ fun NavTopBar(
     actions: @Composable RowScope.() -> Unit = {},
     onNavigateBack: () -> Unit,
 ) {
-    Row (
-        modifier = modifier
-            .fillMaxWidth()
-            .statusBarsPadding()
-            .padding(Dimens.DEFAULT_PADDING),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+    Box(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center
     ) {
-        BackButton(onNavigateBack = onNavigateBack)
         title?.let {
             TextHeadline(title)
         }
-        actions()
+        Row (
+            modifier = modifier
+                .fillMaxWidth()
+                .statusBarsPadding()
+                .padding(Dimens.DEFAULT_PADDING),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            BackButton(onNavigateBack = onNavigateBack)
+            actions()
+        }
     }
+
 }
 
 @Composable
