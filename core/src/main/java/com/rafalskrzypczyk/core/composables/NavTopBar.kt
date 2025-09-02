@@ -24,7 +24,9 @@ fun NavTopBar(
     onNavigateBack: () -> Unit,
 ) {
     Box(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .statusBarsPadding(),
         contentAlignment = Alignment.Center
     ) {
         title?.let {
@@ -33,7 +35,6 @@ fun NavTopBar(
         Row (
             modifier = modifier
                 .fillMaxWidth()
-                .statusBarsPadding()
                 .padding(Dimens.DEFAULT_PADDING),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
