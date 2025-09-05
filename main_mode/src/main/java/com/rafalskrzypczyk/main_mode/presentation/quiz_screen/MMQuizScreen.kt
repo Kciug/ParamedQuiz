@@ -8,37 +8,24 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.SportsScore
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.rafalskrzypczyk.core.api_response.ResponseState
-import com.rafalskrzypczyk.core.composables.ButtonSecondary
 import com.rafalskrzypczyk.core.composables.ConfirmationDialog
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.ErrorDialog
 import com.rafalskrzypczyk.core.composables.Loading
 import com.rafalskrzypczyk.core.composables.NavTopBar
 import com.rafalskrzypczyk.core.composables.PreviewContainer
-import com.rafalskrzypczyk.main_mode.R
+import com.rafalskrzypczyk.core.composables.QuizFinishScreen
 
 @Composable
 fun MMQuizScreen(
@@ -140,40 +127,6 @@ fun MMQuizScreenContent(
             )
 
         }
-    }
-}
-
-@Composable
-private fun QuizFinishScreen(
-    onNavigateBack: () -> Unit
-) {
-    Column (
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(Dimens.DEFAULT_PADDING),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ){
-        Icon(
-            imageVector = Icons.Default.SportsScore,
-            contentDescription = stringResource(R.string.ic_desc_category_finished),
-            tint = Color.Green,
-            modifier = Modifier.size(Dimens.SIZE_MEDIUM)
-        )
-        Text(
-            text = stringResource(R.string.category_finished_title),
-            textAlign = TextAlign.Center,
-            fontWeight = FontWeight.Bold,
-        )
-        Text(
-            text = stringResource(R.string.category_finished_message),
-            textAlign = TextAlign.Center,
-        )
-        ButtonSecondary(
-            title = stringResource(R.string.btn_back),
-            onClick = onNavigateBack
-        )
     }
 }
 
