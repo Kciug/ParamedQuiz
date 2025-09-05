@@ -5,5 +5,8 @@ data class UserPageState (
     val userName: String = "",
     val userEmail: String = "",
     val userScore: Int = 0,
-    val userStreak: Int = 0
+    val userStreak: Int = 0,
+    val overallResult: Float = 0f,
+    val mainModeResult: Float = 0f,
+    val swipeModeResult: Float = 0f
 )

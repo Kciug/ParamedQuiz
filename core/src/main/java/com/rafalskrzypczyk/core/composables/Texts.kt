@@ -32,13 +32,15 @@ fun TextPrimary(
 fun TextHeadline(
     text: String,
     modifier: Modifier = Modifier,
-    color: Color = MaterialTheme.colorScheme.onBackground
+    color: Color = MaterialTheme.colorScheme.onBackground,
+    textAlign: TextAlign? = TextAlign.Unspecified
 ) {
     Text(
         modifier = modifier,
         text = text,
         style = MaterialTheme.typography.headlineSmall,
-        color = color
+        color = color,
+        textAlign = textAlign
     )
 }
 
@@ -46,13 +48,15 @@ fun TextHeadline(
 fun TextCaption(
     text: String,
     modifier: Modifier = Modifier,
-    color: Color = MaterialTheme.colorScheme.tertiary
+    color: Color = MaterialTheme.colorScheme.tertiary,
+    textAlign: TextAlign? = TextAlign.Unspecified
 ) {
     Text(
         modifier = modifier,
         text = text,
         style = MaterialTheme.typography.labelSmall,
-        color = color
+        color = color,
+        textAlign = textAlign
     )
 }
 

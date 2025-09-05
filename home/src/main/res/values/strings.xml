@@ -46,4 +46,10 @@
     <string name="branding_created_with">Stworzono z</string>
     <string name="branding_frontfolks">frontfolks</string>
     <string name="desc_branding_love">miłością</string>
+
+    <string name="stats_header">Statystyki</string>
+    <string name="stats_overall">Ogólny wynik</string>
+    <string name="stats_correct_answers">Poprawnych odpowiedzi</string>
+    <string name="stats_result_main_mode">Quiz</string>
+    <string name="stats_result_swipe_mode">Wiedza w akcji</string>
 </resources>

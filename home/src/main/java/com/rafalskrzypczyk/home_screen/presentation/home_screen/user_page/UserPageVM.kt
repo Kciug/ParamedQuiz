@@ -37,9 +37,13 @@ class UserPageVM @Inject constructor(
         }
         viewModelScope.launch {
             scoreManager.getScoreFlow().collect { score ->
+                val overallAnswers = score.seenQuestions.sumOf { it.timesSeen }.toFloat()
+                val overallCorrectAnswers = score.seenQuestions.sumOf { it.timesCorrect }
+
                 _state.update {
                     it.copy(
-                        userScore = score.score.toInt()
+                        userScore = score.score.toInt(),
+                        overallResult = overallCorrectAnswers / overallAnswers
                     )
                 }
             }

@@ -9,6 +9,9 @@ object Dimens {
     val OUTLINE_THICKNESS = 2.dp
     val OUTLINE_THICKNESS_LARGE = 10.dp
 
+    val STAT_BAR_WIDTH = 15.dp
+    val STAT_BAR_WIDTH_THICK = 30.dp
+
     val DEFAULT_PADDING = 15.dp
     val SMALL_PADDING = 5.dp
     val LARGE_PADDING = 30.dp
