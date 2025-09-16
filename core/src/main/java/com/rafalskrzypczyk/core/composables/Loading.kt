@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 
 @Composable
-fun Loading(modifier: Modifier = Modifier) {
+fun Loading(modifier: Modifier = Modifier.fillMaxSize()) {
     val infiniteAnimation = rememberInfiniteTransition(label = "infinite")
     val iconSize by infiniteAnimation.animateFloat(
         initialValue = 1f,
@@ -39,7 +39,7 @@ fun Loading(modifier: Modifier = Modifier) {
     )
 
     Box(
-        modifier.fillMaxSize(),
+        modifier,
         contentAlignment = Alignment.Center
     ){
         Icon(

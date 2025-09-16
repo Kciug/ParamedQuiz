@@ -52,4 +52,12 @@
     <string name="stats_correct_answers">Poprawnych odpowiedzi</string>
     <string name="stats_result_main_mode">Quiz</string>
     <string name="stats_result_swipe_mode">Wiedza w akcji</string>
+    <string name="stats_best_questions">Najlepsze pytania</string>
+    <string name="stats_worst_questions">Najgorsze pytania</string>
+    <string name="stats_question_correct_answers">poprawnych odpowiedzi: %1$d</string>
+    <string name="stats_question_incorrect_answers">błędnych odpowiedzi: %1$d</string>
+    <string name="desc_next_mode">Następny tryb</string>
+    <string name="desc_previous_mode">Poprzedni tryb</string>
+    
+    <string name="percentage">%1$d%%</string>
 </resources>

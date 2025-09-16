@@ -8,6 +8,7 @@ data class QuestionAnnotation(
     val questionId: Long,
     val timesSeen: Long,
     val timesCorrect: Long,
+    val timesIncorrect: Long = timesSeen - timesCorrect
 ) {
     companion object {
         fun new(questionId: Long, answeredCorrectly: Boolean): QuestionAnnotation =

@@ -1,6 +1,7 @@
 package com.rafalskrzypczyk.core.composables
 
 import android.content.res.Configuration
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -13,6 +14,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 
@@ -26,8 +28,9 @@ fun NavTopBar(
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .background(Color.Transparent)
             .statusBarsPadding(),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         title?.let {
             TextHeadline(title)

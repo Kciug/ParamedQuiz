@@ -79,7 +79,10 @@ fun UserPageScreen(
             UserStatisticsComponent(
                 overallResult = state.overallResult,
                 mainModeResult = state.mainModeResult,
-                swipeModeResult = state.swipeModeResult
+                swipeModeResult = state.swipeModeResult,
+                bestWorstQuestions = state.bestWorstQuestions,
+                onNextMode = { onEvent(UserPageUIEvents.OnNextMode) },
+                onPreviousMode = { onEvent(UserPageUIEvents.OnPreviousMode) },
             )
         }
     }
