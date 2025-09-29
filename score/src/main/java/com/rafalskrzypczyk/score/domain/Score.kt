@@ -8,8 +8,8 @@ import java.util.Date
 
 @Serializable
 data class Score(
-    val score: Long,
-    val streak: Long,
+    val score: Int,
+    val streak: Int,
     @Contextual val lastStreakUpdateDate: Date?,
     val seenQuestions: List<QuestionAnnotation>
 ) {
@@ -19,19 +19,19 @@ data class Score(
 }
 
 fun Score.isEmpty(): Boolean {
-    return score == 0L && seenQuestions.isEmpty()
+    return score == 0 && seenQuestions.isEmpty()
 }
 
 fun ScoreDTO.toDomain() = Score(
-    score = score,
-    streak = streak,
+    score = score.toInt(),
+    streak = streak.toInt(),
     lastStreakUpdateDate = lastStreakUpdateDate?.toDate(),
     seenQuestions = seenQuestions.map { it.toDomain() }
 )
 
 fun Score.toDTO() = ScoreDTO(
-    score = score,
-    streak = streak,
+    score = score.toLong(),
+    streak = streak.toLong(),
     lastStreakUpdateDate = lastStreakUpdateDate?.let { Timestamp(it) },
     seenQuestions = seenQuestions.map { it.toDTO() }
 )

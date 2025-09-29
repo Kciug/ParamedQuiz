@@ -51,7 +51,13 @@ class UserPageVM @Inject constructor(
     private fun getScoreData() {
         viewModelScope.launch {
             useCases.getUserScore().collect { score ->
-                _state.update { it.copy(userScore = score.score.toInt()) }
+                _state.update {
+                    it.copy(
+                        userScore = score.score,
+                        userStreak = score.streak,
+                        userStreakState = useCases.getStreakState(score.lastStreakUpdateDate)
+                    )
+                }
             }
         }
     }

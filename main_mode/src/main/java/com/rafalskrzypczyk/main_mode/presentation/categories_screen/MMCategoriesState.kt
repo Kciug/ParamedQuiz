@@ -1,10 +1,12 @@
 package com.rafalskrzypczyk.main_mode.presentation.categories_screen
 
 import com.rafalskrzypczyk.core.api_response.ResponseState
+import com.rafalskrzypczyk.score.domain.StreakState
 
 data class MMCategoriesState (
     val userScore: Int = 0,
     val userStreak: Int = 0,
+    val userStreakState: StreakState = StreakState.MISSED,
     val isUserLoggedIn: Boolean = false,
     val userAvatar: String? = null,
     val responseState: ResponseState = ResponseState.Idle,

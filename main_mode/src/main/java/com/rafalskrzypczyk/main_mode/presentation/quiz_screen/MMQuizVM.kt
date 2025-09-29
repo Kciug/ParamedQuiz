@@ -31,8 +31,6 @@ class MMQuizVM @Inject constructor(
 
     private var correctAnswers: Int = 0
 
-    private val increaseStreakAnswers: Int = 3
-
     init {
         viewModelScope.launch {
             useCases.getQuestionsForCategory(categoryId).collectLatest { response ->
@@ -146,9 +144,6 @@ class MMQuizVM @Inject constructor(
         }
 
         useCases.updateScore(questions[currentQuestionIndex].id, isAnswerCorrect)
-
-        if(currentQuestionIndex == increaseStreakAnswers - 1) {
-            useCases.updateStreak()
-        }
+        useCases.updateStreak()
     }
 }

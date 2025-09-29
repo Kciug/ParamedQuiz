@@ -33,8 +33,9 @@ class MMCategoriesVM @Inject constructor(
             useCases.getUserScore().collectLatest { userScore ->
                 _state.update {
                     it.copy(
-                        userScore = userScore.score.toInt(),
-                        userStreak = 0,
+                        userScore = userScore.score,
+                        userStreak = userScore.streak,
+                        userStreakState = useCases.getStreakState(userScore.lastStreakUpdateDate),
                         isUserLoggedIn = useCases.checkIsUserLoggedIn()
                     )
                 }
@@ -48,8 +49,8 @@ class MMCategoriesVM @Inject constructor(
                     Response.Loading -> _state.update { it.copy(responseState = ResponseState.Loading) }
                     is Response.Success -> {
                         attachCategoriesListener()
-                        _state.update {
-                            it.copy(
+                        _state.update { state ->
+                            state.copy(
                                 responseState = ResponseState.Success,
                                 categories = response.data.map { it.toUIM() })
                         }
@@ -62,8 +63,8 @@ class MMCategoriesVM @Inject constructor(
     private fun attachCategoriesListener() {
         viewModelScope.launch {
             useCases.getUpdatedCategories().collectLatest { data ->
-                _state.update {
-                    it.copy(categories = data.map { it.toUIM() } )
+                _state.update { state ->
+                    state.copy(categories = data.map { it.toUIM() } )
                 }
             }
         }
