@@ -1,6 +1,4 @@
-package com.rafalskrzypczyk.score
-
-import com.rafalskrzypczyk.score.domain.Score
+package com.rafalskrzypczyk.score.domain
 
 interface ScoreStorage {
     fun saveScore(score: Score)

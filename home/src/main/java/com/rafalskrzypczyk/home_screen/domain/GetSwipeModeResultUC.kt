@@ -1,7 +1,7 @@
 package com.rafalskrzypczyk.home_screen.domain
 
 import com.rafalskrzypczyk.core.api_response.Response
-import com.rafalskrzypczyk.score.ScoreManager
+import com.rafalskrzypczyk.score.domain.ScoreManager
 import com.rafalskrzypczyk.swipe_mode.domain.SwipeModeRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map

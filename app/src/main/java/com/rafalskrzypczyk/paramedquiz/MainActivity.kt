@@ -15,7 +15,7 @@ import com.rafalskrzypczyk.auth.domain.AuthRepository
 import com.rafalskrzypczyk.core.composables.ErrorDialog
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.paramedquiz.navigation.AppNavHost
-import com.rafalskrzypczyk.score.ScoreManager
+import com.rafalskrzypczyk.score.domain.ScoreManager
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 

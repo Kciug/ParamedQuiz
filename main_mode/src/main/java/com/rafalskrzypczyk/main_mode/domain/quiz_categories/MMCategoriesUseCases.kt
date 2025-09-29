@@ -1,7 +1,7 @@
 package com.rafalskrzypczyk.main_mode.domain.quiz_categories
 
 import com.rafalskrzypczyk.core.user_management.CheckIsUserLoggedInUC
-import com.rafalskrzypczyk.score.domain.GetUserScoreUC
+import com.rafalskrzypczyk.score.domain.use_cases.GetUserScoreUC
 import javax.inject.Inject
 
 

@@ -1,6 +1,6 @@
 package com.rafalskrzypczyk.home_screen.domain
 
-import com.rafalskrzypczyk.score.ScoreManager
+import com.rafalskrzypczyk.score.domain.ScoreManager
 import javax.inject.Inject
 
 class GetOverallResultUC @Inject constructor(

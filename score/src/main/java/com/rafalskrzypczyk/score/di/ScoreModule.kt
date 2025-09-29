@@ -1,9 +1,9 @@
 package com.rafalskrzypczyk.score.di
 
-import com.rafalskrzypczyk.score.ScoreManager
-import com.rafalskrzypczyk.score.ScoreRepositoryImpl
-import com.rafalskrzypczyk.score.ScoreStorage
-import com.rafalskrzypczyk.score.ScoreStorageSharedPrefs
+import com.rafalskrzypczyk.score.domain.ScoreManager
+import com.rafalskrzypczyk.score.di.ScoreRepositoryImpl
+import com.rafalskrzypczyk.score.domain.ScoreStorage
+import com.rafalskrzypczyk.score.di.ScoreStorageSharedPrefs
 import com.rafalskrzypczyk.score.domain.ScoreRepository
 import dagger.Binds
 import dagger.Module

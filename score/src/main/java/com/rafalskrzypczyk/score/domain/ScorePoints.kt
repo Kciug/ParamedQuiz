@@ -1,4 +1,4 @@
-package com.rafalskrzypczyk.score
+package com.rafalskrzypczyk.score.domain
 
 object ScorePoints {
     const val CORRECT = 100

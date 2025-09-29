@@ -1,7 +1,7 @@
 package com.rafalskrzypczyk.home_screen.domain
 
 import com.rafalskrzypczyk.core.user_management.GetUserUC
-import com.rafalskrzypczyk.score.domain.GetUserScoreUC
+import com.rafalskrzypczyk.score.domain.use_cases.GetUserScoreUC
 import javax.inject.Inject
 
 data class UserPageUseCases @Inject constructor(

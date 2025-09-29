@@ -1,6 +1,7 @@
-package com.rafalskrzypczyk.score.domain
+package com.rafalskrzypczyk.score.domain.use_cases
 
-import com.rafalskrzypczyk.score.ScoreManager
+import com.rafalskrzypczyk.score.domain.Score
+import com.rafalskrzypczyk.score.domain.ScoreManager
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 

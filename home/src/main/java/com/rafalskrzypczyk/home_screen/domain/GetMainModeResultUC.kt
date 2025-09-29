@@ -2,7 +2,7 @@ package com.rafalskrzypczyk.home_screen.domain
 
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.main_mode.domain.MainModeRepository
-import com.rafalskrzypczyk.score.ScoreManager
+import com.rafalskrzypczyk.score.domain.ScoreManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject

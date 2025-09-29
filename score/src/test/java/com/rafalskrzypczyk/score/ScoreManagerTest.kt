@@ -3,6 +3,7 @@ package com.rafalskrzypczyk.score
 import app.cash.turbine.test
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.score.domain.Score
+import com.rafalskrzypczyk.score.domain.ScoreManager
 import com.rafalskrzypczyk.score.domain.ScoreRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -44,7 +45,7 @@ class ScoreManagerTest {
 
     @Test
     fun `fetchUserScore emits success and sets score`() = testScope.runTest {
-        val expectedScore = Score(10, emptyList())
+        val expectedScore = Score(10, 0,emptyList())
         coEvery { repository.getUserScore() } returns flowOf(Response.Success(expectedScore))
 
         scoreManager.onUserLogIn()
@@ -69,7 +70,7 @@ class ScoreManagerTest {
     fun `updateScore triggers debounce sync`() = testScope.runTest {
         coEvery { repository.saveUserScore(any()) } returns flowOf(Response.Success(Unit))
 
-        val updatedScore = Score(5, emptyList())
+        val updatedScore = Score(5, 0,emptyList())
         scoreManager.updateScore(updatedScore)
 
         advanceTimeBy(30000)
@@ -88,7 +89,7 @@ class ScoreManagerTest {
 
     @Test
     fun `forceSync syncs when dirty`() = testScope.runTest {
-        val score = Score(99, emptyList())
+        val score = Score(99, 0,emptyList())
         coEvery { repository.saveUserScore(score) } returns flowOf(Response.Success(Unit))
 
         scoreManager.updateScore(score)
@@ -103,7 +104,7 @@ class ScoreManagerTest {
         val error = "Write failed"
         coEvery { repository.saveUserScore(any()) } returns flowOf(Response.Error(error))
 
-        scoreManager.updateScore(Score(1, emptyList()))
+        scoreManager.updateScore(Score(1, 0,emptyList()))
         advanceTimeBy(30000)
 
         scoreManager.errorFlow.test {

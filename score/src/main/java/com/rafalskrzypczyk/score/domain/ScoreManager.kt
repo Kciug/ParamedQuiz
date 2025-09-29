@@ -1,9 +1,6 @@
-package com.rafalskrzypczyk.score
+package com.rafalskrzypczyk.score.domain
 
 import com.rafalskrzypczyk.core.api_response.Response
-import com.rafalskrzypczyk.score.domain.Score
-import com.rafalskrzypczyk.score.domain.ScoreRepository
-import com.rafalskrzypczyk.score.domain.isEmpty
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay

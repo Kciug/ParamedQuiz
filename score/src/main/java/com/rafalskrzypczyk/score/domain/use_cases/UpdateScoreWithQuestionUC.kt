@@ -1,7 +1,8 @@
-package com.rafalskrzypczyk.score.domain
+package com.rafalskrzypczyk.score.domain.use_cases
 
-import com.rafalskrzypczyk.score.ScoreManager
-import com.rafalskrzypczyk.score.ScorePoints
+import com.rafalskrzypczyk.score.domain.ScoreManager
+import com.rafalskrzypczyk.score.domain.ScorePoints
+import com.rafalskrzypczyk.score.domain.QuestionAnnotation
 import javax.inject.Inject
 
 class UpdateScoreWithQuestionUC @Inject constructor(
@@ -25,7 +26,7 @@ class UpdateScoreWithQuestionUC @Inject constructor(
             .toMutableList()
 
         if (updatedSeenQuestions.none { it.questionId == questionId }) {
-            updatedSeenQuestions.add(QuestionAnnotation.new(questionId, answeredCorrectly))
+            updatedSeenQuestions.add(QuestionAnnotation.Companion.new(questionId, answeredCorrectly))
             firstCorrectAnswer = answeredCorrectly
         }
 

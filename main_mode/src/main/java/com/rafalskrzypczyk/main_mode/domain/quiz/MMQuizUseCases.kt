@@ -1,7 +1,7 @@
 package com.rafalskrzypczyk.main_mode.domain.quiz
 
-import com.rafalskrzypczyk.score.domain.GetUserScoreUC
-import com.rafalskrzypczyk.score.domain.UpdateScoreWithQuestionUC
+import com.rafalskrzypczyk.score.domain.use_cases.GetUserScoreUC
+import com.rafalskrzypczyk.score.domain.use_cases.UpdateScoreWithQuestionUC
 import javax.inject.Inject
 
 data class MMQuizUseCases @Inject constructor(
