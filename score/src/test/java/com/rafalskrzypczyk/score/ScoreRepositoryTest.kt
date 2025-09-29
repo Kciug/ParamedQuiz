@@ -59,7 +59,7 @@ class ScoreRepositoryTest {
     @Test
     fun `getUserScore returns score from firestore when user is logged in`() = testScope.runTest {
         val user = UserData("id123", "test@test.com", "test")
-        val dto = ScoreDTO(10, 0,emptyList())
+        val dto = ScoreDTO(10, 0, null,emptyList())
         val domain = dto.toDomain()
 
         every { userManager.getCurrentLoggedUser() } returns user
@@ -72,7 +72,7 @@ class ScoreRepositoryTest {
 
     @Test
     fun `getUserScore returns local score when user is not logged in`() = testScope.runTest {
-        val localScore = Score(5, 0,listOf())
+        val localScore = Score(5, 0, null,listOf())
 
         every { userManager.getCurrentLoggedUser() } returns null
         every { scoreStorage.getScore() } returns localScore
@@ -85,7 +85,7 @@ class ScoreRepositoryTest {
     @Test
     fun `saveUserScore stores remotely when user is logged in`() = runTest {
         val user = UserData("id123", "test@test.com", "test")
-        val score = Score(100, 0,listOf())
+        val score = Score(100, 0, null,listOf())
 
         every { userManager.getCurrentLoggedUser() } returns user
         coEvery { firestore.updateUserScore(eq(user.id), any()) } returns flowOf(Response.Success(Unit))
@@ -98,7 +98,7 @@ class ScoreRepositoryTest {
 
     @Test
     fun `saveUserScore stores locally when user is not logged in`() = runTest {
-        val score = Score(100, 0,listOf())
+        val score = Score(100, 0, null,listOf())
 
         every { userManager.getCurrentLoggedUser() } returns null
         every { scoreStorage.saveScore(score) } just Runs

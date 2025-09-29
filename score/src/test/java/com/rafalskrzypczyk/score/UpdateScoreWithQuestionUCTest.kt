@@ -26,7 +26,7 @@ class UpdateScoreWithQuestionUCTest {
     @Test
     fun `should add new question with correct answer and grant FIRST_CORRECT points`() {
         // given
-        every { scoreManager.getScore() } returns Score(0, 0, emptyList())
+        every { scoreManager.getScore() } returns Score(0, 0,  null,emptyList())
 
         // when
         updateScoreWithQuestionUC(questionId = 101L, answeredCorrectly = true)
@@ -36,7 +36,7 @@ class UpdateScoreWithQuestionUCTest {
         verify(exactly = 1) { scoreManager.updateScore(capture(slot)) }
 
         val updated = slot.captured
-        assertEquals(ScorePoints.FIRST_CORRECT.toLong(), updated.score)
+        assertEquals(ScorePoints.FIRST_CORRECT, updated.score)
         assertEquals(1, updated.seenQuestions.size)
 
         with(updated.seenQuestions.first()) {
@@ -50,7 +50,7 @@ class UpdateScoreWithQuestionUCTest {
     fun `should update existing question and grant CORRECT points`() {
         // given
         val existingQuestion = QuestionAnnotation(123L, timesSeen = 1, timesCorrect = 1)
-        every { scoreManager.getScore() } returns Score(10, 0,listOf(existingQuestion))
+        every { scoreManager.getScore() } returns Score(10, 0, null,listOf(existingQuestion))
 
         // when
         updateScoreWithQuestionUC(123L, answeredCorrectly = true)
@@ -60,7 +60,7 @@ class UpdateScoreWithQuestionUCTest {
         verify { scoreManager.updateScore(capture(slot)) }
 
         val updated = slot.captured
-        assertEquals((10 + ScorePoints.CORRECT).toLong(), updated.score)
+        assertEquals((10 + ScorePoints.CORRECT), updated.score)
         val q = updated.seenQuestions.first()
         assertEquals(2, q.timesSeen)
         assertEquals(2, q.timesCorrect)
@@ -69,7 +69,7 @@ class UpdateScoreWithQuestionUCTest {
     @Test
     fun `should update existing question and not grant points on wrong answer`() {
         val existing = QuestionAnnotation(321L, timesSeen = 2, timesCorrect = 0)
-        every { scoreManager.getScore() } returns Score(5, 0, listOf(existing))
+        every { scoreManager.getScore() } returns Score(5, 0, null,listOf(existing))
 
         updateScoreWithQuestionUC(321L, answeredCorrectly = false)
 
@@ -85,7 +85,7 @@ class UpdateScoreWithQuestionUCTest {
 
     @Test
     fun `should add new incorrect question and not grant points`() {
-        every { scoreManager.getScore() } returns Score(7, 0, emptyList())
+        every { scoreManager.getScore() } returns Score(7, 0,null,emptyList())
 
         updateScoreWithQuestionUC(456L, answeredCorrectly = false)
 
