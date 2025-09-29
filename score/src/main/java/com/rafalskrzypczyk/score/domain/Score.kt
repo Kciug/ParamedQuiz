@@ -1,16 +1,20 @@
 package com.rafalskrzypczyk.score.domain
 
+import com.google.firebase.Timestamp
 import com.rafalskrzypczyk.firestore.domain.models.ScoreDTO
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
+import java.util.Date
 
 @Serializable
 data class Score(
     val score: Long,
     val streak: Long,
+    @Contextual val lastStreakUpdateDate: Date?,
     val seenQuestions: List<QuestionAnnotation>
 ) {
     companion object {
-        fun empty() = Score(0, 0, emptyList())
+        fun empty() = Score(0, 0, null,emptyList())
     }
 }
 
@@ -21,11 +25,13 @@ fun Score.isEmpty(): Boolean {
 fun ScoreDTO.toDomain() = Score(
     score = score,
     streak = streak,
+    lastStreakUpdateDate = lastStreakUpdateDate?.toDate(),
     seenQuestions = seenQuestions.map { it.toDomain() }
 )
 
 fun Score.toDTO() = ScoreDTO(
     score = score,
     streak = streak,
+    lastStreakUpdateDate = lastStreakUpdateDate?.let { Timestamp(it) },
     seenQuestions = seenQuestions.map { it.toDTO() }
 )

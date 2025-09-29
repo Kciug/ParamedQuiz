@@ -21,4 +21,5 @@ dependencies {
     daggerHilt()
     tests()
     kotlinxSerialization()
+    firebase()
 }

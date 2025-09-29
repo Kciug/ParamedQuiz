@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.String
 
 @HiltViewModel
 class MMQuizVM @Inject constructor(
@@ -31,6 +30,8 @@ class MMQuizVM @Inject constructor(
     private var currentQuestionIndex: Int = 0
 
     private var correctAnswers: Int = 0
+
+    private val increaseStreakAnswers: Int = 3
 
     init {
         viewModelScope.launch {
@@ -145,5 +146,9 @@ class MMQuizVM @Inject constructor(
         }
 
         useCases.updateScore(questions[currentQuestionIndex].id, isAnswerCorrect)
+
+        if(currentQuestionIndex == increaseStreakAnswers - 1) {
+            useCases.updateStreak()
+        }
     }
 }
