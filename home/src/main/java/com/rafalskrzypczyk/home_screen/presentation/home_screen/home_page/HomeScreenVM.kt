@@ -27,7 +27,7 @@ class HomeScreenVM @Inject constructor(
             getUserScoreUC.invoke().collect {
                 _state.value = _state.value.copy(
                     userScore = it.score.toInt(),
-                    userStreak = 0,
+                    userStreak = it.streak.toInt(),
                     isUserLoggedIn = userManager.getCurrentLoggedUser() != null
                 )
             }
