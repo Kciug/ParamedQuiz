@@ -1,8 +1,8 @@
-package com.rafalskrzypczyk.main_mode.presentation.quiz_screen
+package com.rafalskrzypczyk.main_mode.presentation.quiz_base
 
 import com.rafalskrzypczyk.core.api_response.ResponseState
 
-data class MMQuizState (
+data class QuizState (
     val userScore: Int = 0,
     val correctAnswers: Int = 0,
     val responseState: ResponseState = ResponseState.Idle,

@@ -1,4 +1,4 @@
-package com.rafalskrzypczyk.main_mode.presentation.quiz_screen
+package com.rafalskrzypczyk.main_mode.presentation.quiz_base
 
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.rafalskrzypczyk.core.R
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.ConfirmationDialog
 import com.rafalskrzypczyk.core.composables.Dimens
@@ -29,7 +30,7 @@ import com.rafalskrzypczyk.core.composables.QuizFinishScreen
 
 @Composable
 fun MMQuizScreen(
-    state: MMQuizState,
+    state: QuizState,
     onEvent: (MMQuizUIEvents) -> Unit,
     onNavigateBack: () -> Unit,
 ) {
@@ -82,7 +83,7 @@ fun MMQuizScreen(
 
         if(state.showExitConfirmation) {
             ConfirmationDialog(
-                title = stringResource(com.rafalskrzypczyk.core.R.string.dialog_title_confirm_exit_quiz),
+                title = stringResource(R.string.dialog_title_confirm_exit_quiz),
                 onConfirm = { onNavigateBack() },
                 onDismiss = { onEvent.invoke(MMQuizUIEvents.OnBackDiscarded) }
             )
@@ -93,7 +94,7 @@ fun MMQuizScreen(
 @Composable
 fun MMQuizScreenContent(
     modifier: Modifier = Modifier,
-    state: MMQuizState,
+    state: QuizState,
     onEvent: (MMQuizUIEvents) -> Unit
 ) {
     Column(
@@ -144,7 +145,7 @@ private fun MMQuizScreenPreview() {
 
     var state = remember {
         mutableStateOf(
-            MMQuizState(
+            QuizState(
                 userScore = 13500,
                 correctAnswers = 0,
                 responseState = ResponseState.Success,

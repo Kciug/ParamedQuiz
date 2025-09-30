@@ -4,9 +4,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
-import com.rafalskrzypczyk.main_mode.domain.QuizEngine
 import com.rafalskrzypczyk.main_mode.domain.quiz.MMQuizUseCases
-import com.rafalskrzypczyk.main_mode.presentation.BaseQuizVM
+import com.rafalskrzypczyk.main_mode.presentation.quiz_base.BaseQuizVM
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
@@ -17,21 +16,13 @@ import javax.inject.Inject
 class MMQuizVM @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val useCases: MMQuizUseCases
-): BaseQuizVM(
-    quizEngine = QuizEngine(useCases),
-    useCases = useCases
-) {
+): BaseQuizVM(useCases = useCases.base) {
     private val categoryId: Long = savedStateHandle.get<Long>("categoryId") ?: -1
     private val categoryTitle: String = savedStateHandle.get<String>("categoryTitle") ?: ""
 
     init {
         viewModelScope.launch {
             loadQuestions()
-        }
-        viewModelScope.launch {
-            useCases.getUserScore().collectLatest { score ->
-                _state.update { it.copy(userScore = score.score) }
-            }
         }
     }
 
@@ -46,6 +37,11 @@ class MMQuizVM @Inject constructor(
                 Response.Loading -> { _state.update { it.copy(responseState = ResponseState.Loading) }}
             }
         }
+    }
+
+    override fun submitAnswer() {
+        super.submitAnswer()
+        useCases.updateStreak()
     }
 
     private fun attachQuestionsListener() {

@@ -1,4 +1,4 @@
-package com.rafalskrzypczyk.main_mode.domain.quiz
+package com.rafalskrzypczyk.main_mode.domain.quiz_base
 
 import com.rafalskrzypczyk.main_mode.domain.models.Question
 import javax.inject.Inject

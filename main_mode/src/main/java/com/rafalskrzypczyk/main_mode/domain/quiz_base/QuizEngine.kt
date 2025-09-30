@@ -1,10 +1,9 @@
-package com.rafalskrzypczyk.main_mode.domain
+package com.rafalskrzypczyk.main_mode.domain.quiz_base
 
 import com.rafalskrzypczyk.main_mode.domain.models.Question
-import com.rafalskrzypczyk.main_mode.domain.quiz.MMQuizUseCases
 
 class QuizEngine(
-    private val useCases: MMQuizUseCases
+    private val useCases: BaseQuizUseCases
 ) {
     private var questions: List<Question> = emptyList()
     private var currentIndex: Int = 0

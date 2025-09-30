@@ -1,5 +1,6 @@
-package com.rafalskrzypczyk.main_mode.presentation.quiz_screen
+package com.rafalskrzypczyk.main_mode.presentation.quiz_base
 
+import android.content.res.Configuration
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
@@ -111,7 +112,7 @@ fun CorrectAnswersAnimated(
 
 @Composable
 @Preview
-@Preview(uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 private fun QuizHeaderPreview() {
     var correctAnswers by remember { mutableIntStateOf(0) }
 

@@ -1,25 +1,29 @@
-package com.rafalskrzypczyk.main_mode.presentation
+package com.rafalskrzypczyk.main_mode.presentation.quiz_base
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.core.api_response.ResponseState
-import com.rafalskrzypczyk.main_mode.domain.QuizEngine
 import com.rafalskrzypczyk.main_mode.domain.models.Question
-import com.rafalskrzypczyk.main_mode.domain.quiz.MMQuizUseCases
-import com.rafalskrzypczyk.main_mode.presentation.quiz_screen.MMQuizState
-import com.rafalskrzypczyk.main_mode.presentation.quiz_screen.MMQuizUIEvents
-import com.rafalskrzypczyk.main_mode.presentation.quiz_screen.submitAnswer
-import com.rafalskrzypczyk.main_mode.presentation.quiz_screen.toUIM
-import com.rafalskrzypczyk.main_mode.presentation.quiz_screen.updateAnswers
+import com.rafalskrzypczyk.main_mode.domain.quiz_base.BaseQuizUseCases
+import com.rafalskrzypczyk.main_mode.domain.quiz_base.QuizEngine
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 abstract class BaseQuizVM (
-    private val quizEngine: QuizEngine,
-    private val useCases: MMQuizUseCases
+    private val useCases: BaseQuizUseCases
 ): ViewModel() {
-    protected val _state = MutableStateFlow(MMQuizState())
+    protected val _state = MutableStateFlow(QuizState())
     val state = _state.asStateFlow()
+
+    private val quizEngine = QuizEngine(useCases)
+
+
+    init {
+        loadUserScore()
+    }
 
     abstract suspend fun loadQuestions()
 
@@ -33,6 +37,14 @@ abstract class BaseQuizVM (
         }
     }
 
+    protected fun loadUserScore() {
+        viewModelScope.launch {
+            useCases.getUserScore().collectLatest { score ->
+                _state.update { it.copy(userScore = score.score) }
+            }
+        }
+    }
+
     private fun onAnswerClicked(answerId: Long) {
         val updatedAnswers = state.value.question.answers.map { answer ->
             if (answer.id == answerId) answer.copy(isSelected = !answer.isSelected)
@@ -41,7 +53,7 @@ abstract class BaseQuizVM (
         _state.update { it.copy(question = it.question.updateAnswers(updatedAnswers)) }
     }
 
-    private fun submitAnswer() {
+    protected open fun submitAnswer() {
         val selected = state.value.question.answers.filter { it.isSelected }.map { it.id }
         val isCorrect = quizEngine.submitAnswer(selected)
 
@@ -55,7 +67,6 @@ abstract class BaseQuizVM (
         val currentQ = quizEngine.getCurrentQuestion()
         if (currentQ != null) {
             useCases.updateScore(currentQ.id, isCorrect)
-            useCases.updateStreak()
         }
     }
 
@@ -101,7 +112,7 @@ abstract class BaseQuizVM (
         }
     }
 
-    private fun displayNextQuestion() {
+    protected open fun displayNextQuestion() {
         val next = quizEngine.nextQuestion()
         if (next == null) {
             _state.update { it.copy(isQuizFinished = true) }

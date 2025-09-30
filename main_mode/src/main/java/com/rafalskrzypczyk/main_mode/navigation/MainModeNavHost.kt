@@ -16,7 +16,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.rafalskrzypczyk.main_mode.presentation.categories_screen.MMCategoriesScreen
 import com.rafalskrzypczyk.main_mode.presentation.categories_screen.MMCategoriesVM
-import com.rafalskrzypczyk.main_mode.presentation.quiz_screen.MMQuizScreen
+import com.rafalskrzypczyk.main_mode.presentation.quiz_base.MMQuizScreen
 import com.rafalskrzypczyk.main_mode.presentation.quiz_screen.MMQuizVM
 import kotlinx.serialization.Serializable
 

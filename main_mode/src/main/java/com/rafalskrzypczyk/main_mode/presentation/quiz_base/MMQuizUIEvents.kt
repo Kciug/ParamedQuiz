@@ -1,4 +1,4 @@
-package com.rafalskrzypczyk.main_mode.presentation.quiz_screen
+package com.rafalskrzypczyk.main_mode.presentation.quiz_base
 
 sealed interface MMQuizUIEvents {
     object OnBackPressed: MMQuizUIEvents
