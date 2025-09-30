@@ -49,11 +49,16 @@ fun AppNavHost(
             onAuthenticated = { navController.navigateToUserPage() }
         )
 
+        dailyExerciseDestination(
+            onNavigateBack = { navController.popBackStack() }
+        )
+
         mainMenuDestination(
             onNavigateToUserPanel = {
                 if (userLoggedInProvider()) navController.navigateToUserPage()
                 else navController.navigateToSignup()
             },
+            onNavigateToDailyExercise = { navController.navigateToDailyExercise() },
             onNavigateToMainMode = { navController.navigateToMainMode() },
             onNavigateToSwipeMode = { navController.navigateToSwipeMode() }
         )

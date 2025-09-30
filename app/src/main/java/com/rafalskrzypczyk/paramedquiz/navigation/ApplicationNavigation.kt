@@ -12,6 +12,8 @@ import com.rafalskrzypczyk.home_screen.presentation.home_screen.user_page.UserPa
 import com.rafalskrzypczyk.home_screen.presentation.home_screen.user_settings.UserSettingsScreen
 import com.rafalskrzypczyk.home_screen.presentation.home_screen.user_settings.UserSettingsVM
 import com.rafalskrzypczyk.main_mode.navigation.MainModeNavHost
+import com.rafalskrzypczyk.main_mode.presentation.daily_exercise.DailyExerciseVM
+import com.rafalskrzypczyk.main_mode.presentation.quiz_base.MMQuizScreen
 import com.rafalskrzypczyk.signup.SignupNavHost
 import com.rafalskrzypczyk.swipe_mode.presentation.SwipeModeScreen
 import com.rafalskrzypczyk.swipe_mode.presentation.SwipeModeVM
@@ -39,10 +41,33 @@ fun NavController.navigateToSignup() {
 }
 
 @Serializable
+object DailyExercise
+
+fun NavGraphBuilder.dailyExerciseDestination(
+    onNavigateBack: () -> Unit
+) {
+    composable<DailyExercise> {
+        val viewModel = hiltViewModel<DailyExerciseVM>()
+        val state = viewModel.state.collectAsStateWithLifecycle()
+
+        MMQuizScreen(
+            state = state.value,
+            onEvent = viewModel::onEvent,
+            onNavigateBack = onNavigateBack
+        )
+    }
+}
+
+fun NavController.navigateToDailyExercise() {
+    navigate(route = DailyExercise)
+}
+
+@Serializable
 object MainMenu
 
 fun NavGraphBuilder.mainMenuDestination(
     onNavigateToUserPanel: () -> Unit,
+    onNavigateToDailyExercise: () -> Unit,
     onNavigateToMainMode: () -> Unit,
     onNavigateToSwipeMode: () -> Unit
 ) {
@@ -53,6 +78,7 @@ fun NavGraphBuilder.mainMenuDestination(
         HomeScreen(
             state = state.value,
             onNavigateToUserPanel = onNavigateToUserPanel,
+            onNavigateToDailyExercise = onNavigateToDailyExercise,
             onNavigateToMainMode = onNavigateToMainMode,
             onNavigateToSwipeMode = onNavigateToSwipeMode
         )

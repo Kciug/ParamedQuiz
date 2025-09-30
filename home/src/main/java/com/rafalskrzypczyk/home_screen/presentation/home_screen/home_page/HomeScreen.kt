@@ -33,15 +33,16 @@ import com.rafalskrzypczyk.home.R
 fun HomeScreen(
     state: HomeScreenState,
     onNavigateToUserPanel: () -> Unit,
+    onNavigateToDailyExercise: () -> Unit,
     onNavigateToMainMode: () -> Unit,
     onNavigateToSwipeMode: () -> Unit
 ) {
-    val addons = listOf<Addon>(
+    val addons = listOf(
         Addon(
             title = stringResource(R.string.title_addon_daily_exercises),
             imageRes = com.rafalskrzypczyk.core.R.drawable.frontfolks_logo_256,
             highlighted = state.isNewDailyExerciseAvailable,
-        ) {},
+        ) { onNavigateToDailyExercise() },
         Addon(
             title = stringResource(R.string.title_addon_review),
             imageRes = com.rafalskrzypczyk.core.R.drawable.frontfolks_logo_256,
@@ -155,6 +156,7 @@ private fun HomeScreenPreview() {
                 onNavigateToUserPanel = {},
                 onNavigateToMainMode = {},
                 onNavigateToSwipeMode = {},
+                onNavigateToDailyExercise = {}
             )
         }
     }

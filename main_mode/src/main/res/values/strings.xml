@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="title_categories">Kategorie</string>
+    <string name="title_daily_exercise">Zadanie dnia</string>
 
     <string name="ic_desc_answer_correctness">Poprawność odpowiedzi</string>
     <string name="ic_desc_category_finished">Ukończono kategorię</string>
