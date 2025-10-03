@@ -26,7 +26,7 @@ class UpdateScoreWithQuestionUCTest {
     @Test
     fun `should add new question with correct answer and grant FIRST_CORRECT points`() {
         // given
-        every { scoreManager.getScore() } returns Score(0, 0,  null,emptyList())
+        every { scoreManager.getScore() } returns Score(0, 0,  null, null, emptyList())
 
         // when
         updateScoreWithQuestionUC(questionId = 101L, answeredCorrectly = true)
@@ -50,7 +50,7 @@ class UpdateScoreWithQuestionUCTest {
     fun `should update existing question and grant CORRECT points`() {
         // given
         val existingQuestion = QuestionAnnotation(123L, timesSeen = 1, timesCorrect = 1)
-        every { scoreManager.getScore() } returns Score(10, 0, null,listOf(existingQuestion))
+        every { scoreManager.getScore() } returns Score(10, 0, null, null, listOf(existingQuestion))
 
         // when
         updateScoreWithQuestionUC(123L, answeredCorrectly = true)
@@ -69,7 +69,7 @@ class UpdateScoreWithQuestionUCTest {
     @Test
     fun `should update existing question and not grant points on wrong answer`() {
         val existing = QuestionAnnotation(321L, timesSeen = 2, timesCorrect = 0)
-        every { scoreManager.getScore() } returns Score(5, 0, null,listOf(existing))
+        every { scoreManager.getScore() } returns Score(5, 0, null, null, listOf(existing))
 
         updateScoreWithQuestionUC(321L, answeredCorrectly = false)
 
@@ -85,7 +85,7 @@ class UpdateScoreWithQuestionUCTest {
 
     @Test
     fun `should add new incorrect question and not grant points`() {
-        every { scoreManager.getScore() } returns Score(7, 0,null,emptyList())
+        every { scoreManager.getScore() } returns Score(7, 0,null, null, emptyList())
 
         updateScoreWithQuestionUC(456L, answeredCorrectly = false)
 
