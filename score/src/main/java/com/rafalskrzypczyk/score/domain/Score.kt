@@ -11,10 +11,11 @@ data class Score(
     val score: Int,
     val streak: Int,
     @Contextual val lastStreakUpdateDate: Date?,
+    @Contextual val lastDailyExerciseDate: Date?,
     val seenQuestions: List<QuestionAnnotation>
 ) {
     companion object {
-        fun empty() = Score(0, 0, null,emptyList())
+        fun empty() = Score(0, 0, null, null, emptyList())
     }
 }
 
@@ -26,6 +27,7 @@ fun ScoreDTO.toDomain() = Score(
     score = score.toInt(),
     streak = streak.toInt(),
     lastStreakUpdateDate = lastStreakUpdateDate?.toDate(),
+    lastDailyExerciseDate = lastDailyExerciseDate?.toDate(),
     seenQuestions = seenQuestions.map { it.toDomain() }
 )
 
@@ -33,5 +35,6 @@ fun Score.toDTO() = ScoreDTO(
     score = score.toLong(),
     streak = streak.toLong(),
     lastStreakUpdateDate = lastStreakUpdateDate?.let { Timestamp(it) },
+    lastDailyExerciseDate = lastDailyExerciseDate?.let { Timestamp(it) },
     seenQuestions = seenQuestions.map { it.toDTO() }
 )
