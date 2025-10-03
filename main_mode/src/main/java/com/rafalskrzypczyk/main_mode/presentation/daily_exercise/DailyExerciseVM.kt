@@ -54,6 +54,7 @@ class DailyExerciseVM @Inject constructor(
         super.displayNextQuestion()
         if (state.value.isQuizFinished) {
             useCases.updateStreak()
+            useCases.updateLastDailyExerciseDate()
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.rafalskrzypczyk.home_screen.domain
+package com.rafalskrzypczyk.home_screen.domain.user_page
 
 import com.rafalskrzypczyk.core.user_management.GetUserUC
 import com.rafalskrzypczyk.score.domain.use_cases.GetStreakStateUC

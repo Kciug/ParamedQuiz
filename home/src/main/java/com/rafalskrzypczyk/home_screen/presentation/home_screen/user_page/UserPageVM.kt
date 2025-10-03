@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
-import com.rafalskrzypczyk.home_screen.domain.UserPageUseCases
+import com.rafalskrzypczyk.home_screen.domain.user_page.UserPageUseCases
 import com.rafalskrzypczyk.home_screen.domain.models.QuizMode
 import com.rafalskrzypczyk.home_screen.domain.models.SimpleQuestion
 import com.rafalskrzypczyk.home_screen.domain.models.next

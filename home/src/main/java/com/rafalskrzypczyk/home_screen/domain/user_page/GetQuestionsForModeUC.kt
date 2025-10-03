@@ -1,4 +1,4 @@
-package com.rafalskrzypczyk.home_screen.domain
+package com.rafalskrzypczyk.home_screen.domain.user_page
 
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.home_screen.domain.models.QuizMode

@@ -1,5 +1,6 @@
-package com.rafalskrzypczyk.home_screen.domain
+package com.rafalskrzypczyk.home_screen.domain.user_page
 
+import com.rafalskrzypczyk.home_screen.domain.CalculateResultUC
 import com.rafalskrzypczyk.score.domain.ScoreManager
 import javax.inject.Inject
 
