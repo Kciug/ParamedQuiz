@@ -1,0 +1,100 @@
+package com.rafalskrzypczyk.home_screen.presentation.user_page
+
+import android.content.res.Configuration
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import com.rafalskrzypczyk.core.composables.Dimens
+import com.rafalskrzypczyk.core.composables.PreviewContainer
+import com.rafalskrzypczyk.core.composables.TextHeadline
+import com.rafalskrzypczyk.core.composables.TextPrimary
+import com.rafalskrzypczyk.home.R
+import com.rafalskrzypczyk.home_screen.domain.models.QuestionWithStats
+
+@Composable
+fun UserStatisticsComponent(
+    modifier: Modifier = Modifier,
+    overallResult: Int,
+    mainModeResult: Int,
+    swipeModeResult: Int,
+    bestWorstQuestions: BestWorstQuestionsUIM,
+    onNextMode: () -> Unit,
+    onPreviousMode: () -> Unit
+) {
+    Column(
+        modifier = modifier.padding(Dimens.DEFAULT_PADDING),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
+    ) {
+        TextHeadline(text = stringResource(R.string.stats_header))
+        TextPrimary(text = stringResource(R.string.stats_overall))
+        StatisticsChart(
+            modifier = Modifier.fillMaxWidth().padding(Dimens.DEFAULT_PADDING),
+            progress = overallResult,
+            numericalValueText = stringResource(R.string.percentage, overallResult),
+            numericalValueDescription = stringResource(R.string.stats_correct_answers),
+            strokeWidth = Dimens.STAT_BAR_WIDTH_THICK
+        )
+        QuizModesResults(
+            mainModeResult = mainModeResult,
+            swipeModeResult = swipeModeResult
+        )
+        BestWorstQuestionsComponent(
+            questions = bestWorstQuestions,
+            onNextMode = onNextMode,
+            onPreviousMode = onPreviousMode
+        )
+    }
+}
+
+
+
+@Composable
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+private fun UserStatisticsComponentPreview() {
+    PreviewContainer {
+        UserStatisticsComponent(
+            overallResult = 85,
+            mainModeResult = 73,
+            swipeModeResult = 32,
+            bestWorstQuestions = BestWorstQuestionsUIM(
+                bestQuestions = listOf(
+                    QuestionWithStats(
+                        id = 1,
+                        question = "Czy to wygląda dobrze?",
+                        correctAnswers = 11,
+                        wrongAnswers = 3
+                    ),
+                    QuestionWithStats(
+                        id = 2,
+                        question = "Czy to działa?",
+                        correctAnswers = 7,
+                        wrongAnswers = 4
+                    )
+                ),
+                worstQuestions = listOf(
+                    QuestionWithStats(
+                        id = 1,
+                        question = "Czy to wygląda źle?",
+                        correctAnswers = 2,
+                        wrongAnswers = 22
+                    ),
+                    QuestionWithStats(
+                        id = 2,
+                        question = "Czy to czasem przestało działac?",
+                        correctAnswers = 7,
+                        wrongAnswers = 4
+                    )
+                )
+            ),
+            onNextMode = {},
+            onPreviousMode = {},
+        )
+    }
+}

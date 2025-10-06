@@ -6,6 +6,8 @@
     <string name="title_change_password">Zmień hasło</string>
     <string name="title_delete_account">Usuń konto</string>
 
+    <string name="title_daily_exercise_already_done">Zadanie dnia wykonane!</string>
+
     <string name="btn_logout">Wyloguj</string>
     <string name="btn_change_username">Zmień nazwę</string>
     <string name="btn_change_password">Zmień hasło</string>
@@ -30,6 +32,7 @@
     <string name="account_deleted">Twoje konto zostało usunięte.</string>
 
     <string name="text_delete_account_warning">Usunięcie konta spowoduje usunięcie wszystkich zapisanych danych i wyników.</string>
+    <string name="text_daily_exercise_already_done">Wróć jutro po kolejną dawkę wiedzy 😎</string>
 
     <string name="title_quiz_modes">Czas na quiz!</string>
     <string name="title_addons">Praktyka na dziś?</string>
@@ -39,7 +42,7 @@
     <string name="title_mode_swipe">Wiedza w akcji</string>
     <string name="mode_swipe_desc">Szybkie pytania, szybkie decyzje!</string>
 
-    <string name="title_addon_daily_exercises">Zadania dzienne</string>
+    <string name="title_addon_daily_exercises">Zadanie dnia</string>
     <string name="title_addon_review">Powtórki</string>
     <string name="title_addon_first_aid">Pierwsza pomoc</string>
 
