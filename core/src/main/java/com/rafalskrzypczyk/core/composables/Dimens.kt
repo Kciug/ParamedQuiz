@@ -14,7 +14,6 @@ object Dimens {
 
     val DEFAULT_PADDING = 15.dp
     val SMALL_PADDING = 5.dp
-    val LARGE_PADDING = 30.dp
 
 
     val ELEMENTS_SPACING = 15.dp
@@ -23,9 +22,6 @@ object Dimens {
     val IMAGE_SIZE = 150.dp
     val IMAGE_SIZE_MEDIUM = 100.dp
     val IMAGE_SIZE_SMALL = 48.dp
-
-    val SIZE_SMALL = 24.dp
-    val SIZE_MEDIUM = 50.dp
 
     val NOTIFICATION_DOT = 8.dp
     val NOTIFICATION_DOT_LARGE = 16.dp
