@@ -17,6 +17,7 @@ import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.ErrorDialog
 import com.rafalskrzypczyk.core.composables.Loading
 import com.rafalskrzypczyk.core.composables.MainTopBarWithNav
+import com.rafalskrzypczyk.score.domain.StreakState
 
 @Composable
 fun MMCategoriesScreen(
@@ -38,7 +39,8 @@ fun MMCategoriesScreen(
                 isUserLoggedIn = state.isUserLoggedIn,
                 userAvatar = state.userAvatar,
                 onNavigateBack = onNavigateBack,
-                onNavigateToUserPanel = onUserPanel
+                onNavigateToUserPanel = onUserPanel,
+                userStreakPending = state.userStreakState == StreakState.PENDING
             )
         }
     ) { innerPadding ->

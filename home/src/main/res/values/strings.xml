@@ -7,6 +7,8 @@
     <string name="title_delete_account">Usuń konto</string>
 
     <string name="title_daily_exercise_already_done">Zadanie dnia wykonane!</string>
+    <string name="title_revisions_unavailable">Powtórki już wkrótce!</string>
+
 
     <string name="btn_logout">Wyloguj</string>
     <string name="btn_change_username">Zmień nazwę</string>
@@ -33,6 +35,7 @@
 
     <string name="text_delete_account_warning">Usunięcie konta spowoduje usunięcie wszystkich zapisanych danych i wyników.</string>
     <string name="text_daily_exercise_already_done">Wróć jutro po kolejną dawkę wiedzy 😎</string>
+    <string name="text_revisions_unavailable">Nie martw się, powtórki quizu medycznego pojawią się już niedługo.👀</string>
 
     <string name="title_quiz_modes">Czas na quiz!</string>
     <string name="title_addons">Praktyka na dziś?</string>

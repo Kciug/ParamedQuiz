@@ -30,6 +30,7 @@ fun MainTopBar(
     modifier: Modifier = Modifier,
     userScore: Int,
     userStreak: Int,
+    userStreakPending: Boolean,
     isUserLoggedIn: Boolean,
     userAvatar: String?,
     onNavigateBack: (() -> Unit)? = null,
@@ -74,6 +75,7 @@ fun MainTopBar(
         }
         UserStreakLabel(
             value = userStreak,
+            isPending = userStreakPending
         )
         Box(
             modifier = Modifier.weight(1f),
@@ -92,6 +94,7 @@ fun MainTopBarWithNav(
     modifier: Modifier = Modifier,
     userScore: Int,
     userStreak: Int,
+    userStreakPending: Boolean,
     isUserLoggedIn: Boolean,
     userAvatar: String?,
     onNavigateBack: () -> Unit,
@@ -129,6 +132,7 @@ fun MainTopBarWithNav(
             )
             UserStreakLabel(
                 value = userStreak,
+                isPending = userStreakPending
             )
         }
         UserAvatarAction(
@@ -148,7 +152,8 @@ private fun MainTopBarPreview() {
                 userScore = 100,
                 userStreak = 10,
                 isUserLoggedIn = true,
-                userAvatar = null
+                userAvatar = null,
+                userStreakPending = false
             ) {}
         }
     }
@@ -164,7 +169,8 @@ private fun MainTopBarLoggedOutPreview() {
                 userScore = 2137995,
                 userStreak = 15,
                 isUserLoggedIn = false,
-                userAvatar = null
+                userAvatar = null,
+                userStreakPending = true
             ) {}
         }
     }
@@ -181,6 +187,7 @@ private fun MainTopBarNavigationPreview() {
                 userStreak = 15,
                 isUserLoggedIn = true,
                 userAvatar = null,
+                userStreakPending = false,
                 onNavigateBack = { }
             ) {}
         }

@@ -51,3 +51,6 @@ val OnSurfaceDark = Color(0xFFE0E0EB)
 
 val ErrorDark = Color(0xFFFF4D4D)
 val OnErrorDark = Color(0xFFFFFFFF)
+
+val MQYellow = Color(0xFFFFD400)
+val MQRed = Color(0xFFFF2600)

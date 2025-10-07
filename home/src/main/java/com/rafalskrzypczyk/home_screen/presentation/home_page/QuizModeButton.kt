@@ -1,16 +1,15 @@
 package com.rafalskrzypczyk.home_screen.presentation.home_page
 
 import android.content.res.Configuration
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -19,7 +18,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.rafalskrzypczyk.core.composables.Dimens
@@ -78,31 +80,28 @@ data class Addon(
     val color: Color? = null,
     val imageRes: Int,
     val highlighted: Boolean = false,
+    val isAvailable: Boolean = true,
     val onClick: () -> Unit,
 )
 
 @Composable
 fun AddonButton(
     modifier: Modifier = Modifier,
-    addon: Addon
+    addon: Addon,
 ) {
-    val highlightedColor = MaterialTheme.colorScheme.primary
+    val grayscaleMatrix = ColorMatrix().apply { setToSaturation(0f) }
 
-    Box {
+    Box ( modifier = Modifier.alpha(if (addon.isAvailable) 1f else 0.5f) ) {
         Card (
             modifier = modifier
                 .padding(top = Dimens.IMAGE_SIZE_MEDIUM / 4)
-                .widthIn(min = Dimens.IMAGE_SIZE_MEDIUM + Dimens.DEFAULT_PADDING * 2),
+                .defaultMinSize(minWidth = Dimens.IMAGE_SIZE_MEDIUM + Dimens.DEFAULT_PADDING * 2),
+                //.widthIn(min = Dimens.IMAGE_SIZE_MEDIUM + Dimens.DEFAULT_PADDING * 2),
             colors = CardDefaults.cardColors(
-                containerColor = if(addon.color != null) addon.color else MaterialTheme.colorScheme.surface
+                containerColor = addon.color ?: MaterialTheme.colorScheme.surface
             ),
             onClick = addon.onClick,
             shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT),
-            border = if (addon.highlighted) {
-                BorderStroke(Dimens.OUTLINE_THICKNESS, highlightedColor)
-            } else {
-                null
-            }
         ) {
             Column(
                 modifier = Modifier
@@ -114,6 +113,7 @@ fun AddonButton(
                         bottom = Dimens.DEFAULT_PADDING
                     ),
                 verticalArrangement = Arrangement.SpaceEvenly,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 TextHeadline(addon.title)
                 addon.description?.let {
@@ -126,11 +126,12 @@ fun AddonButton(
             contentDescription = addon.title,
             modifier = Modifier
                 .size(Dimens.IMAGE_SIZE_MEDIUM)
-                .padding(start = Dimens.DEFAULT_PADDING)
-                .align(Alignment.TopStart)
+                .align(Alignment.TopCenter),
+            colorFilter = if (addon.isAvailable) null else ColorFilter.colorMatrix(grayscaleMatrix)
         )
         if (addon.highlighted) {
             NotificationDot(
+                size = Dimens.NOTIFICATION_DOT_LARGE,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(top = Dimens.IMAGE_SIZE_MEDIUM / 4)
@@ -146,8 +147,8 @@ private fun QuizModeButtonPreview() {
     ParamedQuizTheme {
         Surface {
             QuizModeButton(
-                title = "Tinder",
-                description = "Umawianie sie na jebanie ale to quiz",
+                title = "Szybkie pytania",
+                description = "Odpowiadaj jak najszybciej",
                 imageRes = com.rafalskrzypczyk.core.R.drawable.frontfolks_logo_256,
                 onClick = {}
             )

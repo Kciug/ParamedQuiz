@@ -40,6 +40,7 @@ import com.rafalskrzypczyk.core.composables.TextHeadline
 import com.rafalskrzypczyk.core.composables.UserPointsLabel
 import com.rafalskrzypczyk.core.composables.UserStreakLabel
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
+import com.rafalskrzypczyk.score.domain.StreakState
 
 
 @Composable
@@ -71,7 +72,8 @@ fun UserPageScreen(
             UserPageUserDetails(
                 userName = state.userName,
                 userPoints = state.userScore,
-                userStreak = state.userStreak
+                userStreak = state.userStreak,
+                userStreakState = state.userStreakState
             )
 
             Spacer(Modifier.height(Dimens.ELEMENTS_SPACING))
@@ -93,7 +95,8 @@ fun UserPageUserDetails(
     modifier: Modifier = Modifier,
     userName: String,
     userPoints: Int,
-    userStreak: Int
+    userStreak: Int,
+    userStreakState: StreakState
 ) {
     Box(
         modifier = modifier
@@ -122,7 +125,10 @@ fun UserPageUserDetails(
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 UserPointsLabel(value = userPoints)
-                UserStreakLabel(value = userStreak)
+                UserStreakLabel(
+                    value = userStreak,
+                    isPending = userStreakState == StreakState.PENDING
+                )
             }
         }
 

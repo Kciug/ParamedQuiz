@@ -1,9 +1,11 @@
 package com.rafalskrzypczyk.home_screen.presentation.home_page
 
 import android.content.res.Configuration
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,7 +15,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -23,6 +29,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -32,6 +40,7 @@ import com.rafalskrzypczyk.core.composables.MainTopBar
 import com.rafalskrzypczyk.core.composables.TextHeadline
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.home.R
+import com.rafalskrzypczyk.score.domain.StreakState
 
 @Composable
 fun HomeScreen(
@@ -43,11 +52,15 @@ fun HomeScreen(
 ) {
     var showDailyExerciseAlreadyDoneAlert by remember { mutableStateOf(false) }
 
+    var showRevisionsUnavailableAlert by remember { mutableStateOf(false) }
+
+
     val addons = listOf(
         Addon(
             title = stringResource(R.string.title_addon_daily_exercises),
             imageRes = com.rafalskrzypczyk.core.R.drawable.mediquiz_dailyexercise,
             highlighted = state.isNewDailyExerciseAvailable,
+            isAvailable = state.isNewDailyExerciseAvailable
         ) {
             if (state.isNewDailyExerciseAvailable) {
                 onNavigateToDailyExercise()
@@ -58,7 +71,8 @@ fun HomeScreen(
         Addon(
             title = stringResource(R.string.title_addon_review),
             imageRes = com.rafalskrzypczyk.core.R.drawable.mediquiz_revisions,
-        ) {},
+            isAvailable = false,
+        ) { showRevisionsUnavailableAlert = true },
 //        Addon(
 //            title = stringResource(R.string.title_addon_first_aid),
 //            imageRes = com.rafalskrzypczyk.core.R.drawable.frontfolks_logo_256,
@@ -72,7 +86,8 @@ fun HomeScreen(
                 userScore = state.userScore,
                 userStreak = state.userStreak,
                 isUserLoggedIn = state.isUserLoggedIn,
-                userAvatar = state.userAvatar
+                userAvatar = state.userAvatar,
+                userStreakPending = state.userStreakState == StreakState.PENDING,
             ) { onNavigateToUserPanel() }
         }
     ) { innerPadding ->
@@ -98,6 +113,12 @@ fun HomeScreen(
             showDailyExerciseAlreadyDoneAlert = false
         }
     }
+
+    if(showRevisionsUnavailableAlert) {
+        RevisionsUnavailableDialog {
+            showRevisionsUnavailableAlert = false
+        }
+    }
 }
 
 @Composable
@@ -119,11 +140,11 @@ fun HomeScreenAddonsMenu(
 
         LazyRow(
             contentPadding = PaddingValues(horizontal = Dimens.DEFAULT_PADDING),
-            horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL)
+            horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
         ) {
             items(addons, key = { it.title }) { addon ->
                 AddonButton(
-                    modifier = cardWidthModifier,
+                    //modifier = cardWidthModifier,
                     addon = addon
                 )
             }
@@ -154,6 +175,35 @@ fun HomeScreenQuizModesMenu(
             description = stringResource(R.string.mode_swipe_desc),
             imageRes = com.rafalskrzypczyk.core.R.drawable.mediquiz_swipemode
         ) { onNavigateToSwipeMode() }
+        Card (
+            modifier = Modifier.padding(top = Dimens.ELEMENTS_SPACING),
+            colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+            shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT),
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                MaterialTheme.colorScheme.surface,
+                                Color.Transparent
+                            ),
+                            endY = 100f
+                        ),
+                    )
+                    .padding(
+                        horizontal = Dimens.DEFAULT_PADDING,
+                        vertical = Dimens.DEFAULT_PADDING * 2
+                    ),
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                TextHeadline(
+                    text = "Więcej trybów już wkrótce!",
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                )
+            }
+        }
     }
 }
 

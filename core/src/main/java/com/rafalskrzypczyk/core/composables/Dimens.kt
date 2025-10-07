@@ -28,4 +28,5 @@ object Dimens {
     val SIZE_MEDIUM = 50.dp
 
     val NOTIFICATION_DOT = 8.dp
+    val NOTIFICATION_DOT_LARGE = 16.dp
 }
