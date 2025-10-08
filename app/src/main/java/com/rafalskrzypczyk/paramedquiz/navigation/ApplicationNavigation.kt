@@ -77,6 +77,7 @@ fun NavGraphBuilder.mainMenuDestination(
 
         HomeScreen(
             state = state.value,
+            onEvent = viewModel::onEvent,
             onNavigateToUserPanel = onNavigateToUserPanel,
             onNavigateToDailyExercise = onNavigateToDailyExercise,
             onNavigateToMainMode = onNavigateToMainMode,

@@ -4,6 +4,7 @@ import com.rafalskrzypczyk.score.domain.StreakState
 
 data class HomeScreenState(
     val isUserLoggedIn: Boolean = false,
+    val userName: String? = null,
     val userScore: Int = 0,
     val userStreak: Int = 0,
     val userStreakState: StreakState = StreakState.MISSED,

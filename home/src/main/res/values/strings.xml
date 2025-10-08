@@ -9,6 +9,9 @@
     <string name="title_daily_exercise_already_done">Zadanie dnia wykonane!</string>
     <string name="title_revisions_unavailable">Powtórki już wkrótce!</string>
 
+    <string name="home_header_enjoy_named">Udanej nauki, %1$s!</string>
+    <string name="home_header_enjoy_anon">Udanej nauki!</string>
+
 
     <string name="btn_logout">Wyloguj</string>
     <string name="btn_change_username">Zmień nazwę</string>

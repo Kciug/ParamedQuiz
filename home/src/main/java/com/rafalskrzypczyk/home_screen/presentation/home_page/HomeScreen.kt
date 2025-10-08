@@ -22,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,6 +43,7 @@ import com.rafalskrzypczyk.score.domain.StreakState
 @Composable
 fun HomeScreen(
     state: HomeScreenState,
+    onEvent: (HomeUIEvents) -> Unit,
     onNavigateToUserPanel: () -> Unit,
     onNavigateToDailyExercise: () -> Unit,
     onNavigateToMainMode: () -> Unit,
@@ -50,7 +52,6 @@ fun HomeScreen(
     var showDailyExerciseAlreadyDoneAlert by remember { mutableStateOf(false) }
 
     var showRevisionsUnavailableAlert by remember { mutableStateOf(false) }
-
 
     val addons = listOf(
         Addon(
@@ -77,6 +78,10 @@ fun HomeScreen(
 //        ) {}
     )
 
+    LaunchedEffect(Unit) {
+        onEvent.invoke(HomeUIEvents.GetData)
+    }
+
     Scaffold(
         topBar = {
             MainTopBar(
@@ -94,9 +99,15 @@ fun HomeScreen(
             modifier = modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.Bottom,
+            //verticalArrangement = Arrangement.Bottom,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            WelcomeCard(
+                userName = state.userName,
+                modifier = Modifier
+                    .padding(horizontal = Dimens.DEFAULT_PADDING)
+                    .padding(top = Dimens.DEFAULT_PADDING)
+            )
             HomeScreenAddonsMenu(addons = addons)
             HomeScreenQuizModesMenu(
                 onNavigateToMainMode = onNavigateToMainMode,
@@ -213,6 +224,7 @@ private fun HomeScreenPreview() {
                     userStreak = 24,
                     isNewDailyExerciseAvailable = true
                 ),
+                onEvent = {},
                 onNavigateToUserPanel = {},
                 onNavigateToMainMode = {},
                 onNavigateToSwipeMode = {},

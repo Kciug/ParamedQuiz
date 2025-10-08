@@ -22,18 +22,22 @@ class HomeScreenVM @Inject constructor(
     private val _state = MutableStateFlow(HomeScreenState())
     val state = _state.asStateFlow()
 
-    init {
-        loadData()
+    fun onEvent(event: HomeUIEvents) {
+        when (event) {
+            HomeUIEvents.GetData -> loadData()
+        }
     }
 
     private fun loadData() {
+        val user = userManager.getCurrentLoggedUser()
         viewModelScope.launch {
             getUserScoreUC.invoke().collect {
                 _state.value = _state.value.copy(
                     userScore = it.score,
                     userStreak = it.streak,
                     userStreakState = getStreakStateUC(it.lastStreakUpdateDate),
-                    isUserLoggedIn = userManager.getCurrentLoggedUser() != null,
+                    isUserLoggedIn = user != null,
+                    userName = user?.name,
                     isNewDailyExerciseAvailable = checkDailyExerciseAvailabilityUC(it.lastDailyExerciseDate)
                 )
             }
