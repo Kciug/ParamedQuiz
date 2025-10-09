@@ -13,6 +13,7 @@ data class UserPageUseCases @Inject constructor(
     val getMainModeResult: GetMainModeResultUC,
     val getSwipeModeResult: GetSwipeModeResultUC,
     val getQuestionsForMode: GetQuestionsForModeUC,
+    val getCombinedQuestionsData: GetCombinedQuestionsDataUC,
     val getBestQuestions: GetBestQuestionsUC,
     val getWorstQuestions: GetWorstQuestionsUC,
 )

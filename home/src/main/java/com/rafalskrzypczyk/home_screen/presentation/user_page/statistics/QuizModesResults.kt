@@ -1,4 +1,4 @@
-package com.rafalskrzypczyk.home_screen.presentation.user_page
+package com.rafalskrzypczyk.home_screen.presentation.user_page.statistics
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -25,19 +27,26 @@ import com.rafalskrzypczyk.home.R
 @Composable
 fun QuizModesResults(
     modifier: Modifier = Modifier,
+    mainModeResultAvailable: Boolean,
+    swipeModeResultAvailable: Boolean,
     mainModeResult: Int,
     swipeModeResult: Int
 ) {
-    Row(modifier = modifier) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         QuizModeResultElement(
             modifier = Modifier.weight(1f),
             title = stringResource(R.string.stats_result_main_mode),
+            resultAvailable = mainModeResultAvailable,
             result = mainModeResult,
             resultDescription = stringResource(R.string.stats_correct_answers)
         )
         QuizModeResultElement(
             modifier = Modifier.weight(1f),
             title = stringResource(R.string.stats_result_swipe_mode),
+            resultAvailable = swipeModeResultAvailable,
             result = swipeModeResult,
             resultDescription = stringResource(R.string.stats_correct_answers)
         )
@@ -48,6 +57,7 @@ fun QuizModesResults(
 fun QuizModeResultElement(
     modifier: Modifier = Modifier,
     title: String,
+    resultAvailable: Boolean,
     result: Int,
     resultDescription: String
 ) {
@@ -56,12 +66,16 @@ fun QuizModeResultElement(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
     ) {
-        TextPrimary(text = title)
-        StatisticsChart(
-            progress = result,
-            numericalValueText = stringResource(R.string.percentage, result),
-            numericalValueDescription = resultDescription,
-        )
+        if(resultAvailable) {
+            TextPrimary(text = title)
+            StatisticsChart(
+                progress = result,
+                numericalValueText = stringResource(R.string.percentage, result),
+                numericalValueDescription = resultDescription,
+            )
+        } else {
+            NoStatisticsForModeComponent(modeTitle = title)
+        }
     }
 }
 
@@ -78,9 +92,13 @@ fun StatisticsChart(
         contentAlignment = Alignment.Center
     ) {
         CircularProgressIndicator(
-            modifier = Modifier.fillMaxWidth().aspectRatio(1f),
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(1f),
             progress = { progress / 100f },
-            strokeWidth = strokeWidth
+            strokeWidth = strokeWidth,
+            strokeCap = StrokeCap.Round,
+            gapSize = -SliderDefaults.TrackStopIndicatorSize * strokeWidth.value
         )
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             TextHeadline(text = numericalValueText)

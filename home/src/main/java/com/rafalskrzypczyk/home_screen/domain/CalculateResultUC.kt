@@ -4,7 +4,9 @@ import com.rafalskrzypczyk.score.domain.QuestionAnnotation
 import javax.inject.Inject
 
 class CalculateResultUC @Inject constructor() {
-    operator fun invoke(scoreAnnotations: List<QuestionAnnotation>) : Int {
+    operator fun invoke(scoreAnnotations: List<QuestionAnnotation>) : Int? {
+        if(scoreAnnotations.isEmpty()) return null
+
         val correctAnswers = scoreAnnotations.sumOf { it.timesCorrect }
         val totalAnswers = scoreAnnotations.sumOf { it.timesSeen }
 

@@ -4,11 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
-import com.rafalskrzypczyk.home_screen.domain.user_page.UserPageUseCases
 import com.rafalskrzypczyk.home_screen.domain.models.QuizMode
 import com.rafalskrzypczyk.home_screen.domain.models.SimpleQuestion
 import com.rafalskrzypczyk.home_screen.domain.models.next
 import com.rafalskrzypczyk.home_screen.domain.models.previous
+import com.rafalskrzypczyk.home_screen.domain.user_page.UserPageUseCases
+import com.rafalskrzypczyk.home_screen.presentation.user_page.statistics.BestWorstQuestionsUIM
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,6 +22,10 @@ import javax.inject.Inject
 class UserPageVM @Inject constructor(
     private val useCases: UserPageUseCases
 ) : ViewModel() {
+    companion object {
+        private const val QUESTIONS_TO_SHOW = 5
+    }
+
     private val _state = MutableStateFlow(UserPageState())
     val state: StateFlow<UserPageState> = _state.asStateFlow()
 
@@ -44,8 +49,6 @@ class UserPageVM @Inject constructor(
             }
         }
         getScoreData()
-        getResultsData()
-        getQuestionsData()
     }
 
     private fun getScoreData() {
@@ -58,13 +61,19 @@ class UserPageVM @Inject constructor(
                         userStreakState = useCases.getStreakState(score.lastStreakUpdateDate)
                     )
                 }
+                getResultsData()
+                getQuestionsData()
             }
         }
     }
 
     private fun getResultsData() {
+        val overallResult = useCases.getOverallResult()
         _state.update {
-            it.copy(overallResult = useCases.getOverallResult())
+            it.copy(
+                overallResultAvailable = overallResult != null,
+                overallResult = overallResult ?: 0
+            )
         }
 
         viewModelScope.launch {
@@ -77,9 +86,11 @@ class UserPageVM @Inject constructor(
                         _state.update { it.copy(mainModeResultResponse = ResponseState.Loading) }
                     }
                     is Response.Success -> {
+                        val data = response.data
                         _state.update { it.copy(
                             mainModeResultResponse = ResponseState.Success,
-                            mainModeResult = response.data
+                            mainModeResultAvailable = data != null,
+                            mainModeResult = data ?: 0
                         ) }
                     }
                 }
@@ -96,9 +107,11 @@ class UserPageVM @Inject constructor(
                         _state.update { it.copy(swipeModeResultResponse = ResponseState.Loading) }
                     }
                     is Response.Success -> {
+                        val data = response.data
                         _state.update { it.copy(
                             swipeModeResultResponse = ResponseState.Success,
-                            swipeModeResult = response.data
+                            swipeModeResultAvailable = data != null,
+                            swipeModeResult = data ?: 0
                         ) }
                     }
                 }
@@ -133,12 +146,16 @@ class UserPageVM @Inject constructor(
     }
 
     private fun getBestWorstQuestions(allQuestions: List<SimpleQuestion>) {
+        val combinedQuestionsData = useCases.getCombinedQuestionsData(allQuestions)
+        val dataAvailableToShow = combinedQuestionsData.size >= QUESTIONS_TO_SHOW * 2
+
         _state.update {
             it.copy(
                 bestWorstQuestions = it.bestWorstQuestions.copy(
                     responseState = ResponseState.Success,
-                    bestQuestions = useCases.getBestQuestions(allQuestions),
-                    worstQuestions = useCases.getWorstQuestions(allQuestions)
+                    dataAvailable = dataAvailableToShow,
+                    bestQuestions = useCases.getBestQuestions(combinedQuestionsData, QUESTIONS_TO_SHOW),
+                    worstQuestions = useCases.getWorstQuestions(combinedQuestionsData, QUESTIONS_TO_SHOW)
                 )
             )
         }

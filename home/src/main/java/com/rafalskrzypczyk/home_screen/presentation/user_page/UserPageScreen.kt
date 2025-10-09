@@ -40,6 +40,7 @@ import com.rafalskrzypczyk.core.composables.TextHeadline
 import com.rafalskrzypczyk.core.composables.UserPointsLabel
 import com.rafalskrzypczyk.core.composables.UserStreakLabel
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
+import com.rafalskrzypczyk.home_screen.presentation.user_page.statistics.UserStatisticsComponent
 import com.rafalskrzypczyk.score.domain.StreakState
 
 
@@ -79,6 +80,9 @@ fun UserPageScreen(
             Spacer(Modifier.height(Dimens.ELEMENTS_SPACING))
 
             UserStatisticsComponent(
+                overallResultAvailable = state.overallResultAvailable,
+                mainModeResultAvailable = state.mainModeResultAvailable,
+                swipeModeResultAvailable = state.swipeModeResultAvailable,
                 overallResult = state.overallResult,
                 mainModeResult = state.mainModeResult,
                 swipeModeResult = state.swipeModeResult,

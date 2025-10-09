@@ -67,6 +67,11 @@
     <string name="stats_question_incorrect_answers">błędnych odpowiedzi: %1$d</string>
     <string name="desc_next_mode">Następny tryb</string>
     <string name="desc_previous_mode">Poprzedni tryb</string>
-    
+    <string name="stats_no_data_overall">Za mało danych, jeszcze!</string>
+    <string name="stats_no_data_overall_msg">Spróbuj swoich sił w dowolnym trybie i wróć sprawdzić swoje postępy.</string>
+    <string name="stats_no_data_for_mode_msg">Brak danych dla tego trybu.</string>
+    <string name="stats_no_best_worst_data">Brak danych do wyświetlenia 🫤</string>
+    <string name="stats_no_best_worst_data_msg">Odpowiedz na wiecej pytań w tym trybie aby wyświetlić dane.</string>
+
     <string name="percentage">%1$d%%</string>
 </resources>

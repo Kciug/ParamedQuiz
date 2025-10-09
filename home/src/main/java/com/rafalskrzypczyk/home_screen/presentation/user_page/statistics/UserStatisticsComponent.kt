@@ -1,10 +1,11 @@
-package com.rafalskrzypczyk.home_screen.presentation.user_page
+package com.rafalskrzypczyk.home_screen.presentation.user_page.statistics
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,6 +21,9 @@ import com.rafalskrzypczyk.home_screen.domain.models.QuestionWithStats
 @Composable
 fun UserStatisticsComponent(
     modifier: Modifier = Modifier,
+    overallResultAvailable: Boolean,
+    mainModeResultAvailable: Boolean,
+    swipeModeResultAvailable: Boolean,
     overallResult: Int,
     mainModeResult: Int,
     swipeModeResult: Int,
@@ -33,23 +37,33 @@ fun UserStatisticsComponent(
         verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
     ) {
         TextHeadline(text = stringResource(R.string.stats_header))
-        TextPrimary(text = stringResource(R.string.stats_overall))
-        StatisticsChart(
-            modifier = Modifier.fillMaxWidth().padding(Dimens.DEFAULT_PADDING),
-            progress = overallResult,
-            numericalValueText = stringResource(R.string.percentage, overallResult),
-            numericalValueDescription = stringResource(R.string.stats_correct_answers),
-            strokeWidth = Dimens.STAT_BAR_WIDTH_THICK
-        )
-        QuizModesResults(
-            mainModeResult = mainModeResult,
-            swipeModeResult = swipeModeResult
-        )
-        BestWorstQuestionsComponent(
-            questions = bestWorstQuestions,
-            onNextMode = onNextMode,
-            onPreviousMode = onPreviousMode
-        )
+        if(overallResultAvailable) {
+            TextPrimary(text = stringResource(R.string.stats_overall))
+            StatisticsChart(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(Dimens.DEFAULT_PADDING),
+                progress = overallResult,
+                numericalValueText = stringResource(R.string.percentage, overallResult),
+                numericalValueDescription = stringResource(R.string.stats_correct_answers),
+                strokeWidth = Dimens.STAT_BAR_WIDTH_THICK
+            )
+            HorizontalDivider()
+            QuizModesResults(
+                mainModeResultAvailable = mainModeResultAvailable,
+                swipeModeResultAvailable = swipeModeResultAvailable,
+                mainModeResult = mainModeResult,
+                swipeModeResult = swipeModeResult
+            )
+            HorizontalDivider()
+            BestWorstQuestionsComponent(
+                questions = bestWorstQuestions,
+                onNextMode = onNextMode,
+                onPreviousMode = onPreviousMode
+            )
+        } else {
+            NoStatisticsDataComponent()
+        }
     }
 }
 
@@ -60,6 +74,9 @@ fun UserStatisticsComponent(
 private fun UserStatisticsComponentPreview() {
     PreviewContainer {
         UserStatisticsComponent(
+            overallResultAvailable = true,
+            mainModeResultAvailable = true,
+            swipeModeResultAvailable = true,
             overallResult = 85,
             mainModeResult = 73,
             swipeModeResult = 32,

@@ -13,7 +13,7 @@ class GetSwipeModeResultUC @Inject constructor(
     private val swipeModeRepository: SwipeModeRepository,
     private val calculateResult: CalculateResultUC
 ) {
-    operator fun invoke(): Flow<Response<Int>> {
+    operator fun invoke(): Flow<Response<Int?>> {
         val score = scoreManager.getScore()
 
         return swipeModeRepository.getSwipeQuestions().map { response ->

@@ -13,7 +13,7 @@ class GetMainModeResultUC @Inject constructor(
     private val mainModeRepository: MainModeRepository,
     private val calculateResult: CalculateResultUC
 ) {
-    operator fun invoke(): Flow<Response<Int>> {
+    operator fun invoke(): Flow<Response<Int?>> {
         val score = scoreManager.getScore()
 
         return mainModeRepository.getAllQuestions().map { response ->

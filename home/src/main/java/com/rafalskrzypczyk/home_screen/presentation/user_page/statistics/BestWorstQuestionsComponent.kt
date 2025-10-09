@@ -1,4 +1,4 @@
-package com.rafalskrzypczyk.home_screen.presentation.user_page
+package com.rafalskrzypczyk.home_screen.presentation.user_page.statistics
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateContentSize
@@ -114,11 +114,15 @@ fun BestWorstQuestionsComponent(
                 )
             }
         ) { questionsData ->
-            BestWorstQuestionsList(
-                responseState = questionsData.responseState,
-                bestQuestions = questionsData.bestQuestions,
-                worstQuestions = questionsData.worstQuestions
-            )
+            if (questionsData.dataAvailable){
+                BestWorstQuestionsList(
+                    responseState = questionsData.responseState,
+                    bestQuestions = questionsData.bestQuestions,
+                    worstQuestions = questionsData.worstQuestions
+                )
+            } else {
+                NoBestWorstStatisticsComponent()
+            }
         }
     }
 }
