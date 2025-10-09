@@ -41,7 +41,7 @@ fun UserStatisticsComponent(
             TextPrimary(text = stringResource(R.string.stats_overall))
             StatisticsChart(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxWidth(0.8f)
                     .padding(Dimens.DEFAULT_PADDING),
                 progress = overallResult,
                 numericalValueText = stringResource(R.string.percentage, overallResult),
