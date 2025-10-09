@@ -1,9 +1,11 @@
 package com.rafalskrzypczyk.home_screen.presentation.user_page.statistics
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
@@ -177,22 +179,21 @@ fun BestWorstQuestionsList(
 @Composable
 fun QuestionStatCard(
     modifier: Modifier = Modifier,
-    question: QuestionWithStats
+    question: QuestionWithStats,
+    collapsedMaxLines: Int = 3
 ) {
     var isExpanded by remember { mutableStateOf(false) }
 
     Card (
         modifier = modifier
             .fillMaxWidth()
-            .wrapContentHeight()
-            .animateContentSize(),
+            .wrapContentHeight(),
         shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        onClick = { isExpanded = !isExpanded }
+        onClick = { isExpanded = !isExpanded },
     ) {
         Column(
-            modifier = Modifier.padding(Dimens.DEFAULT_PADDING),
-            verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
+            modifier = Modifier.padding(Dimens.DEFAULT_PADDING)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -201,7 +202,8 @@ fun QuestionStatCard(
             ) {
                 TextPrimary(
                     text = question.question,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    maxLines = if(isExpanded) Int.MAX_VALUE else collapsedMaxLines
                 )
                 TextPrimary( stringResource(R.string.percentage, question.correctPercentage) )
                 Icon(
@@ -209,13 +211,30 @@ fun QuestionStatCard(
                     contentDescription = stringResource(R.string.desc_expand)
                 )
             }
-            if(isExpanded){
-                TextCaption(
-                    text = stringResource(R.string.stats_question_correct_answers, question.correctAnswers)
-                )
-                TextCaption(
-                    text = stringResource(R.string.stats_question_incorrect_answers, question.wrongAnswers)
-                )
+//            if(isExpanded){
+//                TextCaption(
+//                    text = stringResource(R.string.stats_question_correct_answers, question.correctAnswers)
+//                )
+//                TextCaption(
+//                    text = stringResource(R.string.stats_question_incorrect_answers, question.wrongAnswers)
+//                )
+//            }
+            AnimatedVisibility(
+                visible = isExpanded,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut(),
+            ) {
+                Column(
+                    modifier = Modifier.padding(top = Dimens.ELEMENTS_SPACING),
+                    verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
+                ) {
+                    TextCaption(
+                        text = stringResource(R.string.stats_question_correct_answers, question.correctAnswers)
+                    )
+                    TextCaption(
+                        text = stringResource(R.string.stats_question_incorrect_answers, question.wrongAnswers)
+                    )
+                }
             }
         }
     }

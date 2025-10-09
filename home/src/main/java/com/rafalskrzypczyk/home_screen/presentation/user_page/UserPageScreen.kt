@@ -22,6 +22,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,6 +33,8 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -51,45 +57,51 @@ fun UserPageScreen(
     onNavigateBack: () -> Unit,
     onUserSettings: () -> Unit
 ) {
+    var topBarHeight by remember { mutableIntStateOf(0) }
+
     LaunchedEffect(Unit) {
         onEvent.invoke(UserPageUIEvents.RefreshUserData)
     }
 
-    Scaffold(
-        topBar = {
-            NavTopBar(
-                actions = { SettingsButton { onUserSettings() } }
-            ) { onNavigateBack() }
-        }
-    ) { innerPadding ->
+    Scaffold { innerPadding ->
         val modifier = Modifier.padding(innerPadding)
 
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            UserPageUserDetails(
-                userName = state.userName,
-                userPoints = state.userScore,
-                userStreak = state.userStreak,
-                userStreakState = state.userStreakState
-            )
+        Box(contentAlignment = Alignment.TopCenter){
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Spacer(Modifier.height(with(LocalDensity.current) {topBarHeight.toDp()}))
+                UserPageUserDetails(
+                    userName = state.userName,
+                    userPoints = state.userScore,
+                    userStreak = state.userStreak,
+                    userStreakState = state.userStreakState
+                )
 
-            Spacer(Modifier.height(Dimens.ELEMENTS_SPACING))
+                Spacer(Modifier.height(Dimens.ELEMENTS_SPACING))
 
-            UserStatisticsComponent(
-                overallResultAvailable = state.overallResultAvailable,
-                mainModeResultAvailable = state.mainModeResultAvailable,
-                swipeModeResultAvailable = state.swipeModeResultAvailable,
-                overallResult = state.overallResult,
-                mainModeResult = state.mainModeResult,
-                swipeModeResult = state.swipeModeResult,
-                bestWorstQuestions = state.bestWorstQuestions,
-                onNextMode = { onEvent(UserPageUIEvents.OnNextMode) },
-                onPreviousMode = { onEvent(UserPageUIEvents.OnPreviousMode) },
-            )
+                UserStatisticsComponent(
+                    overallResultAvailable = state.overallResultAvailable,
+                    mainModeResultAvailable = state.mainModeResultAvailable,
+                    swipeModeResultAvailable = state.swipeModeResultAvailable,
+                    overallResult = state.overallResult,
+                    mainModeResult = state.mainModeResult,
+                    swipeModeResult = state.swipeModeResult,
+                    bestWorstQuestions = state.bestWorstQuestions,
+                    onNextMode = { onEvent(UserPageUIEvents.OnNextMode) },
+                    onPreviousMode = { onEvent(UserPageUIEvents.OnPreviousMode) },
+                )
+            }
+
+            NavTopBar(
+                modifier = Modifier.onGloballyPositioned {
+                    topBarHeight = it.size.height
+                },
+                actions = { SettingsButton { onUserSettings() } }
+            ) { onNavigateBack() }
         }
     }
 }

@@ -38,14 +38,14 @@ fun QuizModesResults(
     ) {
         QuizModeResultElement(
             modifier = Modifier.weight(1f),
-            title = stringResource(R.string.stats_result_main_mode),
+            title = stringResource(com.rafalskrzypczyk.core.R.string.title_main_mode),
             resultAvailable = mainModeResultAvailable,
             result = mainModeResult,
             resultDescription = stringResource(R.string.stats_correct_answers)
         )
         QuizModeResultElement(
             modifier = Modifier.weight(1f),
-            title = stringResource(R.string.stats_result_swipe_mode),
+            title = stringResource(com.rafalskrzypczyk.core.R.string.title_swipe_mode),
             resultAvailable = swipeModeResultAvailable,
             result = swipeModeResult,
             resultDescription = stringResource(R.string.stats_correct_answers)

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="Typos">
     <string name="title_user_page">Moje konto</string>
     <string name="title_settings">Ustawienia</string>
     <string name="title_change_username">Zmień nazwę</string>
@@ -43,9 +43,7 @@
     <string name="title_quiz_modes">Czas na quiz!</string>
     <string name="title_addons">Praktyka na dziś?</string>
 
-    <string name="title_mode_quiz">Quiz</string>
     <string name="mode_quiz_desc">Zdobywaj wiedzę grając w quiz!</string>
-    <string name="title_mode_swipe">Wiedza w akcji</string>
     <string name="mode_swipe_desc">Szybkie pytania, szybkie decyzje!</string>
 
     <string name="title_addon_daily_exercises">Zadanie dnia</string>

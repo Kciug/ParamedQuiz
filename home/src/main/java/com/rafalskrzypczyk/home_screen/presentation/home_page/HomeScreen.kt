@@ -169,12 +169,12 @@ fun HomeScreenQuizModesMenu(
     ) {
         TextHeadline(stringResource(R.string.title_quiz_modes))
         QuizModeButton(
-            title = stringResource(R.string.title_mode_quiz),
+            title = stringResource(com.rafalskrzypczyk.core.R.string.title_main_mode),
             description = stringResource(R.string.mode_quiz_desc),
             imageRes = com.rafalskrzypczyk.core.R.drawable.mediquiz_mainmode
         ) { onNavigateToMainMode() }
         QuizModeButton(
-            title = stringResource(R.string.title_mode_swipe),
+            title = stringResource(com.rafalskrzypczyk.core.R.string.title_swipe_mode),
             description = stringResource(R.string.mode_swipe_desc),
             imageRes = com.rafalskrzypczyk.core.R.drawable.mediquiz_swipemode
         ) { onNavigateToSwipeMode() }

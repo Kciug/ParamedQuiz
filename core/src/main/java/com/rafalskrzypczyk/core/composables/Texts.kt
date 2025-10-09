@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
@@ -18,12 +19,15 @@ fun TextPrimary(
     text: String,
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.onBackground,
-    textAlign: TextAlign? = TextAlign.Unspecified
+    textAlign: TextAlign? = TextAlign.Unspecified,
+    maxLines: Int = Int.MAX_VALUE
 ) {
     Text(
         modifier = modifier,
         text = text,
         color = color,
+        overflow = TextOverflow.Ellipsis,
+        maxLines = maxLines,
         textAlign = textAlign
     )
 }
