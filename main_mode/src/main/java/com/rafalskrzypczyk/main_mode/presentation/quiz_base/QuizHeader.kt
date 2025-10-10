@@ -26,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import com.rafalskrzypczyk.core.composables.ButtonPrimary
 import com.rafalskrzypczyk.core.composables.Dimens
@@ -92,7 +93,7 @@ fun CorrectAnswersAnimated(
         Icon(
             imageVector = Icons.Default.Check,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.tertiary
+            tint = Color.Green
         )
         AnimatedContent(
             targetState = correctAnswers,
@@ -100,11 +101,11 @@ fun CorrectAnswersAnimated(
             transitionSpec = {
                 (slideInVertically { it } + scaleIn(initialScale = 0.8f)) togetherWith
                         (slideOutVertically { -it } + scaleOut(targetScale = 1.2f))
-            }
+            },
+            modifier = Modifier.padding(start = Dimens.ELEMENTS_SPACING_SMALL)
         ) { targetCount ->
             TextScore(
-                text = targetCount.toString(),
-                color = MaterialTheme.colorScheme.tertiary
+                text = targetCount.toString()
             )
         }
     }

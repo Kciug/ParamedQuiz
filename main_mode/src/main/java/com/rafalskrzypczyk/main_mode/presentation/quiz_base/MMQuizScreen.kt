@@ -1,7 +1,6 @@
 package com.rafalskrzypczyk.main_mode.presentation.quiz_base
 
 import android.content.res.Configuration
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
@@ -9,22 +8,19 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import com.rafalskrzypczyk.core.R
 import com.rafalskrzypczyk.core.api_response.ResponseState
-import com.rafalskrzypczyk.core.composables.ConfirmationDialog
+import com.rafalskrzypczyk.core.composables.BaseQuizScreen
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.ErrorDialog
 import com.rafalskrzypczyk.core.composables.Loading
-import com.rafalskrzypczyk.core.composables.NavTopBar
 import com.rafalskrzypczyk.core.composables.PreviewContainer
 import com.rafalskrzypczyk.core.composables.QuizFinishScreen
 
@@ -34,20 +30,21 @@ fun MMQuizScreen(
     onEvent: (MMQuizUIEvents) -> Unit,
     onNavigateBack: () -> Unit,
 ) {
-    BackHandler {
-        onEvent.invoke(MMQuizUIEvents.OnBackPressed)
-    }
-
-    Scaffold (
-        topBar = {
-            NavTopBar(
-                title = state.categoryTitle,
-                onNavigateBack = { onEvent.invoke(MMQuizUIEvents.OnBackPressed) }
-            )
-        }
+    BaseQuizScreen(
+        title = state.categoryTitle,
+        score = state.userScore,
+        currentQuestionIndex = state.currentQuestionNumber,
+        onNavigateBack = { onNavigateBack() },
+        onReportIssue = {}
     ) { innerPadding ->
-        val modifier = Modifier.padding(innerPadding)
+        val modifier = Modifier.padding(top = innerPadding.calculateTopPadding())
 
+        CorrectAnswersAnimated(
+            modifier = modifier
+                .padding(start = Dimens.DEFAULT_PADDING + Dimens.SMALL_PADDING)
+                .padding(top = Dimens.SMALL_PADDING),
+            correctAnswers = state.correctAnswers
+        )
         AnimatedContent(
             targetState = state.responseState,
             transitionSpec = {
@@ -72,6 +69,7 @@ fun MMQuizScreen(
                         } else {
                             MMQuizScreenContent(
                                 modifier = modifier,
+                                scaffoldPadding = innerPadding,
                                 state = state,
                                 onEvent = onEvent
                             )
@@ -80,20 +78,13 @@ fun MMQuizScreen(
                 }
             }
         }
-
-        if(state.showExitConfirmation) {
-            ConfirmationDialog(
-                title = stringResource(R.string.dialog_title_confirm_exit_quiz),
-                onConfirm = { onNavigateBack() },
-                onDismiss = { onEvent.invoke(MMQuizUIEvents.OnBackDiscarded) }
-            )
-        }
     }
 }
 
 @Composable
 fun MMQuizScreenContent(
     modifier: Modifier = Modifier,
+    scaffoldPadding: PaddingValues,
     state: QuizState,
     onEvent: (MMQuizUIEvents) -> Unit
 ) {
@@ -101,13 +92,6 @@ fun MMQuizScreenContent(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        QuizHeader(
-            modifier = Modifier.padding(horizontal = Dimens.DEFAULT_PADDING),
-            userScore = state.userScore,
-            correctAnswers = state.correctAnswers,
-            totalQuestions = state.questionsCount,
-            currentQuestion = state.currentQuestionNumber
-        )
         AnimatedContent(
             targetState = state.question,
             transitionSpec = {
@@ -121,12 +105,12 @@ fun MMQuizScreenContent(
             contentKey = { question -> question.id }
         ) { question ->
             QuizGameContent(
+                scaffoldPadding = scaffoldPadding,
                 question = question,
                 onAnswerSelected = { answerId -> onEvent.invoke(MMQuizUIEvents.OnAnswerClicked(answerId)) },
                 onSubmitAnswer = { onEvent.invoke(MMQuizUIEvents.OnSubmitAnswer) },
                 onNextQuestion = { onEvent.invoke(MMQuizUIEvents.OnNextQuestion) }
             )
-
         }
     }
 }
@@ -135,15 +119,15 @@ fun MMQuizScreenContent(
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun MMQuizScreenPreview() {
-    val questionText = "Czy można testować wszystko na produkcji?"
+    val questionText = "Czy można tańcem wielbić Boga?"
     val questionAnswers = listOf(
-        AnswerUIM(1, "Błędna odpowiedź", false),
-        AnswerUIM(2, "Poprawna odpowiedź", false),
-        AnswerUIM(3, "Kolejna błędna odpowiedź", false),
+        AnswerUIM(1, "A można, jak najbardziej", false),
+        AnswerUIM(2, "Jeszcze jak!", false),
+        AnswerUIM(3, "Coooo?", false),
         AnswerUIM(4, "Nie wiem", false)
     )
 
-    var state = remember {
+    val state = remember {
         mutableStateOf(
             QuizState(
                 userScore = 13500,

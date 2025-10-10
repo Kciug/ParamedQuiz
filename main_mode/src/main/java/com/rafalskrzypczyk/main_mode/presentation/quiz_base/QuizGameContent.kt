@@ -9,6 +9,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -38,6 +39,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.rafalskrzypczyk.core.composables.ButtonPrimary
 import com.rafalskrzypczyk.core.composables.Dimens
@@ -48,6 +50,7 @@ import com.rafalskrzypczyk.main_mode.R
 @Composable
 fun QuizGameContent(
     modifier: Modifier = Modifier,
+    scaffoldPadding: PaddingValues,
     question: QuestionUIM,
     onAnswerSelected: (Long) -> Unit,
     onSubmitAnswer: () -> Unit,
@@ -59,6 +62,7 @@ fun QuizGameContent(
     ){
         Column(
             modifier = Modifier
+                .padding(bottom = scaffoldPadding.calculateBottomPadding())
                 .fillMaxSize()
                 .padding(Dimens.DEFAULT_PADDING),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -90,6 +94,7 @@ fun QuizGameContent(
             modifier = modifier.align(Alignment.BottomCenter),
         ) {
             SubmitSection(
+                bottomPadding = scaffoldPadding.calculateBottomPadding(),
                 isAnswerCorrect = question.isAnswerCorrect,
                 correctAnswers = question.correctAnswers,
                 onNextQuestion = onNextQuestion
@@ -155,6 +160,7 @@ fun AnswerButton(
 
 @Composable
 fun SubmitSection(
+    bottomPadding: Dp,
     isAnswerCorrect: Boolean,
     correctAnswers: List<String>,
     onNextQuestion: () -> Unit
@@ -173,6 +179,7 @@ fun SubmitSection(
             )
         )
         .background(MaterialTheme.colorScheme.surfaceContainer)
+        .padding(bottom = bottomPadding)
         .padding(Dimens.DEFAULT_PADDING)
     ) {
         Row {
@@ -261,7 +268,8 @@ private fun QuizGameContentPreview() {
                 }
             },
             onSubmitAnswer = { submitted = true },
-            onNextQuestion = {}
+            onNextQuestion = {},
+            scaffoldPadding = PaddingValues(0.dp)
         )
     }
 }
