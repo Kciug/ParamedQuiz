@@ -1,4 +1,4 @@
-package com.rafalskrzypczyk.core.composables
+package com.rafalskrzypczyk.core.composables.top_bars
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
@@ -16,6 +16,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import com.rafalskrzypczyk.core.composables.BackButton
+import com.rafalskrzypczyk.core.composables.Dimens
+import com.rafalskrzypczyk.core.composables.ExitButton
+import com.rafalskrzypczyk.core.composables.TextHeadline
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 
 @Composable
@@ -46,7 +50,6 @@ fun NavTopBar(
             actions()
         }
     }
-
 }
 
 @Composable

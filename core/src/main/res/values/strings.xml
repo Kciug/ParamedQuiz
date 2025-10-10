@@ -49,4 +49,7 @@
 
     <string name="desc_user_score">Punkty</string>
     <string name="desc_user_streak">Seria</string>
+    <string name="desc_correct_answers">Poprawne odpowiedzi</string>
+
+    <string name="base_quiz_question_number">Pytanie %1$d</string>
 </resources>

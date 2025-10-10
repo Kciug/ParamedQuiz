@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Bolt
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
@@ -14,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import com.rafalskrzypczyk.core.R
+import com.rafalskrzypczyk.core.ui.theme.MQGreen
 import com.rafalskrzypczyk.core.ui.theme.MQRed
 import com.rafalskrzypczyk.core.ui.theme.MQYellow
 
@@ -24,9 +26,11 @@ fun BaseScoreLabel(
     icon: ImageVector,
     color: Color,
     label: String?,
-    showNotification: Boolean = false
+    showNotification: Boolean = false,
+    grayOutWhenZero: Boolean = true
 ) {
-    val color = if(value > 0 && !showNotification) color else Color.Gray
+    val shouldBeGrayedOut = grayOutWhenZero && value == 0
+    val color = if(shouldBeGrayedOut || showNotification) Color.Gray else color
 
     Row(
         modifier = modifier,
@@ -55,13 +59,15 @@ fun BaseScoreLabel(
 fun UserPointsLabel(
     modifier: Modifier = Modifier,
     value: Int,
+    grayOutWhenZero: Boolean = true
 ) {
     BaseScoreLabel(
         modifier = modifier,
         value = value,
         icon = Icons.Rounded.Star,
         color = MQYellow,
-        label = stringResource(R.string.desc_user_score)
+        label = stringResource(R.string.desc_user_score),
+        grayOutWhenZero = grayOutWhenZero
     )
 }
 
@@ -78,5 +84,21 @@ fun UserStreakLabel(
         color = MQRed,
         label = stringResource(R.string.desc_user_streak),
         showNotification = isPending
+    )
+}
+
+@Composable
+fun CorrectAnswersLabel(
+    modifier: Modifier = Modifier,
+    value: Int,
+    grayOutWhenZero: Boolean = false
+) {
+    BaseScoreLabel(
+        modifier = modifier,
+        value = value,
+        icon = Icons.Rounded.Check,
+        color = MQGreen,
+        label = stringResource(R.string.desc_correct_answers),
+        grayOutWhenZero = grayOutWhenZero
     )
 }

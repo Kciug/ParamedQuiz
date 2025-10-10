@@ -19,6 +19,7 @@ private val DarkColorScheme = darkColorScheme(
     onTertiary = OnTertiaryDark,
     onBackground = OnBackgroundDark,
     onSurface = OnSurfaceDark,
+    onSurfaceVariant = OnSurfaceVariantDark,
     error = ErrorDark,
     onError = OnErrorDark,
 )
@@ -36,6 +37,7 @@ private val LightColorScheme = lightColorScheme(
     onTertiary = OnTertiary,
     onBackground = OnBackground,
     onSurface = OnSurface,
+    onSurfaceVariant = OnSurfaceVariant,
     error = Error,
     onError = OnError
 )
@@ -43,16 +45,9 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun ParamedQuizTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
-//        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-//            val context = LocalContext.current
-//            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-//        }
-
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }

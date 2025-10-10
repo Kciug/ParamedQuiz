@@ -26,7 +26,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import com.rafalskrzypczyk.core.composables.ButtonPrimary
 import com.rafalskrzypczyk.core.composables.Dimens
@@ -34,6 +33,7 @@ import com.rafalskrzypczyk.core.composables.PreviewContainer
 import com.rafalskrzypczyk.core.composables.QuizLinearProgressBar
 import com.rafalskrzypczyk.core.composables.TextScore
 import com.rafalskrzypczyk.core.composables.UserPointsLabel
+import com.rafalskrzypczyk.core.ui.theme.MQGreen
 
 @Composable
 fun QuizHeader (
@@ -93,7 +93,7 @@ fun CorrectAnswersAnimated(
         Icon(
             imageVector = Icons.Default.Check,
             contentDescription = null,
-            tint = Color.Green
+            tint = MQGreen
         )
         AnimatedContent(
             targetState = correctAnswers,

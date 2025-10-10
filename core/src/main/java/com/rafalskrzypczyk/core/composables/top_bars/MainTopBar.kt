@@ -1,4 +1,4 @@
-package com.rafalskrzypczyk.core.composables
+package com.rafalskrzypczyk.core.composables.top_bars
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
@@ -23,6 +23,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.tooling.preview.Preview
+import com.rafalskrzypczyk.core.composables.Dimens
+import com.rafalskrzypczyk.core.composables.UserAvatarAction
+import com.rafalskrzypczyk.core.composables.UserPointsLabel
+import com.rafalskrzypczyk.core.composables.UserStreakLabel
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 
 @Composable
@@ -71,7 +75,7 @@ fun MainTopBar(
             value = userScore
         )
         if(onNavigateBack != null) {
-            Spacer(modifier = Modifier.width(Dimens.DEFAULT_PADDING))
+            Spacer(modifier = Modifier.Companion.width(Dimens.DEFAULT_PADDING))
         }
         UserStreakLabel(
             value = userStreak,

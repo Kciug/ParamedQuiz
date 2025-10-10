@@ -6,7 +6,9 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -16,7 +18,7 @@ import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.ErrorDialog
 import com.rafalskrzypczyk.core.composables.Loading
-import com.rafalskrzypczyk.core.composables.MainTopBarWithNav
+import com.rafalskrzypczyk.core.composables.top_bars.MainTopBarWithNav
 import com.rafalskrzypczyk.score.domain.StreakState
 
 @Composable
@@ -32,6 +34,7 @@ fun MMCategoriesScreen(
     }
 
     Scaffold(
+        contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             MainTopBarWithNav(
                 userScore = state.userScore,
@@ -67,18 +70,6 @@ fun MMCategoriesScreen(
                 )
             }
         }
-
-//        when(state.responseState) {
-//            ResponseState.Idle -> {}
-//            ResponseState.Loading -> Loading()
-//            is ResponseState.Error -> ErrorDialog(state.responseState.message) { onNavigateBack() }
-//            ResponseState.Success -> MMCategoriesScreenContent(
-//                modifier = modifier,
-//                categories = state.categories,
-//                onStartCategory = onStartCategory,
-//                onUnlockCategory = { onEvent(MMCategoriesUIEvents.OnUnlockCategory(it)) }
-//            )
-//        }
     }
 }
 

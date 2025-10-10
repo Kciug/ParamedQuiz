@@ -6,8 +6,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.OutlinedFlag
 import androidx.compose.material3.MaterialTheme
@@ -17,18 +18,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.rafalskrzypczyk.core.R
+import com.rafalskrzypczyk.core.composables.top_bars.QuizTopBar
 
 @Composable
 fun BaseQuizScreen(
     title: String,
-    score: Int,
-    showQuestionNumber: Boolean = true,
+    quizTopPanel: @Composable () -> Unit = {},
     currentQuestionIndex: Int = 0,
     onNavigateBack: () -> Unit,
     onReportIssue: () -> Unit,
@@ -42,18 +42,13 @@ fun BaseQuizScreen(
     }
 
     Scaffold(
+        contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
-            Column {
-                NavTopBar(
-                    title = title,
-                    actions = { ReportAction(onAction = onReportIssue) }
-                ) { onBackAction() }
-                BaseQuizPanel(
-                    score = score,
-                    showQuestionNumber = showQuestionNumber,
-                    currentQuestionIndex = currentQuestionIndex
-                )
-            }
+            QuizTopBar(
+                titlePanel = { BaseQuizTitlePanel(title, currentQuestionIndex) },
+                quizPanel = { quizTopPanel() },
+                actions = { ReportAction { onReportIssue() } }
+            ) { onNavigateBack() }
         }
     ) { innerPadding ->
         quizContent(innerPadding)
@@ -72,29 +67,30 @@ fun BaseQuizScreen(
 }
 
 @Composable
-fun BaseQuizPanel(
-    score: Int,
-    showQuestionNumber: Boolean,
+fun BaseQuizTitlePanel(
+    title: String,
     currentQuestionIndex: Int
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = Dimens.DEFAULT_PADDING + Dimens.SMALL_PADDING),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = if(showQuestionNumber) Arrangement.SpaceBetween else Arrangement.Center
-    ) {
-        UserPointsLabel(
-            modifier = Modifier,
-            value = score
-        )
-        if(showQuestionNumber) {
-            TextHeadline(
-                modifier = Modifier,
-                text = currentQuestionIndex.toString(),
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                textAlign = TextAlign.End
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
+    if(isLandscape) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            TextHeadline(title)
+            TextPrimary(
+                text = stringResource(R.string.base_quiz_question_number, currentQuestionIndex),
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+            )
+        }
+    } else {
+        Column {
+            TextHeadline(title)
+            TextPrimary(
+                text = stringResource(R.string.base_quiz_question_number, currentQuestionIndex),
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
             )
         }
     }
@@ -119,9 +115,7 @@ private fun BaseQuizScreenPreview() {
     PreviewContainer {
         BaseQuizScreen(
             title = "Test",
-            score = 2137,
             currentQuestionIndex = 15,
-            showQuestionNumber = true,
             onNavigateBack = {},
             onReportIssue = {}
         ) {}

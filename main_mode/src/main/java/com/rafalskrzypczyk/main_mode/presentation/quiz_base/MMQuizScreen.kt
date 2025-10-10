@@ -7,8 +7,11 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -16,13 +19,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.LayoutDirection
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.BaseQuizScreen
-import com.rafalskrzypczyk.core.composables.Dimens
+import com.rafalskrzypczyk.core.composables.CorrectAnswersLabel
 import com.rafalskrzypczyk.core.composables.ErrorDialog
 import com.rafalskrzypczyk.core.composables.Loading
 import com.rafalskrzypczyk.core.composables.PreviewContainer
 import com.rafalskrzypczyk.core.composables.QuizFinishScreen
+import com.rafalskrzypczyk.core.composables.UserPointsLabel
 
 @Composable
 fun MMQuizScreen(
@@ -32,19 +37,19 @@ fun MMQuizScreen(
 ) {
     BaseQuizScreen(
         title = state.categoryTitle,
-        score = state.userScore,
+        quizTopPanel = { MMQuizTopPanel(score = state.userScore, correctAnswers = state.correctAnswers) },
         currentQuestionIndex = state.currentQuestionNumber,
         onNavigateBack = { onNavigateBack() },
         onReportIssue = {}
     ) { innerPadding ->
-        val modifier = Modifier.padding(top = innerPadding.calculateTopPadding())
+        val modifier = Modifier
+            .padding(
+                top = innerPadding.calculateTopPadding(),
+                start = innerPadding.calculateLeftPadding(LayoutDirection.Ltr),
+                end = innerPadding.calculateRightPadding(LayoutDirection.Ltr),
+            )
 
-        CorrectAnswersAnimated(
-            modifier = modifier
-                .padding(start = Dimens.DEFAULT_PADDING + Dimens.SMALL_PADDING)
-                .padding(top = Dimens.SMALL_PADDING),
-            correctAnswers = state.correctAnswers
-        )
+
         AnimatedContent(
             targetState = state.responseState,
             transitionSpec = {
@@ -78,6 +83,21 @@ fun MMQuizScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun MMQuizTopPanel(
+    modifier: Modifier = Modifier,
+    score: Int,
+    correctAnswers: Int,
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        UserPointsLabel(value = score, grayOutWhenZero = false)
+        CorrectAnswersLabel(value = correctAnswers)
     }
 }
 

@@ -19,6 +19,7 @@ val OnSecondary = Color(0xFFFFFFFF)
 val OnTertiary = Color(0xFFFFFFFF)
 val OnBackground = Color(0xFF1C1C28)
 val OnSurface = Color(0xFF1C1C28)
+val OnSurfaceVariant = Color(0xFF2C2C3C)
 
 val Error = Color(0xFFFF4D4D)
 val OnError = Color(0xFFFFFFFF)
@@ -32,7 +33,7 @@ val TertiaryDark = Color(0xFF00BFA6)
 
 val BackgroundDark = Color(0xFF0F0F1A)
 val SurfaceDark = Color(0xFF1A1A26)
-val SurfaceContainerDark = Color(0xFF242436) // Trochę jaśniejsze niż SurfaceDark
+val SurfaceContainerDark = Color(0xFF242436)
 val SurfaceVariantDark = Color(0xFF3A3A55)
 
 val OnPrimaryDark = Color(0xFFFFFFFF)
@@ -40,9 +41,11 @@ val OnSecondaryDark = Color(0xFFFFFFFF)
 val OnTertiaryDark = Color(0xFF1C1C28)
 val OnBackgroundDark = Color(0xFFE6E6F0)
 val OnSurfaceDark = Color(0xFFE0E0EB)
+val OnSurfaceVariantDark = Color(0xFFCACADF)
 
 val ErrorDark = Color(0xFFFF4D4D)
 val OnErrorDark = Color(0xFFFFFFFF)
 
 val MQYellow = Color(0xFFFFD400)
 val MQRed = Color(0xFFFF2600)
+val MQGreen = Color(0xFF009900)
