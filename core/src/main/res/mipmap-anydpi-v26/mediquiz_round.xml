@@ -2,4 +2,5 @@
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
     <background android:drawable="@color/mediquiz_background"/>
     <foreground android:drawable="@mipmap/mediquiz_foreground"/>
+    <monochrome android:drawable="@mipmap/mediquiz_foreground"/>
 </adaptive-icon>
