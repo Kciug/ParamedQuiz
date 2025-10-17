@@ -12,8 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.rafalskrzypczyk.core.composables.BackButton
 import com.rafalskrzypczyk.core.composables.Dimens
+import com.rafalskrzypczyk.core.composables.ExitButton
 
 @Composable
 fun QuizTopBar(
@@ -35,7 +35,7 @@ fun QuizTopBar(
             modifier = modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            BackButton(onNavigateBack = onNavigateBack)
+            ExitButton(onClose = onNavigateBack)
             Row(
                 modifier = Modifier.weight(1f),
                 verticalAlignment = Alignment.CenterVertically
