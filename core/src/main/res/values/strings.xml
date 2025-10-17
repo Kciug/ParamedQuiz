@@ -52,4 +52,10 @@
     <string name="desc_correct_answers">Poprawne odpowiedzi</string>
 
     <string name="base_quiz_question_number">Pytanie %1$d</string>
+
+    <string name="quiz_finish_title">Jak Ci poszło?</string>
+    <string name="quiz_finish_your_answers">Twoje odpowiedzi</string>
+    <string name="quiz_finish_all_answers">odpowiedzi</string>
+    <string name="quiz_finish_correct_answers">poprawnych</string>
+    <string name="quiz_finish_earned_points">+%d</string>
 </resources>
