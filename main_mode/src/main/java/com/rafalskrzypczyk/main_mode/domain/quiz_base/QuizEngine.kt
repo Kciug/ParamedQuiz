@@ -7,6 +7,7 @@ class QuizEngine(
 ) {
     private var questions: List<Question> = emptyList()
     private var currentIndex: Int = 0
+    private var answeredQuestions: Int = 0
     private var correctAnswers: Int = 0
 
     fun setQuestions(newQuestions: List<Question>) {
@@ -19,6 +20,8 @@ class QuizEngine(
 
     fun getCurrentQuestion(): Question? = questions.getOrNull(currentIndex)
 
+    fun getCurrentQuestionIndex() = currentIndex
+
     fun getCurrentQuestionNumber() = currentIndex + 1
 
 
@@ -27,12 +30,13 @@ class QuizEngine(
     fun submitAnswer(selectedIds: List<Long>): Boolean {
         val isCorrect = useCases.evaluateAnswers(questions[currentIndex], selectedIds)
         if(isCorrect) correctAnswers++
+        answeredQuestions++
         return isCorrect
     }
+
+    fun getAnsweredQuestions() = answeredQuestions
 
     fun getCorrectAnswers() = correctAnswers
 
     fun getQuestionsCount() = questions.size
-
-    fun isFinished() = currentIndex >= questions.size
 }

@@ -27,7 +27,6 @@ import com.rafalskrzypczyk.core.composables.ErrorDialog
 import com.rafalskrzypczyk.core.composables.Loading
 import com.rafalskrzypczyk.core.composables.PreviewContainer
 import com.rafalskrzypczyk.core.composables.UserPointsLabel
-import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedScreen
 
 @Composable
 fun MMQuizScreen(
@@ -39,7 +38,13 @@ fun MMQuizScreen(
         title = state.categoryTitle,
         quizTopPanel = { MMQuizTopPanel(score = state.userScore, correctAnswers = state.correctAnswers) },
         currentQuestionIndex = state.currentQuestionNumber,
-        onNavigateBack = { onNavigateBack() },
+        quizFinished = state.isQuizFinished,
+        quizFinishedState = state.quizFinishedState,
+        showBackConfirmation = state.showExitConfirmation,
+        onBackAction = { onEvent(MMQuizUIEvents.OnBackPressed) },
+        onBackDiscarded = { onEvent(MMQuizUIEvents.OnBackDiscarded) },
+        onBackConfirmed = { onEvent(MMQuizUIEvents.OnBackConfirmed(onNavigateBack)) },
+        onNavigateBack = onNavigateBack,
         onReportIssue = {}
     ) { innerPadding ->
         val modifier = Modifier
@@ -48,7 +53,6 @@ fun MMQuizScreen(
                 start = innerPadding.calculateLeftPadding(LayoutDirection.Ltr),
                 end = innerPadding.calculateRightPadding(LayoutDirection.Ltr),
             )
-
 
         AnimatedContent(
             targetState = state.responseState,
@@ -62,27 +66,12 @@ fun MMQuizScreen(
                 ResponseState.Loading -> Loading()
                 is ResponseState.Error -> ErrorDialog(responseState.message) { onNavigateBack() }
                 ResponseState.Success -> {
-                    AnimatedContent(
-                        targetState = state.isQuizFinished,
-                        transitionSpec = {
-                            scaleIn() togetherWith scaleOut()
-                        },
-                        label = "quizFinishedTransition"
-                    ) { quizFinished ->
-                        if(quizFinished) {
-                            QuizFinishedScreen(
-                                state = state.quizFinishedState,
-                                onNavigateBack = { onNavigateBack() }
-                            ) {}
-                        } else {
-                            MMQuizScreenContent(
-                                modifier = modifier,
-                                scaffoldPadding = innerPadding,
-                                state = state,
-                                onEvent = onEvent
-                            )
-                        }
-                    }
+                    MMQuizScreenContent(
+                        modifier = modifier,
+                        scaffoldPadding = innerPadding,
+                        state = state,
+                        onEvent = onEvent
+                    )
                 }
             }
         }
@@ -211,6 +200,8 @@ private fun MMQuizScreenPreview() {
                             userScore = if(isAnswerCorrect) state.value.userScore + 100 else state.value.userScore
                         )
                     }
+
+                    is MMQuizUIEvents.OnBackConfirmed -> TODO()
                 }
             }
         ) { }

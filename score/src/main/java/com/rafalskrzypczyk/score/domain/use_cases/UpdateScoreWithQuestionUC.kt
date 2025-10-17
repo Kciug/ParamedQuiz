@@ -1,14 +1,14 @@
 package com.rafalskrzypczyk.score.domain.use_cases
 
+import com.rafalskrzypczyk.score.domain.QuestionAnnotation
 import com.rafalskrzypczyk.score.domain.ScoreManager
 import com.rafalskrzypczyk.score.domain.ScorePoints
-import com.rafalskrzypczyk.score.domain.QuestionAnnotation
 import javax.inject.Inject
 
 class UpdateScoreWithQuestionUC @Inject constructor(
     private val scoreManager: ScoreManager
 ) {
-    operator fun invoke(questionId: Long, answeredCorrectly: Boolean) {
+    operator fun invoke(questionId: Long, answeredCorrectly: Boolean) : Int {
         val currentScore = scoreManager.getScore()
 
         var firstCorrectAnswer = false
@@ -30,11 +30,15 @@ class UpdateScoreWithQuestionUC @Inject constructor(
             firstCorrectAnswer = answeredCorrectly
         }
 
+        val earnedPoints = ScorePoints.calculateForQuestion(answeredCorrectly, firstCorrectAnswer)
+
         val newScore = currentScore.copy(
-            score = currentScore.score + ScorePoints.calculateForQuestion(answeredCorrectly, firstCorrectAnswer),
+            score = currentScore.score + earnedPoints,
             seenQuestions = updatedSeenQuestions
         )
 
         scoreManager.updateScore(newScore)
+
+        return earnedPoints
     }
 }

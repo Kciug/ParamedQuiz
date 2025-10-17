@@ -3,6 +3,7 @@ package com.rafalskrzypczyk.main_mode.presentation.quiz_base
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.core.api_response.ResponseState
+import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedState
 import com.rafalskrzypczyk.main_mode.domain.models.Question
 import com.rafalskrzypczyk.main_mode.domain.quiz_base.BaseQuizUseCases
 import com.rafalskrzypczyk.main_mode.domain.quiz_base.QuizEngine
@@ -20,6 +21,7 @@ abstract class BaseQuizVM (
 
     private val quizEngine = QuizEngine(useCases)
 
+    protected var earnedPoints: Int = 0
 
     init {
         loadUserScore()
@@ -34,6 +36,7 @@ abstract class BaseQuizVM (
             is MMQuizUIEvents.OnAnswerClicked -> onAnswerClicked(event.answerId)
             MMQuizUIEvents.OnSubmitAnswer -> submitAnswer()
             MMQuizUIEvents.OnNextQuestion -> displayNextQuestion()
+            is MMQuizUIEvents.OnBackConfirmed -> handleExitQuiz(event.navigateBack)
         }
     }
 
@@ -66,7 +69,7 @@ abstract class BaseQuizVM (
 
         val currentQ = quizEngine.getCurrentQuestion()
         if (currentQ != null) {
-            useCases.updateScore(currentQ.id, isCorrect)
+            earnedPoints += useCases.updateScore(currentQ.id, isCorrect)
         }
     }
 
@@ -115,7 +118,7 @@ abstract class BaseQuizVM (
     protected open fun displayNextQuestion() {
         val next = quizEngine.nextQuestion()
         if (next == null) {
-            _state.update { it.copy(isQuizFinished = true) }
+            setFinishedState()
         } else {
             _state.update {
                 it.copy(
@@ -124,5 +127,23 @@ abstract class BaseQuizVM (
                 )
             }
         }
+    }
+
+    protected open fun handleExitQuiz(navigateBack: () -> Unit) {
+        _state.update { it.copy(showExitConfirmation = false) }
+        if(quizEngine.getCurrentQuestionIndex() == 0) navigateBack()
+        else setFinishedState()
+    }
+
+    protected open fun setFinishedState() {
+        _state.update { it.copy(
+            isQuizFinished = true,
+            quizFinishedState = QuizFinishedState(
+                seenQuestions = quizEngine.getAnsweredQuestions(),
+                correctAnswers = quizEngine.getCorrectAnswers(),
+                points = state.value.userScore,
+                earnedPoints = earnedPoints
+            )
+        ) }
     }
 }

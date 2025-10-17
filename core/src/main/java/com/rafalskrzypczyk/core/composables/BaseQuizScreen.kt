@@ -2,6 +2,10 @@ package com.rafalskrzypczyk.core.composables
 
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,15 +18,13 @@ import androidx.compose.material.icons.rounded.OutlinedFlag
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.rafalskrzypczyk.core.R
+import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedScreen
+import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedState
 import com.rafalskrzypczyk.core.composables.top_bars.QuizTopBar
 
 @Composable
@@ -30,38 +32,57 @@ fun BaseQuizScreen(
     title: String,
     quizTopPanel: @Composable () -> Unit = {},
     currentQuestionIndex: Int = 0,
+    quizFinished: Boolean,
+    quizFinishedState: QuizFinishedState,
+    quizFinishedExtras: @Composable () -> Unit = {},
+    showBackConfirmation: Boolean,
+    onBackAction: () -> Unit = {},
+    onBackDiscarded: () -> Unit = {},
+    onBackConfirmed: () -> Unit = {},
     onNavigateBack: () -> Unit,
     onReportIssue: () -> Unit,
     quizContent: @Composable (PaddingValues) -> Unit
 ) {
-    var showBackConfirmation by remember { mutableStateOf(false) }
-    val onBackAction = { showBackConfirmation = true }
-
     BackHandler {
         onBackAction()
     }
 
-    Scaffold(
-        contentWindowInsets = WindowInsets.safeDrawing,
-        topBar = {
-            QuizTopBar(
-                titlePanel = { BaseQuizTitlePanel(title, currentQuestionIndex) },
-                quizPanel = { quizTopPanel() },
-                actions = { ReportAction { onReportIssue() } }
-            ) { onBackAction() }
+    AnimatedContent(
+        targetState = quizFinished,
+        transitionSpec = {
+            scaleIn() togetherWith scaleOut()
+        },
+        label = "quizFinishedTransition"
+    ) { quizFinished ->
+        if(quizFinished) {
+            QuizFinishedScreen(
+                state = quizFinishedState,
+                onNavigateBack = { onNavigateBack() }
+            ) { quizFinishedExtras() }
+        } else {
+            Scaffold(
+                contentWindowInsets = WindowInsets.safeDrawing,
+                topBar = {
+                    QuizTopBar(
+                        titlePanel = { BaseQuizTitlePanel(title, currentQuestionIndex) },
+                        quizPanel = { quizTopPanel() },
+                        actions = { ReportAction { onReportIssue() } }
+                    ) { onBackAction() }
+                }
+            ) { innerPadding ->
+                quizContent(innerPadding)
+            }
         }
-    ) { innerPadding ->
-        quizContent(innerPadding)
     }
 
     if(showBackConfirmation) {
         ConfirmationDialog(
             title = stringResource(R.string.dialog_title_confirm_exit_quiz),
             onConfirm = {
-                onNavigateBack()
-                showBackConfirmation = false
+                onBackDiscarded()
+                onBackConfirmed()
             },
-            onDismiss = { showBackConfirmation = false }
+            onDismiss = onBackDiscarded
         )
     }
 }
@@ -116,6 +137,12 @@ private fun BaseQuizScreenPreview() {
         BaseQuizScreen(
             title = "Test",
             currentQuestionIndex = 15,
+            quizFinished = false,
+            quizFinishedState = QuizFinishedState(),
+            showBackConfirmation = false,
+            onBackAction = {},
+            onBackDiscarded = {},
+            onBackConfirmed = {},
             onNavigateBack = {},
             onReportIssue = {}
         ) {}
