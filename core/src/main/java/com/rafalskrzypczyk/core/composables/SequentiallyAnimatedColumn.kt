@@ -4,14 +4,20 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.scaleIn
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 
 @Composable
@@ -19,6 +25,8 @@ fun SequentiallyAnimatedColumn(
     modifier: Modifier = Modifier,
     enterDelay: Long = 500,
     delayBetween: Long = 300,
+    contentSpacing: Dp = Dimens.ELEMENTS_SPACING,
+    contentPadding: PaddingValues = PaddingValues(Dimens.DEFAULT_PADDING),
     content: List<@Composable () -> Unit>
 ) {
     val visibleStates = remember { content.map { mutableStateOf(false) } }
@@ -32,9 +40,7 @@ fun SequentiallyAnimatedColumn(
     }
 
     Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING, Alignment.Top)
+        modifier = modifier
     ) {
         content.forEachIndexed { index, item ->
             AnimatedVisibility(
@@ -44,7 +50,12 @@ fun SequentiallyAnimatedColumn(
                     stiffness = Spring.StiffnessMediumLow
                 ))
             ) {
-                item()
+                Box(modifier = Modifier.padding(
+                    top = if (index == 0) contentPadding.calculateTopPadding() else contentSpacing,
+                    bottom = if (index == content.size - 1) contentPadding.calculateBottomPadding() else 0.dp,
+                    start = contentPadding.calculateStartPadding(LayoutDirection.Ltr),
+                    end = contentPadding.calculateEndPadding(LayoutDirection.Ltr)
+                )){ item() }
             }
         }
     }

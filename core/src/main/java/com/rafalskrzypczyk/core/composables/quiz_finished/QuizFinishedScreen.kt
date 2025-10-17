@@ -5,10 +5,12 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -54,60 +56,80 @@ fun QuizFinishedScreen(
         val modifier = Modifier.padding(innerPadding)
 
         Column(
-            modifier = modifier.padding(Dimens.DEFAULT_PADDING).verticalScroll(rememberScrollState()),
+            modifier = modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            SequentiallyAnimatedColumn(
-                modifier = Modifier.fillMaxSize(),
-                enterDelay = enterDelay,
-                content = listOf(
-                    {
-                        Column {
-                            TextHeadline(stringResource(R.string.quiz_finish_title))
-                            Spacer(Modifier.height(Dimens.ELEMENTS_SPACING))
-                        }
-                    },
-                    { TextPrimary(stringResource(R.string.quiz_finish_your_answers)) },
-                    {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
-                        ) {
-                            TextHeadline(text = state.seenQuestions.toString(), color = MaterialTheme.colorScheme.primary)
-                            TextPrimary(stringResource(R.string.quiz_finish_all_answers))
-                        }
-                    },
-                    {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
-                        ) {
-                            TextHeadline(text = state.correctAnswers.toString(), color = MQGreen)
-                            TextPrimary(stringResource(R.string.quiz_finish_correct_answers))
-                        }
-                    },
-                    {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            UserPointsLabel(value = state.points)
-                            Spacer(Modifier.width(Dimens.ELEMENTS_SPACING_SMALL))
-                            TextPrimary(
-                                text = stringResource(R.string.quiz_finish_earned_points, state.earnedPoints),
-                                color = MQYellow
-                            )
-                        }
-                    },
-                    { extras() }
+            Box(modifier = Modifier.fillMaxSize().weight(1f)){
+                SequentiallyAnimatedColumn(
+                    modifier = Modifier.padding(Dimens.DEFAULT_PADDING),
+                    enterDelay = enterDelay,
+                    content = listOf(
+                        {
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                TextHeadline(stringResource(R.string.quiz_finish_title))
+                                Spacer(Modifier.height(Dimens.ELEMENTS_SPACING))
+                            }
+                        },
+                        { TextPrimary(stringResource(R.string.quiz_finish_your_answers)) },
+                        {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
+                            ) {
+                                TextHeadline(
+                                    text = state.seenQuestions.toString(),
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                TextPrimary(stringResource(R.string.quiz_finish_all_answers))
+                            }
+                        },
+                        {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
+                            ) {
+                                TextHeadline(
+                                    text = state.correctAnswers.toString(),
+                                    color = MQGreen
+                                )
+                                TextPrimary(stringResource(R.string.quiz_finish_correct_answers))
+                            }
+                        },
+                        {
+                            Row(
+                                modifier = Modifier.padding(top = Dimens.ELEMENTS_SPACING),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                UserPointsLabel(value = state.points)
+                                Spacer(Modifier.width(Dimens.ELEMENTS_SPACING_SMALL))
+                                TextPrimary(
+                                    text = stringResource(
+                                        R.string.quiz_finish_earned_points,
+                                        state.earnedPoints
+                                    ),
+                                    color = MQYellow
+                                )
+                            }
+                        },
+                        { extras() }
+                    )
                 )
-            )
+            }
 
             AnimatedVisibility(
                 visible = backButtonVisible.value,
                 enter = scaleIn(animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    dampingRatio = Spring.DampingRatioLowBouncy,
                     stiffness = Spring.StiffnessMediumLow
                 ))
             ) {
                 ButtonPrimary(
+                    modifier = Modifier.padding(Dimens.DEFAULT_PADDING),
                     title = stringResource(R.string.btn_back),
                     onClick = onNavigateBack,
                 )

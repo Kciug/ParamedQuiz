@@ -26,8 +26,8 @@ import com.rafalskrzypczyk.core.composables.CorrectAnswersLabel
 import com.rafalskrzypczyk.core.composables.ErrorDialog
 import com.rafalskrzypczyk.core.composables.Loading
 import com.rafalskrzypczyk.core.composables.PreviewContainer
-import com.rafalskrzypczyk.core.composables.QuizFinishScreen
 import com.rafalskrzypczyk.core.composables.UserPointsLabel
+import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedScreen
 
 @Composable
 fun MMQuizScreen(
@@ -70,7 +70,10 @@ fun MMQuizScreen(
                         label = "quizFinishedTransition"
                     ) { quizFinished ->
                         if(quizFinished) {
-                            QuizFinishScreen(onNavigateBack = onNavigateBack)
+                            QuizFinishedScreen(
+                                state = state.quizFinishedState,
+                                onNavigateBack = { onNavigateBack() }
+                            ) {}
                         } else {
                             MMQuizScreenContent(
                                 modifier = modifier,

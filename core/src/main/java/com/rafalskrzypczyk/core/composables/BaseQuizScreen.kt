@@ -48,7 +48,7 @@ fun BaseQuizScreen(
                 titlePanel = { BaseQuizTitlePanel(title, currentQuestionIndex) },
                 quizPanel = { quizTopPanel() },
                 actions = { ReportAction { onReportIssue() } }
-            ) { onNavigateBack() }
+            ) { onBackAction() }
         }
     ) { innerPadding ->
         quizContent(innerPadding)

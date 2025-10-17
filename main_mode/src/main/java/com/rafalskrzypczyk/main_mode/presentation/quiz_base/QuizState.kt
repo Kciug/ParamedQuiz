@@ -1,6 +1,7 @@
 package com.rafalskrzypczyk.main_mode.presentation.quiz_base
 
 import com.rafalskrzypczyk.core.api_response.ResponseState
+import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedState
 
 data class QuizState (
     val userScore: Int = 0,
@@ -12,4 +13,5 @@ data class QuizState (
     val questionsCount: Int = 0,
     val question: QuestionUIM = QuestionUIM(),
     val isQuizFinished: Boolean = false,
+    val quizFinishedState: QuizFinishedState = QuizFinishedState()
 )
