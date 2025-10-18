@@ -9,7 +9,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.tooling.preview.Preview
 import com.rafalskrzypczyk.core.composables.PreviewContainer
@@ -19,7 +19,7 @@ fun OnboardingScreen(
     navigateToLogin: () -> Unit,
     onFinishOnboarding: () -> Unit
 ) {
-    var moveToOnboarding by remember { mutableStateOf(false) }
+    var moveToOnboarding by rememberSaveable { mutableStateOf(false) }
 
     AnimatedContent(
         targetState = moveToOnboarding,

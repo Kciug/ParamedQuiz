@@ -44,6 +44,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -69,7 +70,7 @@ fun OnboardingSequence(
     navigateToLogin: () -> Unit,
     onFinish: () -> Unit
 ) {
-    var currentPage by remember { mutableIntStateOf(0) }
+    var currentPage by rememberSaveable { mutableIntStateOf(0) }
     var movedToNext by remember { mutableStateOf(false) }
 
     var moveNextAutomatically by remember { mutableStateOf(false) }
@@ -78,8 +79,6 @@ fun OnboardingSequence(
     val continueButtonTextCallback = { title: String ->
         continueButtonText = title
     }
-
-
 
     val pages = listOf<@Composable () -> Unit>(
         {
