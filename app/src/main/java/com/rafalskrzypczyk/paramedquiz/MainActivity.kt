@@ -28,6 +28,8 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var scoreManager: ScoreManager
 
+    private var isOnboarding = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -63,7 +65,17 @@ class MainActivity : ComponentActivity() {
     @Composable
     private fun Navigation() {
         val navController = rememberNavController()
-        AppNavHost(navController) { authRepository.isUserLoggedIn() }
+        AppNavHost(
+            navController = navController,
+            isOnboarding = { getOnboardingState() },
+            onFinishOnboarding = { onFinishOnboarding() }
+        ) { authRepository.isUserLoggedIn() }
+    }
+
+    private fun getOnboardingState(): Boolean = isOnboarding
+
+    private fun onFinishOnboarding() {
+        isOnboarding = false
     }
 }
 

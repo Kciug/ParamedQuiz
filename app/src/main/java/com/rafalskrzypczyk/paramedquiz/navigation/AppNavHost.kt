@@ -13,12 +13,14 @@ import androidx.navigation.compose.NavHost
 @Composable
 fun AppNavHost(
     navController: NavHostController,
-    userLoggedInProvider: () -> Boolean
+    isOnboarding: () -> Boolean,
+    onFinishOnboarding: () -> Unit,
+    userLoggedInProvider: () -> Boolean,
 ) {
     NavHost(
         modifier = Modifier.background(MaterialTheme.colorScheme.background),
         navController = navController,
-        startDestination = Onboarding,
+        startDestination = if(isOnboarding()) Onboarding else MainMenu,
         enterTransition = {
             slideIntoContainer(
                 towards = AnimatedContentTransitionScope.SlideDirection.Companion.Left,
@@ -46,7 +48,10 @@ fun AppNavHost(
     ) {
         signupDestination(
             onExit = { navController.popBackStack() },
-            onAuthenticated = { navController.navigateToUserPage() }
+            onAuthenticated = {
+                if (isOnboarding()) { navController.popBackStack() }
+                else { navController.navigateToUserPage() }
+            }
         )
 
         dailyExerciseDestination(
@@ -87,7 +92,10 @@ fun AppNavHost(
 
         onboardingDestination(
             navigateToSignup = { navController.navigateToSignup() },
-            onFinishOnboarding = { navController.navigateToMainMenu() },
+            onFinishOnboarding = {
+                onFinishOnboarding()
+                navController.navigateToMainMenu()
+            },
             userLoggedInProvider = userLoggedInProvider
         )
     }
