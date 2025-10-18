@@ -72,4 +72,16 @@
     <string name="stats_no_best_worst_data_msg">Odpowiedz na wiecej pytań w tym trybie aby wyświetlić dane.</string>
 
     <string name="percentage">%1$d%%</string>
+
+    <string name="frontfolks_website">www.frontfolks.com</string>
+    <string name="frontfolks_url">https://www.frontfolks.com/</string>
+    <string name="terms_of_service">Warunki serwisu</string>
+    <string name="terms_of_service_url">https://www.frontfolks.com/</string>
+    <string name="privacy_policy">Polityka prywatności</string>
+    <string name="privacy_policy_url">https://www.frontfolks.com/</string>
+
+    <string name="ob_btn_start">Rozpocznij</string>
+    <string name="ob_btn_navigate_to_login">Posiadasz już konto? Zaloguj się!</string>
+
+    <string name="ob_btn_finish">Zakończ</string>
 </resources>

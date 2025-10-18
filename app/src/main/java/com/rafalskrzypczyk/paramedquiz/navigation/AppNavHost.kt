@@ -18,7 +18,7 @@ fun AppNavHost(
     NavHost(
         modifier = Modifier.background(MaterialTheme.colorScheme.background),
         navController = navController,
-        startDestination = MainMenu,
+        startDestination = Onboarding,
         enterTransition = {
             slideIntoContainer(
                 towards = AnimatedContentTransitionScope.SlideDirection.Companion.Left,
@@ -80,8 +80,14 @@ fun AppNavHost(
                 else navController.navigateToSignup()
             }
         )
+
         swipeModeDestination(
             onNavigateBack = { navController.popBackStack() }
+        )
+
+        onboardingDestination(
+            navigateToSignup = { navController.navigateToSignup() },
+            onFinishOnboarding = { navController.navigateToMainMenu() }
         )
     }
 }

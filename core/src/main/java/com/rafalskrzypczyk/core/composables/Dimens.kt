@@ -14,6 +14,7 @@ object Dimens {
 
     val DEFAULT_PADDING = 15.dp
     val SMALL_PADDING = 5.dp
+    val LARGE_PADDING = 30.dp
 
 
     val ELEMENTS_SPACING = 15.dp

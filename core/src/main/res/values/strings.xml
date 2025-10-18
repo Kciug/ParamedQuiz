@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="Typos">
-    <string name="app_name">Paramed Quiz</string>
+    <string name="app_name">MediQuiz</string>
 
     <string name="error_unknown">Wystąpił nieznany błąd. Spróbuj później</string>
     <string name="error_no_data">Nie znaleziono danych.</string>

@@ -49,3 +49,5 @@ val OnErrorDark = Color(0xFFFFFFFF)
 val MQYellow = Color(0xFFFFD400)
 val MQRed = Color(0xFFFF2600)
 val MQGreen = Color(0xFF009900)
+
+val Link = Color(0xFF2196F3)

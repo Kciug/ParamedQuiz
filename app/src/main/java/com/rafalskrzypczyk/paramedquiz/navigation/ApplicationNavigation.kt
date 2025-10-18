@@ -7,6 +7,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.rafalskrzypczyk.home_screen.presentation.home_page.HomeScreen
 import com.rafalskrzypczyk.home_screen.presentation.home_page.HomeScreenVM
+import com.rafalskrzypczyk.home_screen.presentation.onboarding.OnboardingScreen
 import com.rafalskrzypczyk.home_screen.presentation.user_page.UserPageScreen
 import com.rafalskrzypczyk.home_screen.presentation.user_page.UserPageVM
 import com.rafalskrzypczyk.home_screen.presentation.user_settings.UserSettingsScreen
@@ -83,6 +84,12 @@ fun NavGraphBuilder.mainMenuDestination(
             onNavigateToMainMode = onNavigateToMainMode,
             onNavigateToSwipeMode = onNavigateToSwipeMode
         )
+    }
+}
+
+fun NavController.navigateToMainMenu() {
+    navigate(route = MainMenu) {
+        popUpTo(0)
     }
 }
 
@@ -177,4 +184,23 @@ fun NavGraphBuilder.swipeModeDestination(
 
 fun NavController.navigateToSwipeMode() {
     navigate(route = SwipeMode)
+}
+
+@Serializable
+object Onboarding
+
+fun NavGraphBuilder.onboardingDestination(
+    navigateToSignup: () -> Unit,
+    onFinishOnboarding: () -> Unit
+) {
+    composable<Onboarding> {
+        OnboardingScreen(
+            navigateToLogin = navigateToSignup,
+            onFinishOnboarding = onFinishOnboarding
+        )
+    }
+}
+
+fun NavController.navigateToOnboarding() {
+    navigate(route = Onboarding)
 }
