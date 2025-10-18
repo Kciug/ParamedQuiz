@@ -2,9 +2,14 @@ package com.rafalskrzypczyk.home_screen.presentation.onboarding
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
@@ -33,6 +38,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Flight
 import androidx.compose.material.icons.filled.ForkRight
 import androidx.compose.material.icons.filled.QuestionMark
+import androidx.compose.material.icons.rounded.CheckCircleOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -55,6 +61,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import com.rafalskrzypczyk.core.composables.ButtonPrimary
@@ -62,13 +69,16 @@ import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.PreviewContainer
 import com.rafalskrzypczyk.core.composables.TextHeadline
 import com.rafalskrzypczyk.core.composables.TextPrimary
+import com.rafalskrzypczyk.core.ui.theme.MQGreen
 import com.rafalskrzypczyk.home.R
+import kotlinx.coroutines.delay
 
 @Composable
 fun OnboardingSequence(
     onBackToWelcomePage: () -> Unit,
     navigateToLogin: () -> Unit,
-    onFinish: () -> Unit
+    onFinish: () -> Unit,
+    userLoggedInProvider: () -> Boolean
 ) {
     var currentPage by rememberSaveable { mutableIntStateOf(0) }
     var movedToNext by remember { mutableStateOf(false) }
@@ -119,16 +129,18 @@ fun OnboardingSequence(
                     moveNextAutomatically = true
                     navigateToLogin()
                 },
-                nextButtonTitleCallback = continueButtonTextCallback
+                nextButtonTitleCallback = continueButtonTextCallback,
+                userLoggedInProvider = userLoggedInProvider
             )
         },
         {
-            OnboardingSequencePage(
+            OnboardingSequenceEndPage(
                 title = stringResource(R.string.ob_page_end_title),
                 message = stringResource(R.string.ob_page_end_message),
                 icon = Icons.Default.Celebration,
                 nextButtonTitle = stringResource(R.string.ob_btn_finish),
-                nextButtonTitleCallback = continueButtonTextCallback
+                nextButtonTitleCallback = continueButtonTextCallback,
+                userLoggedInProvider = userLoggedInProvider
             )
         },
     )
@@ -315,7 +327,8 @@ fun OnboardingSequencePage(
 fun OnboardingSequenceLoginPage(
     modifier: Modifier = Modifier,
     onNavigateToRegister: () -> Unit,
-    nextButtonTitleCallback: (String) -> Unit
+    nextButtonTitleCallback: (String) -> Unit,
+    userLoggedInProvider: () -> Boolean
 ) {
     nextButtonTitleCallback(stringResource(R.string.ob_btn_skip))
 
@@ -337,10 +350,121 @@ fun OnboardingSequenceLoginPage(
                 .size(Dimens.IMAGE_SIZE)
         )
         TextHeadline(stringResource(R.string.ob_page_login_title))
-        TextPrimary(stringResource(R.string.ob_page_login_message))
-        ButtonPrimary(
-            title = stringResource(R.string.ob_page_login_btn),
-            onClick = onNavigateToRegister
+        TextPrimary(
+            text = stringResource(R.string.ob_page_login_message),
+            textAlign = TextAlign.Center
+        )
+        if(userLoggedInProvider()) {
+            Row(
+                modifier = Modifier
+                    .animateContentSize()
+                    .padding(Dimens.DEFAULT_PADDING)
+                    .background(
+                        color = MQGreen,
+                        shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT)
+                    )
+                    .padding(Dimens.DEFAULT_PADDING),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.CheckCircleOutline,
+                    contentDescription = null,
+                    tint = Color.Black
+                )
+                TextPrimary(
+                    text = stringResource(R.string.ob_page_end_logged_successfully),
+                    color = Color.Black,
+                    modifier = Modifier.padding(
+                        start = Dimens.ELEMENTS_SPACING_SMALL,
+                        end = Dimens.DEFAULT_PADDING
+                    )
+                )
+            }
+        } else {
+            ButtonPrimary(
+                title = stringResource(R.string.ob_page_login_btn),
+                onClick = onNavigateToRegister
+            )
+        }
+    }
+}
+
+@Composable
+fun OnboardingSequenceEndPage(
+    modifier: Modifier = Modifier,
+    title: String,
+    message: String,
+    icon: ImageVector,
+    nextButtonTitle: String = stringResource(R.string.ob_btn_next),
+    nextButtonTitleCallback: (String) -> Unit,
+    userLoggedInProvider: () -> Boolean
+) {
+    var showUserLoggedBadge by remember { mutableStateOf(false) }
+    var showUserLoggedBadgeText by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        delay(500)
+        showUserLoggedBadge = userLoggedInProvider()
+        if(showUserLoggedBadge){
+            delay(500)
+            showUserLoggedBadgeText = true
+            delay(3000)
+            showUserLoggedBadge = false
+        }
+    }
+
+    Box(modifier = modifier.fillMaxSize()) {
+        AnimatedVisibility(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = Dimens.LARGE_PADDING * 2)
+            ,
+            visible = showUserLoggedBadge,
+            enter = scaleIn(animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessLow
+                )) + fadeIn(),
+            exit = scaleOut() + fadeOut()
+        ) {
+            Row(
+                modifier = Modifier
+                    .animateContentSize()
+                    .padding(Dimens.DEFAULT_PADDING)
+                    .background(
+                        color = MQGreen,
+                        shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT)
+                    )
+                    .padding(Dimens.SMALL_PADDING),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.CheckCircleOutline,
+                    contentDescription = null,
+                    tint = Color.Black
+                )
+                AnimatedVisibility(
+                    visible = showUserLoggedBadgeText,
+                    enter = fadeIn(),
+                ) {
+                    TextPrimary(
+                        text = stringResource(R.string.ob_page_end_logged_successfully),
+                        color = Color.Black,
+                        modifier = Modifier.padding(
+                            start = Dimens.ELEMENTS_SPACING_SMALL,
+                            end = Dimens.DEFAULT_PADDING
+                        )
+                    )
+                }
+            }
+        }
+
+        OnboardingSequencePage(
+            modifier = Modifier.align(Alignment.Center),
+            title = title,
+            message = message,
+            icon = icon,
+            nextButtonTitle = nextButtonTitle,
+            nextButtonTitleCallback = nextButtonTitleCallback
         )
     }
 }

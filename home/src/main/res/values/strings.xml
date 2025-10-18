@@ -96,6 +96,7 @@
     <string name="ob_page_login_btn">Utwórz konto</string>
     <string name="ob_page_end_title">To wszystko!</string>
     <string name="ob_page_end_message">Rozpocznij naukę!</string>
+    <string name="ob_page_end_logged_successfully">Zalogowano pomyślnie</string>
     <string name="ob_btn_skip">Pomiń</string>
     <string name="ob_btn_finish">Zakończ</string>
 </resources>

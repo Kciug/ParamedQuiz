@@ -17,7 +17,8 @@ import com.rafalskrzypczyk.core.composables.PreviewContainer
 @Composable
 fun OnboardingScreen(
     navigateToLogin: () -> Unit,
-    onFinishOnboarding: () -> Unit
+    onFinishOnboarding: () -> Unit,
+    userLoggedInProvider: () -> Boolean
 ) {
     var moveToOnboarding by rememberSaveable { mutableStateOf(false) }
 
@@ -32,7 +33,8 @@ fun OnboardingScreen(
             OnboardingSequence(
                 onBackToWelcomePage = { moveToOnboarding = false },
                 navigateToLogin = navigateToLogin,
-                onFinish = onFinishOnboarding
+                onFinish = onFinishOnboarding,
+                userLoggedInProvider = userLoggedInProvider
             )
         } else {
             OnboardingWelcomePage(
@@ -49,7 +51,8 @@ private fun OnboardingScreenPreview() {
     PreviewContainer {
         OnboardingScreen(
             navigateToLogin = {},
-            onFinishOnboarding = {}
+            onFinishOnboarding = {},
+            userLoggedInProvider = { true }
         )
     }
 }

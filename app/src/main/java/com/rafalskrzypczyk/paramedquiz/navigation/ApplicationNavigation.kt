@@ -191,12 +191,14 @@ object Onboarding
 
 fun NavGraphBuilder.onboardingDestination(
     navigateToSignup: () -> Unit,
-    onFinishOnboarding: () -> Unit
+    onFinishOnboarding: () -> Unit,
+    userLoggedInProvider: () -> Boolean
 ) {
     composable<Onboarding> {
         OnboardingScreen(
             navigateToLogin = navigateToSignup,
-            onFinishOnboarding = onFinishOnboarding
+            onFinishOnboarding = onFinishOnboarding,
+            userLoggedInProvider = userLoggedInProvider
         )
     }
 }

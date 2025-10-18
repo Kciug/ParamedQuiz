@@ -87,7 +87,8 @@ fun AppNavHost(
 
         onboardingDestination(
             navigateToSignup = { navController.navigateToSignup() },
-            onFinishOnboarding = { navController.navigateToMainMenu() }
+            onFinishOnboarding = { navController.navigateToMainMenu() },
+            userLoggedInProvider = userLoggedInProvider
         )
     }
 }
