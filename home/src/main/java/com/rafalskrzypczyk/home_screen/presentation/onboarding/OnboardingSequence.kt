@@ -75,34 +75,43 @@ fun OnboardingSequence(
     var moveNextAutomatically by remember { mutableStateOf(false) }
 
     var continueButtonText = stringResource(R.string.ob_btn_next)
+    val continueButtonTextCallback = { title: String ->
+        continueButtonText = title
+    }
+
+
 
     val pages = listOf<@Composable () -> Unit>(
         {
             OnboardingSequencePage(
                 title = stringResource(R.string.ob_page_1_title),
                 message = stringResource(R.string.ob_page_1_message),
-                icon = Icons.Default.Emergency
+                icon = Icons.Default.Emergency,
+                nextButtonTitleCallback = continueButtonTextCallback
             )
         },
         {
             OnboardingSequencePage(
                 title = stringResource(R.string.ob_page_2_title),
                 message = stringResource(R.string.ob_page_2_message),
-                icon = Icons.Default.QuestionMark
+                icon = Icons.Default.QuestionMark,
+                nextButtonTitleCallback = continueButtonTextCallback
             )
         },
         {
             OnboardingSequencePage(
                 title = stringResource(R.string.ob_page_3_title),
                 message = stringResource(R.string.ob_page_3_message),
-                icon = Icons.Default.ForkRight
+                icon = Icons.Default.ForkRight,
+                nextButtonTitleCallback = continueButtonTextCallback
             )
         },
         {
             OnboardingSequencePage(
                 title = stringResource(R.string.ob_page_4_title),
                 message = stringResource(R.string.ob_page_4_message),
-                icon = Icons.Default.Favorite
+                icon = Icons.Default.Favorite,
+                nextButtonTitleCallback = continueButtonTextCallback
             )
         },
         {
@@ -111,9 +120,7 @@ fun OnboardingSequence(
                     moveNextAutomatically = true
                     navigateToLogin()
                 },
-                nextButtonTitleCallback = { title ->
-                    continueButtonText = title
-                }
+                nextButtonTitleCallback = continueButtonTextCallback
             )
         },
         {
@@ -122,9 +129,7 @@ fun OnboardingSequence(
                 message = stringResource(R.string.ob_page_end_message),
                 icon = Icons.Default.Celebration,
                 nextButtonTitle = stringResource(R.string.ob_btn_finish),
-                nextButtonTitleCallback = { title ->
-                    continueButtonText = title
-                }
+                nextButtonTitleCallback = continueButtonTextCallback
             )
         },
     )
@@ -269,10 +274,10 @@ fun OnboardingSequencePage(
     title: String,
     message: String,
     icon: ImageVector,
-    nextButtonTitle: String? = null,
-    nextButtonTitleCallback: (String) -> Unit = {}
+    nextButtonTitle: String = stringResource(R.string.ob_btn_next),
+    nextButtonTitleCallback: (String) -> Unit
 ) {
-    if(nextButtonTitle != null) nextButtonTitleCallback(nextButtonTitle)
+    nextButtonTitleCallback(nextButtonTitle)
 
     Column(
         modifier = modifier
@@ -350,7 +355,8 @@ private fun OnboardingSequencePagePreview() {
             message = "Wczesnym rankiem, gdy mgła unosi się nad wilgotnymi łąkami, słychać charakterystyczny klangor żurawi. " +
                     "Te dostojne ptaki, o rozpiętości skrzydeł przekraczającej dwa metry, od wieków fascynują obserwatorów przyrody. " +
                     "Wędrują tysiące kilometrów, by powrócić w te same miejsca lęgowe, z zadziwiającą dokładnością godną zegarmistrza",
-            icon = Icons.Default.Flight
+            icon = Icons.Default.Flight,
+            nextButtonTitleCallback = { }
         )
     }
 }
