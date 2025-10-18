@@ -9,6 +9,7 @@ import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -26,6 +27,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.filled.Celebration
 import androidx.compose.material.icons.filled.Emergency
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Flight
@@ -37,6 +39,7 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -44,8 +47,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -62,6 +69,13 @@ fun OnboardingSequence(
     navigateToLogin: () -> Unit,
     onFinish: () -> Unit
 ) {
+    var currentPage by remember { mutableIntStateOf(0) }
+    var movedToNext by remember { mutableStateOf(false) }
+
+    var moveNextAutomatically by remember { mutableStateOf(false) }
+
+    var continueButtonText = stringResource(R.string.ob_btn_next)
+
     val pages = listOf<@Composable () -> Unit>(
         {
             OnboardingSequencePage(
@@ -91,15 +105,53 @@ fun OnboardingSequence(
                 icon = Icons.Default.Favorite
             )
         },
+        {
+            OnboardingSequenceLoginPage (
+                onNavigateToRegister = {
+                    moveNextAutomatically = true
+                    navigateToLogin()
+                },
+                nextButtonTitleCallback = { title ->
+                    continueButtonText = title
+                }
+            )
+        },
+        {
+            OnboardingSequencePage(
+                title = stringResource(R.string.ob_page_end_title),
+                message = stringResource(R.string.ob_page_end_message),
+                icon = Icons.Default.Celebration,
+                nextButtonTitle = stringResource(R.string.ob_btn_finish),
+                nextButtonTitleCallback = { title ->
+                    continueButtonText = title
+                }
+            )
+        },
     )
 
-    var currentPage by remember { mutableIntStateOf(0) }
-    var movedToNext by remember { mutableStateOf(false) }
+    val onClickNext = {
+        if(currentPage == pages.size - 1) {
+            onFinish()
+        } else {
+            movedToNext = true
+            currentPage++
+        }
+    }
 
-    val continueButtonText = if(currentPage == pages.size - 1) {
-        stringResource(R.string.ob_btn_finish)
-    } else {
-        stringResource(R.string.ob_btn_next)
+    val onBackClick = {
+        if (currentPage == 0) {
+            onBackToWelcomePage()
+        } else {
+            movedToNext = false
+            currentPage--
+        }
+    }
+
+    LaunchedEffect(moveNextAutomatically) {
+        if (moveNextAutomatically) {
+            moveNextAutomatically = false
+            onClickNext()
+        }
     }
 
     Scaffold { innerPadding ->
@@ -110,14 +162,7 @@ fun OnboardingSequence(
                 .fillMaxSize()
                 .padding(Dimens.DEFAULT_PADDING)
         ) {
-            AnimatedBackButton(showText = currentPage == 0) {
-                if (currentPage == 0) {
-                    onBackToWelcomePage()
-                } else {
-                    movedToNext = false
-                    currentPage--
-                }
-            }
+            AnimatedBackButton(showText = currentPage == 0) { onBackClick() }
 
             AnimatedContent(
                 targetState = currentPage,
@@ -145,14 +190,7 @@ fun OnboardingSequence(
                 Spacer(Modifier.height(Dimens.ELEMENTS_SPACING))
                 ButtonPrimary(
                     title = continueButtonText,
-                    onClick = {
-                        if(currentPage == pages.size - 1) {
-                            onFinish()
-                        } else {
-                            movedToNext = true
-                            currentPage++
-                        }
-                    }
+                    onClick = { onClickNext() }
                 )
             }
         }
@@ -230,8 +268,12 @@ fun OnboardingSequencePage(
     modifier: Modifier = Modifier,
     title: String,
     message: String,
-    icon: ImageVector
+    icon: ImageVector,
+    nextButtonTitle: String? = null,
+    nextButtonTitleCallback: (String) -> Unit = {}
 ) {
+    if(nextButtonTitle != null) nextButtonTitleCallback(nextButtonTitle)
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -258,7 +300,44 @@ fun OnboardingSequencePage(
             TextHeadline(title)
         }
         Spacer(Modifier.height(Dimens.ELEMENTS_SPACING))
-        TextPrimary(message)
+        TextPrimary(
+            text = message,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+@Composable
+fun OnboardingSequenceLoginPage(
+    modifier: Modifier = Modifier,
+    onNavigateToRegister: () -> Unit,
+    nextButtonTitleCallback: (String) -> Unit
+) {
+    nextButtonTitleCallback(stringResource(R.string.ob_btn_skip))
+
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(Dimens.LARGE_PADDING),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING, Alignment.CenterVertically)
+    ) {
+        Image(
+            painter = painterResource(com.rafalskrzypczyk.core.R.drawable.avatar_default),
+            contentDescription = stringResource(com.rafalskrzypczyk.core.R.string.desc_user_avatar),
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .shadow(Dimens.ELEVATION, CircleShape, clip = false)
+                .clip(CircleShape)
+                .background(Color.Transparent)
+                .size(Dimens.IMAGE_SIZE)
+        )
+        TextHeadline(stringResource(R.string.ob_page_login_title))
+        TextPrimary(stringResource(R.string.ob_page_login_message))
+        ButtonPrimary(
+            title = stringResource(R.string.ob_page_login_btn),
+            onClick = onNavigateToRegister
+        )
     }
 }
 

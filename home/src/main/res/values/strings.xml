@@ -91,5 +91,11 @@
     <string name="ob_page_3_message">W aplikacji znajdziesz rożne tryby, dzięki którym możesz przyswajać wiedzę w sposób dopasowany do Ciebie. Oprócz tego będziesz miał dostęp do zadań dziennych, powtórek, oraz statystyk, aby śledzić na bieżąco postępy swojej nauki!</string>
     <string name="ob_page_4_title">Nie spiesz się i ciesz się nauką!</string>
     <string name="ob_page_4_message">Odkryj sposób nauki najlepiej pasujący do Ciebie i ucz się w swoim tempie. Baza profesjonalnie przygotowanych pytań, zgodnych z najnowszą wiedzą i standardami czeka na Ciebie. Teraz pora na Twój ruch!</string>
+    <string name="ob_page_login_title">Utwórz konto</string>
+    <string name="ob_page_login_message">Zaloguj się aby w pełni korzystać z możliwości aplikacji.</string>
+    <string name="ob_page_login_btn">Utwórz konto</string>
+    <string name="ob_page_end_title">To wszystko!</string>
+    <string name="ob_page_end_message">Rozpocznij naukę!</string>
+    <string name="ob_btn_skip">Pomiń</string>
     <string name="ob_btn_finish">Zakończ</string>
 </resources>

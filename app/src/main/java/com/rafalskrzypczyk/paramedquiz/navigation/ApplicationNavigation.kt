@@ -200,7 +200,3 @@ fun NavGraphBuilder.onboardingDestination(
         )
     }
 }
-
-fun NavController.navigateToOnboarding() {
-    navigate(route = Onboarding)
-}
