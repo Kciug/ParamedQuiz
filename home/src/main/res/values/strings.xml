@@ -82,6 +82,14 @@
 
     <string name="ob_btn_start">Rozpocznij</string>
     <string name="ob_btn_navigate_to_login">Posiadasz już konto? Zaloguj się!</string>
-
+    <string name="ob_btn_next">Dalej</string>
+    <string name="ob_page_1_title">Witaj!</string>
+    <string name="ob_page_1_message">Witaj w MediQuiz! Czeka na Ciebie potężna dawka wiedzy.</string>
+    <string name="ob_page_2_title">Co tu znajdziesz?</string>
+    <string name="ob_page_2_message">MediQuiz daje dostęp do setek pytań z zakresu ratownictwa medycznego, dzięki którym możesz poszerzać swoją wiedzę. Niezależnie czy jesteś studentem, ratownikiem medycznym, czy po prostu zainteresowanym daną tematyką, znajdziesz tutaj coś dla siebie!</string>
+    <string name="ob_page_3_title">Wiele sposobów na naukę.</string>
+    <string name="ob_page_3_message">W aplikacji znajdziesz rożne tryby, dzięki którym możesz przyswajać wiedzę w sposób dopasowany do Ciebie. Oprócz tego będziesz miał dostęp do zadań dziennych, powtórek, oraz statystyk, aby śledzić na bieżąco postępy swojej nauki!</string>
+    <string name="ob_page_4_title">Nie spiesz się i ciesz się nauką!</string>
+    <string name="ob_page_4_message">Odkryj sposób nauki najlepiej pasujący do Ciebie i ucz się w swoim tempie. Baza profesjonalnie przygotowanych pytań, zgodnych z najnowszą wiedzą i standardami czeka na Ciebie. Teraz pora na Twój ruch!</string>
     <string name="ob_btn_finish">Zakończ</string>
 </resources>
