@@ -36,12 +36,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.rafalskrzypczyk.core.composables.ButtonPrimary
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.ErrorDialog
+import com.rafalskrzypczyk.core.composables.ExitButton
 import com.rafalskrzypczyk.core.composables.Loading
 import com.rafalskrzypczyk.core.composables.PasswordTextFieldPrimary
 import com.rafalskrzypczyk.core.composables.TextFieldPrimary
+import com.rafalskrzypczyk.core.composables.top_bars.NavTopBar
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.signup.R
-import com.rafalskrzypczyk.signup.SignupTopBar
 
 @Composable
 fun RegisterScreen(
@@ -58,11 +59,12 @@ fun RegisterScreen(
 
     Scaffold (
         topBar = {
-            SignupTopBar(
+            NavTopBar(
                 title = stringResource(R.string.title_register),
-                onNavigateBack = onNavigateBack,
-                onExit = onExitPressed
-            )
+                actions = {
+                    ExitButton { onExitPressed() }
+                }
+            ) { onNavigateBack() }
         }
     ) { innerPadding ->
         val modifier = Modifier.padding(innerPadding)

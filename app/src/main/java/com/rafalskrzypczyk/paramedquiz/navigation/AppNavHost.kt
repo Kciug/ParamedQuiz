@@ -65,7 +65,9 @@ fun AppNavHost(
             },
             onNavigateToDailyExercise = { navController.navigateToDailyExercise() },
             onNavigateToMainMode = { navController.navigateToMainMode() },
-            onNavigateToSwipeMode = { navController.navigateToSwipeMode() }
+            onNavigateToSwipeMode = { navController.navigateToSwipeMode() },
+            onNavigateToDev = { navController.navigateToDevOptions()
+            }
         )
 
         userPageDestination(
@@ -97,5 +99,7 @@ fun AppNavHost(
                 navController.navigateToMainMenu()
             }
         )
+
+        devDestination { navController.popBackStack() }
     }
 }

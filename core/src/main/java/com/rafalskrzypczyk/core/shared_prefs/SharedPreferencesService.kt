@@ -1,6 +1,7 @@
 package com.rafalskrzypczyk.core.shared_prefs
 
 import android.content.SharedPreferences
+import androidx.core.content.edit
 import com.rafalskrzypczyk.core.user_management.UserData
 import kotlinx.serialization.json.Json
 import javax.inject.Inject
@@ -10,14 +11,15 @@ class SharedPreferencesService @Inject constructor(
 ) : SharedPreferencesApi {
     companion object {
         const val KEY_CURRENT_USER = "current_user"
+        const val KEY_ONBOARDING_STATUS = "onboarding_done"
 
         const val DEFAULT_STRING_VALUE = ""
     }
 
     override fun setCurrentUser(userData: UserData) {
-        sharedPreferences.edit()
-            .putString(KEY_CURRENT_USER, Json.encodeToString(userData))
-            .apply()
+        sharedPreferences.edit {
+            putString(KEY_CURRENT_USER, Json.encodeToString(userData))
+        }
     }
 
     override fun getCurrentUser(): UserData? {
@@ -27,8 +29,18 @@ class SharedPreferencesService @Inject constructor(
     }
 
     override fun clearUserData() {
-        sharedPreferences.edit()
-            .remove(KEY_CURRENT_USER)
-            .apply()
+        sharedPreferences.edit {
+            remove(KEY_CURRENT_USER)
+        }
+    }
+
+    override fun setOnboardingStatus(done: Boolean) {
+        sharedPreferences.edit {
+            putBoolean(KEY_ONBOARDING_STATUS, done)
+        }
+    }
+
+    override fun getOnboardingStatus(): Boolean {
+        return sharedPreferences.getBoolean(KEY_ONBOARDING_STATUS, false)
     }
 }

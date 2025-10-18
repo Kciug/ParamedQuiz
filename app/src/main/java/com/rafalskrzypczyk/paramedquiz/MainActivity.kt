@@ -13,6 +13,7 @@ import androidx.compose.runtime.setValue
 import androidx.navigation.compose.rememberNavController
 import com.rafalskrzypczyk.auth.domain.AuthRepository
 import com.rafalskrzypczyk.core.composables.ErrorDialog
+import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.paramedquiz.navigation.AppNavHost
 import com.rafalskrzypczyk.score.domain.ScoreManager
@@ -28,7 +29,8 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var scoreManager: ScoreManager
 
-    private var isOnboarding = true
+    @Inject
+    lateinit var sharedPreferences: SharedPreferencesApi
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,10 +74,10 @@ class MainActivity : ComponentActivity() {
         ) { authRepository.isUserLoggedIn() }
     }
 
-    private fun getOnboardingState(): Boolean = isOnboarding
+    private fun getOnboardingState(): Boolean = !sharedPreferences.getOnboardingStatus()
 
     private fun onFinishOnboarding() {
-        isOnboarding = false
+        sharedPreferences.setOnboardingStatus(true)
     }
 }
 

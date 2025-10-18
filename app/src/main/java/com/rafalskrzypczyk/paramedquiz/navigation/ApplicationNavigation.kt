@@ -16,6 +16,8 @@ import com.rafalskrzypczyk.home_screen.presentation.user_settings.UserSettingsVM
 import com.rafalskrzypczyk.main_mode.navigation.MainModeNavHost
 import com.rafalskrzypczyk.main_mode.presentation.daily_exercise.DailyExerciseVM
 import com.rafalskrzypczyk.main_mode.presentation.quiz_base.MMQuizScreen
+import com.rafalskrzypczyk.paramedquiz.dev.DevOptionsScreen
+import com.rafalskrzypczyk.paramedquiz.dev.DevVM
 import com.rafalskrzypczyk.signup.SignupNavHost
 import com.rafalskrzypczyk.swipe_mode.presentation.SwipeModeScreen
 import com.rafalskrzypczyk.swipe_mode.presentation.SwipeModeVM
@@ -71,7 +73,8 @@ fun NavGraphBuilder.mainMenuDestination(
     onNavigateToUserPanel: () -> Unit,
     onNavigateToDailyExercise: () -> Unit,
     onNavigateToMainMode: () -> Unit,
-    onNavigateToSwipeMode: () -> Unit
+    onNavigateToSwipeMode: () -> Unit,
+    onNavigateToDev: () -> Unit
 ) {
     composable<MainMenu> {
         val viewModel = hiltViewModel<HomeScreenVM>()
@@ -83,7 +86,9 @@ fun NavGraphBuilder.mainMenuDestination(
             onNavigateToUserPanel = onNavigateToUserPanel,
             onNavigateToDailyExercise = onNavigateToDailyExercise,
             onNavigateToMainMode = onNavigateToMainMode,
-            onNavigateToSwipeMode = onNavigateToSwipeMode
+            onNavigateToSwipeMode = onNavigateToSwipeMode,
+            onNavigateToDevOptions = onNavigateToDev
+
         )
     }
 }
@@ -205,4 +210,24 @@ fun NavGraphBuilder.onboardingDestination(
             onFinishOnboarding = onFinishOnboarding
         )
     }
+}
+
+@Serializable
+object Dev
+
+fun NavGraphBuilder.devDestination(
+    navigateBack: () -> Unit
+) {
+    composable<Dev> {
+        val viewModel = hiltViewModel<DevVM>()
+
+        DevOptionsScreen(
+            onEvent = viewModel::onEvent,
+            onNavigateBack = navigateBack
+        )
+    }
+}
+
+fun NavController.navigateToDevOptions() {
+    navigate(route = Dev)
 }

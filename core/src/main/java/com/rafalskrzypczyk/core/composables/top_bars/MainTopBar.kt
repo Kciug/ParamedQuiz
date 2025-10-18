@@ -2,6 +2,7 @@ package com.rafalskrzypczyk.core.composables.top_bars
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -37,6 +38,7 @@ fun MainTopBar(
     userStreakPending: Boolean,
     isUserLoggedIn: Boolean,
     userAvatar: String?,
+    onClick: () -> Unit = {},
     onNavigateBack: (() -> Unit)? = null,
     onNavigateToUserPanel: () -> Unit,
 ) {
@@ -53,6 +55,7 @@ fun MainTopBar(
                     )
                 ),
             )
+            .clickable(onClick = onClick)
             .padding(Dimens.DEFAULT_PADDING),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween

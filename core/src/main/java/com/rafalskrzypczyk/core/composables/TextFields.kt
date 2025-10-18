@@ -10,7 +10,6 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -27,7 +26,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
-import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 
 
 @Composable
@@ -105,8 +103,8 @@ private fun BaseTextField(
             .fillMaxWidth()
             .clip(shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT)),
         colors = TextFieldDefaults.colors(
-            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+            focusedContainerColor = MaterialTheme.colorScheme.surface,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
             disabledIndicatorColor = Color.Transparent
@@ -118,13 +116,11 @@ private fun BaseTextField(
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun TextFieldPrimaryPreview() {
-    ParamedQuizTheme {
-        Surface {
-            TextFieldPrimary(
-                onValueChange = {},
-                hint = "Email"
-            )
-        }
+    PreviewContainer {
+        TextFieldPrimary(
+            onValueChange = {},
+            hint = "Email"
+        )
     }
 }
 
@@ -132,12 +128,10 @@ private fun TextFieldPrimaryPreview() {
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun PasswordTextFieldPrimaryPreview() {
-    ParamedQuizTheme {
-        Surface {
-            PasswordTextFieldPrimary(
-                onPasswordChange = {},
-                hint = "Hasło"
-            )
-        }
+    PreviewContainer {
+        PasswordTextFieldPrimary(
+            onPasswordChange = {},
+            hint = "Hasło"
+        )
     }
 }

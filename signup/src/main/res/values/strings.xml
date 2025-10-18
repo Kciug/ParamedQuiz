@@ -5,18 +5,20 @@
     <string name="title_reset_password">Odzyskaj dostęp</string>
 
     <string name="desc_login">Logowanie</string>
+    <string name="desc_login_google">Zaloguj przez Google</string>
 
     <string name="label_login">Zaloguj się do swojego konta</string>
     <string name="label_register">Stwórz swoje konto!</string>
     <string name="label_reset_password">Odzyskaj hasło</string>
     <string name="label_reset_password_success">Na podany adres e-mail został wysłany link do resetowania hasła. Sprawdź swoją skrzynkę odbiorczą (oraz folder spam), aby kontynuować.</string>
+    <string name="label_login_with_social_media">lub zaloguj za pomocą</string>
 
     <string name="hint_email">Email</string>
     <string name="hint_password">Hasło</string>
     <string name="hint_password_confirmation">Powtórz hasło</string>
     <string name="hint_user_name">Nazwa</string>
 
-    <string name="btn_login">Log in</string>
+    <string name="btn_login">Zaloguj</string>
     <string name="btn_register">Utwórz konto</string>
     <string name="btn_reset_password">Nie pamiętam hasła</string>
     <string name="btn_reset_password_back">Wróć do logowania</string>

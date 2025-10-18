@@ -5,13 +5,16 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -42,9 +45,10 @@ import com.rafalskrzypczyk.core.composables.Loading
 import com.rafalskrzypczyk.core.composables.PasswordTextFieldPrimary
 import com.rafalskrzypczyk.core.composables.TextFieldPrimary
 import com.rafalskrzypczyk.core.composables.TextPrimary
+import com.rafalskrzypczyk.core.composables.top_bars.NavTopBar
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
+import com.rafalskrzypczyk.signup.GoogleAB
 import com.rafalskrzypczyk.signup.R
-import com.rafalskrzypczyk.signup.SignupTopBar
 
 @Composable
 fun LoginScreen(
@@ -62,10 +66,9 @@ fun LoginScreen(
 
     Scaffold (
         topBar = {
-            SignupTopBar(
-                title = stringResource(R.string.title_signup),
-                onExit = { onNavigateBack() }
-            )
+            NavTopBar(
+                title = stringResource(R.string.title_signup)
+            ) { onNavigateBack() }
         }
     ) { innerPadding ->
         val modifier = Modifier.padding(innerPadding)
@@ -134,21 +137,44 @@ fun LoginScreenContent(
             imeAction = ImeAction.Done
         )
 
-        ButtonTertiary(
-            title = stringResource(R.string.btn_reset_password),
-            onClick = { onResetPassword() }
-        )
-
         ButtonPrimary(
             title = stringResource(R.string.btn_login),
             onClick = { onEvent(LoginUIEvents.LoginWithCredentials(emailText, passwordText)) },
             enabled = passwordText.isNotBlank() && emailText.isNotBlank()
         )
 
+        HorizontalDivider()
+
+        LoginWithSocialMediaSection(
+            loginWithGoogle = {}
+        )
+
+        HorizontalDivider()
+
         ButtonSecondary(
             title = stringResource(R.string.btn_register),
             onClick = { onRegister() }
         )
+
+        ButtonTertiary(
+            title = stringResource(R.string.btn_reset_password),
+            onClick = { onResetPassword() }
+        )
+    }
+}
+
+@Composable
+fun LoginWithSocialMediaSection(
+    modifier: Modifier = Modifier,
+    loginWithGoogle: () -> Unit,
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING, Alignment.CenterHorizontally)
+    ) {
+        TextPrimary(stringResource(R.string.label_login_with_social_media))
+        GoogleAB { loginWithGoogle() }
     }
 }
 

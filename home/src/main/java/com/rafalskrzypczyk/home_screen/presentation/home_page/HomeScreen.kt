@@ -34,8 +34,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.rafalskrzypczyk.core.composables.Dimens
-import com.rafalskrzypczyk.core.composables.top_bars.MainTopBar
 import com.rafalskrzypczyk.core.composables.TextHeadline
+import com.rafalskrzypczyk.core.composables.top_bars.MainTopBar
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.home.R
 import com.rafalskrzypczyk.score.domain.StreakState
@@ -47,7 +47,8 @@ fun HomeScreen(
     onNavigateToUserPanel: () -> Unit,
     onNavigateToDailyExercise: () -> Unit,
     onNavigateToMainMode: () -> Unit,
-    onNavigateToSwipeMode: () -> Unit
+    onNavigateToSwipeMode: () -> Unit,
+    onNavigateToDevOptions: () -> Unit
 ) {
     var showDailyExerciseAlreadyDoneAlert by remember { mutableStateOf(false) }
 
@@ -90,6 +91,7 @@ fun HomeScreen(
                 isUserLoggedIn = state.isUserLoggedIn,
                 userAvatar = state.userAvatar,
                 userStreakPending = state.userStreakState == StreakState.PENDING,
+                onClick = onNavigateToDevOptions
             ) { onNavigateToUserPanel() }
         }
     ) { innerPadding ->
@@ -228,7 +230,8 @@ private fun HomeScreenPreview() {
                 onNavigateToUserPanel = {},
                 onNavigateToMainMode = {},
                 onNavigateToSwipeMode = {},
-                onNavigateToDailyExercise = {}
+                onNavigateToDailyExercise = {},
+                onNavigateToDevOptions = {}
             )
         }
     }
