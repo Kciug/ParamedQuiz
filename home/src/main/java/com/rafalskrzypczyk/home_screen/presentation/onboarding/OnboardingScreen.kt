@@ -1,6 +1,11 @@
 package com.rafalskrzypczyk.home_screen.presentation.onboarding
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -18,7 +23,10 @@ fun OnboardingScreen(
 
     AnimatedContent(
         targetState = moveToOnboarding,
-        label = "Onboarding"
+        label = "Onboarding",
+        transitionSpec = {
+            fadeIn() + scaleIn() togetherWith fadeOut() + scaleOut()
+        }
     ) { onboardingStarted ->
         if (onboardingStarted) {
             OnboardingSequence(

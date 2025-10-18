@@ -6,9 +6,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -18,6 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
 import com.rafalskrzypczyk.core.composables.ButtonPrimary
 import com.rafalskrzypczyk.core.composables.ButtonTertiary
 import com.rafalskrzypczyk.core.composables.Dimens
@@ -31,7 +36,12 @@ fun OnboardingWelcomePage(
     navigateToLogin: () -> Unit
 ) {
     Scaffold { innerPadding ->
-        val modifier = Modifier.padding(innerPadding)
+        val modifier = Modifier.padding(
+            top = 0.dp,
+            bottom = innerPadding.calculateBottomPadding(),
+            start = innerPadding.calculateStartPadding(LayoutDirection.Ltr),
+            end = innerPadding.calculateEndPadding(LayoutDirection.Ltr)
+        )
 
         Column(
             modifier = modifier
@@ -51,6 +61,7 @@ fun OnboardingWelcomePage(
                             bottomEnd = Dimens.RADIUS_DEFAULT
                         )
                     )
+                    .statusBarsPadding()
             )
             Column(
                 modifier = modifier
