@@ -3,13 +3,9 @@ package com.rafalskrzypczyk.home_screen.presentation.onboarding
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
@@ -71,14 +67,13 @@ import com.rafalskrzypczyk.core.composables.TextHeadline
 import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.ui.theme.MQGreen
 import com.rafalskrzypczyk.home.R
-import kotlinx.coroutines.delay
 
 @Composable
 fun OnboardingSequence(
+    state: OnboardingState,
     onBackToWelcomePage: () -> Unit,
     navigateToLogin: () -> Unit,
     onFinish: () -> Unit,
-    userLoggedInProvider: () -> Boolean
 ) {
     var currentPage by rememberSaveable { mutableIntStateOf(0) }
     var movedToNext by remember { mutableStateOf(false) }
@@ -125,22 +120,19 @@ fun OnboardingSequence(
         },
         {
             OnboardingSequenceLoginPage (
-                onNavigateToRegister = {
-                    moveNextAutomatically = true
-                    navigateToLogin()
-                },
-                nextButtonTitleCallback = continueButtonTextCallback,
-                userLoggedInProvider = userLoggedInProvider
+                state = state,
+                onNavigateToRegister = { navigateToLogin() },
+                nextButtonTitle = if (state.isLogged) stringResource(R.string.ob_btn_next) else stringResource(R.string.ob_btn_skip),
+                nextButtonTitleCallback = continueButtonTextCallback
             )
         },
         {
-            OnboardingSequenceEndPage(
+            OnboardingSequencePage(
                 title = stringResource(R.string.ob_page_end_title),
                 message = stringResource(R.string.ob_page_end_message),
                 icon = Icons.Default.Celebration,
                 nextButtonTitle = stringResource(R.string.ob_btn_finish),
                 nextButtonTitleCallback = continueButtonTextCallback,
-                userLoggedInProvider = userLoggedInProvider
             )
         },
     )
@@ -325,12 +317,16 @@ fun OnboardingSequencePage(
 
 @Composable
 fun OnboardingSequenceLoginPage(
+    state: OnboardingState,
     modifier: Modifier = Modifier,
     onNavigateToRegister: () -> Unit,
+    nextButtonTitle: String = stringResource(R.string.ob_btn_next),
     nextButtonTitleCallback: (String) -> Unit,
-    userLoggedInProvider: () -> Boolean
 ) {
-    nextButtonTitleCallback(stringResource(R.string.ob_btn_skip))
+    nextButtonTitleCallback(nextButtonTitle)
+
+    val headlineText = if(state.isLogged) state.userName else stringResource(R.string.ob_page_login_title)
+    val messageText = if(state.isLogged) state.userEmail else stringResource(R.string.ob_page_login_message)
 
     Column(
         modifier = modifier
@@ -349,12 +345,12 @@ fun OnboardingSequenceLoginPage(
                 .background(Color.Transparent)
                 .size(Dimens.IMAGE_SIZE)
         )
-        TextHeadline(stringResource(R.string.ob_page_login_title))
+        TextHeadline(headlineText)
         TextPrimary(
-            text = stringResource(R.string.ob_page_login_message),
+            text = messageText,
             textAlign = TextAlign.Center
         )
-        if(userLoggedInProvider()) {
+        if(state.isLogged) {
             Row(
                 modifier = Modifier
                     .animateContentSize()
@@ -389,85 +385,85 @@ fun OnboardingSequenceLoginPage(
     }
 }
 
-@Composable
-fun OnboardingSequenceEndPage(
-    modifier: Modifier = Modifier,
-    title: String,
-    message: String,
-    icon: ImageVector,
-    nextButtonTitle: String = stringResource(R.string.ob_btn_next),
-    nextButtonTitleCallback: (String) -> Unit,
-    userLoggedInProvider: () -> Boolean
-) {
-    var showUserLoggedBadge by remember { mutableStateOf(false) }
-    var showUserLoggedBadgeText by remember { mutableStateOf(false) }
-
-    LaunchedEffect(Unit) {
-        delay(500)
-        showUserLoggedBadge = userLoggedInProvider()
-        if(showUserLoggedBadge){
-            delay(500)
-            showUserLoggedBadgeText = true
-            delay(3000)
-            showUserLoggedBadge = false
-        }
-    }
-
-    Box(modifier = modifier.fillMaxSize()) {
-        AnimatedVisibility(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = Dimens.LARGE_PADDING * 2)
-            ,
-            visible = showUserLoggedBadge,
-            enter = scaleIn(animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessLow
-                )) + fadeIn(),
-            exit = scaleOut() + fadeOut()
-        ) {
-            Row(
-                modifier = Modifier
-                    .animateContentSize()
-                    .padding(Dimens.DEFAULT_PADDING)
-                    .background(
-                        color = MQGreen,
-                        shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT)
-                    )
-                    .padding(Dimens.SMALL_PADDING),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.CheckCircleOutline,
-                    contentDescription = null,
-                    tint = Color.Black
-                )
-                AnimatedVisibility(
-                    visible = showUserLoggedBadgeText,
-                    enter = fadeIn(),
-                ) {
-                    TextPrimary(
-                        text = stringResource(R.string.ob_page_end_logged_successfully),
-                        color = Color.Black,
-                        modifier = Modifier.padding(
-                            start = Dimens.ELEMENTS_SPACING_SMALL,
-                            end = Dimens.DEFAULT_PADDING
-                        )
-                    )
-                }
-            }
-        }
-
-        OnboardingSequencePage(
-            modifier = Modifier.align(Alignment.Center),
-            title = title,
-            message = message,
-            icon = icon,
-            nextButtonTitle = nextButtonTitle,
-            nextButtonTitleCallback = nextButtonTitleCallback
-        )
-    }
-}
+//@Composable
+//fun OnboardingSequenceEndPage(
+//    modifier: Modifier = Modifier,
+//    isLogged: Boolean,
+//    title: String,
+//    message: String,
+//    icon: ImageVector,
+//    nextButtonTitle: String = stringResource(R.string.ob_btn_next),
+//    nextButtonTitleCallback: (String) -> Unit
+//) {
+//    var showUserLoggedBadge by remember { mutableStateOf(false) }
+//    var showUserLoggedBadgeText by remember { mutableStateOf(false) }
+//
+//    LaunchedEffect(Unit) {
+//        delay(500)
+//        showUserLoggedBadge = isLogged
+//        if(showUserLoggedBadge){
+//            delay(500)
+//            showUserLoggedBadgeText = true
+//            delay(3000)
+//            showUserLoggedBadge = false
+//        }
+//    }
+//
+//    Box(modifier = modifier.fillMaxSize()) {
+//        AnimatedVisibility(
+//            modifier = Modifier
+//                .align(Alignment.TopCenter)
+//                .padding(top = Dimens.LARGE_PADDING * 2)
+//            ,
+//            visible = showUserLoggedBadge,
+//            enter = scaleIn(animationSpec = spring(
+//                    dampingRatio = Spring.DampingRatioMediumBouncy,
+//                    stiffness = Spring.StiffnessLow
+//                )) + fadeIn(),
+//            exit = scaleOut() + fadeOut()
+//        ) {
+//            Row(
+//                modifier = Modifier
+//                    .animateContentSize()
+//                    .padding(Dimens.DEFAULT_PADDING)
+//                    .background(
+//                        color = MQGreen,
+//                        shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT)
+//                    )
+//                    .padding(Dimens.SMALL_PADDING),
+//                verticalAlignment = Alignment.CenterVertically
+//            ) {
+//                Icon(
+//                    imageVector = Icons.Rounded.CheckCircleOutline,
+//                    contentDescription = null,
+//                    tint = Color.Black
+//                )
+//                AnimatedVisibility(
+//                    visible = showUserLoggedBadgeText,
+//                    enter = fadeIn(),
+//                ) {
+//                    TextPrimary(
+//                        text = stringResource(R.string.ob_page_end_logged_successfully),
+//                        color = Color.Black,
+//                        modifier = Modifier.padding(
+//                            start = Dimens.ELEMENTS_SPACING_SMALL,
+//                            end = Dimens.DEFAULT_PADDING
+//                        )
+//                    )
+//                }
+//            }
+//        }
+//
+//        OnboardingSequencePage(
+//            modifier = Modifier.align(Alignment.Center),
+//            title = title,
+//            message = message,
+//            icon = icon,
+//            nextButtonTitle = nextButtonTitle,
+//            nextButtonTitleCallback = nextButtonTitleCallback
+//        )
+//    }
+//}
 
 @Preview
 @Composable

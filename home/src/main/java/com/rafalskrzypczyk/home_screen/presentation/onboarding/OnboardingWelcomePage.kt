@@ -32,6 +32,7 @@ import com.rafalskrzypczyk.home.R
 
 @Composable
 fun OnboardingWelcomePage(
+    isUserLogged: Boolean,
     onStartClick: () -> Unit,
     navigateToLogin: () -> Unit
 ) {
@@ -80,10 +81,12 @@ fun OnboardingWelcomePage(
                     title = stringResource(R.string.ob_btn_start),
                     onClick = onStartClick
                 )
-                ButtonTertiary(
-                    title = stringResource(R.string.ob_btn_navigate_to_login),
-                    onClick = navigateToLogin
-                )
+                if (!isUserLogged) {
+                    ButtonTertiary(
+                        title = stringResource(R.string.ob_btn_navigate_to_login),
+                        onClick = navigateToLogin
+                    )
+                }
             }
             Row(
                 modifier = Modifier

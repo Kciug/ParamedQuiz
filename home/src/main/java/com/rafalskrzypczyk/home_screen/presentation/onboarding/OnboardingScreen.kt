@@ -7,6 +7,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -16,11 +17,16 @@ import com.rafalskrzypczyk.core.composables.PreviewContainer
 
 @Composable
 fun OnboardingScreen(
+    state: OnboardingState,
+    onEvent: (OnboardingUIEvents) -> Unit,
     navigateToLogin: () -> Unit,
-    onFinishOnboarding: () -> Unit,
-    userLoggedInProvider: () -> Boolean
+    onFinishOnboarding: () -> Unit
 ) {
     var moveToOnboarding by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        onEvent.invoke(OnboardingUIEvents.CheckIsLogged)
+    }
 
     AnimatedContent(
         targetState = moveToOnboarding,
@@ -31,13 +37,14 @@ fun OnboardingScreen(
     ) { onboardingStarted ->
         if (onboardingStarted) {
             OnboardingSequence(
+                state = state,
                 onBackToWelcomePage = { moveToOnboarding = false },
                 navigateToLogin = navigateToLogin,
-                onFinish = onFinishOnboarding,
-                userLoggedInProvider = userLoggedInProvider
+                onFinish = onFinishOnboarding
             )
         } else {
             OnboardingWelcomePage(
+                isUserLogged = state.isLogged,
                 onStartClick = { moveToOnboarding = true },
                 navigateToLogin = navigateToLogin
             )
@@ -50,9 +57,10 @@ fun OnboardingScreen(
 private fun OnboardingScreenPreview() {
     PreviewContainer {
         OnboardingScreen(
+            state = OnboardingState(),
+            onEvent = {},
             navigateToLogin = {},
             onFinishOnboarding = {},
-            userLoggedInProvider = { true }
         )
     }
 }

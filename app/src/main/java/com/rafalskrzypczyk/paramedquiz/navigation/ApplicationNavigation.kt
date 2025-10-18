@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import com.rafalskrzypczyk.home_screen.presentation.home_page.HomeScreen
 import com.rafalskrzypczyk.home_screen.presentation.home_page.HomeScreenVM
 import com.rafalskrzypczyk.home_screen.presentation.onboarding.OnboardingScreen
+import com.rafalskrzypczyk.home_screen.presentation.onboarding.OnboardingVM
 import com.rafalskrzypczyk.home_screen.presentation.user_page.UserPageScreen
 import com.rafalskrzypczyk.home_screen.presentation.user_page.UserPageVM
 import com.rafalskrzypczyk.home_screen.presentation.user_settings.UserSettingsScreen
@@ -191,14 +192,17 @@ object Onboarding
 
 fun NavGraphBuilder.onboardingDestination(
     navigateToSignup: () -> Unit,
-    onFinishOnboarding: () -> Unit,
-    userLoggedInProvider: () -> Boolean
+    onFinishOnboarding: () -> Unit
 ) {
     composable<Onboarding> {
+        val viewModel = hiltViewModel<OnboardingVM>()
+        val state = viewModel.state.collectAsStateWithLifecycle()
+
         OnboardingScreen(
+            state = state.value,
+            onEvent = viewModel::onEvent,
             navigateToLogin = navigateToSignup,
-            onFinishOnboarding = onFinishOnboarding,
-            userLoggedInProvider = userLoggedInProvider
+            onFinishOnboarding = onFinishOnboarding
         )
     }
 }

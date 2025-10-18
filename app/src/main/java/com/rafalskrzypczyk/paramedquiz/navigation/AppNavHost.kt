@@ -95,8 +95,7 @@ fun AppNavHost(
             onFinishOnboarding = {
                 onFinishOnboarding()
                 navController.navigateToMainMenu()
-            },
-            userLoggedInProvider = userLoggedInProvider
+            }
         )
     }
 }
