@@ -46,7 +46,9 @@ fun OnboardingWelcomePage(
 
         Column(
             modifier = modifier
-                .fillMaxSize(),
+                .fillMaxSize()
+                .background(color = MaterialTheme.colorScheme.primary)
+                .statusBarsPadding(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
@@ -55,6 +57,7 @@ fun OnboardingWelcomePage(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f)
+                    .weight(1f)
                     .background(
                         color = MaterialTheme.colorScheme.primary,
                         shape = RoundedCornerShape(
@@ -62,12 +65,21 @@ fun OnboardingWelcomePage(
                             bottomEnd = Dimens.RADIUS_DEFAULT
                         )
                     )
-                    .statusBarsPadding()
+
             )
             Column(
-                modifier = modifier
-                    .weight(1f)
-                    .padding(Dimens.DEFAULT_PADDING),
+                modifier = Modifier
+                    .background(
+                        color = MaterialTheme.colorScheme.background,
+                        shape = RoundedCornerShape(
+                            topStart = Dimens.RADIUS_DEFAULT,
+                            topEnd = Dimens.RADIUS_DEFAULT
+                        )
+                    )
+                    .padding(
+                        horizontal = Dimens.DEFAULT_PADDING,
+                        vertical = Dimens.LARGE_PADDING
+                    ),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING, Alignment.CenterVertically)
             ) {
@@ -87,22 +99,23 @@ fun OnboardingWelcomePage(
                         onClick = navigateToLogin
                     )
                 }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(Dimens.DEFAULT_PADDING),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    TextCaptionLink(
+                        text = stringResource(R.string.terms_of_service),
+                        url = stringResource(R.string.terms_of_service_url)
+                    )
+                    TextCaptionLink(
+                        text = stringResource(R.string.privacy_policy),
+                        url = stringResource(R.string.privacy_policy_url)
+                    )
+                }
             }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(Dimens.DEFAULT_PADDING),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                TextCaptionLink(
-                    text = stringResource(R.string.terms_of_service),
-                    url = stringResource(R.string.terms_of_service_url)
-                )
-                TextCaptionLink(
-                    text = stringResource(R.string.privacy_policy),
-                    url = stringResource(R.string.privacy_policy_url)
-                )
-            }
+
         }
     }
 }
