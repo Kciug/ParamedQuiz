@@ -1,11 +1,11 @@
-package com.rafalskrzypczyk.score.di
+package com.rafalskrzypczyk.score.data
 
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.user_management.UserManager
 import com.rafalskrzypczyk.firestore.domain.FirestoreApi
-import com.rafalskrzypczyk.score.domain.ScoreStorage
 import com.rafalskrzypczyk.score.domain.Score
 import com.rafalskrzypczyk.score.domain.ScoreRepository
+import com.rafalskrzypczyk.score.domain.ScoreStorage
 import com.rafalskrzypczyk.score.domain.toDTO
 import com.rafalskrzypczyk.score.domain.toDomain
 import kotlinx.coroutines.flow.Flow

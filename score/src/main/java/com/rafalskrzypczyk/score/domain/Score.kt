@@ -1,8 +1,8 @@
 package com.rafalskrzypczyk.score.domain
 
 import com.google.firebase.Timestamp
+import com.rafalskrzypczyk.core.utils.DateSerializer
 import com.rafalskrzypczyk.firestore.domain.models.ScoreDTO
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import java.util.Date
 
@@ -10,8 +10,10 @@ import java.util.Date
 data class Score(
     val score: Int,
     val streak: Int,
-    @Contextual val lastStreakUpdateDate: Date?,
-    @Contextual val lastDailyExerciseDate: Date?,
+    @Serializable(with = DateSerializer::class)
+    val lastStreakUpdateDate: Date?,
+    @Serializable(with = DateSerializer::class)
+    val lastDailyExerciseDate: Date?,
     val seenQuestions: List<QuestionAnnotation>
 ) {
     companion object {

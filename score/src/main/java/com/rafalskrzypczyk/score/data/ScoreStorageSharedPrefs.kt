@@ -1,4 +1,4 @@
-package com.rafalskrzypczyk.score.di
+package com.rafalskrzypczyk.score.data
 
 import android.content.SharedPreferences
 import androidx.core.content.edit
@@ -23,7 +23,7 @@ class ScoreStorageSharedPrefs @Inject constructor(
 
     override fun getScore(): Score {
         val json = sharedPreferences.getString(
-            SharedPreferencesService.Companion.KEY_CURRENT_USER,
+            KEY_USER_SCORE,
             SharedPreferencesService.Companion.DEFAULT_STRING_VALUE
         )
         if (json.isNullOrEmpty()) return Score.Companion.empty()

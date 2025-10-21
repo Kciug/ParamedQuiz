@@ -5,7 +5,7 @@ import com.rafalskrzypczyk.core.user_management.UserData
 import com.rafalskrzypczyk.core.user_management.UserManager
 import com.rafalskrzypczyk.firestore.domain.FirestoreApi
 import com.rafalskrzypczyk.firestore.domain.models.ScoreDTO
-import com.rafalskrzypczyk.score.di.ScoreRepositoryImpl
+import com.rafalskrzypczyk.score.data.ScoreRepositoryImpl
 import com.rafalskrzypczyk.score.domain.Score
 import com.rafalskrzypczyk.score.domain.ScoreStorage
 import com.rafalskrzypczyk.score.domain.toDTO
