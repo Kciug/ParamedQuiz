@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
+import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedState
 import com.rafalskrzypczyk.swipe_mode.domain.SwipeModeUseCases
 import com.rafalskrzypczyk.swipe_mode.domain.SwipeQuestion
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,10 +25,17 @@ class SwipeModeVM @Inject constructor(
     private var questions: List<SwipeQuestion> = emptyList()
     private var currentQuestionIndex: Int = 0
 
+    private var correctAnswers: Int = 0
     private var currentStreak: Int = 0
     private var bestStreak: Int = 0
+    private var earnedPoints: Int = 0
 
     init {
+        viewModelScope.launch {
+            useCases.getUserScore().collectLatest { score ->
+                _state.update { it.copy(userScore = score.score) }
+            }
+        }
         viewModelScope.launch {
             useCases.getShuffledSwipeQuestions().collectLatest { response ->
                 when (response) {
@@ -51,6 +59,9 @@ class SwipeModeVM @Inject constructor(
     fun onEvent(event: SwipeModeUIEvents) {
         when (event) {
             is SwipeModeUIEvents.SubmitAnswer -> submitAnswer(event.questionId, event.isCorrect)
+            is SwipeModeUIEvents.OnBackConfirmed -> handleExitQuiz(event.navigateBack)
+            SwipeModeUIEvents.OnBackPressed -> _state.update { it.copy(showExitConfirmation = true) }
+            SwipeModeUIEvents.OnBackDiscarded -> _state.update { it.copy(showExitConfirmation = false) }
         }
     }
 
@@ -81,9 +92,10 @@ class SwipeModeVM @Inject constructor(
         val answeredCorrectly = answeredQuestion.isCorrect == isCorrect
 
         if(answeredCorrectly) {
+            correctAnswers++
             _state.update { it.copy(
                 answerResult = SwipeQuizResult.CORRECT,
-                correctAnswers = it.correctAnswers + 1
+                correctAnswers = correctAnswers
             ) }
             updateStreak(true)
         } else {
@@ -91,7 +103,7 @@ class SwipeModeVM @Inject constructor(
             updateStreak(false)
         }
         displayNextQuestion()
-        useCases.updateScore(questionId, answeredCorrectly)
+        earnedPoints += useCases.updateScore(questionId, answeredCorrectly)
     }
 
     private fun updateStreak(isAnswerCorrect: Boolean) {
@@ -102,5 +114,23 @@ class SwipeModeVM @Inject constructor(
             currentStreak = 0
         }
         _state.update { it.copy(currentStreak = currentStreak, bestStreak = bestStreak) }
+    }
+
+    private fun handleExitQuiz(navigateBack: () -> Unit) {
+        _state.update { it.copy(showExitConfirmation = false) }
+        if(currentQuestionIndex == 0) navigateBack()
+        else setFinishedState()
+    }
+
+    private fun setFinishedState() {
+        _state.update { it.copy(
+            isQuizFinished = true,
+            quizFinishedState = QuizFinishedState(
+                seenQuestions = currentQuestionIndex,
+                correctAnswers = correctAnswers,
+                points = state.value.userScore,
+                earnedPoints = earnedPoints
+            )
+        ) }
     }
 }
