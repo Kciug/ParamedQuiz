@@ -93,19 +93,10 @@ fun SwipeModeScreenContent(
                     }
                 }
             }
-//            this@Column.AnimatedVisibility(
-//                modifier = Modifier.align(Alignment.BottomCenter).padding(Dimens.DEFAULT_PADDING),
-//                visible = true,
-//                label = "answerResult",
-//                enter = scaleIn(animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)),
-//                exit = fadeOut()
-//            ) {
-//                Icon(
-//                    imageVector = if(state.answerResult == SwipeQuizResult.CORRECT) Icons.Default.Check else Icons.Default.Close,
-//                    tint = if(state.answerResult == SwipeQuizResult.CORRECT) Color.Green else Color.Red,
-//                    contentDescription = stringResource(R.string.ic_desc_result)
-//                )
-//            }
+            AnswerResultIndicator(
+                modifier = Modifier.align(Alignment.TopCenter),
+                answerResult = state.answerResult
+            )
         }
         SwipeStatsComponent(
             modifier = Modifier.padding(Dimens.DEFAULT_PADDING),
@@ -115,10 +106,6 @@ fun SwipeModeScreenContent(
         )
     }
 }
-
-
-
-
 
 @Composable
 @Preview

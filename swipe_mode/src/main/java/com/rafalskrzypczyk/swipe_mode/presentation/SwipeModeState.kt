@@ -10,7 +10,7 @@ data class SwipeModeState(
     val currentQuestionNumber: Int = 0,
     val questionsCount: Int = 0,
     val questionsPair: List<SwipeQuestionUIModel> = emptyList(),
-    val answerResult: SwipeQuizResult = SwipeQuizResult.NONE,
+    val answerResult: SwipeModeAnswerResult = SwipeModeAnswerResult(),
     val isQuizFinished: Boolean = false,
     val quizFinishedState: QuizFinishedState = QuizFinishedState(),
     val correctAnswers: Int = 0,

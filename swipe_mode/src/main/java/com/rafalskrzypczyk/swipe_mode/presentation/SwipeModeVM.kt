@@ -75,8 +75,7 @@ class SwipeModeVM @Inject constructor(
         _state.update {
             it.copy(
                 currentQuestionNumber = currentQuestionIndex + 1,
-                questionsPair = remainingQuestions.takeLast(2).map { it.toPresentation() },
-                answerResult = SwipeQuizResult.NONE
+                questionsPair = remainingQuestions.takeLast(2).map { it.toPresentation() }
             )
         }
     }
@@ -91,17 +90,19 @@ class SwipeModeVM @Inject constructor(
 
         val answeredCorrectly = answeredQuestion.isCorrect == isCorrect
 
-        if(answeredCorrectly) {
-            correctAnswers++
-            _state.update { it.copy(
-                answerResult = SwipeQuizResult.CORRECT,
-                correctAnswers = correctAnswers
-            ) }
-            updateStreak(true)
-        } else {
-            _state.update { it.copy(answerResult = SwipeQuizResult.INCORRECT) }
-            updateStreak(false)
-        }
+        val answerResult = SwipeModeAnswerResult(
+            questionId = questionId,
+            result = if (answeredCorrectly) SwipeQuizResult.CORRECT else SwipeQuizResult.INCORRECT
+        )
+
+        if(answeredCorrectly) correctAnswers++
+
+        _state.update { it.copy(
+            answerResult = answerResult,
+            correctAnswers = correctAnswers
+        ) }
+
+        updateStreak(answeredCorrectly)
         displayNextQuestion()
         earnedPoints += useCases.updateScore(questionId, answeredCorrectly)
     }
