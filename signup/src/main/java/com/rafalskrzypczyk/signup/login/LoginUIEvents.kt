@@ -6,4 +6,5 @@ sealed interface LoginUIEvents {
         val email: String,
         val password: String,
     ) : LoginUIEvents
+    object LoginWithGoogle : LoginUIEvents
 }

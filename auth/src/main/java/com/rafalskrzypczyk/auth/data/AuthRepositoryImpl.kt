@@ -1,8 +1,22 @@
 package com.rafalskrzypczyk.auth.data
 
+import android.content.Context
+import android.os.Build
+import android.util.Log
+import androidx.credentials.Credential
+import androidx.credentials.CredentialManager
+import androidx.credentials.CustomCredential
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.exceptions.GetCredentialCancellationException
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.firebase.auth.AuthCredential
+import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
+import com.google.firebase.auth.GoogleAuthProvider
+import com.rafalskrzypczyk.auth.R
 import com.rafalskrzypczyk.auth.domain.AuthRepository
 import com.rafalskrzypczyk.auth.domain.toDTO
 import com.rafalskrzypczyk.auth.domain.toDomain
@@ -12,6 +26,7 @@ import com.rafalskrzypczyk.core.user_management.UserManager
 import com.rafalskrzypczyk.core.utils.FirebaseError
 import com.rafalskrzypczyk.firestore.domain.FirestoreApi
 import com.rafalskrzypczyk.score.domain.ScoreManager
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -26,14 +41,15 @@ class AuthRepositoryImpl @Inject constructor(
     private val firestoreApi: FirestoreApi,
     private val userManager: UserManager,
     private val firebaseError: FirebaseError,
-    private val scoreManager: ScoreManager
+    private val scoreManager: ScoreManager,
+    @ApplicationContext private val context: Context
 ) : AuthRepository {
     override fun isUserLoggedIn(): Boolean = firebaseAuth.currentUser != null
 
     override fun loginWithEmailAndPassword(
         email: String,
         password: String,
-    ): Flow<Response<UserData>> = channelFlow<Response<UserData>> {
+    ): Flow<Response<UserData>> = channelFlow {
         try {
             send(Response.Loading)
 
@@ -167,5 +183,82 @@ class AuthRepositoryImpl @Inject constructor(
         }
 
         awaitClose { this.cancel() }
+    }
+
+    override fun signInWithGoogle(): Flow<Response<UserData>> = callbackFlow {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            val signInWithGoogleOption: GetSignInWithGoogleOption = GetSignInWithGoogleOption.Builder(
+                serverClientId = context.getString(R.string.web_client_id)
+            )
+                .setNonce("")
+                .build()
+
+            val request: GetCredentialRequest = GetCredentialRequest.Builder()
+                .addCredentialOption(signInWithGoogleOption)
+                .build()
+
+            val credentialManager = CredentialManager.create(context)
+
+            try {
+                val result = credentialManager
+                    .getCredential(
+                        request = request,
+                        context = context,
+                    )
+
+                send(Response.Loading)
+
+                val authResult = handleSignIn(result.credential)
+
+                with(authResult) {
+                    if (this == null) {
+                        send(Response.Error("Something went wrong"))
+                    } else {
+                        val user = UserData(
+                            this.user!!.uid,
+                            this.user!!.email ?: "",
+                            this.user!!.displayName ?: ""
+                        )
+
+                        if(additionalUserInfo?.isNewUser ?: true) {
+                            firestoreApi.updateUserData(user.toDTO()).collectLatest {
+                                when (it) {
+                                    is Response.Loading -> send(it)
+                                    is Response.Error -> send(it)
+                                    is Response.Success -> {
+                                        userManager.saveUserDataInLocal(user)
+                                        scoreManager.onUserRegister()
+                                        send(Response.Success(user))
+                                    }
+                                }
+                            }
+                        } else {
+                            scoreManager.onUserLogIn()
+                            send(Response.Success(user))
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.d("SignInWithGoogle", e.toString())
+                if(e !is GetCredentialCancellationException)
+                    send(Response.Error(firebaseError.localizedError((e as? FirebaseAuthException)?.errorCode ?: "")))
+            }
+        }
+        awaitClose { this.cancel() }
+    }
+
+    private suspend fun handleSignIn(credential: Credential): AuthResult? {
+        if (credential is CustomCredential && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+            val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+            val credential = GoogleAuthProvider.getCredential(googleIdTokenCredential.idToken, null)
+
+            return firebaseAuthWithCredential(credential)
+        } else {
+            return null
+        }
+    }
+
+    private suspend fun firebaseAuthWithCredential(authCredential: AuthCredential): AuthResult {
+        return firebaseAuth.signInWithCredential(authCredential).await()
     }
 }

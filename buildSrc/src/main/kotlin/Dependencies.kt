@@ -35,6 +35,11 @@ object Dependencies {
     //FIREBASE AUTH
     const val FIREBASE_AUTH = "com.google.firebase:firebase-auth-ktx"
     const val FIREBASE_FIRESTORE = "com.google.firebase:firebase-firestore-ktx"
+    const val CREDENTIALS = "androidx.credentials:credentials:${Versions.CREDENTIALS}"
+    const val CREDENTIALS_PLAY_SERVICES = "androidx.credentials:credentials-play-services-auth:${Versions.CREDENTIALS}"
+    const val GOOGLE_ID = "com.google.android.libraries.identity.googleid:googleid:${Versions.GOOGLE_ID}"
+
+
 
     // Json serializer
     const val KOTLINX_SERIALIZATION_JSON = "org.jetbrains.kotlinx:kotlinx-serialization-json:${Versions.SERIALIZATION_JSON}"
@@ -77,6 +82,12 @@ fun DependencyHandler.firebase() {
     implementation(platform(Dependencies.FIREBASE_BOM))
     implementation(Dependencies.FIREBASE_AUTH)
     implementation(Dependencies.FIREBASE_FIRESTORE)
+}
+
+fun DependencyHandler.googleCredentials() {
+    implementation(Dependencies.CREDENTIALS)
+    implementation(Dependencies.CREDENTIALS_PLAY_SERVICES)
+    implementation(Dependencies.GOOGLE_ID)
 }
 
 fun DependencyHandler.kotlinxSerialization() {

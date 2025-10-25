@@ -14,5 +14,7 @@ interface AuthRepository {
     fun changePassword(newPassword: String) : Flow<Response<Unit>>
     fun changeUserName(newUsername: String) : Flow<Response<UserData>>
     fun deleteUser() : Flow<Response<Unit>>
+    fun signInWithGoogle() : Flow<Response<UserData>>
+
 }
 

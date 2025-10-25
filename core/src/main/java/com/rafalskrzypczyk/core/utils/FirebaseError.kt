@@ -1,6 +1,5 @@
 package com.rafalskrzypczyk.core.utils
 
-import android.util.Log
 import com.rafalskrzypczyk.core.R
 import javax.inject.Inject
 
@@ -8,8 +7,6 @@ class FirebaseError @Inject constructor(
     private val resourcesProvider: ResourceProvider
 ) {
     fun localizedError(code: String): String {
-        Log.d("KURWA", "localizedError: $code")
-
         return when (code.uppercase()) {
             "ERROR_INVALID_CREDENTIAL" -> resourcesProvider.getString(R.string.fb_error_invalid_credentials)
             "ERROR_INVALID_EMAIL" -> resourcesProvider.getString(R.string.fb_error_invalid_email)

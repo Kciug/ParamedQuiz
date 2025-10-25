@@ -21,6 +21,7 @@ dependencies {
     coreKtx()
     implementation(Dependencies.COMPOSE_RUNTIME)
     firebase()
+    googleCredentials()
     daggerHilt()
     tests()
 }

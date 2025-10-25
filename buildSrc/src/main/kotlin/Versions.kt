@@ -18,6 +18,8 @@ object Versions {
     const val HILT_VM = "1.0.0-alpha03"
 
     const val FIREBASE_BOM = "33.10.0"
+    const val CREDENTIALS = "1.3.0"
+    const val GOOGLE_ID = "1.1.1"
 
     const val SERIALIZATION_JSON = "1.8.0"
 }

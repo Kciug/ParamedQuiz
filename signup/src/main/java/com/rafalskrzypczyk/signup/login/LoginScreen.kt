@@ -146,7 +146,7 @@ fun LoginScreenContent(
         HorizontalDivider()
 
         LoginWithSocialMediaSection(
-            loginWithGoogle = {}
+            loginWithGoogle = { onEvent.invoke(LoginUIEvents.LoginWithGoogle) }
         )
 
         HorizontalDivider()
