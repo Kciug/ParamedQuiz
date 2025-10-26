@@ -89,7 +89,7 @@ class AuthRepositoryImpl @Inject constructor(
         userManager.clearUserDataLocal()
         scoreManager.onUserLogOut()
 
-//        if(currentUser?.providerId == "google.com") {
+//        if(currentUser.providerData[1].providerId == "google.com") {
 //            clearGoogleCredentialState(context)
 //        }
     }
@@ -200,7 +200,7 @@ class AuthRepositoryImpl @Inject constructor(
             }
         }
 
-//        if(currentUser?.providerId == "google.com") {
+//        if(currentUser.providerData[1].providerId == "google.com") {
 //            clearGoogleCredentialState(context)
 //        }
 
@@ -251,7 +251,7 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     private fun registerUser(user: FirebaseUser, email: String, userName: String): Flow<Response<UserData>> = channelFlow {
-        val authMethod = user.providerId
+        val authMethod = user.providerData[1].providerId
 
         val newUser = UserData(
             user.uid,
@@ -274,7 +274,7 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     private fun loginUser(user: FirebaseUser): Flow<Response<UserData>> = channelFlow {
-        val authMethod = user.providerId
+        val authMethod = user.providerData[1].providerId
 
         firestoreApi.getUserData(user.uid).collectLatest {
             when (it) {
