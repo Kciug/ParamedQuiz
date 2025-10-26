@@ -1,8 +1,9 @@
 package com.rafalskrzypczyk.core.composables.top_bars
 
 import android.content.res.Configuration
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -30,6 +31,7 @@ import com.rafalskrzypczyk.core.composables.UserPointsLabel
 import com.rafalskrzypczyk.core.composables.UserStreakLabel
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MainTopBar(
     modifier: Modifier = Modifier,
@@ -55,7 +57,10 @@ fun MainTopBar(
                     )
                 ),
             )
-            .clickable(onClick = onClick)
+            .combinedClickable(
+                onLongClick = onClick,
+                onClick = {}
+            )
             .padding(Dimens.DEFAULT_PADDING),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween

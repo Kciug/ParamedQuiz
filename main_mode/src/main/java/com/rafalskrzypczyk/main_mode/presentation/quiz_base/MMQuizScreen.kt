@@ -46,7 +46,7 @@ fun MMQuizScreen(
         onBackConfirmed = { onEvent(MMQuizUIEvents.OnBackConfirmed(onNavigateBack)) },
         onNavigateBack = onNavigateBack,
         onReportIssue = {}
-    ) { innerPadding ->
+    ) { innerPadding, titlePanel ->
         val modifier = Modifier
             .padding(
                 top = innerPadding.calculateTopPadding(),
