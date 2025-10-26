@@ -165,7 +165,7 @@ fun UserSettingsChangePassword(
 }
 
 @Composable
-fun UserSettingsDeleteAccount(
+fun UserSettingsDeleteAccountWithPassword(
     onDeleteAccount: (String) -> Unit
 ) {
     var password by remember { mutableStateOf("") }
@@ -187,6 +187,22 @@ fun UserSettingsDeleteAccount(
         title = stringResource(R.string.btn_delete_account),
         onClick = { onDeleteAccount(password) },
         enabled = password.isNotBlank()
+    )
+}
+
+@Composable
+fun UserSettingsDeleteAccountForProvider(
+    onDeleteAccount: () -> Unit
+) {
+    TextPrimary(
+        text = stringResource(R.string.text_delete_account_warning),
+        color = MaterialTheme.colorScheme.error,
+        textAlign = TextAlign.Center
+    )
+
+    ButtonPrimary(
+        title = stringResource(R.string.btn_delete_account),
+        onClick = { onDeleteAccount() }
     )
 }
 

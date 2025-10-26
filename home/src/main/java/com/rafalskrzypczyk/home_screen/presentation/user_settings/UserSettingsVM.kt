@@ -1,5 +1,6 @@
 package com.rafalskrzypczyk.home_screen.presentation.user_settings
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.auth.domain.AuthRepository
@@ -38,6 +39,7 @@ class UserSettingsVM @Inject constructor(
             is UserSettingsUIEvents.ChangePassword -> changePassword(event.oldPassword, event.newPassword, event.newPasswordRepeat)
             is UserSettingsUIEvents.ChangeUsername -> changeUserName(event.newUsername)
             is UserSettingsUIEvents.DeleteAccount -> deleteAccount(event.password)
+            is UserSettingsUIEvents.DeleteAccountForProvider -> deleteAccountForProvider(event.context)
             UserSettingsUIEvents.SignOut -> authRepository.signOut()
             UserSettingsUIEvents.ClearState -> _state.update { it.copy(responseState = ResponseState.Idle) }
         }
@@ -49,7 +51,8 @@ class UserSettingsVM @Inject constructor(
             _state.update {
                 it.copy(
                     userName = userData.name,
-                    userEmail = userData.email
+                    userEmail = userData.email,
+                    accountType = userData.authenticationMethod
                 )
             }
         }
@@ -60,7 +63,17 @@ class UserSettingsVM @Inject constructor(
     }
 
     private suspend fun performWithReauthentication(password: String, onAuthenticated: suspend () -> Unit) {
-        authRepository.reauthenticate(userData!!.email, password).collectLatest { response ->
+        authRepository.reauthenticateWithPassword(userData!!.email, password).collectLatest { response ->
+            when(response) {
+                is Response.Error -> _state.update { it.copy(responseState = ResponseState.Error(response.error)) }
+                Response.Loading -> _state.update { it.copy(responseState = ResponseState.Loading) }
+                is Response.Success -> { onAuthenticated() }
+            }
+        }
+    }
+
+    private suspend fun performWithProviderReauthentication(context: Context, onAuthenticated: suspend () -> Unit) {
+        authRepository.reauthenticateWithProvider(context).collectLatest { response ->
             when(response) {
                 is Response.Error -> _state.update { it.copy(responseState = ResponseState.Error(response.error)) }
                 Response.Loading -> _state.update { it.copy(responseState = ResponseState.Loading) }
@@ -138,6 +151,25 @@ class UserSettingsVM @Inject constructor(
     private fun deleteAccount(password: String) {
         viewModelScope.launch {
             performWithReauthentication(password) {
+                authRepository.deleteUser().collectLatest { response ->
+                    when(response) {
+                        is Response.Error -> _state.update { it.copy(responseState = ResponseState.Error(response.error)) }
+                        Response.Loading -> _state.update { it.copy(responseState = ResponseState.Loading) }
+                        is Response.Success -> _state.update {
+                            it.copy(
+                                responseState = ResponseState.Success,
+                                successConfirmAction = UserSettingsConfirmAction.NAVIGATE_OUT
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun deleteAccountForProvider(context: Context) {
+        viewModelScope.launch {
+            performWithProviderReauthentication(context) {
                 authRepository.deleteUser().collectLatest { response ->
                     when(response) {
                         is Response.Error -> _state.update { it.copy(responseState = ResponseState.Error(response.error)) }

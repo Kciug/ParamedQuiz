@@ -6,5 +6,6 @@ import kotlinx.serialization.Serializable
 data class UserData(
     val id: String,
     val email: String,
-    val name: String
+    val name: String,
+    val authenticationMethod: UserAuthenticationMethod
 )

@@ -11,7 +11,8 @@ interface AuthRepository {
     fun registerWithEmailAndPassword(email: String, password: String, userName: String) : Flow<Response<UserData>>
     fun signOut()
     fun sendPasswordResetToEmail(email: String) : Flow<Response<Unit>>
-    fun reauthenticate(email: String, password: String) : Flow<Response<Unit>>
+    fun reauthenticateWithPassword(email: String, password: String) : Flow<Response<Unit>>
+    fun reauthenticateWithProvider(context: Context) : Flow<Response<Unit>>
     fun changePassword(newPassword: String) : Flow<Response<Unit>>
     fun changeUserName(newUsername: String) : Flow<Response<UserData>>
     fun deleteUser() : Flow<Response<Unit>>

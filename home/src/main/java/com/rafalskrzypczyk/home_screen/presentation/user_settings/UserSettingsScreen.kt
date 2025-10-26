@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,10 +35,11 @@ import com.rafalskrzypczyk.core.composables.ButtonSecondary
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.ErrorDialog
 import com.rafalskrzypczyk.core.composables.Loading
-import com.rafalskrzypczyk.core.composables.top_bars.NavTopBar
 import com.rafalskrzypczyk.core.composables.TextCaption
 import com.rafalskrzypczyk.core.composables.TextPrimary
+import com.rafalskrzypczyk.core.composables.top_bars.NavTopBar
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
+import com.rafalskrzypczyk.core.user_management.UserAuthenticationMethod
 import com.rafalskrzypczyk.home.R
 
 @Composable
@@ -47,19 +49,32 @@ fun UserSettingsScreen(
     onNavigateBack: () -> Unit,
     onSignOut: () -> Unit,
 ) {
-    val settingsList = listOf(
-        UserSettingsElement(stringResource(R.string.title_change_username)) {
-            UserSettingsChangeUserName(state.usernameValidationMessage) { onEvent(UserSettingsUIEvents.ChangeUsername(it)) }
-        },
-        UserSettingsElement(stringResource(R.string.title_change_password)) {
-            UserSettingsChangePassword(state.passwordValidationMessage) { oldPassword, newPassword, newPasswordRepeat ->
-                onEvent(UserSettingsUIEvents.ChangePassword(oldPassword, newPassword, newPasswordRepeat))
+    val context = LocalContext.current
+
+    val settingsList = if(state.accountType == UserAuthenticationMethod.PASSWORD) {
+        listOf(
+            UserSettingsElement(stringResource(R.string.title_change_username)) {
+                UserSettingsChangeUserName(state.usernameValidationMessage) { onEvent(UserSettingsUIEvents.ChangeUsername(it)) }
+            },
+            UserSettingsElement(stringResource(R.string.title_change_password)) {
+                UserSettingsChangePassword(state.passwordValidationMessage) { oldPassword, newPassword, newPasswordRepeat ->
+                    onEvent(UserSettingsUIEvents.ChangePassword(oldPassword, newPassword, newPasswordRepeat))
+                }
+            },
+            UserSettingsElement(stringResource(R.string.title_delete_account)) {
+                UserSettingsDeleteAccountWithPassword { onEvent(UserSettingsUIEvents.DeleteAccount(it)) }
             }
-        },
-        UserSettingsElement(stringResource(R.string.title_delete_account)) {
-            UserSettingsDeleteAccount { onEvent(UserSettingsUIEvents.DeleteAccount(it)) }
-        }
-    )
+        )
+    } else {
+        listOf(
+            UserSettingsElement(stringResource(R.string.title_change_username)) {
+                UserSettingsChangeUserName(state.usernameValidationMessage) { onEvent(UserSettingsUIEvents.ChangeUsername(it)) }
+            },
+            UserSettingsElement(stringResource(R.string.title_delete_account)) {
+                UserSettingsDeleteAccountForProvider { onEvent(UserSettingsUIEvents.DeleteAccountForProvider(context)) }
+            }
+        )
+    }
 
     Scaffold (
         topBar = {
