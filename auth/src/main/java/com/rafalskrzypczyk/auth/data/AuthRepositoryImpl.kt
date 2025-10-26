@@ -15,6 +15,7 @@ import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.rafalskrzypczyk.auth.R
 import com.rafalskrzypczyk.auth.domain.AuthRepository
@@ -54,17 +55,9 @@ class AuthRepositoryImpl @Inject constructor(
             send(Response.Loading)
 
             val result = firebaseAuth.signInWithEmailAndPassword(email, password).await()
-            firestoreApi.getUserData(result.user!!.uid).collectLatest {
-                when (it) {
-                    is Response.Error -> throw Exception(it.error)
-                    Response.Loading -> send(Response.Loading)
-                    is Response.Success -> {
-                        val userData = it.data.toDomain(result.user!!.email ?: "")
-                        userManager.saveUserDataInLocal(userData)
-                        scoreManager.onUserLogIn()
-                        send(Response.Success(userData))
-                    }
-                }
+
+            loginUser(user = result.user!!).collectLatest {
+                send(it)
             }
         } catch (e: Exception) {
             send(Response.Error(firebaseError.localizedError((e as? FirebaseAuthException)?.errorCode ?: "")))
@@ -82,22 +75,8 @@ class AuthRepositoryImpl @Inject constructor(
             val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
             result.user!!.sendEmailVerification()
 
-            val newUser = UserData(
-                result.user!!.uid,
-                email,
-                userName
-            )
-
-            firestoreApi.updateUserData(newUser.toDTO()).collectLatest {
-                when (it) {
-                    is Response.Loading -> send(it)
-                    is Response.Error -> send(it)
-                    is Response.Success -> {
-                        userManager.saveUserDataInLocal(newUser)
-                        scoreManager.onUserRegister()
-                        send(Response.Success(newUser))
-                    }
-                }
+            registerUser(result.user!!, email, userName).collectLatest {
+                send(it)
             }
         } catch (e: Exception) {
             send(Response.Error(firebaseError.localizedError((e as? FirebaseAuthException)?.errorCode ?: "")))
@@ -150,9 +129,9 @@ class AuthRepositoryImpl @Inject constructor(
         trySend(Response.Loading)
         userManager.getCurrentLoggedUser()?.let {
             val updatedUserData = it.copy(name = newUsername)
-            firestoreApi.updateUserData(updatedUserData.toDTO()).collectLatest {
-                when (it) {
-                    is Response.Error -> trySend(Response.Error(it.error))
+            firestoreApi.updateUserData(updatedUserData.toDTO()).collectLatest { response ->
+                when (response) {
+                    is Response.Error -> trySend(Response.Error(response.error))
                     Response.Loading -> trySend(Response.Loading)
                     is Response.Success -> {
                         userManager.saveUserDataInLocal(updatedUserData)
@@ -208,33 +187,24 @@ class AuthRepositoryImpl @Inject constructor(
 
                 send(Response.Loading)
 
-                val authResult = handleSignIn(result.credential)
+                val authResult = handleGoogleCredentials(result.credential)
 
                 with(authResult) {
                     if (this == null) {
                         send(Response.Error("Something went wrong"))
                     } else {
-                        val user = UserData(
-                            this.user!!.uid,
-                            this.user!!.email ?: "",
-                            this.user!!.displayName ?: ""
-                        )
-
                         if(additionalUserInfo?.isNewUser ?: true) {
-                            firestoreApi.updateUserData(user.toDTO()).collectLatest {
-                                when (it) {
-                                    is Response.Loading -> send(it)
-                                    is Response.Error -> send(it)
-                                    is Response.Success -> {
-                                        userManager.saveUserDataInLocal(user)
-                                        scoreManager.onUserRegister()
-                                        send(Response.Success(user))
-                                    }
-                                }
+                            registerUser(
+                                this.user!!,
+                                this.user!!.email ?: "",
+                                this.user!!.displayName ?: ""
+                            ).collectLatest {
+                                send(it)
                             }
                         } else {
-                            scoreManager.onUserLogIn()
-                            send(Response.Success(user))
+                            loginUser(this.user!!).collectLatest {
+                                send(it)
+                            }
                         }
                     }
                 }
@@ -247,7 +217,42 @@ class AuthRepositoryImpl @Inject constructor(
         awaitClose { this.cancel() }
     }
 
-    private suspend fun handleSignIn(credential: Credential): AuthResult? {
+    private fun registerUser(user: FirebaseUser, email: String, userName: String): Flow<Response<UserData>> = channelFlow {
+        val newUser = UserData(
+            user.uid,
+            email,
+            userName
+        )
+
+        firestoreApi.updateUserData(newUser.toDTO()).collectLatest {
+            when (it) {
+                is Response.Loading -> send(it)
+                is Response.Error -> send(it)
+                is Response.Success -> {
+                    userManager.saveUserDataInLocal(newUser)
+                    scoreManager.onUserRegister()
+                    send(Response.Success(newUser))
+                }
+            }
+        }
+    }
+
+    private fun loginUser(user: FirebaseUser): Flow<Response<UserData>> = channelFlow {
+        firestoreApi.getUserData(user.uid).collectLatest {
+            when (it) {
+                is Response.Error -> send(it)
+                is Response.Loading -> send(it)
+                is Response.Success -> {
+                    val userData = it.data.toDomain(user.email ?: "")
+                    userManager.saveUserDataInLocal(userData)
+                    scoreManager.onUserLogIn()
+                    send(Response.Success(userData))
+                }
+            }
+        }
+    }
+
+    private suspend fun handleGoogleCredentials(credential: Credential): AuthResult? {
         if (credential is CustomCredential && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
             val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
             val credential = GoogleAuthProvider.getCredential(googleIdTokenCredential.idToken, null)
