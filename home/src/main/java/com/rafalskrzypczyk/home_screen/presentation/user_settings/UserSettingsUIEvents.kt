@@ -1,9 +1,12 @@
 package com.rafalskrzypczyk.home_screen.presentation.user_settings
 
+import android.content.Context
+
 sealed interface UserSettingsUIEvents {
     object ClearState : UserSettingsUIEvents
     object SignOut : UserSettingsUIEvents
     data class DeleteAccount(val password: String) : UserSettingsUIEvents
+    data class DeleteAccountForProvider(val context: Context) : UserSettingsUIEvents
     data class ChangePassword(
         val oldPassword: String,
         val newPassword: String,

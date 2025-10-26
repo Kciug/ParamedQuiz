@@ -1,17 +1,17 @@
 package com.rafalskrzypczyk.auth.data
 
 import android.content.Context
-import android.os.Build
 import android.util.Log
+import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.Credential
 import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
+import androidx.credentials.GetCredentialResponse
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.AuthCredential
-import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
@@ -22,12 +22,12 @@ import com.rafalskrzypczyk.auth.domain.AuthRepository
 import com.rafalskrzypczyk.auth.domain.toDTO
 import com.rafalskrzypczyk.auth.domain.toDomain
 import com.rafalskrzypczyk.core.api_response.Response
+import com.rafalskrzypczyk.core.user_management.UserAuthenticationMethod
 import com.rafalskrzypczyk.core.user_management.UserData
 import com.rafalskrzypczyk.core.user_management.UserManager
 import com.rafalskrzypczyk.core.utils.FirebaseError
 import com.rafalskrzypczyk.firestore.domain.FirestoreApi
 import com.rafalskrzypczyk.score.domain.ScoreManager
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -42,8 +42,7 @@ class AuthRepositoryImpl @Inject constructor(
     private val firestoreApi: FirestoreApi,
     private val userManager: UserManager,
     private val firebaseError: FirebaseError,
-    private val scoreManager: ScoreManager,
-    @ApplicationContext private val context: Context
+    private val scoreManager: ScoreManager
 ) : AuthRepository {
     override fun isUserLoggedIn(): Boolean = firebaseAuth.currentUser != null
 
@@ -84,9 +83,15 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override fun signOut() {
+//        val currentUser = firebaseAuth.currentUser
+
         firebaseAuth.signOut()
         userManager.clearUserDataLocal()
         scoreManager.onUserLogOut()
+
+//        if(currentUser.providerData[1].providerId == "google.com") {
+//            clearGoogleCredentialState(context)
+//        }
     }
 
     override fun sendPasswordResetToEmail(email: String): Flow<Response<Unit>> = callbackFlow {
@@ -100,7 +105,7 @@ class AuthRepositoryImpl @Inject constructor(
         awaitClose { this.cancel() }
     }
 
-    override fun reauthenticate(
+    override fun reauthenticateWithPassword(
         email: String,
         password: String,
     ): Flow<Response<Unit>> = callbackFlow {
@@ -112,6 +117,38 @@ class AuthRepositoryImpl @Inject constructor(
         }.addOnFailureListener {
             trySend(Response.Error(firebaseError.localizedError((it as? FirebaseAuthException)?.errorCode ?: "")))
         }
+        awaitClose { this.cancel() }
+    }
+
+    override fun reauthenticateWithProvider(context: Context): Flow<Response<Unit>> = callbackFlow {
+        val currentUser = firebaseAuth.currentUser
+        if (currentUser == null) {
+            send(Response.Error("Weryfikacja nieudana. Wyloguj się i spróbuj po ponownym zalogowaniu"))
+            return@callbackFlow
+        }
+
+        try {
+            val result = getGoogleCredentials(context)
+
+            send(Response.Loading)
+
+            val validAuthCredentials = validateGoogleCredentials(result.credential)
+
+            if (validAuthCredentials != null) {
+                currentUser.reauthenticate(validAuthCredentials).addOnSuccessListener {
+                    trySend(Response.Success(Unit))
+                }.addOnFailureListener {
+                    trySend(Response.Error(firebaseError.localizedError((it as? FirebaseAuthException)?.errorCode ?: "")))
+                }
+            } else {
+                send(Response.Error("Coś poszło nie tak. Spróbuj później"))
+            }
+        } catch (e: Exception) {
+            Log.d("SignInWithGoogle", e.toString())
+            if(e !is GetCredentialCancellationException)
+                send(Response.Error(firebaseError.localizedError((e as? FirebaseAuthException)?.errorCode ?: "")))
+        }
+
         awaitClose { this.cancel() }
     }
 
@@ -145,7 +182,9 @@ class AuthRepositoryImpl @Inject constructor(
 
     override fun deleteUser(): Flow<Response<Unit>> = callbackFlow {
         trySend(Response.Loading)
-        firebaseAuth.currentUser?.delete()?.addOnFailureListener {
+        val currentUser = firebaseAuth.currentUser
+
+        currentUser?.delete()?.addOnFailureListener {
             trySend(Response.Error(firebaseError.localizedError((it as? FirebaseAuthException)?.errorCode ?: "")))
         }
 
@@ -161,67 +200,64 @@ class AuthRepositoryImpl @Inject constructor(
             }
         }
 
+//        if(currentUser.providerData[1].providerId == "google.com") {
+//            clearGoogleCredentialState(context)
+//        }
+
         awaitClose { this.cancel() }
     }
 
-    override fun signInWithGoogle(): Flow<Response<UserData>> = callbackFlow {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            val signInWithGoogleOption: GetSignInWithGoogleOption = GetSignInWithGoogleOption.Builder(
-                serverClientId = context.getString(R.string.web_client_id)
-            )
-                .setNonce("")
-                .build()
+    override fun signInWithGoogle(context: Context): Flow<Response<UserData>> = callbackFlow {
+        try {
+            val result = getGoogleCredentials(context)
 
-            val request: GetCredentialRequest = GetCredentialRequest.Builder()
-                .addCredentialOption(signInWithGoogleOption)
-                .build()
+            send(Response.Loading)
 
-            val credentialManager = CredentialManager.create(context)
+            val validGoogleCredentials = validateGoogleCredentials(result.credential)
 
-            try {
-                val result = credentialManager
-                    .getCredential(
-                        request = request,
-                        context = context,
-                    )
+            val authResult = if(validGoogleCredentials != null) {
+                firebaseAuth.signInWithCredential(validGoogleCredentials).await()
+            } else {
+                null
+            }
 
-                send(Response.Loading)
-
-                val authResult = handleGoogleCredentials(result.credential)
-
-                with(authResult) {
-                    if (this == null) {
-                        send(Response.Error("Something went wrong"))
+            with(authResult) {
+                if (this == null) {
+                    send(Response.Error("Coś poszło nie tak. Spróbuj później"))
+                } else {
+                    if (additionalUserInfo?.isNewUser ?: true) {
+                        registerUser(
+                            this.user!!,
+                            this.user!!.email ?: "",
+                            this.user!!.displayName ?: ""
+                        ).collectLatest {
+                            send(it)
+                        }
                     } else {
-                        if(additionalUserInfo?.isNewUser ?: true) {
-                            registerUser(
-                                this.user!!,
-                                this.user!!.email ?: "",
-                                this.user!!.displayName ?: ""
-                            ).collectLatest {
-                                send(it)
-                            }
-                        } else {
-                            loginUser(this.user!!).collectLatest {
-                                send(it)
-                            }
+                        loginUser(this.user!!).collectLatest {
+                            send(it)
                         }
                     }
                 }
-            } catch (e: Exception) {
-                Log.d("SignInWithGoogle", e.toString())
-                if(e !is GetCredentialCancellationException)
-                    send(Response.Error(firebaseError.localizedError((e as? FirebaseAuthException)?.errorCode ?: "")))
             }
+        } catch (e: Exception) {
+            Log.d("SignInWithGoogle", e.toString())
+            if(e !is GetCredentialCancellationException)
+                send(Response.Error(firebaseError.localizedError((e as? FirebaseAuthException)?.errorCode ?: "")))
         }
+
+
         awaitClose { this.cancel() }
     }
 
     private fun registerUser(user: FirebaseUser, email: String, userName: String): Flow<Response<UserData>> = channelFlow {
+        val authMethod = user.providerData[1].providerId
+
         val newUser = UserData(
             user.uid,
             email,
-            userName
+            userName,
+            authenticationMethod = if(authMethod == "password") UserAuthenticationMethod.PASSWORD else UserAuthenticationMethod.NONPASSWORD
         )
 
         firestoreApi.updateUserData(newUser.toDTO()).collectLatest {
@@ -238,12 +274,17 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     private fun loginUser(user: FirebaseUser): Flow<Response<UserData>> = channelFlow {
+        val authMethod = user.providerData[1].providerId
+
         firestoreApi.getUserData(user.uid).collectLatest {
             when (it) {
                 is Response.Error -> send(it)
                 is Response.Loading -> send(it)
                 is Response.Success -> {
-                    val userData = it.data.toDomain(user.email ?: "")
+                    val userData = it.data.toDomain(
+                        email = user.email ?: "",
+                        authMethod = if (authMethod == "password") UserAuthenticationMethod.PASSWORD else UserAuthenticationMethod.NONPASSWORD
+                    )
                     userManager.saveUserDataInLocal(userData)
                     scoreManager.onUserLogIn()
                     send(Response.Success(userData))
@@ -252,18 +293,39 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    private suspend fun handleGoogleCredentials(credential: Credential): AuthResult? {
+    private suspend fun getGoogleCredentials(context: Context): GetCredentialResponse {
+        val signInWithGoogleOption: GetSignInWithGoogleOption = GetSignInWithGoogleOption.Builder(
+            serverClientId = context.getString(R.string.web_client_id)
+        )
+            .setNonce("")
+            .build()
+
+        val request: GetCredentialRequest = GetCredentialRequest.Builder()
+            .addCredentialOption(signInWithGoogleOption)
+            .build()
+
+        val credentialManager = CredentialManager.create(context)
+
+        return credentialManager.getCredential(
+            request = request,
+            context = context,
+        )
+    }
+
+    private fun validateGoogleCredentials(credential: Credential): AuthCredential? {
         if (credential is CustomCredential && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
             val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
-            val credential = GoogleAuthProvider.getCredential(googleIdTokenCredential.idToken, null)
+            val validCredential = GoogleAuthProvider.getCredential(googleIdTokenCredential.idToken, null)
 
-            return firebaseAuthWithCredential(credential)
+            return validCredential
         } else {
             return null
         }
     }
 
-    private suspend fun firebaseAuthWithCredential(authCredential: AuthCredential): AuthResult {
-        return firebaseAuth.signInWithCredential(authCredential).await()
+    private suspend fun clearGoogleCredentialState(context: Context) {
+        val clearRequest = ClearCredentialStateRequest()
+        val credentialManager = CredentialManager.create(context)
+        credentialManager.clearCredentialState(clearRequest)
     }
 }

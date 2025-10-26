@@ -30,6 +30,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -97,6 +98,8 @@ fun LoginScreenContent(
     onResetPassword: () -> Unit,
     onRegister: () -> Unit
 ) {
+    val context = LocalContext.current
+
     var emailText by rememberSaveable { mutableStateOf("") }
     var passwordText by rememberSaveable { mutableStateOf("") }
 
@@ -146,7 +149,9 @@ fun LoginScreenContent(
         HorizontalDivider()
 
         LoginWithSocialMediaSection(
-            loginWithGoogle = { onEvent.invoke(LoginUIEvents.LoginWithGoogle) }
+            loginWithGoogle = {
+                onEvent.invoke(LoginUIEvents.LoginWithGoogle(context))
+            }
         )
 
         HorizontalDivider()
