@@ -1,7 +1,6 @@
 package com.rafalskrzypczyk.auth.data
 
 import android.content.Context
-import android.os.Build
 import android.util.Log
 import androidx.credentials.Credential
 import androidx.credentials.CredentialManager
@@ -27,7 +26,6 @@ import com.rafalskrzypczyk.core.user_management.UserManager
 import com.rafalskrzypczyk.core.utils.FirebaseError
 import com.rafalskrzypczyk.firestore.domain.FirestoreApi
 import com.rafalskrzypczyk.score.domain.ScoreManager
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -43,7 +41,7 @@ class AuthRepositoryImpl @Inject constructor(
     private val userManager: UserManager,
     private val firebaseError: FirebaseError,
     private val scoreManager: ScoreManager,
-    @ApplicationContext private val context: Context
+    //@ApplicationContext private val context: Context
 ) : AuthRepository {
     override fun isUserLoggedIn(): Boolean = firebaseAuth.currentUser != null
 
@@ -164,56 +162,55 @@ class AuthRepositoryImpl @Inject constructor(
         awaitClose { this.cancel() }
     }
 
-    override fun signInWithGoogle(): Flow<Response<UserData>> = callbackFlow {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            val signInWithGoogleOption: GetSignInWithGoogleOption = GetSignInWithGoogleOption.Builder(
-                serverClientId = context.getString(R.string.web_client_id)
-            )
-                .setNonce("")
-                .build()
+    override fun signInWithGoogle(context: Context): Flow<Response<UserData>> = callbackFlow {
+        val signInWithGoogleOption: GetSignInWithGoogleOption = GetSignInWithGoogleOption.Builder(
+            serverClientId = context.getString(R.string.web_client_id)
+        )
+            .setNonce("")
+            .build()
 
-            val request: GetCredentialRequest = GetCredentialRequest.Builder()
-                .addCredentialOption(signInWithGoogleOption)
-                .build()
+        val request: GetCredentialRequest = GetCredentialRequest.Builder()
+            .addCredentialOption(signInWithGoogleOption)
+            .build()
 
-            val credentialManager = CredentialManager.create(context)
+        val credentialManager = CredentialManager.create(context)
 
-            try {
-                val result = credentialManager
-                    .getCredential(
-                        request = request,
-                        context = context,
-                    )
+        try {
+            val result = credentialManager
+                .getCredential(
+                    request = request,
+                    context = context,
+                )
 
-                send(Response.Loading)
+            send(Response.Loading)
 
-                val authResult = handleGoogleCredentials(result.credential)
+            val authResult = handleGoogleCredentials(result.credential)
 
-                with(authResult) {
-                    if (this == null) {
-                        send(Response.Error("Something went wrong"))
+            with(authResult) {
+                if (this == null) {
+                    send(Response.Error("Coś poszło nie tak. Spróbuj później"))
+                } else {
+                    if(additionalUserInfo?.isNewUser ?: true) {
+                        registerUser(
+                            this.user!!,
+                            this.user!!.email ?: "",
+                            this.user!!.displayName ?: ""
+                        ).collectLatest {
+                            send(it)
+                        }
                     } else {
-                        if(additionalUserInfo?.isNewUser ?: true) {
-                            registerUser(
-                                this.user!!,
-                                this.user!!.email ?: "",
-                                this.user!!.displayName ?: ""
-                            ).collectLatest {
-                                send(it)
-                            }
-                        } else {
-                            loginUser(this.user!!).collectLatest {
-                                send(it)
-                            }
+                        loginUser(this.user!!).collectLatest {
+                            send(it)
                         }
                     }
                 }
-            } catch (e: Exception) {
-                Log.d("SignInWithGoogle", e.toString())
-                if(e !is GetCredentialCancellationException)
-                    send(Response.Error(firebaseError.localizedError((e as? FirebaseAuthException)?.errorCode ?: "")))
             }
+        } catch (e: Exception) {
+            Log.d("SignInWithGoogle", e.toString())
+            if(e !is GetCredentialCancellationException)
+                send(Response.Error(firebaseError.localizedError((e as? FirebaseAuthException)?.errorCode ?: "")))
         }
+
         awaitClose { this.cancel() }
     }
 

@@ -1,5 +1,6 @@
 package com.rafalskrzypczyk.auth.domain
 
+import android.content.Context
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.user_management.UserData
 import kotlinx.coroutines.flow.Flow
@@ -14,7 +15,7 @@ interface AuthRepository {
     fun changePassword(newPassword: String) : Flow<Response<Unit>>
     fun changeUserName(newUsername: String) : Flow<Response<UserData>>
     fun deleteUser() : Flow<Response<Unit>>
-    fun signInWithGoogle() : Flow<Response<UserData>>
+    fun signInWithGoogle(context: Context) : Flow<Response<UserData>>
 
 }
 

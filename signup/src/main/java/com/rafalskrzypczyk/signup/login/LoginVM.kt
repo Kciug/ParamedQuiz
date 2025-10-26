@@ -1,5 +1,6 @@
 package com.rafalskrzypczyk.signup.login
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.auth.domain.AuthRepository
@@ -26,7 +27,7 @@ class LoginVM @Inject constructor(
         when(event) {
             LoginUIEvents.ClearError -> _state.update { it.copy(error = null) }
             is LoginUIEvents.LoginWithCredentials -> loginWithCredentials(event.email, event.password)
-            LoginUIEvents.LoginWithGoogle -> loginWithGoogle()
+            is LoginUIEvents.LoginWithGoogle -> loginWithGoogle(event.context)
         }
     }
 
@@ -38,9 +39,9 @@ class LoginVM @Inject constructor(
         }
     }
 
-    private fun loginWithGoogle() {
+    private fun loginWithGoogle(context: Context) {
         viewModelScope.launch {
-            authRepository.signInWithGoogle().collectLatest { response ->
+            authRepository.signInWithGoogle(context).collectLatest { response ->
                 handleLoginResponse(response)
             }
         }
