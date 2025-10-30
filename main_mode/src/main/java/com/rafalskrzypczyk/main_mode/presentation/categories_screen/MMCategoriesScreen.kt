@@ -7,8 +7,9 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -34,7 +35,6 @@ fun MMCategoriesScreen(
     }
 
     Scaffold(
-        contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             MainTopBarWithNav(
                 userScore = state.userScore,
@@ -47,8 +47,6 @@ fun MMCategoriesScreen(
             )
         }
     ) { innerPadding ->
-        val modifier = Modifier.padding(innerPadding)
-
         AnimatedContent(
             targetState = state.responseState,
             transitionSpec = {
@@ -63,7 +61,7 @@ fun MMCategoriesScreen(
                     onNavigateBack()
                 }
                 ResponseState.Success -> MMCategoriesScreenContent(
-                    modifier = modifier,
+                    contentPadding = innerPadding,
                     categories = state.categories,
                     onStartCategory = onStartCategory,
                     onUnlockCategory = { onEvent(MMCategoriesUIEvents.OnUnlockCategory(it)) }
@@ -76,14 +74,24 @@ fun MMCategoriesScreen(
 @Composable
 fun MMCategoriesScreenContent(
     modifier: Modifier = Modifier,
+    contentPadding: PaddingValues,
     categories: List<CategoryUIM>,
     onStartCategory: (Long, String) -> Unit,
     onUnlockCategory: (Long) -> Unit
 ) {
+    val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val contentPaddingAdjusted = PaddingValues(
+        top = contentPadding.calculateTopPadding() - statusBarPadding + Dimens.DEFAULT_PADDING,
+        start = Dimens.DEFAULT_PADDING,
+        end = Dimens.DEFAULT_PADDING,
+        bottom = contentPadding.calculateBottomPadding()
+    )
+
+
     LazyColumn(
-        modifier = modifier,
+        modifier = modifier.statusBarsPadding(),
         verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING),
-        contentPadding = PaddingValues(Dimens.DEFAULT_PADDING)
+        contentPadding = contentPaddingAdjusted
     ) {
         categories.forEach { category ->
             item {
