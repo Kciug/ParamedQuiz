@@ -1,9 +1,11 @@
 package com.rafalskrzypczyk.home_screen.presentation.user_page
 
+import androidx.compose.runtime.Immutable
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.home_screen.presentation.user_page.statistics.BestWorstQuestionsUIM
 import com.rafalskrzypczyk.score.domain.StreakState
 
+@Immutable
 data class UserPageState (
     val error: String? = null,
     val userName: String = "",

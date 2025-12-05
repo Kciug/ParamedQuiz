@@ -1,7 +1,9 @@
 package com.rafalskrzypczyk.main_mode.presentation.quiz_base
 
+import androidx.compose.runtime.Immutable
 import com.rafalskrzypczyk.main_mode.domain.models.Question
 
+@Immutable
 data class QuestionUIM(
     val id: Long = -1,
     val questionText: String = "",

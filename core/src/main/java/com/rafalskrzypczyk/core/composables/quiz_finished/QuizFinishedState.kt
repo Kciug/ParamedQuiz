@@ -1,5 +1,8 @@
 package com.rafalskrzypczyk.core.composables.quiz_finished
 
+import androidx.compose.runtime.Immutable
+
+@Immutable
 data class QuizFinishedState(
     val seenQuestions: Int = 0,
     val correctAnswers: Int = 0,

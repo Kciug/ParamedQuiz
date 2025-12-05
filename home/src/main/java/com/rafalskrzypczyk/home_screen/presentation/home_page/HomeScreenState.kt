@@ -1,7 +1,9 @@
 package com.rafalskrzypczyk.home_screen.presentation.home_page
 
+import androidx.compose.runtime.Immutable
 import com.rafalskrzypczyk.score.domain.StreakState
 
+@Immutable
 data class HomeScreenState(
     val isUserLoggedIn: Boolean = false,
     val userName: String? = null,

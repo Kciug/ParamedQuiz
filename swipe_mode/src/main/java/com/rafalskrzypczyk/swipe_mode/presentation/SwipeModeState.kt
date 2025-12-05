@@ -1,8 +1,10 @@
 package com.rafalskrzypczyk.swipe_mode.presentation
 
+import androidx.compose.runtime.Immutable
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedState
 
+@Immutable
 data class SwipeModeState(
     val responseState: ResponseState = ResponseState.Idle,
     val userScore: Int = 0,
