@@ -1,8 +1,10 @@
 package com.rafalskrzypczyk.main_mode.presentation.quiz_base
 
+import androidx.compose.runtime.Immutable
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedState
 
+@Immutable
 data class QuizState (
     val userScore: Int = 0,
     val correctAnswers: Int = 0,

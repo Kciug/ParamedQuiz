@@ -6,7 +6,9 @@ import com.rafalskrzypczyk.home_screen.domain.models.SimpleQuestion
 import com.rafalskrzypczyk.home_screen.domain.models.toSimpleQuestion
 import com.rafalskrzypczyk.main_mode.domain.MainModeRepository
 import com.rafalskrzypczyk.swipe_mode.domain.SwipeModeRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -22,14 +24,14 @@ class GetQuestionsForModeUC @Inject constructor(
                     Response.Loading -> Response.Loading
                     is Response.Success -> Response.Success(response.data.map { it.toSimpleQuestion() })
                 }
-            }
+            }.flowOn(Dispatchers.Default)
             QuizMode.SwipeMode -> swipeModeRepository.getSwipeQuestions().map { response ->
                 when (response) {
                     is Response.Error -> Response.Error(response.error)
                     Response.Loading -> Response.Loading
                     is Response.Success -> Response.Success(response.data.map { it.toSimpleQuestion() })
                 }
-            }
+            }.flowOn(Dispatchers.Default)
         }
     }
 }

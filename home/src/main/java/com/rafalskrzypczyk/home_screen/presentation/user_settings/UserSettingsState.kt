@@ -1,8 +1,10 @@
 package com.rafalskrzypczyk.home_screen.presentation.user_settings
 
+import androidx.compose.runtime.Immutable
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.user_management.UserAuthenticationMethod
 
+@Immutable
 data class UserSettingsState(
     val responseState: ResponseState = ResponseState.Idle,
     val accountType: UserAuthenticationMethod = UserAuthenticationMethod.NONPASSWORD,
