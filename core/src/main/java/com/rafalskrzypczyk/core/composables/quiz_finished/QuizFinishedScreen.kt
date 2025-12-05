@@ -9,11 +9,17 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -26,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.rafalskrzypczyk.core.R
 import com.rafalskrzypczyk.core.composables.ButtonPrimary
 import com.rafalskrzypczyk.core.composables.Dimens
@@ -52,19 +59,26 @@ fun QuizFinishedScreen(
         backButtonVisible.value = true
     }
 
-    Scaffold { innerPadding ->
-        val modifier = Modifier.padding(innerPadding)
-
-        Column(
-            modifier = modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally
+    Scaffold(
+        // Kluczowe dla Edge-to-Edge: ustawiamy insets na 0, aby tło weszło pod paski systemowe.
+        // Paddingami zajmiemy się ręcznie wewnątrz.
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
+    ) { _ -> // Ignorujemy padding ze Scaffolda
+        
+        Box(
+            modifier = Modifier.fillMaxSize()
         ) {
-            Box(
+            // WARSTWA 1: Przewijalna zawartość
+            Column(
                 modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-            ){
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Odstęp na pasek stanu (Status Bar)
+                Spacer(Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
+
+                // Główna zawartość
                 SequentiallyAnimatedColumn(
                     modifier = Modifier.padding(Dimens.DEFAULT_PADDING),
                     enterDelay = enterDelay,
@@ -122,17 +136,28 @@ fun QuizFinishedScreen(
                         { extras() }
                     )
                 )
+
+                // Odstęp na dole, aby ostatni element listy nie był schowany pod przyciskiem "Wróć"
+                // Wysokość przycisku (~50dp) + Padding (15dp) + margines bezpieczeństwa
+                Spacer(Modifier.height(80.dp))
+                // Dodatkowy odstęp na pasek nawigacji (gestów)
+                Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
             }
 
+            // WARSTWA 2: Przycisk "Wróć" przyklejony do dołu
             AnimatedVisibility(
                 visible = backButtonVisible.value,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    // Podnosimy przycisk nad pasek nawigacji systemowej
+                    .windowInsetsPadding(WindowInsets.navigationBars)
+                    .padding(Dimens.DEFAULT_PADDING),
                 enter = scaleIn(animationSpec = spring(
                     dampingRatio = Spring.DampingRatioLowBouncy,
                     stiffness = Spring.StiffnessMediumLow
                 ))
             ) {
                 ButtonPrimary(
-                    modifier = Modifier.padding(Dimens.DEFAULT_PADDING),
                     title = stringResource(R.string.btn_back),
                     onClick = onNavigateBack,
                 )
