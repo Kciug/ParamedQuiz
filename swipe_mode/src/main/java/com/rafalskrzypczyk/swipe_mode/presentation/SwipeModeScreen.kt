@@ -37,9 +37,14 @@ fun SwipeModeScreen(
         quizFinishedState = state.quizFinishedState,
         quizFinishedExtras = {
              SwipeModeFinishedExtras(
+                 modifier = Modifier.padding(top = Dimens.DEFAULT_PADDING),
                  correctAnswers = state.correctAnswers,
                  totalQuestions = state.quizFinishedState.seenQuestions,
-                 bestStreak = state.bestStreak
+                 bestStreak = state.bestStreak,
+                 averageResponseTimeMs = state.averageResponseTime,
+                 totalDurationMs = state.totalQuizDuration,
+                 type1Errors = state.type1Errors,
+                 type2Errors = state.type2Errors
              )
         },
         showBackConfirmation = state.showExitConfirmation,

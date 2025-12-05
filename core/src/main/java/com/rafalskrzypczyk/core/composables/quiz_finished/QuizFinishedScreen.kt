@@ -56,12 +56,15 @@ fun QuizFinishedScreen(
         val modifier = Modifier.padding(innerPadding)
 
         Column(
-            modifier = modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
+            modifier = modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Box(modifier = Modifier.fillMaxSize().weight(1f)){
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+            ){
                 SequentiallyAnimatedColumn(
                     modifier = Modifier.padding(Dimens.DEFAULT_PADDING),
                     enterDelay = enterDelay,

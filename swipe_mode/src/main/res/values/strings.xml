@@ -7,6 +7,28 @@
     <string name="label_stats_best_streak">Rekord</string>
     <string name="ic_desc_result">Wynik</string>
 
-    <string name="swipe_mode_best_streak">Najlepsza seria</string>
+    <string name="swipe_mode_stats_title">Statystyki</string>
     <string name="swipe_mode_effectiveness">Skuteczność</string>
+    
+    <string name="stats_best_streak">Najlepsza seria</string>
+    
+    <!-- Nowe statystyki -->
+    <string name="stats_avg_time">Śr. czas odp.</string>
+    <string name="stats_total_time">Czas całkowity</string>
+    
+    <string name="stats_error_analysis_title">Analiza Błędów Decyzyjnych</string>
+    <string name="stats_type_1_error">Błąd Typu I (Fałszywe Odrzucenie)</string>
+    <string name="stats_type_2_error">Błąd Typu II (Fałszywa Akceptacja)</string>
+    
+    <string name="feedback_type_1_title">Jesteś zbyt ostrożny</string>
+    <string name="feedback_type_1_msg">Masz wysoki wskaźnik fałszywych odrzuceń. Często uznajesz prawdę za fałsz. Musisz popracować nad pewnością swojej wiedzy i zaufać temu, co wiesz.</string>
+    
+    <string name="feedback_type_2_title">Zbyt duża pewność siebie</string>
+    <string name="feedback_type_2_msg">Masz wysoki wskaźnik fałszywych akceptacji. Często uznajesz fałsz za prawdę. Prawdopodobnie zgadujesz lub masz błędne przekonania. Wymagane rzetelne pogłębienie wiedzy.</string>
+    
+    <string name="feedback_balanced_title">Zbalansowany profil błędów</string>
+    <string name="feedback_balanced_msg">Twoje błędy rozkładają się równomiernie. Kontynuuj naukę, aby zwiększyć ogólną skuteczność.</string>
+    
+    <string name="feedback_perfect_title">Bezbłędna intuicja!</string>
+    <string name="feedback_perfect_msg">Nie popełniłeś żadnych błędów decyzyjnych. Gratulacje!</string>
 </resources>
