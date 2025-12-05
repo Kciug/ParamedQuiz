@@ -11,11 +11,13 @@ import com.rafalskrzypczyk.home_screen.domain.models.previous
 import com.rafalskrzypczyk.home_screen.domain.user_page.UserPageUseCases
 import com.rafalskrzypczyk.home_screen.presentation.user_page.statistics.BestWorstQuestionsUIM
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -146,18 +148,23 @@ class UserPageVM @Inject constructor(
     }
 
     private fun getBestWorstQuestions(allQuestions: List<SimpleQuestion>) {
-        val combinedQuestionsData = useCases.getCombinedQuestionsData(allQuestions)
-        val dataAvailableToShow = combinedQuestionsData.size >= QUESTIONS_TO_SHOW * 2
+        viewModelScope.launch(Dispatchers.Default) {
+            val combinedQuestionsData = useCases.getCombinedQuestionsData(allQuestions)
+            val dataAvailableToShow = combinedQuestionsData.size >= QUESTIONS_TO_SHOW * 2
+            
+            val bestQuestions = useCases.getBestQuestions(combinedQuestionsData, QUESTIONS_TO_SHOW)
+            val worstQuestions = useCases.getWorstQuestions(combinedQuestionsData, QUESTIONS_TO_SHOW)
 
-        _state.update {
-            it.copy(
-                bestWorstQuestions = it.bestWorstQuestions.copy(
-                    responseState = ResponseState.Success,
-                    dataAvailable = dataAvailableToShow,
-                    bestQuestions = useCases.getBestQuestions(combinedQuestionsData, QUESTIONS_TO_SHOW),
-                    worstQuestions = useCases.getWorstQuestions(combinedQuestionsData, QUESTIONS_TO_SHOW)
+            _state.update {
+                it.copy(
+                    bestWorstQuestions = it.bestWorstQuestions.copy(
+                        responseState = ResponseState.Success,
+                        dataAvailable = dataAvailableToShow,
+                        bestQuestions = bestQuestions,
+                        worstQuestions = worstQuestions
+                    )
                 )
-            )
+            }
         }
     }
 

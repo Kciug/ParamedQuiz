@@ -6,7 +6,9 @@ import com.rafalskrzypczyk.main_mode.domain.MainModeRepository
 import com.rafalskrzypczyk.main_mode.domain.models.Category
 import com.rafalskrzypczyk.main_mode.domain.models.Question
 import com.rafalskrzypczyk.main_mode.domain.models.toDomain
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -25,7 +27,7 @@ class MainModeRepositoryImpl @Inject constructor(
                 is Response.Error -> Response.Error(it.error)
                 is Response.Loading -> Response.Loading
             }
-        }
+        }.flowOn(Dispatchers.Default)
 
 
     override fun getAllQuestions(): Flow<Response<List<Question>>> = firestore.getQuizQuestions().map {
@@ -37,16 +39,16 @@ class MainModeRepositoryImpl @Inject constructor(
                 is Response.Error -> Response.Error(it.error)
                 is Response.Loading -> Response.Loading
             }
-        }
+        }.flowOn(Dispatchers.Default)
 
 
     override fun getUpdatedCategories(): Flow<List<Category>> = firestore.getUpdatedCategories().map {
         categories = it.map { it.toDomain() }
         categories!!
-    }
+    }.flowOn(Dispatchers.Default)
 
     override fun getUpdatedQuestions(): Flow<List<Question>> = firestore.getUpdatedQuestions().map {
         questions = it.map { it.toDomain() }
         questions!!
-    }
+    }.flowOn(Dispatchers.Default)
 }
