@@ -38,11 +38,22 @@ jobs:
         run: |
           echo "$KEYSTORE_BASE64" | base64 --decode > app/keystore.jks
 
-      # 2. Podbijanie wersji
+      # 2. Generujemy brakujący web_client_id w nowym pliku secrets.xml
+      - name: Generate Auth Secrets
+        env:
+          WEB_CLIENT_ID: ${{ secrets.WEB_CLIENT_ID }}
+        run: |
+          mkdir -p auth/src/main/res/values
+          echo "<?xml version=\"1.0\" encoding=\"utf-8\"?>" > auth/src/main/res/values/secrets.xml
+          echo "<resources>" >> auth/src/main/res/values/secrets.xml
+          echo "    <string name=\"web_client_id\">$WEB_CLIENT_ID</string>" >> auth/src/main/res/values/secrets.xml
+          echo "</resources>" >> auth/src/main/res/values/secrets.xml
+
+      # 3. Podbijanie wersji
       - name: Bump Version
         run: python buildSrc/scripts/bump_version.py
 
-      # 3. Commitowanie nowej wersji do repo
+      # 4. Commitowanie nowej wersji do repo
       - name: Commit and Push Version Bump
         run: |
           git config --global user.name "GitHub Actions"
@@ -51,7 +62,7 @@ jobs:
           git commit -m "CI: Bump version [skip ci]"
           git push
 
-      # 4. Budowanie
+      # 5. Budowanie
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
@@ -62,7 +73,7 @@ jobs:
           SIGNING_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
         run: ./gradlew bundleRelease
 
-      # 5. Wysylanie do Sklepu
+      # 6. Wysylanie do Sklepu
       - name: Upload to Play Store
         uses: r0adkll/upload-google-play@v1
         with:
@@ -70,4 +81,4 @@ jobs:
           packageName: com.rafalskrzypczyk.paramedquiz
           releaseFiles: app/build/outputs/bundle/release/app-release.aab
           track: internal # lub alpha/production
-          status: draft # Bezpiecznie: wrzuca jako szkic
+          status: completed # Bezpiecznie: wrzuca jako szkic
