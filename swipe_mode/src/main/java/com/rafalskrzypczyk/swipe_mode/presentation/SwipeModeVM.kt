@@ -67,7 +67,7 @@ class SwipeModeVM @Inject constructor(
 
     private fun displayQuestion() {
         if(questions.indices.contains(currentQuestionIndex).not()) {
-            _state.update { it.copy(isQuizFinished = true) }
+            setFinishedState()
             return
         }
 
