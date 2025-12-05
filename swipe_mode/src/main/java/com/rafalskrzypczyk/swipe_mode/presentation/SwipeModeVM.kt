@@ -134,6 +134,8 @@ class SwipeModeVM @Inject constructor(
         updateStreak(answeredCorrectly)
         displayNextQuestion()
         earnedPoints += useCases.updateScore(questionId, answeredCorrectly)
+
+        useCases.updateStreak()
     }
 
     private fun updateStreak(isAnswerCorrect: Boolean) {
