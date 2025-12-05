@@ -1,7 +1,9 @@
 package com.rafalskrzypczyk.firestore.domain.models
 
+import androidx.annotation.Keep
 import com.google.firebase.Timestamp
 
+@Keep
 data class ScoreDTO(
     val score: Long = 0,
     val streak: Long = 0,

@@ -1,5 +1,8 @@
 package com.rafalskrzypczyk.firestore.domain.models
 
+import androidx.annotation.Keep
+
+@Keep
 data class CategoryDTO(
     val id: Long = -1,
     val title: String = "",

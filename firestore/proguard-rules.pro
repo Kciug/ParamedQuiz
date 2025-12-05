@@ -19,3 +19,16 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+-keep class com.rafalskrzypczyk.firestore.domain.models.** {
+      *;
+    }
+
+#-keep class com.rafalskrzypczyk.firestore.domain.models.AnswerDTO { *; }
+#-keep class com.rafalskrzypczyk.firestore.domain.models.CategoryDTO { *; }
+#-keep class com.rafalskrzypczyk.firestore.domain.models.QuestionAnnotationDTO { *; }
+#-keep class com.rafalskrzypczyk.firestore.domain.models.QuestionDTO { *; }
+#-keep class com.rafalskrzypczyk.firestore.domain.models.ScoreDTO { *; }
+#-keep class com.rafalskrzypczyk.firestore.domain.models.SwipeQuestionDTO { *; }
+#-keep class com.rafalskrzypczyk.firestore.domain.models.UserDataDTO { *; }
+
