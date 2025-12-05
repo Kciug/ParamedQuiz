@@ -52,6 +52,7 @@
     <string name="desc_correct_answers">Poprawne odpowiedzi</string>
 
     <string name="base_quiz_question_number">Pytanie %1$d</string>
+    <string name="base_quiz_correct_answers">Poprawnych</string>
 
     <string name="quiz_finish_title">Jak Ci poszło?</string>
     <string name="quiz_finish_your_answers">Twoje odpowiedzi</string>

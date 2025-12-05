@@ -35,6 +35,13 @@ fun SwipeModeScreen(
         currentQuestionIndex = state.currentQuestionNumber,
         quizFinished = state.isQuizFinished,
         quizFinishedState = state.quizFinishedState,
+        quizFinishedExtras = {
+             SwipeModeFinishedExtras(
+                 correctAnswers = state.correctAnswers,
+                 totalQuestions = state.quizFinishedState.seenQuestions,
+                 bestStreak = state.bestStreak
+             )
+        },
         showBackConfirmation = state.showExitConfirmation,
         onBackAction = { onEvent.invoke(SwipeModeUIEvents.OnBackPressed) },
         onBackDiscarded = { onEvent.invoke(SwipeModeUIEvents.OnBackDiscarded) },

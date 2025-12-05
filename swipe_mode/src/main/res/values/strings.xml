@@ -6,4 +6,7 @@
     <string name="label_stats_streak">Seria</string>
     <string name="label_stats_best_streak">Rekord</string>
     <string name="ic_desc_result">Wynik</string>
+
+    <string name="swipe_mode_best_streak">Najlepsza seria</string>
+    <string name="swipe_mode_effectiveness">Skuteczność</string>
 </resources>
