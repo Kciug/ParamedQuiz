@@ -25,5 +25,8 @@ data class QuizState (
     val averagePrecision: Int = 0,
     
     // Dialogs
-    val showReviewDialog: Boolean = false
+    val showReviewDialog: Boolean = false,
+    
+    // Mode specific
+    val isDailyExercise: Boolean = false // Nowa flaga
 )

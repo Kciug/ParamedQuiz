@@ -34,6 +34,9 @@ class DailyExerciseVM @Inject constructor(
                         questions = response.data.take(DAILY_EXERCISE_QUESTIONS_AMOUNT),
                         title = resourceProvider.getString(R.string.title_daily_exercise)
                     )
+                    // Ustaw flagę isDailyExercise
+                    _state.update { it.copy(isDailyExercise = true) } 
+                    
                     attachQuestionsListener()
                 }
                 is Response.Error -> { _state.update { it.copy(responseState = ResponseState.Error(response.error)) }}

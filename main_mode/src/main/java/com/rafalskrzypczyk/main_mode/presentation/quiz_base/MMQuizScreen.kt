@@ -23,10 +23,12 @@ import androidx.compose.ui.unit.LayoutDirection
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.BaseQuizScreen
 import com.rafalskrzypczyk.core.composables.CorrectAnswersLabel
+import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.ErrorDialog
 import com.rafalskrzypczyk.core.composables.Loading
 import com.rafalskrzypczyk.core.composables.PreviewContainer
 import com.rafalskrzypczyk.core.composables.UserPointsLabel
+import com.rafalskrzypczyk.main_mode.presentation.daily_exercise.DailyExerciseFinishedExtras
 import kotlin.math.max
 
 @Composable
@@ -42,15 +44,22 @@ fun MMQuizScreen(
         quizFinished = state.isQuizFinished,
         quizFinishedState = state.quizFinishedState,
         quizFinishedExtras = {
-            val answeredCount = max(1, state.answeredQuestions.size)
-            MMQuizFinishedExtras(
-                correctAnswers = state.correctAnswers,
-                totalQuestions = state.answeredQuestions.size, // Zmiana tutaj: liczymy celność względem odpowiedzianych
-                averageResponseTimeMs = state.totalResponseTime / answeredCount,
-                totalDurationMs = state.totalResponseTime, 
-                averagePrecision = state.averagePrecision,
-                onReviewAnswersClick = { onEvent(MMQuizUIEvents.ToggleReviewDialog(true)) }
-            )
+            if (state.isDailyExercise) {
+                DailyExerciseFinishedExtras(
+                    modifier = Modifier.padding(top = Dimens.DEFAULT_PADDING)
+                )
+            } else {
+                val answeredCount = max(1, state.answeredQuestions.size)
+                MMQuizFinishedExtras(
+                    modifier = Modifier.padding(top = Dimens.DEFAULT_PADDING),
+                    correctAnswers = state.correctAnswers,
+                    totalQuestions = state.answeredQuestions.size,
+                    averageResponseTimeMs = state.totalResponseTime / answeredCount,
+                    totalDurationMs = state.totalResponseTime, 
+                    averagePrecision = state.averagePrecision,
+                    onReviewAnswersClick = { onEvent(MMQuizUIEvents.ToggleReviewDialog(true)) }
+                )
+            }
         },
         showBackConfirmation = state.showExitConfirmation,
         onBackAction = { onEvent(MMQuizUIEvents.OnBackPressed) },

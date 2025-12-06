@@ -38,4 +38,8 @@
     <string name="answer_correct_label">Poprawna</string>
     <string name="answer_incorrect_label">Błędna</string>
     <string name="answer_missed_label">Pominięta</string>
+    
+    <!-- Daily Exercise Extras -->
+    <string name="daily_exercise_finished_title">Zadanie wykonane!</string>
+    <string name="daily_exercise_finished_msg">Wróć jutro po kolejną dawkę wiedzy.</string>
 </resources>
