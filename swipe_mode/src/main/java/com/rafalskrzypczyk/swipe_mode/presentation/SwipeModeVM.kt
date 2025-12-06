@@ -29,6 +29,7 @@ class SwipeModeVM @Inject constructor(
     private var currentStreak: Int = 0
     private var bestStreak: Int = 0
     private var earnedPoints: Int = 0
+    private var isStreakUpdatedInSession = false
 
     // Timing stats
     private var quizStartTime: Long = 0L
@@ -135,7 +136,10 @@ class SwipeModeVM @Inject constructor(
         displayNextQuestion()
         earnedPoints += useCases.updateScore(questionId, answeredCorrectly)
 
-        useCases.updateStreak()
+        if (useCases.updateStreak()) {
+            isStreakUpdatedInSession = true
+        }
+        isStreakUpdatedInSession = true
     }
 
     private fun updateStreak(isAnswerCorrect: Boolean) {
@@ -167,7 +171,9 @@ class SwipeModeVM @Inject constructor(
                 seenQuestions = currentQuestionIndex,
                 correctAnswers = correctAnswers,
                 points = state.value.userScore,
-                earnedPoints = earnedPoints
+                earnedPoints = earnedPoints,
+                isStreakUpdated = isStreakUpdatedInSession,
+                streak = useCases.getStreak() // Zmiana tutaj
             )
         ) }
     }

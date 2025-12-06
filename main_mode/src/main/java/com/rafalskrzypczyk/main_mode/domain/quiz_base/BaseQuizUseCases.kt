@@ -1,11 +1,13 @@
 package com.rafalskrzypczyk.main_mode.domain.quiz_base
 
+import com.rafalskrzypczyk.score.domain.use_cases.GetStreakUC
 import com.rafalskrzypczyk.score.domain.use_cases.GetUserScoreUC
 import com.rafalskrzypczyk.score.domain.use_cases.UpdateScoreWithQuestionUC
-import jakarta.inject.Inject
+import javax.inject.Inject
 
 data class BaseQuizUseCases @Inject constructor(
-    val evaluateAnswers: EvaluateAnswerUC,
+    val updateScore: UpdateScoreWithQuestionUC,
     val getUserScore: GetUserScoreUC,
-    val updateScore: UpdateScoreWithQuestionUC
+    val evaluateAnswers: EvaluateAnswerUC,
+    val getStreak: GetStreakUC
 )

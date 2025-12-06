@@ -41,7 +41,9 @@ class MMQuizVM @Inject constructor(
 
     override fun submitAnswer() {
         super.submitAnswer()
-        useCases.updateStreak()
+        if (useCases.updateStreak()) {
+            isStreakUpdatedInSession = true
+        }
     }
 
     private fun attachQuestionsListener() {

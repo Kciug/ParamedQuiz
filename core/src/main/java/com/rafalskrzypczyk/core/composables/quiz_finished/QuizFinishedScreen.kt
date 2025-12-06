@@ -15,13 +15,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Bolt
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -30,6 +37,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -60,13 +68,12 @@ fun QuizFinishedScreen(
     }
 
     Scaffold(
-        // Kluczowe dla Edge-to-Edge: ustawiamy insets na 0, aby tło weszło pod paski systemowe.
-        // Paddingami zajmiemy się ręcznie wewnątrz.
-        contentWindowInsets = WindowInsets(0, 0, 0, 0)
-    ) { _ -> // Ignorujemy padding ze Scaffolda
-        
+        contentWindowInsets = WindowInsets(0, 0, 0, 0) // Edge-to-Edge
+    ) { innerPadding ->
         Box(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
         ) {
             // WARSTWA 1: Przewijalna zawartość
             Column(
@@ -75,14 +82,13 @@ fun QuizFinishedScreen(
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Odstęp na pasek stanu (Status Bar)
+                // Odstęp na pasek stanu
                 Spacer(Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
 
-                // Główna zawartość
                 SequentiallyAnimatedColumn(
                     modifier = Modifier.padding(Dimens.DEFAULT_PADDING),
                     enterDelay = enterDelay,
-                    content = listOf(
+                    content = listOfNotNull(
                         {
                             Column(
                                 modifier = Modifier.fillMaxWidth(),
@@ -92,6 +98,10 @@ fun QuizFinishedScreen(
                                 Spacer(Modifier.height(Dimens.ELEMENTS_SPACING))
                             }
                         },
+                        // Sekcja Streaku - wyświetlana tylko jeśli zaktualizowany
+                        if (state.isStreakUpdated && state.streak != null) {
+                            { StreakUpdateSection(streakDays = state.streak) }
+                        } else null,
                         { TextPrimary(stringResource(R.string.quiz_finish_your_answers)) },
                         {
                             Row(
@@ -137,19 +147,16 @@ fun QuizFinishedScreen(
                     )
                 )
 
-                // Odstęp na dole, aby ostatni element listy nie był schowany pod przyciskiem "Wróć"
-                // Wysokość przycisku (~50dp) + Padding (15dp) + margines bezpieczeństwa
+                // Odstęp na dole pod przycisk i pasek nawigacji
                 Spacer(Modifier.height(80.dp))
-                // Dodatkowy odstęp na pasek nawigacji (gestów)
                 Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
             }
 
-            // WARSTWA 2: Przycisk "Wróć" przyklejony do dołu
+            // WARSTWA 2: Przycisk "Wróć"
             AnimatedVisibility(
                 visible = backButtonVisible.value,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    // Podnosimy przycisk nad pasek nawigacji systemowej
                     .windowInsetsPadding(WindowInsets.navigationBars)
                     .padding(Dimens.DEFAULT_PADDING),
                 enter = scaleIn(animationSpec = spring(
@@ -166,12 +173,58 @@ fun QuizFinishedScreen(
     }
 }
 
+@Composable
+fun StreakUpdateSection(
+    streakDays: Int
+) {
+    val fireColor = Color(0xFFFF9800) // Hardcoded Orange/Fire color
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = Dimens.ELEMENTS_SPACING),
+        shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT),
+        colors = CardDefaults.cardColors(
+            containerColor = fireColor.copy(alpha = 0.15f)
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Dimens.DEFAULT_PADDING),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.Bolt,
+                contentDescription = null,
+                tint = fireColor,
+                modifier = Modifier.size(48.dp)
+            )
+            Spacer(modifier = Modifier.width(Dimens.ELEMENTS_SPACING))
+            Column {
+                TextHeadline(
+                    text = stringResource(R.string.quiz_finish_streak_extended),
+                    color = fireColor
+                )
+                TextPrimary(
+                    text = stringResource(R.string.quiz_finish_streak_msg, streakDays),
+                    color = fireColor
+                )
+            }
+        }
+    }
+}
+
 @Preview
 @Composable
 private fun QuizFinishedScreenPreview() {
     PreviewContainer {
         QuizFinishedScreen(
-            state = QuizFinishedState(),
+            state = QuizFinishedState(
+                isStreakUpdated = true,
+                streak = 5
+            ),
             onNavigateBack = {},
             extras = {}
         )

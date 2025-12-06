@@ -53,7 +53,16 @@ class DailyExerciseVM @Inject constructor(
     override fun displayNextQuestion() {
         super.displayNextQuestion()
         if (state.value.isQuizFinished) {
-            useCases.updateStreak()
+            if (useCases.updateStreak()) {
+                isStreakUpdatedInSession = true
+                val currentStreak = useCases.base.getStreak()
+                _state.update {
+                    it.copy(quizFinishedState = it.quizFinishedState.copy(
+                        isStreakUpdated = true,
+                        streak = currentStreak
+                    ))
+                }
+            }
             useCases.updateLastDailyExerciseDate()
         }
     }

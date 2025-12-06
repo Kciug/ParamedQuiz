@@ -22,6 +22,7 @@ abstract class BaseQuizVM (
     private val quizEngine = QuizEngine(useCases)
 
     protected var earnedPoints: Int = 0
+    protected var isStreakUpdatedInSession: Boolean = false
 
     init {
         loadUserScore()
@@ -43,7 +44,7 @@ abstract class BaseQuizVM (
     protected fun loadUserScore() {
         viewModelScope.launch {
             useCases.getUserScore().collectLatest { score ->
-                _state.update { it.copy(userScore = score.score) }
+                _state.update { it.copy(userScore = score.score, userStreak = score.streak) }
             }
         }
     }
@@ -142,7 +143,9 @@ abstract class BaseQuizVM (
                 seenQuestions = quizEngine.getAnsweredQuestions(),
                 correctAnswers = quizEngine.getCorrectAnswers(),
                 points = state.value.userScore,
-                earnedPoints = earnedPoints
+                earnedPoints = earnedPoints,
+                isStreakUpdated = isStreakUpdatedInSession,
+                streak = useCases.getStreak() // Zmiana tutaj
             )
         ) }
     }

@@ -7,6 +7,7 @@ import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedState
 @Immutable
 data class QuizState (
     val userScore: Int = 0,
+    val userStreak: Int = 0, // Dodane pole
     val correctAnswers: Int = 0,
     val responseState: ResponseState = ResponseState.Idle,
     val showExitConfirmation: Boolean = false,
