@@ -139,7 +139,6 @@ class SwipeModeVM @Inject constructor(
         if (useCases.updateStreak()) {
             isStreakUpdatedInSession = true
         }
-        isStreakUpdatedInSession = true
     }
 
     private fun updateStreak(isAnswerCorrect: Boolean) {
