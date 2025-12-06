@@ -7,6 +7,7 @@ data class QuizFinishedState(
     val seenQuestions: Int = 0,
     val correctAnswers: Int = 0,
     val streak: Int? = null,
+    val isStreakUpdated: Boolean = false,
     val points: Int = 0,
     val earnedPoints: Int = 0
 )

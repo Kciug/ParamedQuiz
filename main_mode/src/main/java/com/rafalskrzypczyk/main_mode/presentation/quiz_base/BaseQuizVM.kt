@@ -22,6 +22,10 @@ abstract class BaseQuizVM (
     private val quizEngine = QuizEngine(useCases)
 
     protected var earnedPoints: Int = 0
+    protected var isStreakUpdatedInSession: Boolean = false
+    
+    // Timing
+    private var currentQuestionStartTime: Long = 0L
 
     init {
         loadUserScore()
@@ -37,13 +41,18 @@ abstract class BaseQuizVM (
             MMQuizUIEvents.OnSubmitAnswer -> submitAnswer()
             MMQuizUIEvents.OnNextQuestion -> displayNextQuestion()
             is MMQuizUIEvents.OnBackConfirmed -> handleExitQuiz(event.navigateBack)
+            is MMQuizUIEvents.ToggleReviewDialog -> toggleReviewDialog(event.show)
         }
+    }
+    
+    fun toggleReviewDialog(show: Boolean) {
+        _state.update { it.copy(showReviewDialog = show) }
     }
 
     protected fun loadUserScore() {
         viewModelScope.launch {
             useCases.getUserScore().collectLatest { score ->
-                _state.update { it.copy(userScore = score.score) }
+                _state.update { it.copy(userScore = score.score, userStreak = score.streak) }
             }
         }
     }
@@ -57,19 +66,52 @@ abstract class BaseQuizVM (
     }
 
     protected open fun submitAnswer() {
-        val selected = state.value.question.answers.filter { it.isSelected }.map { it.id }
-        val isCorrect = quizEngine.submitAnswer(selected)
+        val now = System.currentTimeMillis()
+        val duration = now - currentQuestionStartTime
+        
+        val currentQ = state.value.question
+        val selectedAnswers = currentQ.answers.filter { it.isSelected }
+        val selectedIds = selectedAnswers.map { it.id }
+        val correctIds = currentQ.correctAnswerIds
+        
+        // Obliczanie precyzji (Jaccard Index)
+        // (Poprawnie Zaznaczone) / (Suma Unikalnych Istotnych)
+        val correctlySelectedCount = selectedIds.count { it in correctIds }
+        
+        // Unikalne istotne = To co zaznaczył + To co powinien był zaznaczyć (ale bez duplikatów)
+        // Czyli: size(Selected) + size(Correct) - size(Intersection)
+        val unionSize = selectedIds.size + correctIds.size - correctlySelectedCount
+        
+        val precision = if (unionSize > 0) {
+            ((correctlySelectedCount.toFloat() / unionSize) * 100).toInt()
+        } else {
+            0
+        }
+
+        // QuizEngine logika
+        val isCorrect = quizEngine.submitAnswer(selectedIds)
+
+        // Aktualizacja stanu
+        val processedQuestion = currentQ.submitAnswer(isCorrect, precision)
+        val newHistory = state.value.answeredQuestions + processedQuestion
+        
+        // Oblicz średnią precyzję
+        val totalPrecision = newHistory.sumOf { it.userPrecision }
+        val avgPrecision = if (newHistory.isNotEmpty()) totalPrecision / newHistory.size else 0
 
         _state.update {
             it.copy(
-                question = it.question.submitAnswer(isCorrect),
-                correctAnswers = quizEngine.getCorrectAnswers()
+                question = processedQuestion,
+                correctAnswers = quizEngine.getCorrectAnswers(),
+                totalResponseTime = it.totalResponseTime + duration,
+                answeredQuestions = newHistory,
+                averagePrecision = avgPrecision
             )
         }
 
-        val currentQ = quizEngine.getCurrentQuestion()
-        if (currentQ != null) {
-            earnedPoints += useCases.updateScore(currentQ.id, isCorrect)
+        val domainQ = quizEngine.getCurrentQuestion()
+        if (domainQ != null) {
+            earnedPoints += useCases.updateScore(domainQ.id, isCorrect)
         }
     }
 
@@ -79,7 +121,8 @@ abstract class BaseQuizVM (
             it.copy(
                 responseState = ResponseState.Success,
                 categoryTitle = title,
-                questionsCount = quizEngine.getQuestionsCount()
+                questionsCount = quizEngine.getQuestionsCount(),
+                quizStartTime = System.currentTimeMillis()
             )
         }
         displayQuestion()
@@ -107,6 +150,9 @@ abstract class BaseQuizVM (
             _state.update { it.copy(isQuizFinished = true) }
             return
         }
+        
+        currentQuestionStartTime = System.currentTimeMillis()
+        
         _state.update {
             it.copy(
                 currentQuestionNumber = quizEngine.getCurrentQuestionNumber(),
@@ -126,6 +172,7 @@ abstract class BaseQuizVM (
                     question = next.toUIM()
                 )
             }
+            currentQuestionStartTime = System.currentTimeMillis()
         }
     }
 
@@ -142,7 +189,9 @@ abstract class BaseQuizVM (
                 seenQuestions = quizEngine.getAnsweredQuestions(),
                 correctAnswers = quizEngine.getCorrectAnswers(),
                 points = state.value.userScore,
-                earnedPoints = earnedPoints
+                earnedPoints = earnedPoints,
+                isStreakUpdated = isStreakUpdatedInSession,
+                streak = useCases.getStreak() 
             )
         ) }
     }

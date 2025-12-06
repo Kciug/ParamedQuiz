@@ -34,6 +34,9 @@ class DailyExerciseVM @Inject constructor(
                         questions = response.data.take(DAILY_EXERCISE_QUESTIONS_AMOUNT),
                         title = resourceProvider.getString(R.string.title_daily_exercise)
                     )
+                    // Ustaw flagę isDailyExercise
+                    _state.update { it.copy(isDailyExercise = true) } 
+                    
                     attachQuestionsListener()
                 }
                 is Response.Error -> { _state.update { it.copy(responseState = ResponseState.Error(response.error)) }}
@@ -53,7 +56,16 @@ class DailyExerciseVM @Inject constructor(
     override fun displayNextQuestion() {
         super.displayNextQuestion()
         if (state.value.isQuizFinished) {
-            useCases.updateStreak()
+            if (useCases.updateStreak()) {
+                isStreakUpdatedInSession = true
+                val currentStreak = useCases.base.getStreak()
+                _state.update {
+                    it.copy(quizFinishedState = it.quizFinishedState.copy(
+                        isStreakUpdated = true,
+                        streak = currentStreak
+                    ))
+                }
+            }
             useCases.updateLastDailyExerciseDate()
         }
     }

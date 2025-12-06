@@ -6,7 +6,7 @@ import javax.inject.Inject
 class IncreaseStreakInstantlyUC @Inject constructor(
     private val streakManager: StreakManager
 ) {
-    operator fun invoke() {
-        streakManager.increaseStreak()
+    operator fun invoke(): Boolean {
+        return streakManager.increaseStreak()
     }
 }

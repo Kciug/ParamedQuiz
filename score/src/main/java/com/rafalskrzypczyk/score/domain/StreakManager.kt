@@ -14,15 +14,16 @@ class StreakManager @Inject constructor(
 
     private var increaseStreakPoints = 0
 
-    fun increaseStreakByQuestions() {
+    fun increaseStreakByQuestions(): Boolean {
         increaseStreakPoints++
         if (increaseStreakPoints >= STREAK_POINTS_THRESHOLD) {
-            increaseStreakForToday()
+            return increaseStreakForToday()
         }
+        return false
     }
 
-    fun increaseStreak() {
-        increaseStreakForToday()
+    fun increaseStreak(): Boolean {
+        return increaseStreakForToday()
     }
 
     fun validateStreak() {
@@ -48,7 +49,7 @@ class StreakManager @Inject constructor(
         }
     }
 
-    private fun increaseStreakForToday() {
+    private fun increaseStreakForToday(): Boolean {
         val score = scoreManager.getScore()
 
         val today = Calendar.getInstance().time.toDateOnly()
@@ -60,7 +61,9 @@ class StreakManager @Inject constructor(
                 streak = score.streak + 1,
                 lastStreakUpdateDate = today
             ))
+            return true
         }
+        return false
     }
 
     private fun clearStreak() {

@@ -29,6 +29,16 @@ class SwipeModeVM @Inject constructor(
     private var currentStreak: Int = 0
     private var bestStreak: Int = 0
     private var earnedPoints: Int = 0
+    private var isStreakUpdatedInSession = false
+
+    // Timing stats
+    private var quizStartTime: Long = 0L
+    private var currentQuestionStartTime: Long = 0L
+    private var totalResponseTimeAccumulator: Long = 0L
+
+    // Error stats
+    private var type1Errors: Int = 0
+    private var type2Errors: Int = 0
 
     init {
         viewModelScope.launch {
@@ -49,6 +59,7 @@ class SwipeModeVM @Inject constructor(
                                 questionsCount = questions.size
                             )
                         }
+                        quizStartTime = System.currentTimeMillis()
                         displayQuestion()
                     }
                 }
@@ -67,9 +78,11 @@ class SwipeModeVM @Inject constructor(
 
     private fun displayQuestion() {
         if(questions.indices.contains(currentQuestionIndex).not()) {
-            _state.update { it.copy(isQuizFinished = true) }
+            setFinishedState()
             return
         }
+
+        currentQuestionStartTime = System.currentTimeMillis()
 
         val remainingQuestions = questions.subList(0, questions.size - currentQuestionIndex)
         _state.update {
@@ -86,9 +99,24 @@ class SwipeModeVM @Inject constructor(
     }
 
     private fun submitAnswer(questionId: Long, isCorrect: Boolean) {
-        val answeredQuestion = questions.first { questionId == it.id }
+        // Calculate time
+        val now = System.currentTimeMillis()
+        val duration = now - currentQuestionStartTime
+        totalResponseTimeAccumulator += duration
 
+        val answeredQuestion = questions.first { questionId == it.id }
         val answeredCorrectly = answeredQuestion.isCorrect == isCorrect
+
+        // Analyze Errors if incorrect
+        if (!answeredCorrectly) {
+            if (answeredQuestion.isCorrect) {
+                // Question was TRUE, User said FALSE -> Type I (False Rejection)
+                type1Errors++
+            } else {
+                // Question was FALSE, User said TRUE -> Type II (False Acceptance)
+                type2Errors++
+            }
+        }
 
         val answerResult = SwipeModeAnswerResult(
             questionId = questionId,
@@ -99,12 +127,18 @@ class SwipeModeVM @Inject constructor(
 
         _state.update { it.copy(
             answerResult = answerResult,
-            correctAnswers = correctAnswers
+            correctAnswers = correctAnswers,
+            type1Errors = type1Errors,
+            type2Errors = type2Errors
         ) }
 
         updateStreak(answeredCorrectly)
         displayNextQuestion()
         earnedPoints += useCases.updateScore(questionId, answeredCorrectly)
+
+        if (useCases.updateStreak()) {
+            isStreakUpdatedInSession = true
+        }
     }
 
     private fun updateStreak(isAnswerCorrect: Boolean) {
@@ -124,13 +158,21 @@ class SwipeModeVM @Inject constructor(
     }
 
     private fun setFinishedState() {
+        val totalDuration = System.currentTimeMillis() - quizStartTime
+        val questionsAnswered = currentQuestionIndex
+        val averageTime = if (questionsAnswered > 0) totalResponseTimeAccumulator / questionsAnswered else 0L
+
         _state.update { it.copy(
             isQuizFinished = true,
+            averageResponseTime = averageTime,
+            totalQuizDuration = totalDuration,
             quizFinishedState = QuizFinishedState(
                 seenQuestions = currentQuestionIndex,
                 correctAnswers = correctAnswers,
                 points = state.value.userScore,
-                earnedPoints = earnedPoints
+                earnedPoints = earnedPoints,
+                isStreakUpdated = isStreakUpdatedInSession,
+                streak = useCases.getStreak() // Zmiana tutaj
             )
         ) }
     }
