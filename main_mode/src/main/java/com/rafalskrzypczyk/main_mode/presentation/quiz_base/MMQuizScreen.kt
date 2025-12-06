@@ -27,6 +27,7 @@ import com.rafalskrzypczyk.core.composables.ErrorDialog
 import com.rafalskrzypczyk.core.composables.Loading
 import com.rafalskrzypczyk.core.composables.PreviewContainer
 import com.rafalskrzypczyk.core.composables.UserPointsLabel
+import kotlin.math.max
 
 @Composable
 fun MMQuizScreen(
@@ -40,6 +41,17 @@ fun MMQuizScreen(
         currentQuestionIndex = state.currentQuestionNumber,
         quizFinished = state.isQuizFinished,
         quizFinishedState = state.quizFinishedState,
+        quizFinishedExtras = {
+            val answeredCount = max(1, state.answeredQuestions.size)
+            MMQuizFinishedExtras(
+                correctAnswers = state.correctAnswers,
+                totalQuestions = state.answeredQuestions.size, // Zmiana tutaj: liczymy celność względem odpowiedzianych
+                averageResponseTimeMs = state.totalResponseTime / answeredCount,
+                totalDurationMs = state.totalResponseTime, 
+                averagePrecision = state.averagePrecision,
+                onReviewAnswersClick = { onEvent(MMQuizUIEvents.ToggleReviewDialog(true)) }
+            )
+        },
         showBackConfirmation = state.showExitConfirmation,
         onBackAction = { onEvent(MMQuizUIEvents.OnBackPressed) },
         onBackDiscarded = { onEvent(MMQuizUIEvents.OnBackDiscarded) },
@@ -75,6 +87,13 @@ fun MMQuizScreen(
                 }
             }
         }
+    }
+    
+    if (state.showReviewDialog) {
+        QuestionReviewDialog(
+            questions = state.answeredQuestions,
+            onDismiss = { onEvent(MMQuizUIEvents.ToggleReviewDialog(false)) }
+        )
     }
 }
 
@@ -194,17 +213,18 @@ private fun MMQuizScreenPreview() {
 
                         state.value = state.value.copy(
                             question = state.value.question.submitAnswer(
-                                answeredCorrectly = isAnswerCorrect
+                                answeredCorrectly = isAnswerCorrect,
+                                precision = 100
                             ),
                             correctAnswers = if(isAnswerCorrect) state.value.correctAnswers + 1 else state.value.correctAnswers,
                             userScore = if(isAnswerCorrect) state.value.userScore + 100 else state.value.userScore
                         )
                     }
 
-                    is MMQuizUIEvents.OnBackConfirmed -> TODO()
+                    is MMQuizUIEvents.OnBackConfirmed -> {}
+                    is MMQuizUIEvents.ToggleReviewDialog -> {}
                 }
             }
         ) { }
     }
 }
-

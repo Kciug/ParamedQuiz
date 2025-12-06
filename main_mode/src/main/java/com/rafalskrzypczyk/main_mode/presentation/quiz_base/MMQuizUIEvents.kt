@@ -1,10 +1,11 @@
 package com.rafalskrzypczyk.main_mode.presentation.quiz_base
 
-sealed interface MMQuizUIEvents {
-    object OnBackPressed: MMQuizUIEvents
-    object OnBackDiscarded: MMQuizUIEvents
-    data class OnBackConfirmed(val navigateBack: () -> Unit): MMQuizUIEvents
-    data class OnAnswerClicked(val answerId: Long) : MMQuizUIEvents
-    object OnSubmitAnswer : MMQuizUIEvents
-    object OnNextQuestion : MMQuizUIEvents
+sealed class MMQuizUIEvents {
+    object OnSubmitAnswer : MMQuizUIEvents()
+    object OnNextQuestion : MMQuizUIEvents()
+    object OnBackPressed : MMQuizUIEvents()
+    object OnBackDiscarded : MMQuizUIEvents()
+    data class OnBackConfirmed(val navigateBack: () -> Unit) : MMQuizUIEvents()
+    data class OnAnswerClicked(val answerId: Long) : MMQuizUIEvents()
+    data class ToggleReviewDialog(val show: Boolean) : MMQuizUIEvents() // Nowe zdarzenie
 }
