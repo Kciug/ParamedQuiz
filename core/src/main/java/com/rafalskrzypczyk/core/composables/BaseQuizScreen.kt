@@ -53,7 +53,10 @@ fun BaseQuizScreen(
     }
 
     BackHandler {
-        onBackAction()
+        if(quizFinished)
+            onNavigateBack()
+        else
+            onBackAction()
     }
 
     AnimatedContent(
@@ -166,7 +169,7 @@ private fun BaseQuizScreenPreview() {
             onBackConfirmed = {},
             onNavigateBack = {},
             onReportIssue = {}
-        ) { p1, p2 ->
+        ) { _, _ ->
 
         }
     }
