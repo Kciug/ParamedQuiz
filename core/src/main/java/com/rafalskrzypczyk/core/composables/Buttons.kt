@@ -25,16 +25,20 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
+import com.rafalskrzypczyk.core.utils.rememberDebouncedClick
 
 @Composable
 fun ButtonPrimary(
+    modifier: Modifier = Modifier,
     title: String,
     onClick: () -> Unit,
     enabled: Boolean = true,
-    modifier: Modifier = Modifier
+    debounced: Boolean = true,
 ) {
+    val finalOnClick = if (debounced) rememberDebouncedClick(onClick = onClick) else onClick
+
     Button(
-        onClick = onClick,
+        onClick = finalOnClick,
         enabled = enabled,
         modifier = modifier
             .fillMaxWidth()
@@ -51,12 +55,15 @@ fun ButtonPrimary(
 
 @Composable
 fun ButtonSecondary(
+    modifier: Modifier = Modifier,
     title: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    debounced: Boolean = true,
 ) {
+    val finalOnClick = if (debounced) rememberDebouncedClick(onClick = onClick) else onClick
+
     OutlinedButton(
-        onClick = onClick,
+        onClick = finalOnClick,
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight(),
@@ -72,12 +79,15 @@ fun ButtonSecondary(
 
 @Composable
 fun ButtonTertiary(
+    modifier: Modifier = Modifier,
     title: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    debounced: Boolean = true,
 ) {
+    val finalOnClick = if (debounced) rememberDebouncedClick(onClick = onClick) else onClick
+
     Button(
-        onClick = onClick,
+        onClick = finalOnClick,
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight(),
@@ -96,13 +106,18 @@ fun ActionButton(
     icon: ImageVector,
     description: String,
     enabled: Boolean = true,
+    debounced: Boolean = true,
+    showBackground: Boolean = true,
     onClick: () -> Unit,
 ) {
+    val finalOnClick = if (debounced) rememberDebouncedClick(onClick = onClick) else onClick
+    val containerColor = if (showBackground) MaterialTheme.colorScheme.surface else Color.Transparent
+
     IconButton(
         modifier = modifier,
-        onClick = onClick,
+        onClick = finalOnClick,
         enabled = enabled,
-        colors = IconButtonDefaults.iconButtonColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = IconButtonDefaults.iconButtonColors(containerColor = containerColor)
     ) {
         Icon(
             imageVector = icon,
@@ -117,13 +132,14 @@ fun ActionButtonImage(
     image: Painter,
     description: String,
     enabled: Boolean = true,
+    debounced: Boolean = true,
     onClick: () -> Unit,
 ) {
-
+    val finalOnClick = if (debounced) rememberDebouncedClick(onClick = onClick) else onClick
 
     IconButton(
         modifier = modifier,
-        onClick = onClick,
+        onClick = finalOnClick,
         enabled = enabled,
         colors = IconButtonDefaults.iconButtonColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {

@@ -19,12 +19,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.rafalskrzypczyk.core.R
+import com.rafalskrzypczyk.core.utils.rememberDebouncedClick
 
 @Composable
 fun UserAvatarAction(
     modifier: Modifier = Modifier,
     isUserLoggedIn: Boolean,
-    userAvatar: String? = null,
+    @Suppress("unused") userAvatar: String? = null,
     onNavigateToUserPanel: () -> Unit
 ) {
     Box(
@@ -32,7 +33,7 @@ fun UserAvatarAction(
             .size(Dimens.IMAGE_SIZE_SMALL)
             .clip(CircleShape)
             .background(Color.Transparent)
-            .clickable(onClick = onNavigateToUserPanel),
+            .clickable(onClick = rememberDebouncedClick(onClick = onNavigateToUserPanel)),
         contentAlignment = Alignment.Center
     ) {
         if (isUserLoggedIn) {
