@@ -11,7 +11,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.navigation.compose.rememberNavController
-import com.rafalskrzypczyk.auth.domain.AuthRepository
 import com.rafalskrzypczyk.core.composables.ErrorDialog
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
@@ -22,10 +21,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
-    @Inject
-    lateinit var authRepository: AuthRepository
-
     @Inject
     lateinit var scoreManager: ScoreManager
 
@@ -71,7 +66,7 @@ class MainActivity : ComponentActivity() {
             navController = navController,
             isOnboarding = { getOnboardingState() },
             onFinishOnboarding = { onFinishOnboarding() }
-        ) { authRepository.isUserLoggedIn() }
+        )
     }
 
     private fun getOnboardingState(): Boolean = !sharedPreferences.getOnboardingStatus()
