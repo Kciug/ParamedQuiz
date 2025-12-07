@@ -2,8 +2,10 @@ package com.rafalskrzypczyk.main_mode.presentation.quiz_base
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedState
+import com.rafalskrzypczyk.firestore.domain.models.IssueReportDTO
 import com.rafalskrzypczyk.main_mode.domain.models.Question
 import com.rafalskrzypczyk.main_mode.domain.quiz_base.BaseQuizUseCases
 import com.rafalskrzypczyk.main_mode.domain.quiz_base.QuizEngine
@@ -42,11 +44,33 @@ abstract class BaseQuizVM (
             MMQuizUIEvents.OnNextQuestion -> displayNextQuestion()
             is MMQuizUIEvents.OnBackConfirmed -> handleExitQuiz(event.navigateBack)
             is MMQuizUIEvents.ToggleReviewDialog -> toggleReviewDialog(event.show)
+            is MMQuizUIEvents.ToggleReportDialog -> toggleReportDialog(event.show)
+            is MMQuizUIEvents.OnReportIssue -> reportIssue(event.description)
         }
     }
     
     fun toggleReviewDialog(show: Boolean) {
         _state.update { it.copy(showReviewDialog = show) }
+    }
+
+    fun toggleReportDialog(show: Boolean) {
+        _state.update { it.copy(showReportDialog = show) }
+    }
+    
+    private fun reportIssue(description: String) {
+        val currentQ = state.value.question
+        val report = IssueReportDTO(
+            questionId = currentQ.id.toString(),
+            questionContent = currentQ.questionText,
+            description = description
+        )
+        viewModelScope.launch {
+            useCases.reportIssue(report).collectLatest { response ->
+                if(response is Response.Success) {
+                    _state.update { it.copy(showReportDialog = false, showReportSuccessToast = true) }
+                }
+            }
+        }
     }
 
     protected fun loadUserScore() {
@@ -74,12 +98,8 @@ abstract class BaseQuizVM (
         val selectedIds = selectedAnswers.map { it.id }
         val correctIds = currentQ.correctAnswerIds
         
-        // Obliczanie precyzji (Jaccard Index)
-        // (Poprawnie Zaznaczone) / (Suma Unikalnych Istotnych)
         val correctlySelectedCount = selectedIds.count { it in correctIds }
         
-        // Unikalne istotne = To co zaznaczył + To co powinien był zaznaczyć (ale bez duplikatów)
-        // Czyli: size(Selected) + size(Correct) - size(Intersection)
         val unionSize = selectedIds.size + correctIds.size - correctlySelectedCount
         
         val precision = if (unionSize > 0) {
@@ -88,14 +108,11 @@ abstract class BaseQuizVM (
             0
         }
 
-        // QuizEngine logika
         val isCorrect = quizEngine.submitAnswer(selectedIds)
 
-        // Aktualizacja stanu
         val processedQuestion = currentQ.submitAnswer(isCorrect, precision)
         val newHistory = state.value.answeredQuestions + processedQuestion
         
-        // Oblicz średnią precyzję
         val totalPrecision = newHistory.sumOf { it.userPrecision }
         val avgPrecision = if (newHistory.isNotEmpty()) totalPrecision / newHistory.size else 0
 

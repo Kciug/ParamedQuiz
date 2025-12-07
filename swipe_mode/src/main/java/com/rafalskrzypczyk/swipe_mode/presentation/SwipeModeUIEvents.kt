@@ -5,4 +5,6 @@ sealed interface SwipeModeUIEvents {
     object OnBackPressed: SwipeModeUIEvents
     object OnBackDiscarded: SwipeModeUIEvents
     data class OnBackConfirmed(val navigateBack: () -> Unit): SwipeModeUIEvents
+    data class ToggleReportDialog(val show: Boolean) : SwipeModeUIEvents
+    data class OnReportIssue(val description: String) : SwipeModeUIEvents
 }

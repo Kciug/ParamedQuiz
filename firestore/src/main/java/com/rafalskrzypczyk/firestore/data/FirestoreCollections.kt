@@ -7,4 +7,5 @@ object FirestoreCollections {
     const val QUIZ_MODE_QUESTIONS = "development_questions"
     const val QUIZ_MODE_CATEGORIES = "development_categories"
     const val SWIPE_QUESTIONS = "development_swipe_questions"
+    const val ISSUES_REPORTS = "issues_reports"
 }

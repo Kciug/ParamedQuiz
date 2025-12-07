@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedState
+import com.rafalskrzypczyk.firestore.domain.models.IssueReportDTO
 import com.rafalskrzypczyk.swipe_mode.domain.SwipeModeUseCases
 import com.rafalskrzypczyk.swipe_mode.domain.SwipeQuestion
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -73,6 +74,34 @@ class SwipeModeVM @Inject constructor(
             is SwipeModeUIEvents.OnBackConfirmed -> handleExitQuiz(event.navigateBack)
             SwipeModeUIEvents.OnBackPressed -> _state.update { it.copy(showExitConfirmation = true) }
             SwipeModeUIEvents.OnBackDiscarded -> _state.update { it.copy(showExitConfirmation = false) }
+            is SwipeModeUIEvents.ToggleReportDialog -> toggleReportDialog(event.show)
+            is SwipeModeUIEvents.OnReportIssue -> reportIssue(event.description)
+        }
+    }
+
+    private fun toggleReportDialog(show: Boolean) {
+        val indexToReport = if(currentQuestionIndex > 0) questions.size - currentQuestionIndex else questions.size - 1
+        val content = if(questions.indices.contains(indexToReport)) questions[indexToReport].text else ""
+        
+        _state.update { it.copy(showReportDialog = show, reportableQuestionContent = content) }
+    }
+
+    private fun reportIssue(description: String) {
+        val indexToReport = if(currentQuestionIndex > 0) questions.size - currentQuestionIndex else questions.size - 1
+        if(questions.indices.contains(indexToReport)) {
+            val q = questions[indexToReport]
+            val report = IssueReportDTO(
+                questionId = q.id.toString(),
+                questionContent = q.text,
+                description = description
+            )
+            viewModelScope.launch {
+                useCases.reportIssue(report).collectLatest { response ->
+                    if(response is Response.Success) {
+                        _state.update { it.copy(showReportDialog = false, showReportSuccessToast = true) }
+                    }
+                }
+            }
         }
     }
 
@@ -99,7 +128,6 @@ class SwipeModeVM @Inject constructor(
     }
 
     private fun submitAnswer(questionId: Long, isCorrect: Boolean) {
-        // Calculate time
         val now = System.currentTimeMillis()
         val duration = now - currentQuestionStartTime
         totalResponseTimeAccumulator += duration
@@ -107,13 +135,10 @@ class SwipeModeVM @Inject constructor(
         val answeredQuestion = questions.first { questionId == it.id }
         val answeredCorrectly = answeredQuestion.isCorrect == isCorrect
 
-        // Analyze Errors if incorrect
         if (!answeredCorrectly) {
             if (answeredQuestion.isCorrect) {
-                // Question was TRUE, User said FALSE -> Type I (False Rejection)
                 type1Errors++
             } else {
-                // Question was FALSE, User said TRUE -> Type II (False Acceptance)
                 type2Errors++
             }
         }
@@ -172,7 +197,7 @@ class SwipeModeVM @Inject constructor(
                 points = state.value.userScore,
                 earnedPoints = earnedPoints,
                 isStreakUpdated = isStreakUpdatedInSession,
-                streak = useCases.getStreak() // Zmiana tutaj
+                streak = useCases.getStreak() 
             )
         ) }
     }

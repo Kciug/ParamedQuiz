@@ -63,4 +63,11 @@
     
     <string name="quiz_finish_streak_extended">Seria przedłużona!</string>
     <string name="quiz_finish_streak_msg">%d dni z rzędu</string>
+
+    <string name="report_issue_title">Zgłoś błąd</string>
+    <string name="report_issue_question_preview">Pytanie:</string>
+    <string name="report_issue_description_hint">Opisz problem…</string>
+    <string name="report_issue_send">Wyślij</string>
+    <string name="report_issue_cancel">Anuluj</string>
+    <string name="report_issue_success">Zgłoszenie wysłane. Dziękujemy!</string>
 </resources>

@@ -1,6 +1,7 @@
 package com.rafalskrzypczyk.main_mode.presentation.quiz_base
 
 import android.content.res.Configuration
+import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
@@ -14,10 +15,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import com.rafalskrzypczyk.core.api_response.ResponseState
@@ -27,6 +31,7 @@ import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.ErrorDialog
 import com.rafalskrzypczyk.core.composables.Loading
 import com.rafalskrzypczyk.core.composables.PreviewContainer
+import com.rafalskrzypczyk.core.composables.ReportIssueDialog
 import com.rafalskrzypczyk.core.composables.UserPointsLabel
 import com.rafalskrzypczyk.main_mode.presentation.daily_exercise.DailyExerciseFinishedExtras
 import kotlin.math.max
@@ -37,6 +42,15 @@ fun MMQuizScreen(
     onEvent: (MMQuizUIEvents) -> Unit,
     onNavigateBack: () -> Unit,
 ) {
+    val context = LocalContext.current
+    val successMsg = stringResource(com.rafalskrzypczyk.core.R.string.report_issue_success)
+
+    LaunchedEffect(state.showReportSuccessToast) {
+        if(state.showReportSuccessToast) {
+            Toast.makeText(context, successMsg, Toast.LENGTH_SHORT).show()
+        }
+    }
+
     BaseQuizScreen(
         title = state.categoryTitle,
         quizTopPanel = { MMQuizTopPanel(score = state.userScore, correctAnswers = state.correctAnswers) },
@@ -66,8 +80,8 @@ fun MMQuizScreen(
         onBackDiscarded = { onEvent(MMQuizUIEvents.OnBackDiscarded) },
         onBackConfirmed = { onEvent(MMQuizUIEvents.OnBackConfirmed(onNavigateBack)) },
         onNavigateBack = onNavigateBack,
-        onReportIssue = {}
-    ) { innerPadding, titlePanel ->
+        onReportIssue = { onEvent(MMQuizUIEvents.ToggleReportDialog(true)) }
+    ) { innerPadding, _ ->
         val modifier = Modifier
             .padding(
                 top = innerPadding.calculateTopPadding(),
@@ -102,6 +116,14 @@ fun MMQuizScreen(
         QuestionReviewDialog(
             questions = state.answeredQuestions,
             onDismiss = { onEvent(MMQuizUIEvents.ToggleReviewDialog(false)) }
+        )
+    }
+
+    if (state.showReportDialog) {
+        ReportIssueDialog(
+            questionText = state.question.questionText,
+            onDismiss = { onEvent(MMQuizUIEvents.ToggleReportDialog(false)) },
+            onSend = { description -> onEvent(MMQuizUIEvents.OnReportIssue(description)) }
         )
     }
 }
@@ -232,6 +254,10 @@ private fun MMQuizScreenPreview() {
 
                     is MMQuizUIEvents.OnBackConfirmed -> {}
                     is MMQuizUIEvents.ToggleReviewDialog -> {}
+                    is MMQuizUIEvents.ToggleReportDialog -> {
+                        state.value = state.value.copy(showReportDialog = event.show)
+                    }
+                    is MMQuizUIEvents.OnReportIssue -> {}
                 }
             }
         ) { }
