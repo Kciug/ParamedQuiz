@@ -2,12 +2,17 @@ package com.rafalskrzypczyk.core.composables
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.BugReport
+import androidx.compose.material.icons.rounded.OutlinedFlag
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -30,26 +35,39 @@ fun ReportIssueDialog(
 
     AlertDialog(
         icon = {
-            Icon(Icons.Outlined.BugReport, contentDescription = null)
+            Icon(Icons.Rounded.OutlinedFlag, contentDescription = null)
         },
         title = {
-            Text(text = stringResource(R.string.report_issue_title))
+            TextHeadline(text = stringResource(R.string.report_issue_title))
         },
         text = {
             Column {
-                Text(
-                    text = stringResource(R.string.report_issue_question_preview),
-                    style = MaterialTheme.typography.labelMedium
-                )
-                Text(
-                    text = questionText,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(top = 4.dp, bottom = 12.dp)
-                )
-                TextFieldPrimary(
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(Dimens.RADIUS_SMALL),
+                    color = MaterialTheme.colorScheme.surfaceVariant
+                ) {
+                    Column(modifier = Modifier.padding(Dimens.DEFAULT_PADDING)) {
+                        TextCaption(
+                            text = stringResource(R.string.report_issue_question_preview),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        TextPrimary(
+                            text = questionText,
+                            modifier = Modifier.padding(top = 4.dp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(Dimens.DEFAULT_PADDING))
+
+                TextFieldMultiLine(
                     textValue = description.value,
                     onValueChange = { description.value = it },
-                    hint = stringResource(R.string.report_issue_description_hint)
+                    hint = stringResource(R.string.report_issue_description_hint),
+                    minLines = 5,
+                    maxLines = 8
                 )
             }
         },

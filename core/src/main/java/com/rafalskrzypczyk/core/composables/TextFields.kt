@@ -30,12 +30,12 @@ import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
 fun TextFieldPrimary(
+    modifier: Modifier = Modifier,
     textValue: String = "",
     onValueChange: (String) -> Unit,
     hint: String = "",
     keyboardType: KeyboardType = KeyboardType.Text,
     imeAction: ImeAction = ImeAction.None,
-    modifier: Modifier = Modifier
 ) {
     BaseTextField(
         textValue = textValue,
@@ -45,17 +45,44 @@ fun TextFieldPrimary(
         imeAction = imeAction,
         visualTransformation = VisualTransformation.None,
         trailingIcon = null,
+        singleLine = true,
         modifier = modifier
     )
 }
 
 @Composable
+fun TextFieldMultiLine(
+    modifier: Modifier = Modifier,
+    textValue: String = "",
+    onValueChange: (String) -> Unit,
+    hint: String = "",
+    minLines: Int = 5,
+    maxLines: Int = 10,
+    imeAction: ImeAction = ImeAction.Default
+) {
+    BaseTextField(
+        textValue = textValue,
+        onValueChange = onValueChange,
+        hint = hint,
+        keyboardType = KeyboardType.Text,
+        imeAction = imeAction,
+        visualTransformation = VisualTransformation.None,
+        trailingIcon = null,
+        singleLine = false,
+        minLines = minLines,
+        maxLines = maxLines,
+        modifier = modifier
+    )
+}
+
+@Suppress("AssignedValueIsNeverRead")
+@Composable
 fun PasswordTextFieldPrimary(
+    modifier: Modifier = Modifier,
     password: String = "",
     onPasswordChange: (String) -> Unit,
     hint: String = "",
-    imeAction: ImeAction = ImeAction.None,
-    modifier: Modifier = Modifier
+    imeAction: ImeAction = ImeAction.None
 ) {
     var showPassword by remember { mutableStateOf(false) }
 
@@ -74,12 +101,14 @@ fun PasswordTextFieldPrimary(
                 Icon(imageVector = icon, contentDescription = desc)
             }
         },
+        singleLine = true,
         modifier = modifier
     )
 }
 
 @Composable
 private fun BaseTextField(
+    modifier: Modifier = Modifier,
     textValue: String,
     onValueChange: (String) -> Unit,
     hint: String,
@@ -87,7 +116,9 @@ private fun BaseTextField(
     imeAction: ImeAction,
     visualTransformation: VisualTransformation,
     trailingIcon: (@Composable (() -> Unit))? = null,
-    modifier: Modifier = Modifier
+    singleLine: Boolean,
+    minLines: Int = 1,
+    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE
 ) {
     TextField(
         value = textValue,
@@ -99,6 +130,9 @@ private fun BaseTextField(
         ),
         visualTransformation = visualTransformation,
         trailingIcon = trailingIcon,
+        singleLine = singleLine,
+        minLines = minLines,
+        maxLines = maxLines,
         modifier = modifier
             .fillMaxWidth()
             .clip(shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT)),
@@ -132,6 +166,19 @@ private fun PasswordTextFieldPrimaryPreview() {
         PasswordTextFieldPrimary(
             onPasswordChange = {},
             hint = "Hasło"
+        )
+    }
+}
+
+@Preview
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun TextFieldMultiLinePreview() {
+    PreviewContainer {
+        TextFieldMultiLine(
+            onValueChange = {},
+            hint = "Opisz problem...",
+            textValue = "To jest przykładowy długi tekst, który powinien się zawijać i scrollować, gdy przekroczy ustaloną liczbę linii. Sprawdźmy czy to działa poprawnie."
         )
     }
 }
