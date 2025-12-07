@@ -18,6 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import com.rafalskrzypczyk.core.composables.Dimens
+import com.rafalskrzypczyk.core.composables.TextCaption
 import com.rafalskrzypczyk.core.composables.TextHeadline
 import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.home.R
@@ -43,11 +44,25 @@ fun NoEnoughDataComponent(
             contentDescription = null,
             tint = Color.Gray,
         )
-        TextHeadline(title)
-        TextPrimary(
-            text = message,
-            textAlign = TextAlign.Center
-        )
+        if(iconSize == Dp.Unspecified){
+            TextPrimary(
+                text = title,
+                textAlign = TextAlign.Center
+            )
+            TextCaption(
+                text = message,
+                textAlign = TextAlign.Center
+            )
+        } else {
+            TextHeadline(
+                text = title,
+                textAlign = TextAlign.Center
+            )
+            TextPrimary(
+                text = message,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
 
