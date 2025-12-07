@@ -1,10 +1,10 @@
-package com.rafalskrzypczyk.firestore.domain.models
+package com.rafalskrzypczyk.core.report_issues
 
-data class IssueReportDTO(
+data class IssueReport(
     val id: String = "",
     val questionId: String = "",
     val questionContent: String = "",
     val description: String = "",
     val gameMode: String = "",
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long? = null
 )

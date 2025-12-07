@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedState
-import com.rafalskrzypczyk.firestore.domain.models.IssueReportDTO
+import com.rafalskrzypczyk.core.report_issues.IssueReport
 import com.rafalskrzypczyk.main_mode.domain.models.Question
 import com.rafalskrzypczyk.main_mode.domain.quiz_base.BaseQuizUseCases
 import com.rafalskrzypczyk.main_mode.domain.quiz_base.QuizEngine
@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 abstract class BaseQuizVM (
     private val useCases: BaseQuizUseCases
 ): ViewModel() {
+    @Suppress("PropertyName")
     protected val _state = MutableStateFlow(QuizState())
     val state = _state.asStateFlow()
 
@@ -59,10 +60,11 @@ abstract class BaseQuizVM (
     
     private fun reportIssue(description: String) {
         val currentQ = state.value.question
-        val report = IssueReportDTO(
+        val report = IssueReport(
             questionId = currentQ.id.toString(),
             questionContent = currentQ.questionText,
-            description = description
+            description = description,
+            gameMode = "Main Mode"
         )
         viewModelScope.launch {
             useCases.reportIssue(report).collectLatest { response ->

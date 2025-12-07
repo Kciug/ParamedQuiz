@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedState
-import com.rafalskrzypczyk.firestore.domain.models.IssueReportDTO
+import com.rafalskrzypczyk.core.report_issues.IssueReport
 import com.rafalskrzypczyk.swipe_mode.domain.SwipeModeUseCases
 import com.rafalskrzypczyk.swipe_mode.domain.SwipeQuestion
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -90,10 +90,11 @@ class SwipeModeVM @Inject constructor(
         val indexToReport = if(currentQuestionIndex > 0) questions.size - currentQuestionIndex else questions.size - 1
         if(questions.indices.contains(indexToReport)) {
             val q = questions[indexToReport]
-            val report = IssueReportDTO(
+            val report = IssueReport(
                 questionId = q.id.toString(),
                 questionContent = q.text,
-                description = description
+                description = description,
+                gameMode = "Swipe Mode"
             )
             viewModelScope.launch {
                 useCases.reportIssue(report).collectLatest { response ->
@@ -114,8 +115,8 @@ class SwipeModeVM @Inject constructor(
         currentQuestionStartTime = System.currentTimeMillis()
 
         val remainingQuestions = questions.subList(0, questions.size - currentQuestionIndex)
-        _state.update {
-            it.copy(
+        _state.update { state ->
+            state.copy(
                 currentQuestionNumber = currentQuestionIndex + 1,
                 questionsPair = remainingQuestions.takeLast(2).map { it.toPresentation() }
             )
