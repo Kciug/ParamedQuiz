@@ -84,7 +84,7 @@ fun UserSettingsScreen(
         val modifier = Modifier.padding(innerPadding)
 
         when(state.responseState) {
-            is ResponseState.Error -> ErrorDialog(state.responseState.message) { }
+            is ResponseState.Error -> ErrorDialog(state.responseState.message) { onNavigateBack() } // Zmiana tutaj
             ResponseState.Idle -> UserSettingsContent(
                 modifier = modifier,
                 state = state,
@@ -210,4 +210,3 @@ private fun UserSettingsPreview() {
         }
     }
 }
-

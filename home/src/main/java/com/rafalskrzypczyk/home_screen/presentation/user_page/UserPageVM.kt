@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -42,14 +41,19 @@ class UserPageVM @Inject constructor(
     }
 
     private fun getUserData() {
-        useCases.getUser()?.let { userData ->
+        val user = useCases.getUser()
+        if (user != null) {
             _state.update {
                 it.copy(
-                    userName = userData.name,
-                    userEmail = userData.email
+                    isUserLoggedIn = true,
+                    userName = user.name,
+                    userEmail = user.email
                 )
             }
+        } else {
+            _state.update { it.copy(isUserLoggedIn = false) }
         }
+        
         getScoreData()
     }
 

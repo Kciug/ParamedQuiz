@@ -15,7 +15,6 @@ fun AppNavHost(
     navController: NavHostController,
     isOnboarding: () -> Boolean,
     onFinishOnboarding: () -> Unit,
-    userLoggedInProvider: () -> Boolean,
 ) {
     NavHost(
         modifier = Modifier.background(MaterialTheme.colorScheme.background),
@@ -23,25 +22,25 @@ fun AppNavHost(
         startDestination = if(isOnboarding()) Onboarding else MainMenu,
         enterTransition = {
             slideIntoContainer(
-                towards = AnimatedContentTransitionScope.SlideDirection.Companion.Left,
+                towards = AnimatedContentTransitionScope.SlideDirection.Left,
                 animationSpec = tween()
             ) + scaleIn()
         },
         exitTransition = {
             slideOutOfContainer(
-                towards = AnimatedContentTransitionScope.SlideDirection.Companion.Left,
+                towards = AnimatedContentTransitionScope.SlideDirection.Left,
                 animationSpec = tween()
             )
         },
         popEnterTransition = {
             slideIntoContainer(
-                towards = AnimatedContentTransitionScope.SlideDirection.Companion.Right,
+                towards = AnimatedContentTransitionScope.SlideDirection.Right,
                 animationSpec = tween()
             ) + scaleIn()
         },
         popExitTransition = {
             slideOutOfContainer(
-                towards = AnimatedContentTransitionScope.SlideDirection.Companion.Right,
+                towards = AnimatedContentTransitionScope.SlideDirection.Right,
                 animationSpec = tween()
             )
         }
@@ -59,10 +58,7 @@ fun AppNavHost(
         )
 
         mainMenuDestination(
-            onNavigateToUserPanel = {
-                if (userLoggedInProvider()) navController.navigateToUserPage()
-                else navController.navigateToSignup()
-            },
+            onNavigateToUserPanel = { navController.navigateToUserPage() },
             onNavigateToDailyExercise = { navController.navigateToDailyExercise() },
             onNavigateToMainMode = { navController.navigateToMainMode() },
             onNavigateToSwipeMode = { navController.navigateToSwipeMode() },
@@ -73,19 +69,17 @@ fun AppNavHost(
         userPageDestination(
             onNavigateBack = { navController.popBackStack() },
             onUserSettings = { navController.navigateToUserSettings() },
+            onSignup = { navController.navigateToSignup() }
         )
 
         userSettingsDestination(
             onNavigateBack = { navController.popBackStack() },
-            onSignOut = { navController.navigateToSignup() },
+            onSignOut = { navController.navigateToSignup(popUpToUserPage = true) },
         )
 
         mainModeDestination(
             onExit = { navController.popBackStack() },
-            onUserPanel = {
-                if (userLoggedInProvider()) navController.navigateToUserPage()
-                else navController.navigateToSignup()
-            }
+            onUserPanel = { navController.navigateToUserPage() }
         )
 
         swipeModeDestination(

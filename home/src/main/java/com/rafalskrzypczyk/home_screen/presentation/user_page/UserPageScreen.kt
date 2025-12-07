@@ -17,6 +17,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -32,19 +34,23 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.rafalskrzypczyk.core.R
+import com.rafalskrzypczyk.core.composables.ButtonPrimary
 import com.rafalskrzypczyk.core.composables.Dimens
-import com.rafalskrzypczyk.core.composables.top_bars.NavTopBar
 import com.rafalskrzypczyk.core.composables.SettingsButton
 import com.rafalskrzypczyk.core.composables.TextHeadline
+import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.composables.UserPointsLabel
 import com.rafalskrzypczyk.core.composables.UserStreakLabel
+import com.rafalskrzypczyk.core.composables.top_bars.NavTopBar
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.home_screen.presentation.user_page.statistics.UserStatisticsComponent
 import com.rafalskrzypczyk.score.domain.StreakState
@@ -55,7 +61,8 @@ fun UserPageScreen(
     state: UserPageState,
     onEvent: (UserPageUIEvents) -> Unit,
     onNavigateBack: () -> Unit,
-    onUserSettings: () -> Unit
+    onOpenSettings: () -> Unit,
+    onOpenRegistration: () -> Unit
 ) {
     var topBarHeight by remember { mutableIntStateOf(0) }
 
@@ -74,12 +81,19 @@ fun UserPageScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(Modifier.height(with(LocalDensity.current) {topBarHeight.toDp()}))
-                UserPageUserDetails(
-                    userName = state.userName,
-                    userPoints = state.userScore,
-                    userStreak = state.userStreak,
-                    userStreakState = state.userStreakState
-                )
+                
+                if (state.isUserLoggedIn) {
+                    UserPageUserDetails(
+                        userName = state.userName,
+                        userPoints = state.userScore,
+                        userStreak = state.userStreak,
+                        userStreakState = state.userStreakState
+                    )
+                } else {
+                    GuestUserSection(
+                        onRegisterClick = onOpenRegistration
+                    )
+                }
 
                 Spacer(Modifier.height(Dimens.ELEMENTS_SPACING))
 
@@ -100,7 +114,9 @@ fun UserPageScreen(
                 modifier = Modifier.onGloballyPositioned {
                     topBarHeight = it.size.height
                 },
-                actions = { SettingsButton { onUserSettings() } }
+                actions = { 
+                    SettingsButton { onOpenSettings() } 
+                }
             ) { onNavigateBack() }
         }
     }
@@ -163,6 +179,60 @@ fun UserPageUserDetails(
 }
 
 @Composable
+fun GuestUserSection(
+    modifier: Modifier = Modifier,
+    onRegisterClick: () -> Unit
+) {
+    Box(
+        modifier = modifier
+    ) {
+        Column (
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = Dimens.IMAGE_SIZE / 2)
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.surface,
+                            MaterialTheme.colorScheme.background
+                        )
+                    ),
+                    shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT)
+                )
+                .padding(top = Dimens.IMAGE_SIZE / 2 + Dimens.DEFAULT_PADDING)
+                .padding(horizontal = Dimens.DEFAULT_PADDING)
+                .padding(bottom = Dimens.DEFAULT_PADDING),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
+        ) {
+            TextHeadline(stringResource(com.rafalskrzypczyk.home.R.string.title_guest_user))
+            TextPrimary(
+                text = stringResource(com.rafalskrzypczyk.home.R.string.guest_user_msg),
+                textAlign = TextAlign.Center
+            )
+            ButtonPrimary(
+                title = stringResource(com.rafalskrzypczyk.home.R.string.btn_register_login),
+                onClick = onRegisterClick
+            )
+        }
+
+        Image(
+            imageVector = Icons.Outlined.AccountCircle,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .shadow(Dimens.ELEVATION, CircleShape, clip = false)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .size(Dimens.IMAGE_SIZE)
+                .align(Alignment.TopCenter)
+                .padding(Dimens.DEFAULT_PADDING),
+            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
+        )
+    }
+}
+
+@Composable
 @Preview
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 private fun UserPagePreview() {
@@ -170,12 +240,33 @@ private fun UserPagePreview() {
         Surface(color = MaterialTheme.colorScheme.background) {
             UserPageScreen(
                 state = UserPageState(
+                    isUserLoggedIn = true,
                     userName = stringResource(R.string.placeholder_short),
                     userScore = 2137,
                     userStreak = 15
                 ),
                 onNavigateBack = {},
-                onUserSettings = {},
+                onOpenSettings = {},
+                onOpenRegistration = {},
+                onEvent = {}
+            )
+        }
+    }
+}
+
+@Composable
+@Preview
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+private fun UserPageGuestPreview() {
+    ParamedQuizTheme {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            UserPageScreen(
+                state = UserPageState(
+                    isUserLoggedIn = false
+                ),
+                onNavigateBack = {},
+                onOpenSettings = {},
+                onOpenRegistration = {},
                 onEvent = {}
             )
         }
