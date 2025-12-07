@@ -9,6 +9,7 @@ import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.utils.ResourceProvider
 import com.rafalskrzypczyk.firestore.domain.FirestoreApi
 import com.rafalskrzypczyk.firestore.domain.models.CategoryDTO
+import com.rafalskrzypczyk.firestore.domain.models.IssueReportDTO
 import com.rafalskrzypczyk.firestore.domain.models.QuestionDTO
 import com.rafalskrzypczyk.firestore.domain.models.ScoreDTO
 import com.rafalskrzypczyk.firestore.domain.models.SwipeQuestionDTO
@@ -95,6 +96,13 @@ class FirestoreService @Inject constructor(
     override fun deleteUserScore(userId: String): Flow<Response<Unit>> = flow {
         emit(Response.Loading)
         emit(deleteFirestoreDocument(userId, FirestoreCollections.USER_SCORE))
+    }
+
+    override fun sendIssueReport(report: IssueReportDTO): Flow<Response<Unit>> = flow {
+        emit(Response.Loading)
+        val docId = firestore.collection(FirestoreCollections.ISSUES_REPORTS).document().id
+        val reportWithId = report.copy(id = docId)
+        emit(modifyFirestoreDocument(docId, reportWithId, FirestoreCollections.ISSUES_REPORTS))
     }
 
     private suspend fun getFirestoreData(collection: String): QuerySnapshot? {

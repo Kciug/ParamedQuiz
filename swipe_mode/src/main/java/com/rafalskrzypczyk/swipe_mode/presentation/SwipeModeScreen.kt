@@ -1,6 +1,7 @@
 package com.rafalskrzypczyk.swipe_mode.presentation
 
 import android.content.res.Configuration
+import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
@@ -11,9 +12,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.rafalskrzypczyk.core.api_response.ResponseState
@@ -22,6 +25,7 @@ import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.ErrorDialog
 import com.rafalskrzypczyk.core.composables.Loading
 import com.rafalskrzypczyk.core.composables.PreviewContainer
+import com.rafalskrzypczyk.core.composables.ReportIssueDialog
 
 @Composable
 fun SwipeModeScreen(
@@ -29,6 +33,15 @@ fun SwipeModeScreen(
     onEvent: (SwipeModeUIEvents) -> Unit,
     onNavigateBack: () -> Unit,
 ) {
+    val context = LocalContext.current
+    val successMsg = stringResource(com.rafalskrzypczyk.core.R.string.report_issue_success)
+
+    LaunchedEffect(state.showReportSuccessToast) {
+        if(state.showReportSuccessToast) {
+            Toast.makeText(context, successMsg, Toast.LENGTH_SHORT).show()
+        }
+    }
+
     BaseQuizScreen(
         title = stringResource(com.rafalskrzypczyk.core.R.string.title_swipe_mode),
         quizTopPanel = { SwipeModeQuizPanel(score = state.userScore) },
@@ -52,8 +65,8 @@ fun SwipeModeScreen(
         onBackDiscarded = { onEvent.invoke(SwipeModeUIEvents.OnBackDiscarded) },
         onBackConfirmed = { onEvent.invoke(SwipeModeUIEvents.OnBackConfirmed(onNavigateBack)) },
         onNavigateBack = onNavigateBack,
-        onReportIssue = {}
-    ) { paddingValues, titlePanel ->
+        onReportIssue = { onEvent(SwipeModeUIEvents.ToggleReportDialog(true)) }
+    ) { paddingValues, _ ->
         val modifier = Modifier.padding(paddingValues)
 
         AnimatedContent(
@@ -76,6 +89,14 @@ fun SwipeModeScreen(
                 }
             }
         }
+    }
+
+    if(state.showReportDialog) {
+        ReportIssueDialog(
+            questionText = state.reportableQuestionContent,
+            onDismiss = { onEvent(SwipeModeUIEvents.ToggleReportDialog(false)) },
+            onSend = { description -> onEvent(SwipeModeUIEvents.OnReportIssue(description)) }
+        )
     }
 }
 

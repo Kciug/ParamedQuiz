@@ -7,5 +7,7 @@ sealed class MMQuizUIEvents {
     object OnBackDiscarded : MMQuizUIEvents()
     data class OnBackConfirmed(val navigateBack: () -> Unit) : MMQuizUIEvents()
     data class OnAnswerClicked(val answerId: Long) : MMQuizUIEvents()
-    data class ToggleReviewDialog(val show: Boolean) : MMQuizUIEvents() // Nowe zdarzenie
+    data class ToggleReviewDialog(val show: Boolean) : MMQuizUIEvents()
+    data class ToggleReportDialog(val show: Boolean) : MMQuizUIEvents()
+    data class OnReportIssue(val description: String) : MMQuizUIEvents()
 }
