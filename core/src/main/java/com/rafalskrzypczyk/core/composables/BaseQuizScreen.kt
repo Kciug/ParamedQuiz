@@ -113,10 +113,12 @@ fun BaseQuizTitlePanel(
 
     Column {
         TextHeadline(title)
-        TextPrimary(
-            text = stringResource(R.string.base_quiz_question_number, currentQuestionIndex),
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-        )
+        if (currentQuestionIndex > 0) {
+            TextPrimary(
+                text = stringResource(R.string.base_quiz_question_number, currentQuestionIndex),
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+            )
+        }
     }
 
 //    if(isLandscape) {
