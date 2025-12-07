@@ -124,7 +124,7 @@ fun QuizGameContent(
                 )
 
                 ButtonPrimary(
-                    modifier = Modifier.padding(top = Dimens.DEFAULT_PADDING),
+                    modifier = Modifier.padding(vertical = Dimens.DEFAULT_PADDING),
                     title = stringResource(R.string.btn_submit),
                     onClick = onSubmitAnswer
                 )
@@ -211,7 +211,7 @@ fun AnswerButton(
         TextPrimary(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp),
+                .padding(vertical = Dimens.BUTTON_PADDING, horizontal = Dimens.DEFAULT_PADDING),
             text = answer.answerText,
             textAlign = TextAlign.Center
         )
@@ -226,10 +226,10 @@ private fun QuizGameContentPreview() {
     var answers by remember {
         mutableStateOf(
             listOf(
-                AnswerUIM(1, "A", false),
-                AnswerUIM(2, "B", false),
-                AnswerUIM(3, "C", false),
-                AnswerUIM(4, "D", false)
+                AnswerUIM(1, "Odpowiedz", false),
+                AnswerUIM(2, "Dluzsza odpowiedz", false),
+                AnswerUIM(3, "Jeszcze troche dluzsza odpowiedz", false),
+                AnswerUIM(4, "Taka odpowiedz moze sie juz nie miescic w tym okienku", false)
             )
         )
     }
@@ -245,6 +245,7 @@ private fun QuizGameContentPreview() {
                 correctAnswers = listOf("A", "B")
             ),
             onAnswerSelected = { id ->
+                @Suppress("AssignedValueIsNeverRead")
                 answers = answers.map { answer ->
                     if (answer.id == id) {
                         answer.copy(isSelected = !answer.isSelected) // toggle boola
@@ -253,7 +254,10 @@ private fun QuizGameContentPreview() {
                     }
                 }
             },
-            onSubmitAnswer = { submitted = true },
+            onSubmitAnswer = {
+                @Suppress("AssignedValueIsNeverRead")
+                submitted = true
+            },
             onNextQuestion = {},
             scaffoldPadding = PaddingValues(0.dp)
         )

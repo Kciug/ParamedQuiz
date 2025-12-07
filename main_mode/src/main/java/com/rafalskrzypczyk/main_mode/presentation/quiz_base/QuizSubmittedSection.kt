@@ -77,6 +77,7 @@ fun QuizSubmittedSection(
         }
         Spacer(modifier = Modifier.height(Dimens.DEFAULT_PADDING))
         ButtonPrimary(
+            modifier = Modifier.padding(bottom = Dimens.DEFAULT_PADDING),
             title = stringResource(R.string.btn_next_question),
             onClick = onNextQuestion
         )

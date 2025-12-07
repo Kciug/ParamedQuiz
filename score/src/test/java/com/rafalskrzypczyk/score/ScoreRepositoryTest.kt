@@ -1,6 +1,7 @@
 package com.rafalskrzypczyk.score
 
 import com.rafalskrzypczyk.core.api_response.Response
+import com.rafalskrzypczyk.core.user_management.UserAuthenticationMethod
 import com.rafalskrzypczyk.core.user_management.UserData
 import com.rafalskrzypczyk.core.user_management.UserManager
 import com.rafalskrzypczyk.firestore.domain.FirestoreApi
@@ -58,7 +59,7 @@ class ScoreRepositoryTest {
 
     @Test
     fun `getUserScore returns score from firestore when user is logged in`() = testScope.runTest {
-        val user = UserData("id123", "test@test.com", "test")
+        val user = UserData("id123", "test@test.com", "test", UserAuthenticationMethod.PASSWORD)
         val dto = ScoreDTO(10, 0, null, null, emptyList())
         val domain = dto.toDomain()
 
@@ -84,7 +85,7 @@ class ScoreRepositoryTest {
 
     @Test
     fun `saveUserScore stores remotely when user is logged in`() = runTest {
-        val user = UserData("id123", "test@test.com", "test")
+        val user = UserData("id123", "test@test.com", "test", UserAuthenticationMethod.PASSWORD)
         val score = Score(100, 0, null, null, listOf())
 
         every { userManager.getCurrentLoggedUser() } returns user
@@ -111,7 +112,7 @@ class ScoreRepositoryTest {
 
     @Test
     fun `deleteUserScore deletes remotely when user is logged in`() = runTest {
-        val user = UserData("id123", "test@test.com", "test")
+        val user = UserData("id123", "test@test.com", "test", UserAuthenticationMethod.PASSWORD)
 
         every { userManager.getCurrentLoggedUser() } returns user
         coEvery { firestore.deleteUserScore(user.id) } returns flowOf(Response.Success(Unit))

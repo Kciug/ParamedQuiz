@@ -29,6 +29,7 @@ import com.rafalskrzypczyk.core.composables.NotificationDot
 import com.rafalskrzypczyk.core.composables.TextHeadline
 import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
+import com.rafalskrzypczyk.core.utils.rememberDebouncedClick
 
 
 @Composable
@@ -45,7 +46,7 @@ fun QuizModeButton(
                 .padding(top = Dimens.IMAGE_SIZE_MEDIUM / 4)
                 .heightIn(min = Dimens.IMAGE_SIZE_MEDIUM / 4 * 3),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            onClick = onClick,
+            onClick = rememberDebouncedClick(onClick = onClick),
             shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT),
         ) {
             Column(
@@ -100,7 +101,7 @@ fun AddonButton(
             colors = CardDefaults.cardColors(
                 containerColor = addon.color ?: MaterialTheme.colorScheme.surface
             ),
-            onClick = addon.onClick,
+            onClick = rememberDebouncedClick(onClick = addon.onClick),
             shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT),
         ) {
             Column(

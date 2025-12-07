@@ -38,7 +38,7 @@ class HomeScreenVM @Inject constructor(
                     userStreakState = getStreakStateUC(it.lastStreakUpdateDate),
                     isUserLoggedIn = user != null,
                     userName = user?.name,
-                    isNewDailyExerciseAvailable = true //checkDailyExerciseAvailabilityUC(it.lastDailyExerciseDate)
+                    isNewDailyExerciseAvailable = checkDailyExerciseAvailabilityUC(it.lastDailyExerciseDate)
                 )
             }
         }

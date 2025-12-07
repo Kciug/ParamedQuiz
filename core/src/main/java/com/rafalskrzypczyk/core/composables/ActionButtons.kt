@@ -10,36 +10,42 @@ import androidx.compose.ui.Modifier
 @Composable
 fun BackButton(
     modifier: Modifier = Modifier,
+    showBackground: Boolean = true,
     onNavigateBack: () -> Unit
 ) {
     ActionButton(
         modifier = modifier,
         icon = Icons.AutoMirrored.Outlined.ArrowBack,
-        description = "Back"
+        description = "Back",
+        showBackground = showBackground
     ) { onNavigateBack() }
 }
 
 @Composable
 fun SettingsButton(
     modifier: Modifier = Modifier,
+    showBackground: Boolean = true,
     onNavigateToSettings: () -> Unit
 ) {
     ActionButton(
         modifier = modifier,
         icon = Icons.Default.Settings,
-        description = "Settings"
+        description = "Settings",
+        showBackground = showBackground
     ) { onNavigateToSettings() }
 }
 
 @Composable
 fun ExitButton(
     modifier: Modifier = Modifier,
+    showBackground: Boolean = true,
     onClose: () -> Unit
 ) {
     ActionButton(
         modifier = modifier,
         icon = Icons.Default.Close,
-        description = "Close"
+        description = "Close",
+        showBackground = showBackground
     ) { onClose() }
 }
 

@@ -38,9 +38,11 @@ fun NavGraphBuilder.signupDestination(
     }
 }
 
-fun NavController.navigateToSignup() {
+fun NavController.navigateToSignup(popUpToUserPage: Boolean = false) {
     navigate(route = Signup) {
-        popUpTo<UserPage> { inclusive = true }
+        if(popUpToUserPage) {
+            popUpTo<UserPage> { inclusive = true }
+        }
     }
 }
 
@@ -105,6 +107,7 @@ object UserPage
 fun NavGraphBuilder.userPageDestination(
     onNavigateBack: () -> Unit,
     onUserSettings: () -> Unit,
+    onSignup: () -> Unit
 ) {
     composable<UserPage> {
         val viewModel = hiltViewModel<UserPageVM>()
@@ -114,7 +117,8 @@ fun NavGraphBuilder.userPageDestination(
             state = state.value,
             onEvent = viewModel::onEvent,
             onNavigateBack = onNavigateBack,
-            onUserSettings = onUserSettings,
+            onOpenSettings = onUserSettings,
+            onOpenRegistration = onSignup
         )
     }
 }

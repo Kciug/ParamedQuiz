@@ -17,6 +17,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.rafalskrzypczyk.core.R
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
+import com.rafalskrzypczyk.core.utils.rememberDebouncedClick
 
 
 @Composable
@@ -38,9 +39,9 @@ fun ErrorDialog(
                 textAlign = TextAlign.Center
             )
         },
-        onDismissRequest = onInteraction,
+        onDismissRequest = {},
         confirmButton = {
-            TextButton(onClick = onInteraction) {
+            TextButton(onClick = rememberDebouncedClick(onClick = onInteraction)) {
                 Text(text = stringResource(R.string.btn_confirm_OK))
             }
         }
@@ -72,12 +73,12 @@ fun ConfirmationDialog(
         },
         onDismissRequest = onDismiss,
         confirmButton = {
-            TextButton(onClick = onConfirm) {
+            TextButton(onClick = rememberDebouncedClick(onClick = onConfirm)) {
                 Text(text = stringResource(R.string.btn_confirm_positive))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(onClick = rememberDebouncedClick(onClick = onDismiss)) {
                 Text(text = stringResource(R.string.btn_confirm_negative))
             }
         }

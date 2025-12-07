@@ -32,6 +32,7 @@ import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.TextHeadline
 import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
+import com.rafalskrzypczyk.core.utils.rememberDebouncedClick
 import com.rafalskrzypczyk.main_mode.R
 
 @Composable
@@ -44,7 +45,7 @@ fun CategoryCard(
         modifier = modifier,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT),
-        onClick = onClick
+        onClick = rememberDebouncedClick(onClick = onClick)
     ) {
         Box {
             Column(
