@@ -58,7 +58,7 @@ class ScoreManager @Inject constructor(
         }
     }
 
-    private fun clearScore() {
+    fun clearScore() {
         score.value = Score.empty()
     }
 
@@ -98,6 +98,10 @@ class ScoreManager @Inject constructor(
     }
 
     fun onUserDelete() {
-        repository.deleteUserScore()
+        ioScope.launch {
+            repository.deleteUserScore().collectLatest {
+                if (it is Response.Success) clearScore()
+            }
+        }
     }
 }

@@ -13,4 +13,12 @@ sealed interface UserSettingsUIEvents {
         val newPasswordRepeat: String,
     ) : UserSettingsUIEvents
     data class ChangeUsername(val newUsername: String, ) : UserSettingsUIEvents
+
+    data class ToggleChangePasswordDialog(val show: Boolean) : UserSettingsUIEvents
+    data class ToggleChangeUsernameDialog(val show: Boolean) : UserSettingsUIEvents
+    data class ToggleDeleteAccountDialog(val show: Boolean) : UserSettingsUIEvents
+    data class ToggleDeleteProgressDialog(val show: Boolean) : UserSettingsUIEvents
+    
+    object OnSuccessToastShown : UserSettingsUIEvents
+    object DeleteProgress : UserSettingsUIEvents
 }

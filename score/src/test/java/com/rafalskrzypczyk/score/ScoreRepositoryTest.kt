@@ -83,6 +83,7 @@ class ScoreRepositoryTest {
         assertEquals(Response.Success(localScore), result)
     }
 
+    @Suppress("UnusedFlow")
     @Test
     fun `saveUserScore stores remotely when user is logged in`() = runTest {
         val user = UserData("id123", "test@test.com", "test", UserAuthenticationMethod.PASSWORD)
@@ -98,6 +99,7 @@ class ScoreRepositoryTest {
     }
 
     @Test
+
     fun `saveUserScore stores locally when user is not logged in`() = runTest {
         val score = Score(100, 0, null, null, listOf())
 
@@ -110,6 +112,7 @@ class ScoreRepositoryTest {
         verify { scoreStorage.saveScore(score) }
     }
 
+    @Suppress("UnusedFlow")
     @Test
     fun `deleteUserScore deletes remotely when user is logged in`() = runTest {
         val user = UserData("id123", "test@test.com", "test", UserAuthenticationMethod.PASSWORD)
@@ -124,13 +127,14 @@ class ScoreRepositoryTest {
     }
 
     @Test
-    fun `deleteUserScore returns error when user not logged in`() = runTest {
+    fun `deleteUserScore clears local storage when user not logged in`() = runTest {
         every { userManager.getCurrentLoggedUser() } returns null
+        every { scoreStorage.clearScore() } just Runs
 
         val result = repository.deleteUserScore().first()
 
-        assertTrue(result is Response.Error)
-        assertEquals("User not found", (result as Response.Error).error)
+        assertTrue(result is Response.Success)
+        verify { scoreStorage.clearScore() }
     }
 
     @Test

@@ -86,6 +86,25 @@ fun ConfirmationDialog(
 }
 
 @Composable
+fun SettingsDialog(
+    title: String,
+    onDismiss: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { TextPrimary(text = title) },
+        text = { content() },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = rememberDebouncedClick(onClick = onDismiss)) {
+                TextPrimary(stringResource(R.string.btn_cancel))
+            }
+        }
+    )
+}
+
+@Composable
 @Preview
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 private fun ErrorDialogPreview() {
@@ -107,6 +126,21 @@ private fun ConfirmationDialogPreview() {
                 message = "Należy się okreslić.",
                 onConfirm = { },
                 onDismiss = { }
+            )
+        }
+    }
+}
+
+@Composable
+@Preview
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+private fun SettingsDialogPreview() {
+    ParamedQuizTheme {
+        Surface {
+            SettingsDialog(
+                title = "Ustawienia",
+                onDismiss = { },
+                content = { TextPrimary("Przykładowa treść") }
             )
         }
     }

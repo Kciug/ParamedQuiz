@@ -2,7 +2,6 @@ package com.rafalskrzypczyk.home_screen.presentation.user_page.statistics
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -33,8 +32,7 @@ fun NoEnoughDataComponent(
 ) {
     Column(
         modifier = modifier
-            .fillMaxWidth()
-            .aspectRatio(1f),
+            .fillMaxWidth(),//.aspectRatio(1f),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING, Alignment.CenterVertically)
     ) {

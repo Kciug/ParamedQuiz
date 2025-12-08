@@ -62,7 +62,7 @@ fun UserStatisticsComponent(
                 onPreviousMode = onPreviousMode
             )
         } else {
-            NoStatisticsDataComponent()
+            NoStatisticsDataComponent(modifier = Modifier.padding(top = Dimens.DEFAULT_PADDING))
         }
     }
 }

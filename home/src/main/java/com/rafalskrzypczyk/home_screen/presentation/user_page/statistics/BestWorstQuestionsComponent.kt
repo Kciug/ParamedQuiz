@@ -123,7 +123,7 @@ fun BestWorstQuestionsComponent(
                     worstQuestions = questionsData.worstQuestions
                 )
             } else {
-                NoBestWorstStatisticsComponent()
+                NoBestWorstStatisticsComponent(modifier = Modifier.aspectRatio(1f))
             }
         }
     }
@@ -190,7 +190,10 @@ fun QuestionStatCard(
             .wrapContentHeight(),
         shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        onClick = { isExpanded = !isExpanded },
+        onClick = {
+            @Suppress("AssignedValueIsNeverRead")
+            isExpanded = !isExpanded
+        },
     ) {
         Column(
             modifier = Modifier.padding(Dimens.DEFAULT_PADDING)
