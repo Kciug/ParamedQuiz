@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccountCircle
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -91,6 +92,9 @@ fun UserPageScreen(
                     )
                 } else {
                     GuestUserSection(
+                        userPoints = state.userScore,
+                        userStreak = state.userStreak,
+                        userStreakState = state.userStreakState,
                         onRegisterClick = onOpenRegistration
                     )
                 }
@@ -181,6 +185,9 @@ fun UserPageUserDetails(
 @Composable
 fun GuestUserSection(
     modifier: Modifier = Modifier,
+    userPoints: Int,
+    userStreak: Int,
+    userStreakState: StreakState,
     onRegisterClick: () -> Unit
 ) {
     Box(
@@ -200,8 +207,7 @@ fun GuestUserSection(
                     shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT)
                 )
                 .padding(top = Dimens.IMAGE_SIZE / 2 + Dimens.DEFAULT_PADDING)
-                .padding(horizontal = Dimens.DEFAULT_PADDING)
-                .padding(bottom = Dimens.DEFAULT_PADDING),
+                .padding(horizontal = Dimens.DEFAULT_PADDING),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
         ) {
@@ -214,6 +220,18 @@ fun GuestUserSection(
                 title = stringResource(com.rafalskrzypczyk.home.R.string.btn_register_login),
                 onClick = onRegisterClick
             )
+            HorizontalDivider()
+            Row (
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                UserPointsLabel(value = userPoints)
+                UserStreakLabel(
+                    value = userStreak,
+                    isPending = userStreakState == StreakState.PENDING
+                )
+            }
         }
 
         Image(

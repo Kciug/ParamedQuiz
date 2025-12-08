@@ -123,7 +123,7 @@ fun BestWorstQuestionsComponent(
                     worstQuestions = questionsData.worstQuestions
                 )
             } else {
-                NoBestWorstStatisticsComponent()
+                NoBestWorstStatisticsComponent(modifier = Modifier.aspectRatio(1f))
             }
         }
     }
