@@ -36,7 +36,9 @@ class UserSettingsVM @Inject constructor(
             is UserSettingsUIEvents.ToggleChangePasswordDialog -> _state.update { it.copy(showChangePasswordDialog = event.show) }
             is UserSettingsUIEvents.ToggleChangeUsernameDialog -> _state.update { it.copy(showChangeUsernameDialog = event.show) }
             is UserSettingsUIEvents.ToggleDeleteAccountDialog -> _state.update { it.copy(showDeleteAccountDialog = event.show) }
+            is UserSettingsUIEvents.ToggleDeleteProgressDialog -> _state.update { it.copy(showDeleteProgressDialog = event.show) }
             UserSettingsUIEvents.OnSuccessToastShown -> _state.update { it.copy(showSuccessToast = false) }
+            UserSettingsUIEvents.DeleteProgress -> deleteProgress()
         }
     }
 
@@ -126,6 +128,17 @@ class UserSettingsVM @Inject constructor(
                 handleResponse(response, UserSettingsConfirmAction.NAVIGATE_OUT)
                 if (response is Response.Success) {
                     _state.update { it.copy(showDeleteAccountDialog = false) }
+                }
+            }
+        }
+    }
+
+    private fun deleteProgress() {
+        viewModelScope.launch {
+            useCases.deleteProgress().collectLatest { response ->
+                handleResponse(response, UserSettingsConfirmAction.CLEAR_STATE)
+                if (response is Response.Success) {
+                    _state.update { it.copy(showDeleteProgressDialog = false, showSuccessToast = true) }
                 }
             }
         }

@@ -10,5 +10,6 @@ data class UserSettingsUseCases @Inject constructor(
     val updatePassword: UpdatePasswordUC,
     val deleteAccount: DeleteAccountUC,
     val deleteAccountForProvider: DeleteAccountForProviderUC,
-    val signOut: SignOutUC
+    val signOut: SignOutUC,
+    val deleteProgress: DeleteProgressUC
 )

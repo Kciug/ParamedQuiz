@@ -5,6 +5,7 @@
     <string name="title_change_username">Zmień nazwę</string>
     <string name="title_change_password">Zmień hasło</string>
     <string name="title_delete_account">Usuń konto</string>
+    <string name="title_delete_progress">Usuń postęp</string>
 
     <string name="title_daily_exercise_already_done">Zadanie dnia wykonane!</string>
     <string name="title_revisions_unavailable">Powtórki już wkrótce!</string>
@@ -17,6 +18,7 @@
     <string name="btn_change_username">Zmień nazwę</string>
     <string name="btn_change_password">Zmień hasło</string>
     <string name="btn_delete_account">Usuń konto</string>
+    <string name="btn_delete_progress">Usuń postęp</string>
 
     <string name="hint_new_username">Twoja nowa nazwa</string>
     <string name="hint_old_password">Aktualne hasło</string>
@@ -38,6 +40,7 @@
     <string name="account_deleted">Twoje konto zostało usunięte.</string>
 
     <string name="text_delete_account_warning">Usunięcie konta spowoduje usunięcie wszystkich zapisanych danych i wyników.</string>
+    <string name="text_delete_progress_warning">Spowoduje to trwałe usunięcie wszystkich Twoich wyników i zapisanych postępów. Tej operacji nie można cofnąć.</string>
     <string name="text_daily_exercise_already_done">Wróć jutro po kolejną dawkę wiedzy 😎</string>
     <string name="text_revisions_unavailable">Nie martw się, powtórki quizu medycznego pojawią się już niedługo.👀</string>
 
@@ -108,6 +111,7 @@
 
     <string name="settings_category_account">Konto</string>
     <string name="settings_category_app">Aplikacja</string>
+    <string name="settings_category_data">Dane</string>
     <string name="settings_notifications_soon">Powiadomienia (wkrótce)</string>
     <string name="settings_category_other">Inne</string>
 </resources>

@@ -61,7 +61,10 @@ class ScoreRepositoryImpl @Inject constructor(
         return if(user != null) {
             firestore.deleteUserScore(user.id)
         } else {
-            flow { emit(Response.Error("User not found")) }
+            flow {
+                scoreStorage.clearScore()
+                emit(Response.Success(Unit))
+            }
         }
     }
 }

@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Logout
 import androidx.compose.material.icons.outlined.Badge
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.DeleteForever
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.Scaffold
@@ -38,6 +39,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.rafalskrzypczyk.core.api_response.ResponseState
+import com.rafalskrzypczyk.core.composables.ConfirmationDialog
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.ErrorDialog
 import com.rafalskrzypczyk.core.composables.Loading
@@ -78,7 +80,7 @@ fun UserSettingsScreen(
 
         when(state.responseState) {
             is ResponseState.Error -> ErrorDialog(state.responseState.message) { onEvent(UserSettingsUIEvents.ClearState) }
-            ResponseState.Idle, ResponseState.Loading -> { // Show content even if loading overlay is on top
+            else -> {
                 Box(modifier = modifier.fillMaxSize()) {
                     UserSettingsContent(
                         state = state,
@@ -91,17 +93,17 @@ fun UserSettingsScreen(
                     }
                 }
             }
-            ResponseState.Success -> UserSettingsSuccessView(
-                modifier = modifier,
-                onConfirm = when(state.successConfirmAction) {
-                    UserSettingsConfirmAction.NAVIGATE_OUT -> { { onSignOut() } }
-                    UserSettingsConfirmAction.CLEAR_STATE -> { { onEvent(UserSettingsUIEvents.ClearState) } }
-                }
-            )
         }
     }
-    
-    // Dialogs
+
+    LaunchedEffect(state.responseState, state.successConfirmAction) {
+        if (state.responseState is ResponseState.Success) {
+            if (state.successConfirmAction == UserSettingsConfirmAction.NAVIGATE_OUT) {
+                onSignOut()
+            }
+        }
+    }
+
     if (state.showChangeUsernameDialog) {
         SettingsDialog(
             title = stringResource(R.string.title_change_username),
@@ -135,6 +137,15 @@ fun UserSettingsScreen(
                     UserSettingsDeleteAccountForProvider { onEvent(UserSettingsUIEvents.DeleteAccountForProvider(context)) }
                 }
             }
+        )
+    }
+
+    if (state.showDeleteProgressDialog) {
+        ConfirmationDialog(
+            title = stringResource(R.string.title_delete_progress),
+            message = stringResource(R.string.text_delete_progress_warning),
+            onConfirm = { onEvent(UserSettingsUIEvents.DeleteProgress) },
+            onDismiss = { onEvent(UserSettingsUIEvents.ToggleDeleteProgressDialog(false)) }
         )
     }
 }
@@ -190,6 +201,18 @@ private fun UserSettingsContent(
                     icon = Icons.Outlined.Notifications,
                     checked = notificationsEnabled.value,
                     onCheckedChange = { notificationsEnabled.value = it }
+                )
+            }
+
+            item {
+                SettingsCategoryHeader(stringResource(R.string.settings_category_data))
+            }
+
+            item {
+                SettingsItemRow(
+                    title = stringResource(R.string.title_delete_progress),
+                    icon = Icons.Outlined.DeleteForever,
+                    onClick = { onEvent(UserSettingsUIEvents.ToggleDeleteProgressDialog(true)) }
                 )
             }
 
