@@ -3,8 +3,10 @@ package com.rafalskrzypczyk.core.composables
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -59,6 +61,7 @@ fun ButtonSecondary(
     title: String,
     onClick: () -> Unit,
     debounced: Boolean = true,
+    icon: ImageVector? = null,
 ) {
     val finalOnClick = if (debounced) rememberDebouncedClick(onClick = onClick) else onClick
 
@@ -73,6 +76,10 @@ fun ButtonSecondary(
             contentColor = MaterialTheme.colorScheme.primary
         )
     ) {
+        if(icon != null) {
+            Icon(imageVector = icon, contentDescription = null)
+            Spacer(modifier = Modifier.width(Dimens.ELEMENTS_SPACING))
+        }
         Text(text = title)
     }
 }

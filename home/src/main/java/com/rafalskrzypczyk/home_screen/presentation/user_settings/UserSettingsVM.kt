@@ -3,16 +3,11 @@ package com.rafalskrzypczyk.home_screen.presentation.user_settings
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.rafalskrzypczyk.auth.domain.AuthRepository
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
-import com.rafalskrzypczyk.core.user_management.UserData
-import com.rafalskrzypczyk.core.user_management.UserManager
-import com.rafalskrzypczyk.core.utils.ResourceProvider
-import com.rafalskrzypczyk.home.R
+import com.rafalskrzypczyk.home_screen.domain.use_cases.UserSettingsUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
@@ -21,126 +16,42 @@ import javax.inject.Inject
 
 @HiltViewModel
 class UserSettingsVM @Inject constructor(
-    private val authRepository: AuthRepository,
-    private val userManager: UserManager,
-    private val resourceProvider: ResourceProvider
+    private val useCases: UserSettingsUseCases
 ) : ViewModel() {
     private val _state = MutableStateFlow(UserSettingsState())
-    val state: StateFlow<UserSettingsState> = _state.asStateFlow()
-
-    private var userData: UserData? = null
+    val state = _state.asStateFlow()
 
     init {
-        getUserData()
+        loadUserData()
     }
 
     fun onEvent(event: UserSettingsUIEvents) {
         when(event) {
             is UserSettingsUIEvents.ChangePassword -> changePassword(event.oldPassword, event.newPassword, event.newPasswordRepeat)
-            is UserSettingsUIEvents.ChangeUsername -> changeUserName(event.newUsername)
+            is UserSettingsUIEvents.ChangeUsername -> changeUsername(event.newUsername)
+            UserSettingsUIEvents.ClearState -> _state.update { it.copy(responseState = ResponseState.Idle, passwordValidationMessage = null, usernameValidationMessage = null) }
             is UserSettingsUIEvents.DeleteAccount -> deleteAccount(event.password)
             is UserSettingsUIEvents.DeleteAccountForProvider -> deleteAccountForProvider(event.context)
-            UserSettingsUIEvents.SignOut -> authRepository.signOut()
-            UserSettingsUIEvents.ClearState -> _state.update { it.copy(responseState = ResponseState.Idle) }
+            UserSettingsUIEvents.SignOut -> signOut()
+            is UserSettingsUIEvents.ToggleChangePasswordDialog -> _state.update { it.copy(showChangePasswordDialog = event.show) }
+            is UserSettingsUIEvents.ToggleChangeUsernameDialog -> _state.update { it.copy(showChangeUsernameDialog = event.show) }
+            is UserSettingsUIEvents.ToggleDeleteAccountDialog -> _state.update { it.copy(showDeleteAccountDialog = event.show) }
+            UserSettingsUIEvents.OnSuccessToastShown -> _state.update { it.copy(showSuccessToast = false) }
         }
     }
 
-    private fun getUserData() {
-        userManager.getCurrentLoggedUser()?.let { userData ->
-            this.userData = userData
-            _state.update {
-                it.copy(
-                    userName = userData.name,
-                    userEmail = userData.email,
-                    accountType = userData.authenticationMethod
-                )
-            }
-        }
-
-        if(userData == null) _state.update {
-            it.copy(responseState = ResponseState.Error(resourceProvider.getString(R.string.error_user_data_not_found)))
-        }
-    }
-
-    private suspend fun performWithReauthentication(password: String, onAuthenticated: suspend () -> Unit) {
-        authRepository.reauthenticateWithPassword(userData!!.email, password).collectLatest { response ->
-            when(response) {
-                is Response.Error -> _state.update { it.copy(responseState = ResponseState.Error(response.error)) }
-                Response.Loading -> _state.update { it.copy(responseState = ResponseState.Loading) }
-                is Response.Success -> { onAuthenticated() }
-            }
-        }
-    }
-
-    private suspend fun performWithProviderReauthentication(context: Context, onAuthenticated: suspend () -> Unit) {
-        authRepository.reauthenticateWithProvider(context).collectLatest { response ->
-            when(response) {
-                is Response.Error -> _state.update { it.copy(responseState = ResponseState.Error(response.error)) }
-                Response.Loading -> _state.update { it.copy(responseState = ResponseState.Loading) }
-                is Response.Success -> { onAuthenticated() }
-            }
-        }
-    }
-
-    private fun changePassword(oldPassword: String, newPassword: String, newPasswordRepeat: String) {
-        if(newPassword != newPasswordRepeat) {
-            _state.update {
-                it.copy(passwordValidationMessage = resourceProvider.getString(R.string.validation_password_not_match))
-            }
-            return
-        }
-
-        if(newPassword == oldPassword) {
-            _state.update {
-                it.copy(passwordValidationMessage = resourceProvider.getString(R.string.validation_password_the_same)) }
-            return
-        }
-
-        _state.update { it.copy(passwordValidationMessage = null) }
-
+    private fun loadUserData() {
         viewModelScope.launch {
-            performWithReauthentication(oldPassword) {
-                performPasswordChange(newPassword)
-            }
-        }
-    }
-
-    private suspend fun performPasswordChange(newPassword: String) {
-        authRepository.changePassword(newPassword).collectLatest { response ->
-            when(response) {
-                is Response.Error -> _state.update { it.copy(responseState = ResponseState.Error(response.error)) }
-                Response.Loading -> _state.update { it.copy(responseState = ResponseState.Loading) }
-                is Response.Success ->  _state.update { it.copy(responseState = ResponseState.Success) }
-            }
-        }
-    }
-
-    private fun changeUserName(newUsername: String) {
-        userData?.let {
-            if (it.name == newUsername) {
-                _state.update { it.copy(usernameValidationMessage = resourceProvider.getString(R.string.validation_username_the_same)) }
-                return
-            }
-
-            _state.update { it.copy(usernameValidationMessage = null) }
-
-            viewModelScope.launch {
-                performUserNameChange(newUsername)
-            }
-        }
-    }
-
-    private suspend fun performUserNameChange(newUsername: String) {
-        authRepository.changeUserName(newUsername).collectLatest { response ->
-            when (response) {
-                is Response.Error -> _state.update { it.copy(responseState = ResponseState.Error(response.error)) }
-                Response.Loading -> _state.update { it.copy(responseState = ResponseState.Loading) }
-                is Response.Success -> {
-                    _state.update {
-                        userData = response.data
+            useCases.getUserData().collectLatest { response ->
+                when(response) {
+                    is Response.Error -> _state.update { it.copy(responseState = ResponseState.Error(response.error)) }
+                    Response.Loading -> _state.update { it.copy(responseState = ResponseState.Loading) }
+                    is Response.Success -> _state.update {
                         it.copy(
-                            responseState = ResponseState.Success,
-                            userName = userData!!.name,
+                            responseState = ResponseState.Idle,
+                            userName = response.data.name,
+                            userEmail = response.data.email,
+                            accountType = response.data.authenticationMethod
                         )
                     }
                 }
@@ -148,20 +59,47 @@ class UserSettingsVM @Inject constructor(
         }
     }
 
+    private fun changeUsername(newUsername: String) {
+        val validationResult = useCases.validateUsername(state.value.userName, newUsername)
+        if(validationResult != null) {
+            _state.update { it.copy(usernameValidationMessage = validationResult) }
+            return
+        }
+
+        viewModelScope.launch {
+            useCases.updateUsername(newUsername).collectLatest { response ->
+                handleResponse(response, UserSettingsConfirmAction.CLEAR_STATE)
+                if (response is Response.Success) {
+                    _state.update { it.copy(showChangeUsernameDialog = false, showSuccessToast = true) }
+                    loadUserData()
+                }
+            }
+        }
+    }
+
+    private fun changePassword(oldPassword: String, newPassword: String, newPasswordRepeat: String) {
+        val validationResult = useCases.validatePasswordChange(oldPassword, newPassword, newPasswordRepeat)
+        if(validationResult != null) {
+            _state.update { it.copy(passwordValidationMessage = validationResult) }
+            return
+        }
+
+        viewModelScope.launch {
+            useCases.updatePassword(oldPassword, newPassword).collectLatest { response ->
+                handleResponse(response, UserSettingsConfirmAction.CLEAR_STATE)
+                if (response is Response.Success) {
+                    _state.update { it.copy(showChangePasswordDialog = false, showSuccessToast = true) }
+                }
+            }
+        }
+    }
+
     private fun deleteAccount(password: String) {
         viewModelScope.launch {
-            performWithReauthentication(password) {
-                authRepository.deleteUser().collectLatest { response ->
-                    when(response) {
-                        is Response.Error -> _state.update { it.copy(responseState = ResponseState.Error(response.error)) }
-                        Response.Loading -> _state.update { it.copy(responseState = ResponseState.Loading) }
-                        is Response.Success -> _state.update {
-                            it.copy(
-                                responseState = ResponseState.Success,
-                                successConfirmAction = UserSettingsConfirmAction.NAVIGATE_OUT
-                            )
-                        }
-                    }
+            useCases.deleteAccount(password).collectLatest { response ->
+                handleResponse(response, UserSettingsConfirmAction.NAVIGATE_OUT)
+                if (response is Response.Success) {
+                    _state.update { it.copy(showDeleteAccountDialog = false) }
                 }
             }
         }
@@ -169,19 +107,30 @@ class UserSettingsVM @Inject constructor(
 
     private fun deleteAccountForProvider(context: Context) {
         viewModelScope.launch {
-            performWithProviderReauthentication(context) {
-                authRepository.deleteUser().collectLatest { response ->
-                    when(response) {
-                        is Response.Error -> _state.update { it.copy(responseState = ResponseState.Error(response.error)) }
-                        Response.Loading -> _state.update { it.copy(responseState = ResponseState.Loading) }
-                        is Response.Success -> _state.update {
-                            it.copy(
-                                responseState = ResponseState.Success,
-                                successConfirmAction = UserSettingsConfirmAction.NAVIGATE_OUT
-                            )
-                        }
-                    }
+            useCases.deleteAccountForProvider(context).collectLatest { response ->
+                handleResponse(response, UserSettingsConfirmAction.NAVIGATE_OUT)
+                if (response is Response.Success) {
+                    _state.update { it.copy(showDeleteAccountDialog = false) }
                 }
+            }
+        }
+    }
+
+    private fun signOut() {
+        viewModelScope.launch {
+            useCases.signOut()
+        }
+    }
+
+    private fun handleResponse(response: Response<Unit>, successAction: UserSettingsConfirmAction) {
+        when(response) {
+            is Response.Error -> _state.update { it.copy(responseState = ResponseState.Error(response.error)) }
+            Response.Loading -> _state.update { it.copy(responseState = ResponseState.Loading) }
+            is Response.Success -> _state.update {
+                it.copy(
+                    responseState = ResponseState.Success,
+                    successConfirmAction = successAction
+                )
             }
         }
     }

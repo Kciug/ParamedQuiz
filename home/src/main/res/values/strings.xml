@@ -29,6 +29,7 @@
     <string name="validation_username_the_same">Nowa nazwa użytkownika jest taka sama jak dotychczasowa.</string>
     <string name="validation_password_not_match">Nowe hasła nie są takie same.</string>
     <string name="validation_password_the_same">Nowe hasło jest takie samo jak dotychczasowe.</string>
+    <string name="validation_password_too_short">Hasło jest za krótkie. Musi mieć min. 6 znaków.</string>
 
     <string name="error_user_data_not_found">Nie znaleziono danych użytkownika.</string>
 
