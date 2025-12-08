@@ -100,8 +100,7 @@ fun UserSettingsScreen(
             )
         }
     }
-    
-    // Dialogs
+
     if (state.showChangeUsernameDialog) {
         SettingsDialog(
             title = stringResource(R.string.title_change_username),
@@ -148,32 +147,34 @@ private fun UserSettingsContent(
 ) {
     Column (modifier = modifier.fillMaxSize()) {
         UserSettingsUserDetails(
-            userName = state.userName,
+            userName = if(state.isAnonymous) stringResource(R.string.user_anonymous) else state.userName,
             userEmail = state.userEmail
         )
 
         LazyColumn(
             modifier = Modifier.weight(1f)
         ) {
-            item {
-                SettingsCategoryHeader("Konto")
-            }
-            
-            item {
-                SettingsItemRow(
-                    title = stringResource(R.string.title_change_username),
-                    icon = Icons.Outlined.Badge,
-                    onClick = { onEvent(UserSettingsUIEvents.ToggleChangeUsernameDialog(true)) }
-                )
-            }
-            
-            if (state.accountType == UserAuthenticationMethod.PASSWORD) {
+            if (!state.isAnonymous) {
+                item {
+                    SettingsCategoryHeader("Konto")
+                }
+                
                 item {
                     SettingsItemRow(
-                        title = stringResource(R.string.title_change_password),
-                        icon = Icons.Outlined.Lock,
-                        onClick = { onEvent(UserSettingsUIEvents.ToggleChangePasswordDialog(true)) }
+                        title = stringResource(R.string.title_change_username),
+                        icon = Icons.Outlined.Badge,
+                        onClick = { onEvent(UserSettingsUIEvents.ToggleChangeUsernameDialog(true)) }
                     )
+                }
+                
+                if (state.accountType == UserAuthenticationMethod.PASSWORD) {
+                    item {
+                        SettingsItemRow(
+                            title = stringResource(R.string.title_change_password),
+                            icon = Icons.Outlined.Lock,
+                            onClick = { onEvent(UserSettingsUIEvents.ToggleChangePasswordDialog(true)) }
+                        )
+                    }
                 }
             }
             
@@ -182,7 +183,6 @@ private fun UserSettingsContent(
             }
             
             item {
-                // Placeholder for future notifications feature
                 val notificationsEnabled = remember { mutableStateOf(false) }
                 SettingsSwitchRow(
                     title = "Powiadomienia (wkrótce)",
@@ -191,28 +191,30 @@ private fun UserSettingsContent(
                     onCheckedChange = { notificationsEnabled.value = it }
                 )
             }
-            
-            item {
-                SettingsCategoryHeader("Inne")
-            }
-            
-            item {
-                SettingsItemRow(
-                    title = stringResource(R.string.title_delete_account),
-                    icon = Icons.Outlined.Delete,
-                    onClick = { onEvent(UserSettingsUIEvents.ToggleDeleteAccountDialog(true)) }
-                )
-            }
 
-            item {
-                SettingsItemRow(
-                    title = stringResource(R.string.btn_logout),
-                    icon = Icons.AutoMirrored.Rounded.Logout,
-                    onClick = {
-                        onEvent.invoke(UserSettingsUIEvents.SignOut)
-                        onSignOut()
-                    }
-                )
+            if (!state.isAnonymous) {
+                item {
+                    SettingsCategoryHeader("Inne")
+                }
+                
+                item {
+                    SettingsItemRow(
+                        title = stringResource(R.string.title_delete_account),
+                        icon = Icons.Outlined.Delete,
+                        onClick = { onEvent(UserSettingsUIEvents.ToggleDeleteAccountDialog(true)) }
+                    )
+                }
+
+                item {
+                    SettingsItemRow(
+                        title = stringResource(R.string.btn_logout),
+                        icon = Icons.AutoMirrored.Rounded.Logout,
+                        onClick = {
+                            onEvent.invoke(UserSettingsUIEvents.SignOut)
+                            onSignOut()
+                        }
+                    )
+                }
             }
         }
         BrandingElement()
@@ -247,7 +249,7 @@ private fun UserSettingsUserDetails(
         Spacer(modifier = Modifier.width(Dimens.ELEMENTS_SPACING))
 
         Column {
-            TextPrimary(text = userName.ifBlank { "Anonimowy użytkownik" })
+            TextPrimary(text = userName)
             if (userEmail.isNotBlank()) {
                 TextCaption(text = userEmail)
             }

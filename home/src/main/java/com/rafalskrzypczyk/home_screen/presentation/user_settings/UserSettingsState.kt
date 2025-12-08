@@ -14,11 +14,11 @@ data class UserSettingsState(
     val usernameValidationMessage: String? = null,
     val successConfirmAction: UserSettingsConfirmAction = UserSettingsConfirmAction.CLEAR_STATE,
     
-    // Dialogs
+    val isAnonymous: Boolean = false,
+
     val showChangePasswordDialog: Boolean = false,
     val showChangeUsernameDialog: Boolean = false,
     val showDeleteAccountDialog: Boolean = false,
-    
-    // Feedback
+
     val showSuccessToast: Boolean = false
 )

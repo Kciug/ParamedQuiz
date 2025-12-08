@@ -104,4 +104,5 @@
     <string name="title_guest_user">Witaj, Gościu!</string>
     <string name="guest_user_msg">Załóż konto, aby synchronizować postępy, zabezpieczyć dane i uzyskać dostęp do funkcji premium.</string>
     <string name="btn_register_login">Zarejestruj się / Zaloguj</string>
+    <string name="user_anonymous">Anonimowy użytkownik</string>
 </resources>

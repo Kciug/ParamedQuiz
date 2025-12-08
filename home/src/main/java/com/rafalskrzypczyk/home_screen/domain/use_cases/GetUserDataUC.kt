@@ -10,17 +10,9 @@ import javax.inject.Inject
 class GetUserDataUC @Inject constructor(
     private val userManager: UserManager
 ) {
-    operator fun invoke(): Flow<Response<UserData>> = flow {
+    operator fun invoke(): Flow<Response<UserData?>> = flow {
         emit(Response.Loading)
         val user = userManager.getCurrentLoggedUser()
-        if (user != null) {
-            emit(Response.Success(user))
-        } else {
-            // Or maybe Success with empty data if anonymous? 
-            // VM expects Success to update state.
-            // If user is null, maybe just don't emit Success?
-            // But VM handles Error.
-             emit(Response.Error("No user data found"))
-        }
+        emit(Response.Success(user))
     }
 }

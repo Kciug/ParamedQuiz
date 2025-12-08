@@ -46,13 +46,28 @@ class UserSettingsVM @Inject constructor(
                 when(response) {
                     is Response.Error -> _state.update { it.copy(responseState = ResponseState.Error(response.error)) }
                     Response.Loading -> _state.update { it.copy(responseState = ResponseState.Loading) }
-                    is Response.Success -> _state.update {
-                        it.copy(
-                            responseState = ResponseState.Idle,
-                            userName = response.data.name,
-                            userEmail = response.data.email,
-                            accountType = response.data.authenticationMethod
-                        )
+                    is Response.Success -> {
+                        val userData = response.data
+                        if (userData != null) {
+                            _state.update {
+                                it.copy(
+                                    responseState = ResponseState.Idle,
+                                    userName = userData.name,
+                                    userEmail = userData.email,
+                                    accountType = userData.authenticationMethod,
+                                    isAnonymous = false
+                                )
+                            }
+                        } else {
+                            _state.update {
+                                it.copy(
+                                    responseState = ResponseState.Idle,
+                                    isAnonymous = true,
+                                    userName = "",
+                                    userEmail = ""
+                                )
+                            }
+                        }
                     }
                 }
             }
