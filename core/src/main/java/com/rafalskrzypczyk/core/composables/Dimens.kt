@@ -24,6 +24,7 @@ object Dimens {
     val IMAGE_SIZE = 150.dp
     val IMAGE_SIZE_MEDIUM = 100.dp
     val IMAGE_SIZE_SMALL = 48.dp
+    val ICON_BACKGROUND_SIZE_LARGE = 80.dp
 
     val NOTIFICATION_DOT = 8.dp
     val NOTIFICATION_DOT_LARGE = 16.dp

@@ -27,7 +27,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.rafalskrzypczyk.core.R
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
@@ -50,7 +49,7 @@ fun BaseCustomDialog(
         ) {
             Surface(
                 modifier = Modifier
-                    .padding(top = 40.dp) // Leave space for the floating icon
+                    .padding(top = if (icon != null) Dimens.ICON_BACKGROUND_SIZE_LARGE / 2 else Dimens.DEFAULT_PADDING) // Leave space only if icon exists
                     .fillMaxWidth(),
                 shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT),
                 color = MaterialTheme.colorScheme.surface
@@ -61,11 +60,14 @@ fun BaseCustomDialog(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(headerColor)
-                            .padding(top = 40.dp, bottom = Dimens.DEFAULT_PADDING) // Padding for icon overlap
+                            .padding(
+                                top = if (icon != null) (Dimens.ICON_BACKGROUND_SIZE_LARGE / 2 + Dimens.DEFAULT_PADDING) else Dimens.DEFAULT_PADDING, // Adjust padding if icon exists
+                                bottom = Dimens.DEFAULT_PADDING
+                            )
                             .padding(horizontal = Dimens.DEFAULT_PADDING),
                         contentAlignment = Alignment.Center
                     ) {
-                        TextTitle(
+                        TextHeadline(
                             text = title,
                             color = headerContentColor,
                             textAlign = TextAlign.Center
@@ -96,17 +98,17 @@ fun BaseCustomDialog(
             if (icon != null) {
                 Surface(
                     modifier = Modifier
-                        .size(80.dp)
+                        .size(Dimens.ICON_BACKGROUND_SIZE_LARGE)
                         .align(Alignment.TopCenter),
                     shape = CircleShape,
                     color = headerColor,
-                    shadowElevation = 4.dp
+                    shadowElevation = Dimens.ELEVATION
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
                             imageVector = icon,
                             contentDescription = null,
-                            modifier = Modifier.size(48.dp),
+                            modifier = Modifier.size(Dimens.IMAGE_SIZE_SMALL),
                             tint = headerContentColor
                         )
                     }

@@ -40,6 +40,7 @@ import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.InfoDialog
 import com.rafalskrzypczyk.core.composables.TextHeadline
 import com.rafalskrzypczyk.core.composables.top_bars.MainTopBar
+import com.rafalskrzypczyk.core.ui.theme.MQGreen
 import com.rafalskrzypczyk.core.ui.theme.MQYellow
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.home.R
@@ -128,8 +129,7 @@ fun HomeScreen(
             title = stringResource(id = R.string.title_daily_exercise_already_done),
             message = stringResource(id = R.string.text_daily_exercise_already_done),
             icon = Icons.Default.Check,
-            headerColor = Color.Green, // Using Green as in original dialog
-            headerContentColor = Color.White, // Assuming white icon on green
+            headerColor = MQGreen,
             onDismiss = { showDailyExerciseAlreadyDoneAlert = false }
         )
     }
@@ -139,8 +139,8 @@ fun HomeScreen(
             title = stringResource(id = R.string.title_revisions_unavailable),
             message = stringResource(id = R.string.text_revisions_unavailable),
             icon = Icons.Default.Upcoming,
-            headerColor = MQYellow, // Using MQYellow as in original dialog
-            headerContentColor = Color.Black, // MQYellow is usually bright, so Black content
+            headerColor = MQYellow,
+            headerContentColor = Color.Black,
             onDismiss = { showRevisionsUnavailableAlert = false }
         )
     }
