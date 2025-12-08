@@ -100,7 +100,8 @@ fun UserSettingsScreen(
             )
         }
     }
-
+    
+    // Dialogs
     if (state.showChangeUsernameDialog) {
         SettingsDialog(
             title = stringResource(R.string.title_change_username),
@@ -156,7 +157,7 @@ private fun UserSettingsContent(
         ) {
             if (!state.isAnonymous) {
                 item {
-                    SettingsCategoryHeader("Konto")
+                    SettingsCategoryHeader(stringResource(R.string.settings_category_account))
                 }
                 
                 item {
@@ -179,13 +180,13 @@ private fun UserSettingsContent(
             }
             
             item {
-                SettingsCategoryHeader("Aplikacja")
+                SettingsCategoryHeader(stringResource(R.string.settings_category_app))
             }
             
             item {
                 val notificationsEnabled = remember { mutableStateOf(false) }
                 SettingsSwitchRow(
-                    title = "Powiadomienia (wkrótce)",
+                    title = stringResource(R.string.settings_notifications_soon),
                     icon = Icons.Outlined.Notifications,
                     checked = notificationsEnabled.value,
                     onCheckedChange = { notificationsEnabled.value = it }
@@ -194,7 +195,7 @@ private fun UserSettingsContent(
 
             if (!state.isAnonymous) {
                 item {
-                    SettingsCategoryHeader("Inne")
+                    SettingsCategoryHeader(stringResource(R.string.settings_category_other))
                 }
                 
                 item {

@@ -105,4 +105,9 @@
     <string name="guest_user_msg">Załóż konto, aby synchronizować postępy, zabezpieczyć dane i uzyskać dostęp do funkcji premium.</string>
     <string name="btn_register_login">Zarejestruj się / Zaloguj</string>
     <string name="user_anonymous">Anonimowy użytkownik</string>
+
+    <string name="settings_category_account">Konto</string>
+    <string name="settings_category_app">Aplikacja</string>
+    <string name="settings_notifications_soon">Powiadomienia (wkrótce)</string>
+    <string name="settings_category_other">Inne</string>
 </resources>
