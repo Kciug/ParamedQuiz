@@ -1,48 +1,144 @@
 package com.rafalskrzypczyk.core.composables
 
 import android.content.res.Configuration
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.outlined.ErrorOutline
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.window.Dialog
 import com.rafalskrzypczyk.core.R
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.core.utils.rememberDebouncedClick
 
+@Composable
+fun BaseCustomDialog(
+    onDismissRequest: () -> Unit,
+    icon: ImageVector?,
+    title: String,
+    headerColor: Color = MaterialTheme.colorScheme.primary,
+    headerContentColor: Color = MaterialTheme.colorScheme.onPrimary,
+    content: @Composable () -> Unit,
+    buttons: @Composable () -> Unit
+) {
+    Dialog(onDismissRequest = onDismissRequest) {
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.TopCenter
+        ) {
+            Surface(
+                modifier = Modifier
+                    .padding(top = if (icon != null) Dimens.ICON_BACKGROUND_SIZE_LARGE / 2 else Dimens.DEFAULT_PADDING) // Leave space only if icon exists
+                    .fillMaxWidth(),
+                shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT),
+                color = MaterialTheme.colorScheme.surface
+            ) {
+                Column {
+                    // Header background area
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(headerColor)
+                            .padding(
+                                top = if (icon != null) (Dimens.ICON_BACKGROUND_SIZE_LARGE / 2 + Dimens.DEFAULT_PADDING) else Dimens.DEFAULT_PADDING, // Adjust padding if icon exists
+                                bottom = Dimens.DEFAULT_PADDING
+                            )
+                            .padding(horizontal = Dimens.DEFAULT_PADDING),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        TextHeadline(
+                            text = title,
+                            color = headerContentColor,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+
+                    // Content Area
+                    Column(
+                        modifier = Modifier
+                            .padding(Dimens.DEFAULT_PADDING)
+                            .fillMaxWidth()
+                    ) {
+                        content()
+                        
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = Dimens.DEFAULT_PADDING),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            buttons()
+                        }
+                    }
+                }
+            }
+
+            // Floating Icon
+            if (icon != null) {
+                Surface(
+                    modifier = Modifier
+                        .size(Dimens.ICON_BACKGROUND_SIZE_LARGE)
+                        .align(Alignment.TopCenter),
+                    shape = CircleShape,
+                    color = headerColor,
+                    shadowElevation = Dimens.ELEVATION
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            modifier = Modifier.size(Dimens.IMAGE_SIZE_SMALL),
+                            tint = headerContentColor
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
 
 @Composable
 fun ErrorDialog(
     errorMessage: String,
     onInteraction: () -> Unit
 ) {
-    AlertDialog(
-        icon = {
-            Icon(Icons.Outlined.ErrorOutline, contentDescription = stringResource(R.string.desc_error))
-        },
-        title = {
-            Text(text = stringResource(id = R.string.title_error_dialog))
-        },
-        text = {
-            Text(
-                modifier = Modifier.fillMaxWidth(),
+    BaseCustomDialog(
+        onDismissRequest = {}, // Modal, must interact
+        icon = Icons.Outlined.ErrorOutline,
+        title = stringResource(id = R.string.title_error_dialog),
+        headerColor = MaterialTheme.colorScheme.error,
+        headerContentColor = MaterialTheme.colorScheme.onError,
+        content = {
+            TextPrimary(
                 text = errorMessage,
+                modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
             )
         },
-        onDismissRequest = {},
-        confirmButton = {
+        buttons = {
             TextButton(onClick = rememberDebouncedClick(onClick = onInteraction)) {
-                Text(text = stringResource(R.string.btn_confirm_OK))
+                TextPrimary(text = stringResource(R.string.btn_confirm_OK), color = MaterialTheme.colorScheme.primary)
             }
         }
     )
@@ -55,31 +151,25 @@ fun ConfirmationDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    AlertDialog(
-        icon = {
-            Icon(Icons.AutoMirrored.Default.HelpOutline, contentDescription = stringResource(R.string.desc_confirmation))
-        },
-        title = {
-            Text(text = title)
-        },
-        text = {
-            message?.let {
-                Text(
-                    modifier = Modifier.fillMaxWidth(),
+    BaseCustomDialog(
+        onDismissRequest = onDismiss,
+        icon = Icons.AutoMirrored.Default.HelpOutline,
+        title = title,
+        content = {
+            if (message != null) {
+                TextPrimary(
                     text = message,
+                    modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center
                 )
             }
         },
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = rememberDebouncedClick(onClick = onConfirm)) {
-                Text(text = stringResource(R.string.btn_confirm_positive))
-            }
-        },
-        dismissButton = {
+        buttons = {
             TextButton(onClick = rememberDebouncedClick(onClick = onDismiss)) {
-                Text(text = stringResource(R.string.btn_confirm_negative))
+                TextPrimary(text = stringResource(R.string.btn_confirm_negative), color = MaterialTheme.colorScheme.error)
+            }
+            TextButton(onClick = rememberDebouncedClick(onClick = onConfirm)) {
+                TextPrimary(text = stringResource(R.string.btn_confirm_positive), color = MaterialTheme.colorScheme.primary)
             }
         }
     )
@@ -91,14 +181,44 @@ fun SettingsDialog(
     onDismiss: () -> Unit,
     content: @Composable () -> Unit
 ) {
-    AlertDialog(
+    BaseCustomDialog(
         onDismissRequest = onDismiss,
-        title = { TextPrimary(text = title) },
-        text = { content() },
-        confirmButton = {},
-        dismissButton = {
+        icon = null, // Settings dialog might not need an icon, or pass one if needed
+        title = title,
+        content = content,
+        buttons = {
             TextButton(onClick = rememberDebouncedClick(onClick = onDismiss)) {
-                TextPrimary(stringResource(R.string.btn_cancel))
+                TextPrimary(stringResource(R.string.btn_cancel), color = MaterialTheme.colorScheme.primary)
+            }
+        }
+    )
+}
+
+@Composable
+fun InfoDialog(
+    title: String,
+    message: String,
+    icon: ImageVector = Icons.Default.Info,
+    headerColor: Color = MaterialTheme.colorScheme.primary,
+    headerContentColor: Color = MaterialTheme.colorScheme.onPrimary,
+    onDismiss: () -> Unit
+) {
+    BaseCustomDialog(
+        onDismissRequest = onDismiss,
+        icon = icon,
+        title = title,
+        headerColor = headerColor,
+        headerContentColor = headerContentColor,
+        content = {
+            TextPrimary(
+                text = message,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
+        },
+        buttons = {
+            TextButton(onClick = rememberDebouncedClick(onClick = onDismiss)) {
+                TextPrimary(text = stringResource(R.string.btn_confirm_OK), color = MaterialTheme.colorScheme.primary)
             }
         }
     )
@@ -141,6 +261,21 @@ private fun SettingsDialogPreview() {
                 title = "Ustawienia",
                 onDismiss = { },
                 content = { TextPrimary("Przykładowa treść") }
+            )
+        }
+    }
+}
+
+@Composable
+@Preview
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+private fun InfoDialogPreview() {
+    ParamedQuizTheme {
+        Surface {
+            InfoDialog(
+                title = "Informacja",
+                message = "To jest przykładowa informacja.",
+                onDismiss = { }
             )
         }
     }

@@ -16,6 +16,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Upcoming
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -34,8 +37,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.rafalskrzypczyk.core.composables.Dimens
+import com.rafalskrzypczyk.core.composables.InfoDialog
 import com.rafalskrzypczyk.core.composables.TextHeadline
 import com.rafalskrzypczyk.core.composables.top_bars.MainTopBar
+import com.rafalskrzypczyk.core.ui.theme.MQGreen
+import com.rafalskrzypczyk.core.ui.theme.MQYellow
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.home.R
 import com.rafalskrzypczyk.score.domain.StreakState
@@ -119,15 +125,24 @@ fun HomeScreen(
     }
 
     if(showDailyExerciseAlreadyDoneAlert) {
-        DailyExerciseDoneDialog {
-            showDailyExerciseAlreadyDoneAlert = false
-        }
+        InfoDialog(
+            title = stringResource(id = R.string.title_daily_exercise_already_done),
+            message = stringResource(id = R.string.text_daily_exercise_already_done),
+            icon = Icons.Default.Check,
+            headerColor = MQGreen,
+            onDismiss = { showDailyExerciseAlreadyDoneAlert = false }
+        )
     }
 
     if(showRevisionsUnavailableAlert) {
-        RevisionsUnavailableDialog {
-            showRevisionsUnavailableAlert = false
-        }
+        InfoDialog(
+            title = stringResource(id = R.string.title_revisions_unavailable),
+            message = stringResource(id = R.string.text_revisions_unavailable),
+            icon = Icons.Default.Upcoming,
+            headerColor = MQYellow,
+            headerContentColor = Color.Black,
+            onDismiss = { showRevisionsUnavailableAlert = false }
+        )
     }
 }
 
