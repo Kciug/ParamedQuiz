@@ -6,13 +6,20 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -72,11 +79,14 @@ fun UserSettingsScreen(
     }
 
     Scaffold (
+        contentWindowInsets = WindowInsets(0,0,0,0),
         topBar = {
             NavTopBar(title = stringResource(R.string.title_settings)) { onNavigateBack() }
         }
     ) { innerPadding ->
-        val modifier = Modifier.padding(innerPadding)
+        val modifier = Modifier
+            .padding(innerPadding)
+            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
 
         when(state.responseState) {
             is ResponseState.Error -> ErrorDialog(state.responseState.message) { onEvent(UserSettingsUIEvents.ClearState) }
@@ -158,15 +168,20 @@ private fun UserSettingsContent(
     onSignOut: () -> Unit
 ) {
     Column (modifier = modifier.fillMaxSize()) {
-        UserSettingsUserDetails(
-            userName = if(state.isAnonymous) stringResource(R.string.user_anonymous) else state.userName,
-            userEmail = state.userEmail
-        )
-
         LazyColumn(
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(
+                bottom = WindowInsets.safeDrawing.asPaddingValues().calculateBottomPadding()
+            )
         ) {
             if (!state.isAnonymous) {
+                item {
+                    UserSettingsUserDetails(
+                        userName = if(state.isAnonymous) stringResource(R.string.user_anonymous) else state.userName,
+                        userEmail = state.userEmail
+                    )
+                }
+
                 item {
                     SettingsCategoryHeader(stringResource(R.string.settings_category_account))
                 }
@@ -241,7 +256,6 @@ private fun UserSettingsContent(
                 }
             }
         }
-        BrandingElement()
     }
 }
 
@@ -263,7 +277,6 @@ private fun UserSettingsUserDetails(
             contentDescription = stringResource(com.rafalskrzypczyk.core.R.string.desc_user_avatar),
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .padding(start = Dimens.ELEMENTS_SPACING)
                 .height(Dimens.IMAGE_SIZE_SMALL)
                 .clip(CircleShape)
                 .aspectRatio(1f)

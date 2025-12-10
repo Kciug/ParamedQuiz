@@ -8,11 +8,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -71,8 +76,12 @@ fun UserPageScreen(
         onEvent.invoke(UserPageUIEvents.RefreshUserData)
     }
 
-    Scaffold { innerPadding ->
-        val modifier = Modifier.padding(innerPadding)
+    Scaffold(
+        contentWindowInsets = WindowInsets(0,0,0,0)
+    ) { innerPadding ->
+        val modifier = Modifier
+            .padding(innerPadding)
+            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
 
         Box(contentAlignment = Alignment.TopCenter){
             Column(
@@ -81,7 +90,9 @@ fun UserPageScreen(
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Spacer(Modifier.height(with(LocalDensity.current) {topBarHeight.toDp()}))
+                Spacer(Modifier.height(with(LocalDensity.current) {
+                    topBarHeight.toDp() + WindowInsets.safeDrawing.getTop(this).toDp()
+                }))
                 
                 if (state.isUserLoggedIn) {
                     UserPageUserDetails(
@@ -112,6 +123,8 @@ fun UserPageScreen(
                     onNextMode = { onEvent(UserPageUIEvents.OnNextMode) },
                     onPreviousMode = { onEvent(UserPageUIEvents.OnPreviousMode) },
                 )
+
+                Spacer(Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom)))
             }
 
             NavTopBar(

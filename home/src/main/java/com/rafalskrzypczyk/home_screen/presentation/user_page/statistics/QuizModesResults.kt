@@ -27,6 +27,7 @@ import com.rafalskrzypczyk.home.R
 @Composable
 fun QuizModesResults(
     modifier: Modifier = Modifier,
+    isLandscape: Boolean = false,
     mainModeResultAvailable: Boolean,
     swipeModeResultAvailable: Boolean,
     mainModeResult: Int,
@@ -38,6 +39,7 @@ fun QuizModesResults(
     ) {
         QuizModeResultElement(
             modifier = Modifier.weight(1f),
+            isLandscape = isLandscape,
             title = stringResource(com.rafalskrzypczyk.core.R.string.title_main_mode),
             resultAvailable = mainModeResultAvailable,
             result = mainModeResult,
@@ -45,6 +47,7 @@ fun QuizModesResults(
         )
         QuizModeResultElement(
             modifier = Modifier.weight(1f),
+            isLandscape = isLandscape,
             title = stringResource(com.rafalskrzypczyk.core.R.string.title_swipe_mode),
             resultAvailable = swipeModeResultAvailable,
             result = swipeModeResult,
@@ -56,6 +59,7 @@ fun QuizModesResults(
 @Composable
 fun QuizModeResultElement(
     modifier: Modifier = Modifier,
+    isLandscape: Boolean = false,
     title: String,
     resultAvailable: Boolean,
     result: Int,
@@ -69,6 +73,7 @@ fun QuizModeResultElement(
         if(resultAvailable) {
             TextPrimary(text = title)
             StatisticsChart(
+                isLandscape = isLandscape,
                 progress = result,
                 numericalValueText = stringResource(R.string.percentage, result),
                 numericalValueDescription = resultDescription,
@@ -82,6 +87,7 @@ fun QuizModeResultElement(
 @Composable
 fun StatisticsChart(
     modifier: Modifier = Modifier,
+    isLandscape: Boolean = false,
     progress: Int,
     numericalValueText: String,
     numericalValueDescription: String,
@@ -93,7 +99,7 @@ fun StatisticsChart(
     ) {
         CircularProgressIndicator(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxWidth(if (isLandscape) 0.5f else 1f)
                 .aspectRatio(1f),
             progress = { progress / 100f },
             strokeWidth = strokeWidth,

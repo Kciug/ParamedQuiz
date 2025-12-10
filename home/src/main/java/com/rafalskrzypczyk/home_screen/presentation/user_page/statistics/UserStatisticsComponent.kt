@@ -9,6 +9,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.rafalskrzypczyk.core.composables.Dimens
@@ -31,6 +32,9 @@ fun UserStatisticsComponent(
     onNextMode: () -> Unit,
     onPreviousMode: () -> Unit
 ) {
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
     Column(
         modifier = modifier.padding(Dimens.DEFAULT_PADDING),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -43,6 +47,7 @@ fun UserStatisticsComponent(
                 modifier = Modifier
                     .fillMaxWidth(0.8f)
                     .padding(Dimens.DEFAULT_PADDING),
+                isLandscape = isLandscape,
                 progress = overallResult,
                 numericalValueText = stringResource(R.string.percentage, overallResult),
                 numericalValueDescription = stringResource(R.string.stats_correct_answers),
@@ -50,6 +55,7 @@ fun UserStatisticsComponent(
             )
             HorizontalDivider()
             QuizModesResults(
+                isLandscape = isLandscape,
                 mainModeResultAvailable = mainModeResultAvailable,
                 swipeModeResultAvailable = swipeModeResultAvailable,
                 mainModeResult = mainModeResult,
@@ -57,6 +63,7 @@ fun UserStatisticsComponent(
             )
             HorizontalDivider()
             BestWorstQuestionsComponent(
+                isLandscape = isLandscape,
                 questions = bestWorstQuestions,
                 onNextMode = onNextMode,
                 onPreviousMode = onPreviousMode
