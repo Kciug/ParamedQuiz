@@ -7,9 +7,13 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -48,6 +52,7 @@ fun MMCategoriesScreen(
         }
     ) { innerPadding ->
         AnimatedContent(
+            modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)),
             targetState = state.responseState,
             transitionSpec = {
                 scaleIn() togetherWith scaleOut()
@@ -84,7 +89,7 @@ fun MMCategoriesScreenContent(
         top = contentPadding.calculateTopPadding() - statusBarPadding + Dimens.DEFAULT_PADDING,
         start = Dimens.DEFAULT_PADDING,
         end = Dimens.DEFAULT_PADDING,
-        bottom = contentPadding.calculateBottomPadding()
+        bottom = contentPadding.calculateBottomPadding() + Dimens.DEFAULT_PADDING
     )
 
 
