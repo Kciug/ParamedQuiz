@@ -49,6 +49,7 @@ import com.rafalskrzypczyk.home_screen.domain.models.QuizMode
 @Composable
 fun BestWorstQuestionsComponent(
     modifier: Modifier = Modifier,
+    isLandscape: Boolean = false,
     questions: BestWorstQuestionsUIM,
     onNextMode: () -> Unit,
     onPreviousMode: () -> Unit
@@ -123,7 +124,7 @@ fun BestWorstQuestionsComponent(
                     worstQuestions = questionsData.worstQuestions
                 )
             } else {
-                NoBestWorstStatisticsComponent(modifier = Modifier.aspectRatio(1f))
+                NoBestWorstStatisticsComponent(modifier = if(isLandscape) Modifier else Modifier.aspectRatio(1f))
             }
         }
     }

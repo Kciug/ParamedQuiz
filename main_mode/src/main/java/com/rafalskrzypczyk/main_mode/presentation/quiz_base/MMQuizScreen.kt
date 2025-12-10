@@ -81,7 +81,7 @@ fun MMQuizScreen(
         onBackConfirmed = { onEvent(MMQuizUIEvents.OnBackConfirmed(onNavigateBack)) },
         onNavigateBack = onNavigateBack,
         onReportIssue = { onEvent(MMQuizUIEvents.ToggleReportDialog(true)) }
-    ) { innerPadding, _ ->
+    ) { innerPadding, titlePanel ->
         val modifier = Modifier
             .padding(
                 top = innerPadding.calculateTopPadding(),
@@ -103,6 +103,7 @@ fun MMQuizScreen(
                 ResponseState.Success -> {
                     MMQuizScreenContent(
                         modifier = modifier,
+                        titlePanel = titlePanel,
                         scaffoldPadding = innerPadding,
                         state = state,
                         onEvent = onEvent
@@ -146,6 +147,7 @@ fun MMQuizTopPanel(
 @Composable
 fun MMQuizScreenContent(
     modifier: Modifier = Modifier,
+    titlePanel: @Composable () -> Unit = {},
     scaffoldPadding: PaddingValues,
     state: QuizState,
     onEvent: (MMQuizUIEvents) -> Unit
@@ -167,6 +169,7 @@ fun MMQuizScreenContent(
             contentKey = { question -> question.id }
         ) { question ->
             QuizGameContent(
+                titlePanel = titlePanel,
                 scaffoldPadding = scaffoldPadding,
                 question = question,
                 onAnswerSelected = { answerId -> onEvent.invoke(MMQuizUIEvents.OnAnswerClicked(answerId)) },

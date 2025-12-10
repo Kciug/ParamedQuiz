@@ -5,9 +5,11 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -43,7 +45,6 @@ import com.rafalskrzypczyk.core.composables.TextFieldPrimary
 import com.rafalskrzypczyk.core.composables.top_bars.NavTopBar
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.signup.R
-import com.rafalskrzypczyk.signup.SignupTopBar
 
 @Composable
 fun ResetPasswordScreen(
@@ -54,6 +55,7 @@ fun ResetPasswordScreen(
     val state = viewModel.state.collectAsStateWithLifecycle()
 
     Scaffold (
+        contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             NavTopBar(
                 title = stringResource(R.string.title_reset_password),
@@ -89,7 +91,7 @@ fun ResetPasswordScreenContent(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(Dimens.DEFAULT_PADDING)
+            .padding(horizontal = Dimens.DEFAULT_PADDING)
             .verticalScroll(rememberScrollState())
             .imePadding(),
         horizontalAlignment = Alignment.CenterHorizontally,

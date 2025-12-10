@@ -10,11 +10,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
@@ -37,7 +40,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -50,6 +52,7 @@ import com.rafalskrzypczyk.core.composables.TextHeadline
 import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.composables.UserPointsLabel
 import com.rafalskrzypczyk.core.ui.theme.MQGreen
+import com.rafalskrzypczyk.core.ui.theme.MQRed
 import com.rafalskrzypczyk.core.ui.theme.MQYellow
 import kotlinx.coroutines.delay
 
@@ -74,15 +77,14 @@ fun QuizFinishedScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
         ) {
-            // WARSTWA 1: Przewijalna zawartość
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Odstęp na pasek stanu
                 Spacer(Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
 
                 SequentiallyAnimatedColumn(
@@ -98,7 +100,6 @@ fun QuizFinishedScreen(
                                 Spacer(Modifier.height(Dimens.ELEMENTS_SPACING))
                             }
                         },
-                        // Sekcja Streaku - wyświetlana tylko jeśli zaktualizowany
                         if (state.isStreakUpdated && state.streak != null) {
                             { StreakUpdateSection(streakDays = state.streak) }
                         } else null,
@@ -147,12 +148,10 @@ fun QuizFinishedScreen(
                     )
                 )
 
-                // Odstęp na dole pod przycisk i pasek nawigacji
                 Spacer(Modifier.height(80.dp))
                 Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
             }
 
-            // WARSTWA 2: Przycisk "Wróć"
             AnimatedVisibility(
                 visible = backButtonVisible.value,
                 modifier = Modifier
@@ -177,7 +176,7 @@ fun QuizFinishedScreen(
 fun StreakUpdateSection(
     streakDays: Int
 ) {
-    val fireColor = Color(0xFFFF9800) // Hardcoded Orange/Fire color
+    val fireColor = MQRed
 
     Card(
         modifier = Modifier

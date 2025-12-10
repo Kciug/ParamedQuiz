@@ -108,9 +108,6 @@ fun BaseQuizTitlePanel(
     title: String,
     currentQuestionIndex: Int
 ) {
-//    val configuration = LocalConfiguration.current
-//    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-
     Column {
         TextHeadline(title)
         if (currentQuestionIndex > 0) {
@@ -120,27 +117,6 @@ fun BaseQuizTitlePanel(
             )
         }
     }
-
-//    if(isLandscape) {
-//        Row(
-//            modifier = Modifier.fillMaxWidth(),
-//            horizontalArrangement = Arrangement.SpaceBetween
-//        ) {
-//            TextHeadline(title)
-//            TextPrimary(
-//                text = stringResource(R.string.base_quiz_question_number, currentQuestionIndex),
-//                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-//            )
-//        }
-//    } else {
-//        Column {
-//            TextHeadline(title)
-//            TextPrimary(
-//                text = stringResource(R.string.base_quiz_question_number, currentQuestionIndex),
-//                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-//            )
-//        }
-//    }
 }
 
 @Composable

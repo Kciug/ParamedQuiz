@@ -42,6 +42,7 @@ import com.rafalskrzypczyk.main_mode.R
 @Composable
 fun QuizGameContent(
     modifier: Modifier = Modifier,
+    titlePanel: @Composable () -> Unit = {},
     scaffoldPadding: PaddingValues,
     question: QuestionUIM,
     onAnswerSelected: (Long) -> Unit,
@@ -60,25 +61,31 @@ fun QuizGameContent(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(
-                        top = Dimens.DEFAULT_PADDING,
                         bottom = scaffoldPadding.calculateBottomPadding(),
                         start = Dimens.DEFAULT_PADDING,
                         end = Dimens.DEFAULT_PADDING
                     ),
                 horizontalArrangement = Arrangement.spacedBy(Dimens.DEFAULT_PADDING)
             ) {
-                Box(
+                Column(
                     modifier = Modifier
                         .weight(1f)
-                        .fillMaxHeight(),
-                    contentAlignment = Alignment.Center
+                        .fillMaxHeight()
+                        .verticalScroll(rememberScrollState()),
                 ) {
-                    TextPrimary(
-                        text = question.questionText,
-                        textAlign = TextAlign.Center
-                    )
+                    titlePanel.invoke()
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        TextPrimary(
+                            text = question.questionText,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
-
                 Column(
                     modifier = Modifier
                         .weight(1f)

@@ -7,10 +7,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -78,11 +83,6 @@ fun HomeScreen(
             imageRes = com.rafalskrzypczyk.core.R.drawable.mediquiz_revisions,
             isAvailable = false,
         ) { showRevisionsUnavailableAlert = true },
-//        Addon(
-//            title = stringResource(R.string.title_addon_first_aid),
-//            imageRes = com.rafalskrzypczyk.core.R.drawable.frontfolks_logo_256,
-//            color = Color.Blue
-//        ) {}
     )
 
     LaunchedEffect(Unit) {
@@ -90,6 +90,7 @@ fun HomeScreen(
     }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             MainTopBar(
                 userScore = state.userScore,
@@ -101,13 +102,16 @@ fun HomeScreen(
             ) { onNavigateToUserPanel() }
         }
     ) { innerPadding ->
-        val modifier = Modifier.padding(innerPadding)
+        val modifier = Modifier
+            .padding(innerPadding)
+            .windowInsetsPadding(
+                WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)
+            )
 
         Column(
             modifier = modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
-            //verticalArrangement = Arrangement.Bottom,
+                .verticalScroll(state = rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             WelcomeCard(
@@ -121,6 +125,8 @@ fun HomeScreen(
                 onNavigateToMainMode = onNavigateToMainMode,
                 onNavigateToSwipeMode = onNavigateToSwipeMode
             )
+
+            Spacer(modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom)))
         }
     }
 

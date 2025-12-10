@@ -1,5 +1,6 @@
 package com.rafalskrzypczyk.home_screen.presentation.onboarding
 
+import android.content.res.Configuration
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -18,10 +19,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -55,6 +58,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -162,7 +166,9 @@ fun OnboardingSequence(
         }
     }
 
-    Scaffold { innerPadding ->
+    Scaffold(
+        contentWindowInsets = WindowInsets.safeDrawing
+    ) { innerPadding ->
         val modifier = Modifier.padding(innerPadding)
 
         Box(
@@ -325,145 +331,112 @@ fun OnboardingSequenceLoginPage(
 ) {
     nextButtonTitleCallback(nextButtonTitle)
 
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
     val headlineText = if(state.isLogged) state.userName else stringResource(R.string.ob_page_login_title)
     val messageText = if(state.isLogged) state.userEmail else stringResource(R.string.ob_page_login_message)
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(Dimens.LARGE_PADDING),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING, Alignment.CenterVertically)
-    ) {
-        Image(
-            painter = painterResource(com.rafalskrzypczyk.core.R.drawable.avatar_default),
-            contentDescription = stringResource(com.rafalskrzypczyk.core.R.string.desc_user_avatar),
-            contentScale = ContentScale.Crop,
+    if(isLandscape) {
+        Row(
             modifier = Modifier
-                .shadow(Dimens.ELEVATION, CircleShape, clip = false)
-                .clip(CircleShape)
-                .background(Color.Transparent)
-                .size(Dimens.IMAGE_SIZE)
-        )
-        TextHeadline(headlineText)
-        TextPrimary(
-            text = messageText,
-            textAlign = TextAlign.Center
-        )
-        if(state.isLogged) {
-            Row(
+                .fillMaxSize()
+                .padding(Dimens.LARGE_PADDING),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                painter = painterResource(com.rafalskrzypczyk.core.R.drawable.avatar_default),
+                contentDescription = stringResource(com.rafalskrzypczyk.core.R.string.desc_user_avatar),
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .animateContentSize()
-                    .padding(Dimens.DEFAULT_PADDING)
-                    .background(
-                        color = MQGreen,
-                        shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT)
-                    )
-                    .padding(Dimens.DEFAULT_PADDING),
-                verticalAlignment = Alignment.CenterVertically
+                    .shadow(Dimens.ELEVATION, CircleShape, clip = false)
+                    .clip(CircleShape)
+                    .background(Color.Transparent)
+                    .size(Dimens.IMAGE_SIZE)
+            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-                Icon(
-                    imageVector = Icons.Rounded.CheckCircleOutline,
-                    contentDescription = null,
-                    tint = Color.Black
-                )
+                TextHeadline(headlineText)
                 TextPrimary(
-                    text = stringResource(R.string.ob_page_end_logged_successfully),
-                    color = Color.Black,
-                    modifier = Modifier.padding(
-                        start = Dimens.ELEMENTS_SPACING_SMALL,
-                        end = Dimens.DEFAULT_PADDING
+                    text = messageText,
+                    textAlign = TextAlign.Center
+                )
+                if(state.isLogged) {
+                    OnboardingSequenceLoginPageLoginSuccessfullyBadge()
+                } else {
+                    ButtonPrimary(
+                        title = stringResource(R.string.ob_page_login_btn),
+                        onClick = onNavigateToRegister
                     )
+                }
+            }
+        }
+    } else {
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(Dimens.LARGE_PADDING),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING, Alignment.CenterVertically)
+        ) {
+            Image(
+                painter = painterResource(com.rafalskrzypczyk.core.R.drawable.avatar_default),
+                contentDescription = stringResource(com.rafalskrzypczyk.core.R.string.desc_user_avatar),
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .shadow(Dimens.ELEVATION, CircleShape, clip = false)
+                    .clip(CircleShape)
+                    .background(Color.Transparent)
+                    .size(Dimens.IMAGE_SIZE)
+            )
+            TextHeadline(headlineText)
+            TextPrimary(
+                text = messageText,
+                textAlign = TextAlign.Center
+            )
+            if(state.isLogged) {
+                OnboardingSequenceLoginPageLoginSuccessfullyBadge()
+            } else {
+                ButtonPrimary(
+                    title = stringResource(R.string.ob_page_login_btn),
+                    onClick = onNavigateToRegister
                 )
             }
-        } else {
-            ButtonPrimary(
-                title = stringResource(R.string.ob_page_login_btn),
-                onClick = onNavigateToRegister
-            )
         }
     }
 }
 
-//@Composable
-//fun OnboardingSequenceEndPage(
-//    modifier: Modifier = Modifier,
-//    isLogged: Boolean,
-//    title: String,
-//    message: String,
-//    icon: ImageVector,
-//    nextButtonTitle: String = stringResource(R.string.ob_btn_next),
-//    nextButtonTitleCallback: (String) -> Unit
-//) {
-//    var showUserLoggedBadge by remember { mutableStateOf(false) }
-//    var showUserLoggedBadgeText by remember { mutableStateOf(false) }
-//
-//    LaunchedEffect(Unit) {
-//        delay(500)
-//        showUserLoggedBadge = isLogged
-//        if(showUserLoggedBadge){
-//            delay(500)
-//            showUserLoggedBadgeText = true
-//            delay(3000)
-//            showUserLoggedBadge = false
-//        }
-//    }
-//
-//    Box(modifier = modifier.fillMaxSize()) {
-//        AnimatedVisibility(
-//            modifier = Modifier
-//                .align(Alignment.TopCenter)
-//                .padding(top = Dimens.LARGE_PADDING * 2)
-//            ,
-//            visible = showUserLoggedBadge,
-//            enter = scaleIn(animationSpec = spring(
-//                    dampingRatio = Spring.DampingRatioMediumBouncy,
-//                    stiffness = Spring.StiffnessLow
-//                )) + fadeIn(),
-//            exit = scaleOut() + fadeOut()
-//        ) {
-//            Row(
-//                modifier = Modifier
-//                    .animateContentSize()
-//                    .padding(Dimens.DEFAULT_PADDING)
-//                    .background(
-//                        color = MQGreen,
-//                        shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT)
-//                    )
-//                    .padding(Dimens.SMALL_PADDING),
-//                verticalAlignment = Alignment.CenterVertically
-//            ) {
-//                Icon(
-//                    imageVector = Icons.Rounded.CheckCircleOutline,
-//                    contentDescription = null,
-//                    tint = Color.Black
-//                )
-//                AnimatedVisibility(
-//                    visible = showUserLoggedBadgeText,
-//                    enter = fadeIn(),
-//                ) {
-//                    TextPrimary(
-//                        text = stringResource(R.string.ob_page_end_logged_successfully),
-//                        color = Color.Black,
-//                        modifier = Modifier.padding(
-//                            start = Dimens.ELEMENTS_SPACING_SMALL,
-//                            end = Dimens.DEFAULT_PADDING
-//                        )
-//                    )
-//                }
-//            }
-//        }
-//
-//        OnboardingSequencePage(
-//            modifier = Modifier.align(Alignment.Center),
-//            title = title,
-//            message = message,
-//            icon = icon,
-//            nextButtonTitle = nextButtonTitle,
-//            nextButtonTitleCallback = nextButtonTitleCallback
-//        )
-//    }
-//}
+@Composable
+fun OnboardingSequenceLoginPageLoginSuccessfullyBadge() {
+    Row(
+        modifier = Modifier
+            .animateContentSize()
+            .padding(Dimens.DEFAULT_PADDING)
+            .background(
+                color = MQGreen,
+                shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT)
+            )
+            .padding(Dimens.DEFAULT_PADDING),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = Icons.Rounded.CheckCircleOutline,
+            contentDescription = null,
+            tint = Color.Black
+        )
+        TextPrimary(
+            text = stringResource(R.string.ob_page_end_logged_successfully),
+            color = Color.Black,
+            modifier = Modifier.padding(
+                start = Dimens.ELEMENTS_SPACING_SMALL,
+                end = Dimens.DEFAULT_PADDING
+            )
+        )
+    }
+}
 
 @Preview
 @Composable
