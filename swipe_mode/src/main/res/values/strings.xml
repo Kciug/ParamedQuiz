@@ -11,6 +11,9 @@
     <string name="swipe_mode_effectiveness">Skuteczność</string>
     
     <string name="stats_best_streak">Najlepsza seria</string>
+
+    <string name="ic_desc_rotate_screen">Odwróć ekran</string>
+    <string name="rotate_screen_info">Dla najlepszych wrażeń z tego trybu odwróć ekran telefonu.</string>
     
     <!-- Nowe statystyki -->
     <string name="stats_avg_time">Śr. czas odp.</string>
