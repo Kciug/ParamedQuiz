@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package com.rafalskrzypczyk.translation_mode.di
 
 import com.rafalskrzypczyk.translation_mode.data.TranslationRepositoryImpl
