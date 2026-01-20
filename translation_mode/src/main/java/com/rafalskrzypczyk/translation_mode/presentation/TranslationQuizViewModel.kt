@@ -5,10 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedState
-import com.rafalskrzypczyk.firestore.domain.FirestoreApi
 import com.rafalskrzypczyk.firestore.domain.models.IssueReportDTO
 import com.rafalskrzypczyk.firestore.domain.models.TranslationQuestionDTO
 import com.rafalskrzypczyk.translation_mode.domain.TranslationQuestionUIM
+import com.rafalskrzypczyk.translation_mode.domain.use_cases.TranslationUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,7 +19,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TranslationQuizViewModel @Inject constructor(
-    private val firestoreApi: FirestoreApi
+    private val useCases: TranslationUseCases
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(TranslationQuizState())
@@ -30,7 +30,7 @@ class TranslationQuizViewModel @Inject constructor(
     }
 
     private fun fetchQuestions() {
-        firestoreApi.getTranslationQuestions().onEach { response ->
+        useCases.getTranslationQuestions().onEach { response ->
             when (response) {
                 is Response.Loading -> _state.update { it.copy(responseState = ResponseState.Loading) }
                 is Response.Error -> _state.update { it.copy(responseState = ResponseState.Error(response.error)) }
@@ -139,7 +139,7 @@ class TranslationQuizViewModel @Inject constructor(
             gameMode = "translation_mode"
         )
         
-        firestoreApi.sendIssueReport(report).onEach { response ->
+        useCases.sendTranslationReport(report).onEach { response ->
              if (response is Response.Success) {
                  _state.update { it.copy(showReportDialog = false, showReportSuccessToast = true) }
                  // Reset toast flag after consumption in UI? or rely on LaunchedEffect there

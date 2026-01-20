@@ -22,7 +22,6 @@ import com.rafalskrzypczyk.signup.SignupNavHost
 import com.rafalskrzypczyk.swipe_mode.presentation.SwipeModeScreen
 import com.rafalskrzypczyk.swipe_mode.presentation.SwipeModeVM
 import com.rafalskrzypczyk.translation_mode.presentation.TranslationQuizScreen
-import com.rafalskrzypczyk.translation_mode.presentation.TranslationQuizViewModel
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -200,6 +199,8 @@ fun NavController.navigateToSwipeMode() {
     navigate(route = SwipeMode)
 }
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
 @Serializable
 object TranslationMode
 
@@ -207,7 +208,12 @@ fun NavGraphBuilder.translationModeDestination(
     onNavigateBack: () -> Unit
 ) {
     composable<TranslationMode> {
+        val viewModel = hiltViewModel<TranslationQuizViewModel>()
+        val state = viewModel.state.collectAsStateWithLifecycle()
+        
         TranslationQuizScreen(
+            state = state.value,
+            onEvent = viewModel::onEvent,
             onNavigateBack = onNavigateBack
         )
     }

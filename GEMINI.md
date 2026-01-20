@@ -13,6 +13,7 @@ ParamedQuiz is a multi-module Android application developed in Kotlin, using Jet
 - **swipe_mode**: Swipe-based quiz mode feature.
 - **score**: Score management and display features.
 - **signup**: User registration feature.
+- **translation_mode**: New quiz mode for vocabulary learning.
 
 ## Tech Stack
 - **Language**: Kotlin 2.0.0
@@ -90,5 +91,15 @@ The design system is centralized in the `core` module. All new UI MUST use these
     -   Manage dependencies via `build.gradle.kts` and `libs.versions.toml`.
 3.  **Theming**: Ensure all new UI elements use `ParamedQuizTheme`.
 4.  **Compose**: Use Jetpack Compose for all new UI development.
-5.  **Git Management**: Always add newly created files to the git repository.
+5.  **Git Management**:
+    -   Always add newly created or modified files to the git stage using `git add`.
+    -   **DO NOT COMMIT**. Do not use `git commit`. Leave the committing to the user.
 6.  **Verification**: After major changes, build the project (e.g., `./gradlew assembleDebug`) to ensure no regressions.
+7.  **Architecture**:
+    -   **ViewModel Injection**: ViewModels MUST be injected in the navigation graph (e.g., `AppNavHost` or `ApplicationNavigation.kt`), NEVER passed as arguments to Screen Composables. Screen Composables should only receive state and event callbacks.
+    -   **Use Cases**: When a ViewModel requires multiple Use Cases, group them into a single data class wrapper (e.g., `FeatureUseCases`).
+    -   **Clean Architecture**: Follow the standard layers: Data (Repository Impl) -> Domain (Repository Interface, Use Cases) -> Presentation (ViewModel, Screen).
+    -   **UI Split**: Avoid monolithic Screen files. Split UI into smaller, reusable components in a `components` package within the feature module.
+8.  **Code Quality & Testing**:
+    -   **Avoid Comments**: Do not add comments describing *what* the code does. Only comment *why* if the logic is complex and non-obvious.
+    -   **Testing**: Write unit tests for critical business logic, specifically for **ViewModels** and **Use Cases**.
