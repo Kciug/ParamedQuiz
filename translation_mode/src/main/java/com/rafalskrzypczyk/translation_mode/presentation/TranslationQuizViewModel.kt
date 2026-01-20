@@ -84,13 +84,17 @@ class TranslationQuizViewModel @Inject constructor(
         val updatedQuestions = currentState.questions.toMutableList()
         updatedQuestions[index] = currentQ.copy(isAnswered = true, isCorrect = isCorrect)
 
-        val newScore = if (isCorrect) currentState.userScore + 10 else currentState.userScore
+        val earnedPoints = useCases.updateScoreWithQuestion(currentQ.id, isCorrect)
         val newCorrectCount = if (isCorrect) currentState.correctAnswersCount + 1 else currentState.correctAnswersCount
+
+        if (isCorrect) {
+            useCases.increaseStreakByQuestions()
+        }
 
         _state.update {
             it.copy(
                 questions = updatedQuestions,
-                userScore = newScore,
+                userScore = currentState.userScore + earnedPoints,
                 correctAnswersCount = newCorrectCount
             )
         }
@@ -113,9 +117,8 @@ class TranslationQuizViewModel @Inject constructor(
         val correctAnswers = state.correctAnswersCount
         val score = state.userScore
 
-        // Simple grading logic
         val percentage = if (totalQuestions > 0) (correctAnswers.toFloat() / totalQuestions) * 100 else 0f
-        val passed = percentage >= 50 // Example threshold
+        val passed = percentage >= 50
 
         _state.update {
             it.copy(
@@ -136,13 +139,12 @@ class TranslationQuizViewModel @Inject constructor(
             questionId = currentQ.id.toString(),
             questionContent = currentQ.phrase,
             description = description,
-            gameMode = "translation_mode"
+            gameMode = "Translation Mode"
         )
         
         useCases.sendTranslationReport(report).onEach { response ->
              if (response is Response.Success) {
                  _state.update { it.copy(showReportDialog = false, showReportSuccessToast = true) }
-                 // Reset toast flag after consumption in UI? or rely on LaunchedEffect there
              }
         }.launchIn(viewModelScope)
     }

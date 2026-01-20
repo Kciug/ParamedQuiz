@@ -40,6 +40,11 @@ import com.rafalskrzypczyk.core.composables.TextTitle
 import com.rafalskrzypczyk.translation_mode.presentation.components.TranslationFeedbackPanel
 import com.rafalskrzypczyk.translation_mode.presentation.components.TranslationInput
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import com.rafalskrzypczyk.core.composables.CorrectAnswersLabel
+import com.rafalskrzypczyk.core.composables.UserPointsLabel
+
 @Composable
 fun TranslationQuizScreen(
     state: TranslationQuizState,
@@ -57,6 +62,7 @@ fun TranslationQuizScreen(
 
     BaseQuizScreen(
         title = "Translations",
+        quizTopPanel = { TranslationQuizTopPanel(score = state.userScore, correctAnswers = state.correctAnswersCount) },
         currentQuestionIndex = state.currentQuestionIndex + 1,
         quizFinished = state.isQuizFinished,
         quizFinishedState = state.quizFinishedState,
@@ -180,5 +186,20 @@ fun TranslationQuizContent(
                 onNext = { onEvent(TranslationQuizEvents.OnNextQuestion) }
             )
         }
+    }
+}
+
+@Composable
+fun TranslationQuizTopPanel(
+    modifier: Modifier = Modifier,
+    score: Int,
+    correctAnswers: Int,
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        UserPointsLabel(value = score, grayOutWhenZero = false)
+        CorrectAnswersLabel(value = correctAnswers)
     }
 }
