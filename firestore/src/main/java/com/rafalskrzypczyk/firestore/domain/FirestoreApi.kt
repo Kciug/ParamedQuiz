@@ -26,11 +26,19 @@ interface FirestoreApi {
 
     
 
-        fun getTranslationQuestions(): Flow<Response<List<TranslationQuestionDTO>>>
+            fun getTranslationQuestions(): Flow<Response<List<TranslationQuestionDTO>>>
 
     
 
-        fun getUserScore(userId: String): Flow<Response<ScoreDTO>>
+            fun getUpdatedTranslationQuestions(): Flow<List<TranslationQuestionDTO>>
+
+    
+
+        
+
+    
+
+            fun getUserScore(userId: String): Flow<Response<ScoreDTO>>
     fun updateUserScore(userId: String, score: ScoreDTO) : Flow<Response<Unit>>
     fun deleteUserScore(userId: String) : Flow<Response<Unit>>
 

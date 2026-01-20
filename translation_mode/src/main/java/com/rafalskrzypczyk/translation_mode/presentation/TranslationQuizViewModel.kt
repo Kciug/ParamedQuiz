@@ -26,10 +26,10 @@ class TranslationQuizViewModel @Inject constructor(
     val state = _state.asStateFlow()
 
     init {
-        fetchQuestions()
+        loadQuestions()
     }
 
-    private fun fetchQuestions() {
+    private fun loadQuestions() {
         useCases.getTranslationQuestions().onEach { response ->
             when (response) {
                 is Response.Loading -> _state.update { it.copy(responseState = ResponseState.Loading) }
@@ -43,8 +43,41 @@ class TranslationQuizViewModel @Inject constructor(
                             currentQuestionIndex = 0
                         )
                     }
+                    attachQuestionsListener()
                 }
             }
+        }.launchIn(viewModelScope)
+    }
+
+    private fun attachQuestionsListener() {
+        useCases.getUpdatedTranslationQuestions().onEach { newQuestionsDomain ->
+            val currentQuestions = _state.value.questions
+            val newQuestionsUIM = newQuestionsDomain.map { it.toUIM() }
+            
+            // Update existing questions content (e.g. fix typos)
+            val updatedList = currentQuestions.map { currentQ ->
+                val updatedQ = newQuestionsUIM.find { it.id == currentQ.id }
+                if (updatedQ != null) {
+                    // Preserve user answer state
+                    updatedQ.copy(
+                        userAnswer = currentQ.userAnswer,
+                        isAnswered = currentQ.isAnswered,
+                        isCorrect = currentQ.isCorrect
+                    )
+                } else {
+                    currentQ
+                }
+            }.toMutableList()
+
+            // Add completely new questions
+            val existingIds = currentQuestions.map { it.id }.toSet()
+            val completelyNewQuestions = newQuestionsUIM.filter { it.id !in existingIds }
+            
+            if (completelyNewQuestions.isNotEmpty()) {
+                updatedList.addAll(completelyNewQuestions)
+            }
+
+            _state.update { it.copy(questions = updatedList) }
         }.launchIn(viewModelScope)
     }
 

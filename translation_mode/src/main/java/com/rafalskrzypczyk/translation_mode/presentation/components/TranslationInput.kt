@@ -14,18 +14,24 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rafalskrzypczyk.core.composables.Dimens
-
-import androidx.compose.ui.res.stringResource
 import com.rafalskrzypczyk.translation_mode.R
 
 @Composable
@@ -35,7 +41,13 @@ fun TranslationInput(
     enabled: Boolean,
     onDone: () -> Unit
 ) {
-    val borderColor = if (enabled) MaterialTheme.colorScheme.outlineVariant else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+    var isFocused by remember { mutableStateOf(false) }
+    
+    val borderColor = when {
+        isFocused -> MaterialTheme.colorScheme.primary
+        enabled -> MaterialTheme.colorScheme.outlineVariant
+        else -> MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+    }
     
     BasicTextField(
         value = text,
@@ -44,18 +56,20 @@ fun TranslationInput(
         textStyle = TextStyle(
             fontSize = 20.sp,
             textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.Bold
         ),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
         keyboardActions = KeyboardActions(onDone = { onDone() }),
         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+        modifier = Modifier.onFocusChanged { isFocused = it.isFocused },
         decorationBox = { innerTextField: @Composable () -> Unit ->
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(150.dp)
                     .clip(RoundedCornerShape(Dimens.RADIUS_DEFAULT))
-                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+                    .background(Color.Transparent)
                     .border(
                         border = BorderStroke(2.dp, borderColor),
                         shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT)

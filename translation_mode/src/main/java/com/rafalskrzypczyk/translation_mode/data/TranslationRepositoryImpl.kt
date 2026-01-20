@@ -16,6 +16,10 @@ class TranslationRepositoryImpl @Inject constructor(
         return firestoreApi.getTranslationQuestions()
     }
 
+    override fun getUpdatedTranslationQuestions(): Flow<List<TranslationQuestionDTO>> {
+        return firestoreApi.getUpdatedTranslationQuestions()
+    }
+
     override fun sendIssueReport(report: IssueReportDTO): Flow<Response<Unit>> {
         return firestoreApi.sendIssueReport(report)
     }

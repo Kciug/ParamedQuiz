@@ -6,6 +6,7 @@ import javax.inject.Inject
 
 data class TranslationUseCases @Inject constructor(
     val getTranslationQuestions: GetTranslationQuestionsUseCase,
+    val getUpdatedTranslationQuestions: GetUpdatedTranslationQuestionsUseCase,
     val sendTranslationReport: SendTranslationReportUseCase,
     val updateScoreWithQuestion: UpdateScoreWithQuestionUC,
     val increaseStreakByQuestions: IncreaseStreakByQuestionsUC

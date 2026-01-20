@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -81,6 +82,9 @@ class FirestoreService @Inject constructor(
         val questions = getFirestoreData(FirestoreCollections.TRANSLATION_QUESTIONS)?.toObjects(TranslationQuestionDTO::class.java) ?: emptyList()
         emit(Response.Success(questions))
     }.catch { emit(Response.Error(it.localizedMessage ?: resourceProvider.getString(R.string.error_unknown))) }
+
+    override fun getUpdatedTranslationQuestions(): Flow<List<TranslationQuestionDTO>> = attachFirestoreListener(FirestoreCollections.TRANSLATION_QUESTIONS)
+        .map { it.toObjects(TranslationQuestionDTO::class.java) }
 
     override fun getUserScore(userId: String): Flow<Response<ScoreDTO>> = flow {
         emit(Response.Loading)

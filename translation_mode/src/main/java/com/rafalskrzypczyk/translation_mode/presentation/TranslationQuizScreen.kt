@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.BaseQuizScreen
@@ -37,6 +38,7 @@ import com.rafalskrzypczyk.core.composables.Loading
 import com.rafalskrzypczyk.core.composables.ReportIssueDialog
 import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.composables.TextTitle
+import com.rafalskrzypczyk.translation_mode.R
 import com.rafalskrzypczyk.translation_mode.presentation.components.TranslationFeedbackPanel
 import com.rafalskrzypczyk.translation_mode.presentation.components.TranslationInput
 
@@ -44,9 +46,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import com.rafalskrzypczyk.core.composables.CorrectAnswersLabel
 import com.rafalskrzypczyk.core.composables.UserPointsLabel
-
-import androidx.compose.ui.res.stringResource
-import com.rafalskrzypczyk.translation_mode.R
 
 @Composable
 fun TranslationQuizScreen(
@@ -69,6 +68,12 @@ fun TranslationQuizScreen(
         currentQuestionIndex = state.currentQuestionIndex + 1,
         quizFinished = state.isQuizFinished,
         quizFinishedState = state.quizFinishedState,
+        showBackConfirmation = state.showExitConfirmation,
+        onBackAction = { onEvent(TranslationQuizEvents.OnBackPressed) },
+        onBackDiscarded = { onEvent(TranslationQuizEvents.OnBackDiscarded) },
+        onBackConfirmed = { onEvent(TranslationQuizEvents.OnBackConfirmed(onNavigateBack)) },
+        onNavigateBack = onNavigateBack,
+        onReportIssue = { onEvent(TranslationQuizEvents.ToggleReportDialog(true)) },
         quizFinishedExtras = {
              TranslationQuizFinishedExtras(
                  questions = state.questions,
@@ -76,12 +81,6 @@ fun TranslationQuizScreen(
                  modifier = Modifier.padding(top = Dimens.DEFAULT_PADDING)
              )
         },
-        showBackConfirmation = state.showExitConfirmation,
-        onBackAction = { onEvent(TranslationQuizEvents.OnBackPressed) },
-        onBackDiscarded = { onEvent(TranslationQuizEvents.OnBackDiscarded) },
-        onBackConfirmed = { onEvent(TranslationQuizEvents.OnBackConfirmed(onNavigateBack)) },
-        onNavigateBack = onNavigateBack,
-        onReportIssue = { onEvent(TranslationQuizEvents.ToggleReportDialog(true)) }
     ) { innerPadding, titlePanel ->
         
         AnimatedContent(
@@ -159,13 +158,17 @@ fun TranslationQuizContent(
                     modifier = Modifier.padding(Dimens.DEFAULT_PADDING),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    TextPrimary(text = stringResource(R.string.translate_phrase_instruction), textAlign = TextAlign.Center)
+                    TextPrimary(
+                        text = stringResource(R.string.translate_phrase_instruction),
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Start
+                    )
                     Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
                     TextTitle(text = currentQuestion.phrase, textAlign = TextAlign.Center)
                 }
             }
 
-            Spacer(modifier = Modifier.height(Dimens.LARGE_PADDING))
+            Spacer(modifier = Modifier.weight(1f))
 
             TranslationInput(
                 text = currentQuestion.userAnswer,
@@ -176,6 +179,8 @@ fun TranslationQuizContent(
                     onEvent(TranslationQuizEvents.OnSubmitAnswer)
                 }
             )
+            
+            Spacer(modifier = Modifier.weight(1f))
         }
 
         if (!currentQuestion.isAnswered) {
