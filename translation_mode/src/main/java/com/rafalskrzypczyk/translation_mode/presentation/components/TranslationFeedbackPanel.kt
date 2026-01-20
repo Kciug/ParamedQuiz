@@ -27,6 +27,9 @@ import com.rafalskrzypczyk.core.ui.theme.MQGreen
 import com.rafalskrzypczyk.core.ui.theme.MQRed
 import com.rafalskrzypczyk.translation_mode.domain.TranslationQuestionUIM
 
+import androidx.compose.ui.res.stringResource
+import com.rafalskrzypczyk.translation_mode.R
+
 @Composable
 fun TranslationFeedbackPanel(
     question: TranslationQuestionUIM,
@@ -34,7 +37,7 @@ fun TranslationFeedbackPanel(
 ) {
     val isCorrect = question.isCorrect
     val verifiedIcon = if(isCorrect) Icons.Default.Check else Icons.Default.Close
-    val verifiedText = if(isCorrect) "Correct!" else "Incorrect"
+    val verifiedText = stringResource(if(isCorrect) R.string.feedback_correct else R.string.feedback_incorrect)
     val verifiedColor = if(isCorrect) MQGreen else MQRed
     val backgroundColor = MaterialTheme.colorScheme.surfaceContainer
 
@@ -64,7 +67,7 @@ fun TranslationFeedbackPanel(
 
         if (!isCorrect) {
             Spacer(modifier = Modifier.height(Dimens.DEFAULT_PADDING))
-            TextPrimary(text = "Correct translations:")
+            TextPrimary(text = stringResource(R.string.feedback_correct_translations))
             Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
             
             question.possibleTranslations.forEach {
@@ -80,7 +83,7 @@ fun TranslationFeedbackPanel(
         Spacer(modifier = Modifier.height(Dimens.LARGE_PADDING))
         
         ButtonPrimary(
-            title = "Continue",
+            title = stringResource(R.string.btn_continue),
             onClick = onNext
         )
     }

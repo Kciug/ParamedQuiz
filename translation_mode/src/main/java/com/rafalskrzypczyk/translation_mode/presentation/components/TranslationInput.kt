@@ -25,6 +25,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rafalskrzypczyk.core.composables.Dimens
 
+import androidx.compose.ui.res.stringResource
+import com.rafalskrzypczyk.translation_mode.R
+
 @Composable
 fun TranslationInput(
     text: String,
@@ -62,7 +65,7 @@ fun TranslationInput(
             ) {
                 if (text.isEmpty() && enabled) {
                     Text(
-                        text = "Type here...",
+                        text = stringResource(R.string.input_hint_type_here),
                         style = TextStyle(
                             fontSize = 20.sp,
                             textAlign = TextAlign.Center,

@@ -45,6 +45,9 @@ import androidx.compose.foundation.layout.Row
 import com.rafalskrzypczyk.core.composables.CorrectAnswersLabel
 import com.rafalskrzypczyk.core.composables.UserPointsLabel
 
+import androidx.compose.ui.res.stringResource
+import com.rafalskrzypczyk.translation_mode.R
+
 @Composable
 fun TranslationQuizScreen(
     state: TranslationQuizState,
@@ -52,7 +55,7 @@ fun TranslationQuizScreen(
     onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
-    val successReportMsg = "Report sent successfully"
+    val successReportMsg = stringResource(com.rafalskrzypczyk.core.R.string.report_issue_success)
 
     LaunchedEffect(state.showReportSuccessToast) {
         if (state.showReportSuccessToast) {
@@ -61,7 +64,7 @@ fun TranslationQuizScreen(
     }
 
     BaseQuizScreen(
-        title = "Translations",
+        title = stringResource(com.rafalskrzypczyk.core.R.string.title_translation_mode),
         quizTopPanel = { TranslationQuizTopPanel(score = state.userScore, correctAnswers = state.correctAnswersCount) },
         currentQuestionIndex = state.currentQuestionIndex + 1,
         quizFinished = state.isQuizFinished,
@@ -142,7 +145,7 @@ fun TranslationQuizContent(
                     modifier = Modifier.padding(Dimens.DEFAULT_PADDING),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    TextPrimary(text = "Translate this phrase:", textAlign = TextAlign.Center)
+                    TextPrimary(text = stringResource(R.string.translate_phrase_instruction), textAlign = TextAlign.Center)
                     Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
                     TextTitle(text = currentQuestion.phrase, textAlign = TextAlign.Center)
                 }
@@ -166,7 +169,7 @@ fun TranslationQuizContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(Dimens.DEFAULT_PADDING),
-                title = "Check Answer",
+                title = stringResource(R.string.btn_check_answer),
                 onClick = {
                     keyboardController?.hide()
                     onEvent(TranslationQuizEvents.OnSubmitAnswer)

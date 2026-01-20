@@ -205,9 +205,9 @@ fun HomeScreenQuizModesMenu(
             imageRes = com.rafalskrzypczyk.core.R.drawable.mediquiz_swipemode
         ) { onNavigateToSwipeMode() }
         QuizModeButton(
-            title = "Translations", // Hardcoded string as requested/implied no new strings
-            description = "Learn vocabulary",
-            imageRes = com.rafalskrzypczyk.core.R.drawable.mediquiz_dailyexercise // Placeholder icon
+            title = stringResource(com.rafalskrzypczyk.core.R.string.title_translation_mode),
+            description = stringResource(R.string.mode_translation_desc),
+            imageRes = com.rafalskrzypczyk.core.R.drawable.mediquiz_dailyexercise
         ) { onNavigateToTranslationMode() }
         Card (
             modifier = Modifier.padding(top = Dimens.ELEMENTS_SPACING),
@@ -233,7 +233,7 @@ fun HomeScreenQuizModesMenu(
                 horizontalArrangement = Arrangement.Center,
             ) {
                 TextHeadline(
-                    text = "Więcej trybów już wkrótce!",
+                    text = stringResource(R.string.more_modes_soon),
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                 )
             }

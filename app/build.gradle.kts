@@ -23,6 +23,11 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    @Suppress("UnstableApiUsage")
+    androidResources {
+        localeFilters += "pl"
+    }
+
     signingConfigs {
         create("release") {
             val keystoreFile = file("keystore.jks")

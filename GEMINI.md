@@ -103,3 +103,4 @@ The design system is centralized in the `core` module. All new UI MUST use these
 8.  **Code Quality & Testing**:
     -   **Avoid Comments**: Do not add comments describing *what* the code does. Only comment *why* if the logic is complex and non-obvious.
     -   **Testing**: Write unit tests for critical business logic, specifically for **ViewModels** and **Use Cases**.
+    -   **String Resources**: **MANDATORY**. Never hardcode UI strings. Always extract them to `strings.xml` and use `stringResource()`.
