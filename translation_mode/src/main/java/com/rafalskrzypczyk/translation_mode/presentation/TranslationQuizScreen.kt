@@ -131,21 +131,20 @@ fun TranslationQuizContent(
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize(),
-        contentAlignment = Alignment.BottomCenter
-    ) {
-        AnimatedContent(
-            targetState = state.currentQuestion,
-            transitionSpec = {
-                slideInHorizontally(initialOffsetX = { it }) togetherWith slideOutHorizontally(targetOffsetX = { -it })
-            },
-            label = "questionTransition",
-            contentKey = { it?.id }
-        ) { question ->
-            if(question == null) return@AnimatedContent
+    AnimatedContent(
+        targetState = state.currentQuestion,
+        transitionSpec = {
+            slideInHorizontally(initialOffsetX = { it }) togetherWith slideOutHorizontally(targetOffsetX = { -it })
+        },
+        label = "questionTransition",
+        contentKey = { it?.id }
+    ) { question ->
+        if (question == null) return@AnimatedContent
 
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.BottomCenter
+        ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -158,7 +157,7 @@ fun TranslationQuizContent(
                 Box(modifier = Modifier.fillMaxWidth()) {
                     titlePanel()
                 }
-                
+
                 Spacer(modifier = Modifier.height(Dimens.LARGE_PADDING))
 
                 Card(
@@ -190,37 +189,32 @@ fun TranslationQuizContent(
                         onEvent(TranslationQuizEvents.OnSubmitAnswer)
                     }
                 )
-                
+
                 Spacer(modifier = Modifier.weight(1f))
             }
-        }
 
-        val currentQuestion = state.currentQuestion
-        if (currentQuestion != null && !currentQuestion.isAnswered) {
-            ButtonPrimary(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = Dimens.DEFAULT_PADDING)
-                    .padding(bottom = paddingValues.calculateBottomPadding() + Dimens.DEFAULT_PADDING),
-                title = stringResource(R.string.btn_check_answer),
-                onClick = {
-                    keyboardController?.hide()
-                    onEvent(TranslationQuizEvents.OnSubmitAnswer)
-                },
-                enabled = currentQuestion.userAnswer.isNotBlank()
-            )
-        }
+            if (!question.isAnswered) {
+                ButtonPrimary(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = Dimens.DEFAULT_PADDING)
+                        .padding(bottom = paddingValues.calculateBottomPadding() + Dimens.DEFAULT_PADDING),
+                    title = stringResource(R.string.btn_check_answer),
+                    onClick = {
+                        keyboardController?.hide()
+                        onEvent(TranslationQuizEvents.OnSubmitAnswer)
+                    },
+                    enabled = question.userAnswer.isNotBlank()
+                )
+            }
 
-        val showFeedback = currentQuestion?.isAnswered == true
-        AnimatedVisibility(
-            visible = showFeedback,
-            enter = slideInVertically(initialOffsetY = { it }),
-            exit = slideOutVertically(targetOffsetY = { it }),
-            modifier = Modifier.align(Alignment.BottomCenter)
-        ) {
-            if (currentQuestion != null) {
+            AnimatedVisibility(
+                visible = question.isAnswered,
+                enter = slideInVertically(initialOffsetY = { it }),
+                modifier = Modifier.align(Alignment.BottomCenter)
+            ) {
                 TranslationFeedbackPanel(
-                    question = currentQuestion,
+                    question = question,
                     onNext = { onEvent(TranslationQuizEvents.OnNextQuestion) },
                     bottomPadding = paddingValues.calculateBottomPadding()
                 )
