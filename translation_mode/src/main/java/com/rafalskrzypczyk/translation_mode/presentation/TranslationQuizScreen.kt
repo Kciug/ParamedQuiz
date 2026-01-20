@@ -72,6 +72,7 @@ fun TranslationQuizScreen(
         quizFinishedExtras = {
              TranslationQuizFinishedExtras(
                  questions = state.questions,
+                 onReviewClick = { onEvent(TranslationQuizEvents.ToggleReviewDialog(true)) },
                  modifier = Modifier.padding(top = Dimens.DEFAULT_PADDING)
              )
         },
@@ -102,6 +103,13 @@ fun TranslationQuizScreen(
                 }
             }
         }
+    }
+
+    if (state.showReviewDialog) {
+        TranslationReviewDialog(
+            questions = state.questions,
+            onDismiss = { onEvent(TranslationQuizEvents.ToggleReviewDialog(false)) }
+        )
     }
 
     if (state.showReportDialog) {

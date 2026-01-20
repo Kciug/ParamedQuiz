@@ -8,8 +8,9 @@
     <string name="feedback_correct_translations">Poprawne tłumaczenia:</string>
     <string name="btn_continue">Dalej</string>
 
-    <string name="extras_review_title">Słowa do powtórki</string>
+    <string name="extras_accuracy">Skuteczność: %d%%</string>
+    <string name="btn_review_errors">Przejrzyj błędy</string>
     <string name="extras_perfect_score">Perfekcyjna pisownia!</string>
-    <string name="extras_your_answer">Ty:</string>
+    <string name="extras_your_answer">Twoja odpowiedź:</string>
     <string name="extras_correct_answer">Poprawnie:</string>
 </resources>

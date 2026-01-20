@@ -67,6 +67,7 @@ class TranslationQuizViewModel @Inject constructor(
             TranslationQuizEvents.OnBackPressed -> _state.update { it.copy(showExitConfirmation = true) }
             is TranslationQuizEvents.OnBackConfirmed -> event.navigateBack()
             is TranslationQuizEvents.ToggleReportDialog -> _state.update { it.copy(showReportDialog = event.show) }
+            is TranslationQuizEvents.ToggleReviewDialog -> _state.update { it.copy(showReviewDialog = event.show) }
             is TranslationQuizEvents.OnReportIssue -> reportIssue(event.description)
         }
     }
