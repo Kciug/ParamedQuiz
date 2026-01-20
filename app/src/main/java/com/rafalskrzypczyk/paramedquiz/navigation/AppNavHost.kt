@@ -62,6 +62,7 @@ fun AppNavHost(
             onNavigateToDailyExercise = { navController.navigateToDailyExercise() },
             onNavigateToMainMode = { navController.navigateToMainMode() },
             onNavigateToSwipeMode = { navController.navigateToSwipeMode() },
+            onNavigateToTranslationMode = { navController.navigateToTranslationMode() },
             onNavigateToDev = { navController.navigateToDevOptions()
             }
         )
@@ -83,6 +84,10 @@ fun AppNavHost(
         )
 
         swipeModeDestination(
+            onNavigateBack = { navController.popBackStack() }
+        )
+
+        translationModeDestination(
             onNavigateBack = { navController.popBackStack() }
         )
 

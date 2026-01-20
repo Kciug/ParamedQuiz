@@ -21,6 +21,8 @@ import com.rafalskrzypczyk.paramedquiz.dev.DevVM
 import com.rafalskrzypczyk.signup.SignupNavHost
 import com.rafalskrzypczyk.swipe_mode.presentation.SwipeModeScreen
 import com.rafalskrzypczyk.swipe_mode.presentation.SwipeModeVM
+import com.rafalskrzypczyk.translation_mode.presentation.TranslationQuizScreen
+import com.rafalskrzypczyk.translation_mode.presentation.TranslationQuizViewModel
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -76,6 +78,7 @@ fun NavGraphBuilder.mainMenuDestination(
     onNavigateToDailyExercise: () -> Unit,
     onNavigateToMainMode: () -> Unit,
     onNavigateToSwipeMode: () -> Unit,
+    onNavigateToTranslationMode: () -> Unit,
     onNavigateToDev: () -> Unit
 ) {
     composable<MainMenu> {
@@ -89,6 +92,7 @@ fun NavGraphBuilder.mainMenuDestination(
             onNavigateToDailyExercise = onNavigateToDailyExercise,
             onNavigateToMainMode = onNavigateToMainMode,
             onNavigateToSwipeMode = onNavigateToSwipeMode,
+            onNavigateToTranslationMode = onNavigateToTranslationMode,
             onNavigateToDevOptions = onNavigateToDev
 
         )
@@ -194,6 +198,23 @@ fun NavGraphBuilder.swipeModeDestination(
 
 fun NavController.navigateToSwipeMode() {
     navigate(route = SwipeMode)
+}
+
+@Serializable
+object TranslationMode
+
+fun NavGraphBuilder.translationModeDestination(
+    onNavigateBack: () -> Unit
+) {
+    composable<TranslationMode> {
+        TranslationQuizScreen(
+            onNavigateBack = onNavigateBack
+        )
+    }
+}
+
+fun NavController.navigateToTranslationMode() {
+    navigate(route = TranslationMode)
 }
 
 @Serializable

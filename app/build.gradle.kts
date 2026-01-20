@@ -72,6 +72,7 @@ dependencies {
     implementation(project(":main_mode"))
     implementation(project(":swipe_mode"))
     implementation(project(":score"))
+    implementation(project(":translation_mode"))
 
     coreKtx()
     implementation(Dependencies.COMPOSE_RUNTIME)

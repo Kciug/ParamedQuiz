@@ -31,9 +31,9 @@
             <option value="$PROJECT_DIR$/score" />
             <option value="$PROJECT_DIR$/signup" />
             <option value="$PROJECT_DIR$/swipe_mode" />
+            <option value="$PROJECT_DIR$/translation_mode" />
           </set>
         </option>
-        <option name="resolveExternalAnnotations" value="false" />
       </GradleProjectSettings>
     </option>
   </component>
