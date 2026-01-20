@@ -69,6 +69,12 @@ fun TranslationQuizScreen(
         currentQuestionIndex = state.currentQuestionIndex + 1,
         quizFinished = state.isQuizFinished,
         quizFinishedState = state.quizFinishedState,
+        quizFinishedExtras = {
+             TranslationQuizFinishedExtras(
+                 questions = state.questions,
+                 modifier = Modifier.padding(top = Dimens.DEFAULT_PADDING)
+             )
+        },
         showBackConfirmation = state.showExitConfirmation,
         onBackAction = { onEvent(TranslationQuizEvents.OnBackPressed) },
         onBackDiscarded = { onEvent(TranslationQuizEvents.OnBackDiscarded) },

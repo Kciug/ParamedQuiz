@@ -86,6 +86,7 @@ The design system is centralized in the `core` module. All new UI MUST use these
 
 ## AI Instructions
 1.  **Component Reuse**: **MANDATORY**. Always prefer using components from the `core` module over standard Compose Material3 components. Check `core/src/main/java/com/rafalskrzypczyk/core/composables` before creating new ones.
+    -   **Missing Functionality**: If a core component lacks a necessary feature (e.g., parameter), DO NOT implement a workaround using raw Composable. Instead, STOP and propose a solution (e.g., updating the core component) and wait for user confirmation.
 2.  **Module Awareness**: Respect the multi-module architecture.
     -   Place new features in appropriate modules or create new ones if necessary.
     -   Manage dependencies via `build.gradle.kts` and `libs.versions.toml`.
@@ -100,6 +101,10 @@ The design system is centralized in the `core` module. All new UI MUST use these
     -   **Use Cases**: When a ViewModel requires multiple Use Cases, group them into a single data class wrapper (e.g., `FeatureUseCases`).
     -   **Clean Architecture**: Follow the standard layers: Data (Repository Impl) -> Domain (Repository Interface, Use Cases) -> Presentation (ViewModel, Screen).
     -   **UI Split**: Avoid monolithic Screen files. Split UI into smaller, reusable components in a `components` package within the feature module.
+    -   **Dimensions & Styling**:
+        -   Use `Dimens` from `core` module for all spacing and sizing.
+        -   If custom dimensions or specific colors are needed, define them as `private const val` or `private val` at the top of the file to maintain readability and ease of adjustment.
+        -   Always prioritize `core` UI components (e.g., `TextPrimary`) over raw Composable equivalents.
 8.  **Code Quality & Testing**:
     -   **Avoid Comments**: Do not add comments describing *what* the code does. Only comment *why* if the logic is complex and non-obvious.
     -   **Testing**: Write unit tests for critical business logic, specifically for **ViewModels** and **Use Cases**.
