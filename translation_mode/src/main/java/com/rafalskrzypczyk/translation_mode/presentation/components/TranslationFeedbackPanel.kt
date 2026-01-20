@@ -30,10 +30,13 @@ import com.rafalskrzypczyk.translation_mode.domain.TranslationQuestionUIM
 import androidx.compose.ui.res.stringResource
 import com.rafalskrzypczyk.translation_mode.R
 
+import androidx.compose.ui.unit.Dp
+
 @Composable
 fun TranslationFeedbackPanel(
     question: TranslationQuestionUIM,
-    onNext: () -> Unit
+    onNext: () -> Unit,
+    bottomPadding: Dp
 ) {
     val isCorrect = question.isCorrect
     val verifiedIcon = if(isCorrect) Icons.Default.Check else Icons.Default.Close
@@ -51,6 +54,7 @@ fun TranslationFeedbackPanel(
         )
         .background(backgroundColor)
         .padding(Dimens.DEFAULT_PADDING)
+        .padding(bottom = bottomPadding)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(

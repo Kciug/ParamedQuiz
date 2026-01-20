@@ -5,7 +5,9 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
@@ -127,67 +129,79 @@ fun TranslationQuizContent(
     state: TranslationQuizState,
     onEvent: (TranslationQuizEvents) -> Unit
 ) {
-    val currentQuestion = state.currentQuestion ?: return
     val keyboardController = LocalSoftwareKeyboardController.current
 
     Box(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(paddingValues),
+            .fillMaxSize(),
         contentAlignment = Alignment.BottomCenter
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = Dimens.DEFAULT_PADDING)
-                .padding(bottom = Dimens.DEFAULT_PADDING * 5)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Box(modifier = Modifier.fillMaxWidth()) {
-                titlePanel()
-            }
-            
-            Spacer(modifier = Modifier.height(Dimens.LARGE_PADDING))
+        AnimatedContent(
+            targetState = state.currentQuestion,
+            transitionSpec = {
+                slideInHorizontally(initialOffsetX = { it }) togetherWith slideOutHorizontally(targetOffsetX = { -it })
+            },
+            label = "questionTransition",
+            contentKey = { it?.id }
+        ) { question ->
+            if(question == null) return@AnimatedContent
 
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = Dimens.DEFAULT_PADDING)
+                    .padding(top = paddingValues.calculateTopPadding())
+                    .padding(bottom = Dimens.DEFAULT_PADDING * 5)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column(
-                    modifier = Modifier.padding(Dimens.DEFAULT_PADDING),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    titlePanel()
+                }
+                
+                Spacer(modifier = Modifier.height(Dimens.LARGE_PADDING))
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                 ) {
-                    TextPrimary(
-                        text = stringResource(R.string.translate_phrase_instruction),
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Start
-                    )
-                    Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
-                    TextTitle(text = currentQuestion.phrase, textAlign = TextAlign.Center)
+                    Column(
+                        modifier = Modifier.padding(Dimens.DEFAULT_PADDING),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        TextPrimary(
+                            text = stringResource(R.string.translate_phrase_instruction),
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Start
+                        )
+                        Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
+                        TextTitle(text = question.phrase, textAlign = TextAlign.Center)
+                    }
                 }
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                TranslationInput(
+                    text = question.userAnswer,
+                    onValueChange = { onEvent(TranslationQuizEvents.OnAnswerChanged(it)) },
+                    enabled = !question.isAnswered,
+                    onDone = {
+                        keyboardController?.hide()
+                        onEvent(TranslationQuizEvents.OnSubmitAnswer)
+                    }
+                )
+                
+                Spacer(modifier = Modifier.weight(1f))
             }
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            TranslationInput(
-                text = currentQuestion.userAnswer,
-                onValueChange = { onEvent(TranslationQuizEvents.OnAnswerChanged(it)) },
-                enabled = !currentQuestion.isAnswered,
-                onDone = {
-                    keyboardController?.hide()
-                    onEvent(TranslationQuizEvents.OnSubmitAnswer)
-                }
-            )
-            
-            Spacer(modifier = Modifier.weight(1f))
         }
 
-        if (!currentQuestion.isAnswered) {
+        val currentQuestion = state.currentQuestion
+        if (currentQuestion != null && !currentQuestion.isAnswered) {
             ButtonPrimary(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(Dimens.DEFAULT_PADDING),
+                    .padding(horizontal = Dimens.DEFAULT_PADDING)
+                    .padding(bottom = paddingValues.calculateBottomPadding() + Dimens.DEFAULT_PADDING),
                 title = stringResource(R.string.btn_check_answer),
                 onClick = {
                     keyboardController?.hide()
@@ -197,16 +211,20 @@ fun TranslationQuizContent(
             )
         }
 
+        val showFeedback = currentQuestion?.isAnswered == true
         AnimatedVisibility(
-            visible = currentQuestion.isAnswered,
+            visible = showFeedback,
             enter = slideInVertically(initialOffsetY = { it }),
             exit = slideOutVertically(targetOffsetY = { it }),
             modifier = Modifier.align(Alignment.BottomCenter)
         ) {
-            TranslationFeedbackPanel(
-                question = currentQuestion,
-                onNext = { onEvent(TranslationQuizEvents.OnNextQuestion) }
-            )
+            if (currentQuestion != null) {
+                TranslationFeedbackPanel(
+                    question = currentQuestion,
+                    onNext = { onEvent(TranslationQuizEvents.OnNextQuestion) },
+                    bottomPadding = paddingValues.calculateBottomPadding()
+                )
+            }
         }
     }
 }
