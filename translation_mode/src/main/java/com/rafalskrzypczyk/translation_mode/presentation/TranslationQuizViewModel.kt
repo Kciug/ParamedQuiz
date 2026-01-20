@@ -54,22 +54,16 @@ class TranslationQuizViewModel @Inject constructor(
             val currentQuestions = _state.value.questions
             val newQuestionsUIM = newQuestionsDomain.map { it.toUIM() }
             
-            // Update existing questions content (e.g. fix typos)
             val updatedList = currentQuestions.map { currentQ ->
                 val updatedQ = newQuestionsUIM.find { it.id == currentQ.id }
-                if (updatedQ != null) {
-                    // Preserve user answer state
-                    updatedQ.copy(
-                        userAnswer = currentQ.userAnswer,
-                        isAnswered = currentQ.isAnswered,
-                        isCorrect = currentQ.isCorrect
-                    )
-                } else {
-                    currentQ
-                }
+                updatedQ?.copy(
+                    userAnswer = currentQ.userAnswer,
+                    isAnswered = currentQ.isAnswered,
+                    isCorrect = currentQ.isCorrect
+                )
+                    ?: currentQ
             }.toMutableList()
 
-            // Add completely new questions
             val existingIds = currentQuestions.map { it.id }.toSet()
             val completelyNewQuestions = newQuestionsUIM.filter { it.id !in existingIds }
             
@@ -150,9 +144,6 @@ class TranslationQuizViewModel @Inject constructor(
         val totalQuestions = state.questions.size
         val correctAnswers = state.correctAnswersCount
         val score = state.userScore
-
-        val percentage = if (totalQuestions > 0) (correctAnswers.toFloat() / totalQuestions) * 100 else 0f
-        val passed = percentage >= 50
 
         _state.update {
             it.copy(

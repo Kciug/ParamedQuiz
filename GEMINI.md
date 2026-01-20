@@ -106,6 +106,6 @@ The design system is centralized in the `core` module. All new UI MUST use these
         -   If custom dimensions or specific colors are needed, define them as `private const val` or `private val` at the top of the file to maintain readability and ease of adjustment.
         -   Always prioritize `core` UI components (e.g., `TextPrimary`) over raw Composable equivalents.
 8.  **Code Quality & Testing**:
-    -   **Avoid Comments**: Do not add comments describing *what* the code does. Only comment *why* if the logic is complex and non-obvious.
+    -   **No Comments**: **STRICTLY FORBIDDEN** to add comments describing *what* the code does. Redundant comments (e.g. `// Add completely new questions`) are not allowed. Only comment *why* if the logic is complex and non-obvious.
     -   **Testing**: Write unit tests for critical business logic, specifically for **ViewModels** and **Use Cases**.
     -   **String Resources**: **MANDATORY**. Never hardcode UI strings. Always extract them to `strings.xml` and use `stringResource()`.
