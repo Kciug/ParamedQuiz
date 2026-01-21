@@ -23,6 +23,11 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    @Suppress("UnstableApiUsage")
+    androidResources {
+        localeFilters += "pl"
+    }
+
     signingConfigs {
         create("release") {
             val keystoreFile = file("keystore.jks")
@@ -72,6 +77,7 @@ dependencies {
     implementation(project(":main_mode"))
     implementation(project(":swipe_mode"))
     implementation(project(":score"))
+    implementation(project(":translation_mode"))
 
     coreKtx()
     implementation(Dependencies.COMPOSE_RUNTIME)

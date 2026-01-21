@@ -49,6 +49,8 @@
 
     <string name="mode_quiz_desc">Zdobywaj wiedzę grając w quiz!</string>
     <string name="mode_swipe_desc">Szybkie pytania, szybkie decyzje!</string>
+    <string name="mode_translation_desc">Ucz się słownictwa!</string>
+    <string name="more_modes_soon">Więcej trybów już wkrótce!</string>
 
     <string name="title_addon_daily_exercises">Zadanie dnia</string>
     <string name="title_addon_review">Powtórki</string>

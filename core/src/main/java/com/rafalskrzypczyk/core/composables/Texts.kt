@@ -28,7 +28,9 @@ fun TextPrimary(
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.onBackground,
     textAlign: TextAlign? = TextAlign.Unspecified,
-    maxLines: Int = Int.MAX_VALUE
+    maxLines: Int = Int.MAX_VALUE,
+    fontWeight: FontWeight? = null,
+    textDecoration: TextDecoration? = null
 ) {
     Text(
         modifier = modifier,
@@ -36,7 +38,9 @@ fun TextPrimary(
         color = color,
         overflow = TextOverflow.Ellipsis,
         maxLines = maxLines,
-        textAlign = textAlign
+        textAlign = textAlign,
+        fontWeight = fontWeight,
+        textDecoration = textDecoration
     )
 }
 

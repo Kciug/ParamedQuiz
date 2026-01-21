@@ -59,6 +59,7 @@ fun HomeScreen(
     onNavigateToDailyExercise: () -> Unit,
     onNavigateToMainMode: () -> Unit,
     onNavigateToSwipeMode: () -> Unit,
+    onNavigateToTranslationMode: () -> Unit,
     onNavigateToDevOptions: () -> Unit
 ) {
     var showDailyExerciseAlreadyDoneAlert by remember { mutableStateOf(false) }
@@ -123,7 +124,8 @@ fun HomeScreen(
             HomeScreenAddonsMenu(addons = addons)
             HomeScreenQuizModesMenu(
                 onNavigateToMainMode = onNavigateToMainMode,
-                onNavigateToSwipeMode = onNavigateToSwipeMode
+                onNavigateToSwipeMode = onNavigateToSwipeMode,
+                onNavigateToTranslationMode = onNavigateToTranslationMode
             )
 
             Spacer(modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom)))
@@ -182,7 +184,8 @@ fun HomeScreenAddonsMenu(
 fun HomeScreenQuizModesMenu(
     modifier: Modifier = Modifier,
     onNavigateToMainMode: () -> Unit,
-    onNavigateToSwipeMode: () -> Unit
+    onNavigateToSwipeMode: () -> Unit,
+    onNavigateToTranslationMode: () -> Unit
 ) {
     Column(
         modifier = modifier
@@ -201,6 +204,11 @@ fun HomeScreenQuizModesMenu(
             description = stringResource(R.string.mode_swipe_desc),
             imageRes = com.rafalskrzypczyk.core.R.drawable.mediquiz_swipemode
         ) { onNavigateToSwipeMode() }
+        QuizModeButton(
+            title = stringResource(com.rafalskrzypczyk.core.R.string.title_translation_mode),
+            description = stringResource(R.string.mode_translation_desc),
+            imageRes = com.rafalskrzypczyk.core.R.drawable.mediquiz_translations
+        ) { onNavigateToTranslationMode() }
         Card (
             modifier = Modifier.padding(top = Dimens.ELEMENTS_SPACING),
             colors = CardDefaults.cardColors(containerColor = Color.Transparent),
@@ -225,7 +233,7 @@ fun HomeScreenQuizModesMenu(
                 horizontalArrangement = Arrangement.Center,
             ) {
                 TextHeadline(
-                    text = "Więcej trybów już wkrótce!",
+                    text = stringResource(R.string.more_modes_soon),
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                 )
             }
@@ -251,6 +259,7 @@ private fun HomeScreenPreview() {
                 onNavigateToUserPanel = {},
                 onNavigateToMainMode = {},
                 onNavigateToSwipeMode = {},
+                onNavigateToTranslationMode = {},
                 onNavigateToDailyExercise = {},
                 onNavigateToDevOptions = {}
             )

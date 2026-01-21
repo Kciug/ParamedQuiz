@@ -42,6 +42,7 @@
 
     <string name="title_main_mode">Quiz</string>
     <string name="title_swipe_mode">Wiedza w Akcji</string>
+    <string name="title_translation_mode">Tłumaczenia</string>
 
     <string name="dialog_title_confirm_exit_quiz">Zakończyć quiz?</string>
 
