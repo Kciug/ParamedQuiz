@@ -2,6 +2,16 @@ name: Release to Play Store
 
 on:
   workflow_dispatch: # Uruchamianie ręczne przyciskiem
+    inputs:
+      version_type:
+        description: 'Version Bump Type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
 
 jobs:
   build-and-deploy:
@@ -51,7 +61,7 @@ jobs:
 
       # 3. Podbijanie wersji
       - name: Bump Version
-        run: python buildSrc/scripts/bump_version.py
+        run: python buildSrc/scripts/bump_version.py ${{ github.event.inputs.version_type }}
 
       # 4. Commitowanie nowej wersji do repo
       - name: Commit and Push Version Bump
