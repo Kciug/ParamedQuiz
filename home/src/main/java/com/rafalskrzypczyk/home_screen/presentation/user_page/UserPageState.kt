@@ -18,9 +18,12 @@ data class UserPageState (
     val overallResult: Int = 0,
     val mainModeResultResponse: ResponseState = ResponseState.Idle,
     val swipeModeResultResponse: ResponseState = ResponseState.Idle,
+    val translationModeResultResponse: ResponseState = ResponseState.Idle,
     val mainModeResultAvailable: Boolean = false,
     val swipeModeResultAvailable: Boolean = false,
+    val translationModeResultAvailable: Boolean = false,
     val mainModeResult: Int = 0,
     val swipeModeResult: Int = 0,
+    val translationModeResult: Int = 0,
     val bestWorstQuestions: BestWorstQuestionsUIM = BestWorstQuestionsUIM()
 )

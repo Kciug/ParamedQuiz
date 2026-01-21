@@ -57,6 +57,7 @@ fun BestWorstQuestionsComponent(
     val modeTitle = when(questions.currentMode) {
         QuizMode.MainMode -> stringResource(com.rafalskrzypczyk.core.R.string.title_main_mode)
         QuizMode.SwipeMode -> stringResource(com.rafalskrzypczyk.core.R.string.title_swipe_mode)
+        QuizMode.TranslationMode -> stringResource(com.rafalskrzypczyk.core.R.string.title_translation_mode)
     }
 
     var movedToNext by remember { mutableStateOf(false) }

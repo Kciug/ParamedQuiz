@@ -123,6 +123,27 @@ class UserPageVM @Inject constructor(
                 }
             }
         }
+
+        viewModelScope.launch {
+            useCases.getTranslationModeResult().collect { response ->
+                when(response) {
+                    is Response.Error -> {
+                        _state.update { it.copy(translationModeResultResponse = ResponseState.Error(response.error)) }
+                    }
+                    Response.Loading -> {
+                        _state.update { it.copy(translationModeResultResponse = ResponseState.Loading) }
+                    }
+                    is Response.Success -> {
+                        val data = response.data
+                        _state.update { it.copy(
+                            translationModeResultResponse = ResponseState.Success,
+                            translationModeResultAvailable = data != null,
+                            translationModeResult = data ?: 0
+                        ) }
+                    }
+                }
+            }
+        }
     }
 
     private fun getQuestionsData() {
