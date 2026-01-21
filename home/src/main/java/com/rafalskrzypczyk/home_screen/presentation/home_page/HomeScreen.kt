@@ -207,7 +207,7 @@ fun HomeScreenQuizModesMenu(
         QuizModeButton(
             title = stringResource(com.rafalskrzypczyk.core.R.string.title_translation_mode),
             description = stringResource(R.string.mode_translation_desc),
-            imageRes = com.rafalskrzypczyk.core.R.drawable.mediquiz_dailyexercise
+            imageRes = com.rafalskrzypczyk.core.R.drawable.mediquiz_translations
         ) { onNavigateToTranslationMode() }
         Card (
             modifier = Modifier.padding(top = Dimens.ELEMENTS_SPACING),

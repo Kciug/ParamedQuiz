@@ -4,8 +4,9 @@
     <string name="input_hint_type_here">Wpisz tutaj...</string>
     <string name="btn_check_answer">Sprawdź</string>
     <string name="feedback_correct">Dobrze!</string>
-    <string name="feedback_incorrect">Źle</string>
+    <string name="feedback_incorrect">Niestety! Nie udało się…</string>
     <string name="feedback_correct_translations">Poprawne tłumaczenia:</string>
+    <string name="feedback_other_correct_translations">Inne poprawne tłumaczenia:</string>
     <string name="btn_continue">Dalej</string>
 
     <string name="extras_accuracy">Skuteczność: %d%%</string>
