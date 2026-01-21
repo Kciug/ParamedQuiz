@@ -16,7 +16,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.TextCaption
@@ -30,29 +29,50 @@ fun QuizModesResults(
     isLandscape: Boolean = false,
     mainModeResultAvailable: Boolean,
     swipeModeResultAvailable: Boolean,
+    translationModeResultAvailable: Boolean,
     mainModeResult: Int,
-    swipeModeResult: Int
+    swipeModeResult: Int,
+    translationModeResult: Int
 ) {
-    Row(
+    Column(
         modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        QuizModeResultElement(
-            modifier = Modifier.weight(1f),
-            isLandscape = isLandscape,
-            title = stringResource(com.rafalskrzypczyk.core.R.string.title_main_mode),
-            resultAvailable = mainModeResultAvailable,
-            result = mainModeResult,
-            resultDescription = stringResource(R.string.stats_correct_answers)
-        )
-        QuizModeResultElement(
-            modifier = Modifier.weight(1f),
-            isLandscape = isLandscape,
-            title = stringResource(com.rafalskrzypczyk.core.R.string.title_swipe_mode),
-            resultAvailable = swipeModeResultAvailable,
-            result = swipeModeResult,
-            resultDescription = stringResource(R.string.stats_correct_answers)
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            QuizModeResultElement(
+                modifier = Modifier.weight(1f),
+                isLandscape = isLandscape,
+                title = stringResource(com.rafalskrzypczyk.core.R.string.title_main_mode),
+                resultAvailable = mainModeResultAvailable,
+                result = mainModeResult,
+                resultDescription = stringResource(R.string.stats_correct_answers)
+            )
+            QuizModeResultElement(
+                modifier = Modifier.weight(1f),
+                isLandscape = isLandscape,
+                title = stringResource(com.rafalskrzypczyk.core.R.string.title_swipe_mode),
+                resultAvailable = swipeModeResultAvailable,
+                result = swipeModeResult,
+                resultDescription = stringResource(R.string.stats_correct_answers)
+            )
+        }
+        
+        Row(
+            modifier = Modifier.fillMaxWidth(0.5f),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            QuizModeResultElement(
+                modifier = Modifier.fillMaxWidth(),
+                isLandscape = isLandscape,
+                title = stringResource(R.string.stats_result_translation_mode),
+                resultAvailable = translationModeResultAvailable,
+                result = translationModeResult,
+                resultDescription = stringResource(R.string.stats_correct_answers)
+            )
+        }
     }
 }
 
@@ -112,7 +132,7 @@ fun StatisticsChart(
             TextCaption(
                 modifier = Modifier.fillMaxWidth(0.5f),
                 text = numericalValueDescription,
-                textAlign = TextAlign.Center
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
         }
     }

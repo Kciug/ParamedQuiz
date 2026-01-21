@@ -65,6 +65,7 @@
     <string name="stats_correct_answers">Poprawnych odpowiedzi</string>
     <string name="stats_result_main_mode">Quiz</string>
     <string name="stats_result_swipe_mode">Wiedza w akcji</string>
+    <string name="stats_result_translation_mode">Tłumaczenia</string>
     <string name="stats_best_questions">Najlepsze pytania</string>
     <string name="stats_worst_questions">Najgorsze pytania</string>
     <string name="stats_question_correct_answers">poprawnych odpowiedzi: %1$d</string>

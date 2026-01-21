@@ -25,9 +25,11 @@ fun UserStatisticsComponent(
     overallResultAvailable: Boolean,
     mainModeResultAvailable: Boolean,
     swipeModeResultAvailable: Boolean,
+    translationModeResultAvailable: Boolean,
     overallResult: Int,
     mainModeResult: Int,
     swipeModeResult: Int,
+    translationModeResult: Int,
     bestWorstQuestions: BestWorstQuestionsUIM,
     onNextMode: () -> Unit,
     onPreviousMode: () -> Unit
@@ -55,11 +57,14 @@ fun UserStatisticsComponent(
             )
             HorizontalDivider()
             QuizModesResults(
+                modifier = Modifier.fillMaxWidth(),
                 isLandscape = isLandscape,
                 mainModeResultAvailable = mainModeResultAvailable,
                 swipeModeResultAvailable = swipeModeResultAvailable,
+                translationModeResultAvailable = translationModeResultAvailable,
                 mainModeResult = mainModeResult,
-                swipeModeResult = swipeModeResult
+                swipeModeResult = swipeModeResult,
+                translationModeResult = translationModeResult
             )
             HorizontalDivider()
             BestWorstQuestionsComponent(
@@ -84,9 +89,11 @@ private fun UserStatisticsComponentPreview() {
             overallResultAvailable = true,
             mainModeResultAvailable = true,
             swipeModeResultAvailable = true,
+            translationModeResultAvailable = true,
             overallResult = 85,
             mainModeResult = 73,
             swipeModeResult = 32,
+            translationModeResult = 55,
             bestWorstQuestions = BestWorstQuestionsUIM(
                 bestQuestions = listOf(
                     QuestionWithStats(

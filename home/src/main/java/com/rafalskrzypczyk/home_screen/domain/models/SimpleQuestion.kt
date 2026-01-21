@@ -1,5 +1,6 @@
 package com.rafalskrzypczyk.home_screen.domain.models
 
+import com.rafalskrzypczyk.firestore.domain.models.TranslationQuestionDTO
 import com.rafalskrzypczyk.main_mode.domain.models.Question
 import com.rafalskrzypczyk.swipe_mode.domain.SwipeQuestion
 
@@ -16,4 +17,9 @@ fun Question.toSimpleQuestion() = SimpleQuestion(
 fun SwipeQuestion.toSimpleQuestion() = SimpleQuestion(
     id = id,
     questionText = text
+)
+
+fun TranslationQuestionDTO.toSimpleQuestion() = SimpleQuestion(
+    id = id,
+    questionText = phrase
 )

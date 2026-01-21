@@ -2,7 +2,8 @@ package com.rafalskrzypczyk.home_screen.domain.models
 
 enum class QuizMode {
     MainMode,
-    SwipeMode
+    SwipeMode,
+    TranslationMode
 }
 
 fun QuizMode.next(): QuizMode {
