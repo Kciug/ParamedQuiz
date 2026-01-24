@@ -76,6 +76,7 @@ class SwipeModeVM @Inject constructor(
             SwipeModeUIEvents.OnBackDiscarded -> _state.update { it.copy(showExitConfirmation = false) }
             is SwipeModeUIEvents.ToggleReportDialog -> toggleReportDialog(event.show)
             is SwipeModeUIEvents.OnReportIssue -> reportIssue(event.description)
+            SwipeModeUIEvents.OnAdDismissed -> onAdDismissed()
         }
     }
 
@@ -183,12 +184,13 @@ class SwipeModeVM @Inject constructor(
         else setFinishedState()
     }
 
-    private fun setFinishedState() {
+    private fun onAdDismissed() {
         val totalDuration = System.currentTimeMillis() - quizStartTime
         val questionsAnswered = currentQuestionIndex
         val averageTime = if (questionsAnswered > 0) totalResponseTimeAccumulator / questionsAnswered else 0L
 
         _state.update { it.copy(
+            showAd = false,
             isQuizFinished = true,
             averageResponseTime = averageTime,
             totalQuizDuration = totalDuration,
@@ -201,5 +203,9 @@ class SwipeModeVM @Inject constructor(
                 streak = useCases.getStreak() 
             )
         ) }
+    }
+
+    private fun setFinishedState() {
+        _state.update { it.copy(showAd = true) }
     }
 }

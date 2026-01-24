@@ -10,4 +10,5 @@ sealed class MMQuizUIEvents {
     data class ToggleReviewDialog(val show: Boolean) : MMQuizUIEvents()
     data class ToggleReportDialog(val show: Boolean) : MMQuizUIEvents()
     data class OnReportIssue(val description: String) : MMQuizUIEvents()
+    object OnAdDismissed : MMQuizUIEvents()
 }

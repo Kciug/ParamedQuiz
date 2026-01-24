@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 pluginManagement {
     repositories {
         google {
@@ -30,3 +32,4 @@ include(":main_mode")
 include(":swipe_mode")
 include(":score")
 include(":translation_mode")
+include(":ads")

@@ -35,6 +35,9 @@ import com.rafalskrzypczyk.core.composables.ReportIssueDialog
 import com.rafalskrzypczyk.core.composables.UserPointsLabel
 import com.rafalskrzypczyk.main_mode.presentation.daily_exercise.DailyExerciseFinishedExtras
 import kotlin.math.max
+import android.app.Activity
+import com.rafalskrzypczyk.core.ads.AdManagerEntryPoint
+import dagger.hilt.android.EntryPointAccessors
 
 @Composable
 fun MMQuizScreen(
@@ -44,6 +47,23 @@ fun MMQuizScreen(
 ) {
     val context = LocalContext.current
     val successMsg = stringResource(com.rafalskrzypczyk.core.R.string.report_issue_success)
+
+    val adManager = remember {
+        EntryPointAccessors.fromApplication(context, AdManagerEntryPoint::class.java).adManager()
+    }
+
+    LaunchedEffect(state.showAd) {
+        if (state.showAd) {
+            val activity = context as? Activity
+            if (activity != null) {
+                adManager.showInterstitial(activity) {
+                    onEvent(MMQuizUIEvents.OnAdDismissed)
+                }
+            } else {
+                onEvent(MMQuizUIEvents.OnAdDismissed)
+            }
+        }
+    }
 
     LaunchedEffect(state.showReportSuccessToast) {
         if(state.showReportSuccessToast) {
@@ -261,6 +281,7 @@ private fun MMQuizScreenPreview() {
                         state.value = state.value.copy(showReportDialog = event.show)
                     }
                     is MMQuizUIEvents.OnReportIssue -> {}
+                    MMQuizUIEvents.OnAdDismissed -> {}
                 }
             }
         ) { }

@@ -28,6 +28,7 @@ data class QuizState (
     val showReviewDialog: Boolean = false,
     val showReportDialog: Boolean = false,
     val showReportSuccessToast: Boolean = false,
+    val showAd: Boolean = false,
     
     // Mode specific
     val isDailyExercise: Boolean = false

@@ -47,6 +47,7 @@ abstract class BaseQuizVM (
             is MMQuizUIEvents.ToggleReviewDialog -> toggleReviewDialog(event.show)
             is MMQuizUIEvents.ToggleReportDialog -> toggleReportDialog(event.show)
             is MMQuizUIEvents.OnReportIssue -> reportIssue(event.description)
+            MMQuizUIEvents.OnAdDismissed -> onAdDismissed()
         }
     }
     
@@ -202,7 +203,12 @@ abstract class BaseQuizVM (
     }
 
     protected open fun setFinishedState() {
+        _state.update { it.copy(showAd = true) }
+    }
+
+    private fun onAdDismissed() {
         _state.update { it.copy(
+            showAd = false,
             isQuizFinished = true,
             quizFinishedState = QuizFinishedState(
                 seenQuestions = quizEngine.getAnsweredQuestions(),
