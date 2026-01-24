@@ -8,4 +8,5 @@ sealed interface SwipeModeUIEvents {
     data class ToggleReportDialog(val show: Boolean) : SwipeModeUIEvents
     data class OnReportIssue(val description: String) : SwipeModeUIEvents
     object OnAdDismissed : SwipeModeUIEvents
+    object OnAdShown : SwipeModeUIEvents
 }

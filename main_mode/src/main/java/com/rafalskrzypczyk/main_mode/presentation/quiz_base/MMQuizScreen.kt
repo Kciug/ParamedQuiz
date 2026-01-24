@@ -56,9 +56,11 @@ fun MMQuizScreen(
         if (state.showAd) {
             val activity = context as? Activity
             if (activity != null) {
-                adManager.showInterstitial(activity) {
-                    onEvent(MMQuizUIEvents.OnAdDismissed)
-                }
+                adManager.showInterstitial(
+                    activity = activity,
+                    onAdShown = { onEvent(MMQuizUIEvents.OnAdShown) },
+                    onAdDismissed = { onEvent(MMQuizUIEvents.OnAdDismissed) }
+                )
             } else {
                 onEvent(MMQuizUIEvents.OnAdDismissed)
             }
@@ -282,6 +284,7 @@ private fun MMQuizScreenPreview() {
                     }
                     is MMQuizUIEvents.OnReportIssue -> {}
                     MMQuizUIEvents.OnAdDismissed -> {}
+                    MMQuizUIEvents.OnAdShown -> {}
                 }
             }
         ) { }

@@ -57,9 +57,11 @@ fun SwipeModeScreen(
         if (state.showAd) {
             val activity = context as? Activity
             if (activity != null) {
-                adManager.showInterstitial(activity) {
-                    onEvent(SwipeModeUIEvents.OnAdDismissed)
-                }
+                adManager.showInterstitial(
+                    activity = activity,
+                    onAdShown = { onEvent(SwipeModeUIEvents.OnAdShown) },
+                    onAdDismissed = { onEvent(SwipeModeUIEvents.OnAdDismissed) }
+                )
             } else {
                 onEvent(SwipeModeUIEvents.OnAdDismissed)
             }

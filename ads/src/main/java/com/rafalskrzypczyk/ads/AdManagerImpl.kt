@@ -23,7 +23,10 @@ class AdManagerImpl @Inject constructor(
     private var interstitialAd: InterstitialAd? = null
     
     // Test ID for Interstitial
-    private val adUnitId = "ca-app-pub-3940256099942544/1033173712" 
+    private val adUnitId = "ca-app-pub-3940256099942544/1033173712"
+    
+    private var showCount = 0
+    private val frequency = 2
 
     override fun initialize(activity: Activity) {
         consentManager.gatherConsent(activity) { _ ->
@@ -47,7 +50,14 @@ class AdManagerImpl @Inject constructor(
         })
     }
 
-    override fun showInterstitial(activity: Activity, onAdDismissed: () -> Unit) {
+    override fun showInterstitial(activity: Activity, onAdShown: () -> Unit, onAdDismissed: () -> Unit) {
+        showCount++
+        
+        if (showCount % frequency == 0) {
+            onAdDismissed()
+            return
+        }
+
         if (interstitialAd != null) {
             interstitialAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
                 override fun onAdDismissedFullScreenContent() {
@@ -59,6 +69,11 @@ class AdManagerImpl @Inject constructor(
                 override fun onAdFailedToShowFullScreenContent(p0: AdError) {
                     interstitialAd = null
                     onAdDismissed()
+                }
+
+                override fun onAdShowedFullScreenContent() {
+                    onAdShown()
+                    interstitialAd = null 
                 }
             }
             interstitialAd?.show(activity)

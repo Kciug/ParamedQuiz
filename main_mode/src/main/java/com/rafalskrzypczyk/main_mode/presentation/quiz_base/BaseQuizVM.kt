@@ -48,7 +48,12 @@ abstract class BaseQuizVM (
             is MMQuizUIEvents.ToggleReportDialog -> toggleReportDialog(event.show)
             is MMQuizUIEvents.OnReportIssue -> reportIssue(event.description)
             MMQuizUIEvents.OnAdDismissed -> onAdDismissed()
+            MMQuizUIEvents.OnAdShown -> onAdShown()
         }
+    }
+
+    private fun onAdShown() {
+        _state.update { it.copy(isQuizFinished = true) }
     }
     
     fun toggleReviewDialog(show: Boolean) {

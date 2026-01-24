@@ -77,7 +77,12 @@ class SwipeModeVM @Inject constructor(
             is SwipeModeUIEvents.ToggleReportDialog -> toggleReportDialog(event.show)
             is SwipeModeUIEvents.OnReportIssue -> reportIssue(event.description)
             SwipeModeUIEvents.OnAdDismissed -> onAdDismissed()
+            SwipeModeUIEvents.OnAdShown -> onAdShown()
         }
+    }
+
+    private fun onAdShown() {
+        _state.update { it.copy(isQuizFinished = true) }
     }
 
     private fun toggleReportDialog(show: Boolean) {
