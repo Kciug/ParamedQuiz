@@ -9,7 +9,11 @@ import com.rafalskrzypczyk.home_screen.presentation.home_page.HomeScreen
 import com.rafalskrzypczyk.home_screen.presentation.home_page.HomeScreenVM
 import com.rafalskrzypczyk.home_screen.presentation.onboarding.OnboardingScreen
 import com.rafalskrzypczyk.home_screen.presentation.onboarding.OnboardingVM
+import com.rafalskrzypczyk.home_screen.presentation.terms_of_service.TermsOfServiceScreen
+import com.rafalskrzypczyk.home_screen.presentation.terms_of_service.TermsOfServiceVM
 import com.rafalskrzypczyk.home_screen.presentation.user_page.UserPageScreen
+import com.rafalskrzypczyk.paramedquiz.splash.SplashRoute
+import com.rafalskrzypczyk.paramedquiz.splash.SplashVM
 import com.rafalskrzypczyk.home_screen.presentation.user_page.UserPageVM
 import com.rafalskrzypczyk.home_screen.presentation.user_settings.UserSettingsScreen
 import com.rafalskrzypczyk.home_screen.presentation.user_settings.UserSettingsVM
@@ -24,6 +28,25 @@ import com.rafalskrzypczyk.swipe_mode.presentation.SwipeModeVM
 import com.rafalskrzypczyk.translation_mode.presentation.TranslationQuizScreen
 import com.rafalskrzypczyk.translation_mode.presentation.TranslationQuizViewModel
 import kotlinx.serialization.Serializable
+
+@Serializable
+object Splash
+
+fun NavGraphBuilder.splashDestination(
+    onNavigateToOnboarding: () -> Unit,
+    onNavigateToTerms: () -> Unit,
+    onNavigateToMain: () -> Unit
+) {
+    composable<Splash> {
+        val viewModel = hiltViewModel<SplashVM>()
+        SplashRoute(
+            viewModel = viewModel,
+            onNavigateToOnboarding = onNavigateToOnboarding,
+            onNavigateToTermsOfService = onNavigateToTerms,
+            onNavigateToMainMenu = onNavigateToMain
+        )
+    }
+}
 
 @Serializable
 object Signup
@@ -260,4 +283,28 @@ fun NavGraphBuilder.devDestination(
 
 fun NavController.navigateToDevOptions() {
     navigate(route = Dev)
+}
+
+@Serializable
+object TermsOfService
+
+fun NavGraphBuilder.termsOfServiceDestination(
+    onAccepted: () -> Unit
+) {
+    composable<TermsOfService> {
+        val viewModel = hiltViewModel<TermsOfServiceVM>()
+        val state = viewModel.state.collectAsStateWithLifecycle()
+
+        TermsOfServiceScreen(
+            state = state.value,
+            onEvent = viewModel::onEvent,
+            onAccepted = onAccepted
+        )
+    }
+}
+
+fun NavController.navigateToTermsOfService() {
+    navigate(route = TermsOfService) {
+        popUpTo(0)
+    }
 }

@@ -117,4 +117,7 @@
     <string name="settings_category_data">Dane</string>
     <string name="settings_notifications_soon">Powiadomienia (wkrótce)</string>
     <string name="settings_category_other">Inne</string>
+
+    <string name="terms_of_service_title">Regulamin</string>
+    <string name="accept_terms_button">Akceptuję regulamin</string>
 </resources>

@@ -1,5 +1,6 @@
 object Versions {
     const val CORE_KTX = "1.15.0"
+    const val SPLASH_SCREEN = "1.0.1"
 
     const val COMPOSE_BOM = "2025.03.01"
     const val NAVIGATION_COMPOSE = "2.8.9"

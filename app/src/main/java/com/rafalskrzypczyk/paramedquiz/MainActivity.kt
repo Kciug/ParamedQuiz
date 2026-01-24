@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -27,8 +28,12 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var sharedPreferences: SharedPreferencesApi
 
+    private var keepSplashScreen = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
+        splashScreen.setKeepOnScreenCondition { keepSplashScreen }
         enableEdgeToEdge()
         setContent {
             ParamedQuizTheme {
@@ -42,7 +47,9 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                Navigation()
+                Navigation {
+                    keepSplashScreen = false
+                }
 
                 if (showErrorDialog) {
                     ErrorDialog(errorMessage) {
@@ -60,12 +67,13 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun Navigation() {
+    private fun Navigation(onDataLoaded: () -> Unit) {
         val navController = rememberNavController()
         AppNavHost(
             navController = navController,
             isOnboarding = { getOnboardingState() },
-            onFinishOnboarding = { onFinishOnboarding() }
+            onFinishOnboarding = { onFinishOnboarding() },
+            onDataLoaded = onDataLoaded
         )
     }
 

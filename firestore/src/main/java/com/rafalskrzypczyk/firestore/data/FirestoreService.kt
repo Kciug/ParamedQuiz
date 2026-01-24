@@ -13,6 +13,7 @@ import com.rafalskrzypczyk.firestore.domain.models.IssueReportDTO
 import com.rafalskrzypczyk.firestore.domain.models.QuestionDTO
 import com.rafalskrzypczyk.firestore.domain.models.ScoreDTO
 import com.rafalskrzypczyk.firestore.domain.models.SwipeQuestionDTO
+import com.rafalskrzypczyk.firestore.domain.models.TermsOfServiceDTO
 import com.rafalskrzypczyk.firestore.domain.models.TranslationQuestionDTO
 import com.rafalskrzypczyk.firestore.domain.models.UserDataDTO
 import kotlinx.coroutines.channels.awaitClose
@@ -21,7 +22,6 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -114,6 +114,33 @@ class FirestoreService @Inject constructor(
         val docId = firestore.collection(FirestoreCollections.ISSUES_REPORTS).document().id
         val reportWithId = report.copy(id = docId)
         emit(modifyFirestoreDocument(docId, reportWithId, FirestoreCollections.ISSUES_REPORTS))
+    }
+
+    override fun getTermsOfService(): Flow<Response<TermsOfServiceDTO>> = flow {
+        emit(Response.Loading)
+        val result = firestore.collection(FirestoreCollections.APP_CONFIG)
+            .document(FirestoreCollections.TERMS_OF_SERVICE)
+            .get()
+            .await()
+            .toObject(TermsOfServiceDTO::class.java)
+        emit(result?.let { Response.Success(it) } ?: Response.Error(resourceProvider.getString(R.string.error_no_data)))
+    }.catch { emit(Response.Error(it.localizedMessage ?: resourceProvider.getString(R.string.error_unknown))) }
+
+    override fun getTermsOfServiceUpdates(): Flow<Response<TermsOfServiceDTO>> = callbackFlow {
+        val listener = firestore.collection(FirestoreCollections.APP_CONFIG)
+            .document(FirestoreCollections.TERMS_OF_SERVICE)
+            .addSnapshotListener { value, error ->
+                if (error != null) {
+                    trySend(Response.Error(error.localizedMessage ?: resourceProvider.getString(R.string.error_unknown)))
+                    return@addSnapshotListener
+                }
+
+                val terms = value?.toObject(TermsOfServiceDTO::class.java)
+                if (terms != null) {
+                    trySend(Response.Success(terms))
+                }
+            }
+        awaitClose { listener.remove() }
     }
 
     private suspend fun getFirestoreData(collection: String): QuerySnapshot? {
