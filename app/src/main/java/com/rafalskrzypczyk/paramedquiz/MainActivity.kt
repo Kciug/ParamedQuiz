@@ -4,13 +4,15 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.activity.viewModels
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.rememberNavController
 import com.rafalskrzypczyk.core.composables.ErrorDialog
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
@@ -28,15 +30,20 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var sharedPreferences: SharedPreferencesApi
 
-    private var keepSplashScreen = true
+    private val viewModel: MainActivityVM by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
-        splashScreen.setKeepOnScreenCondition { keepSplashScreen }
+        
+        splashScreen.setKeepOnScreenCondition {
+            viewModel.state.value.isLoading
+        }
+
         enableEdgeToEdge()
         setContent {
             ParamedQuizTheme {
+                val state = viewModel.state.collectAsState().value
                 var showErrorDialog by remember { mutableStateOf(false) }
                 var errorMessage by remember { mutableStateOf("") }
 
@@ -47,8 +54,8 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                Navigation {
-                    keepSplashScreen = false
+                if (!state.isLoading && state.startDestination != null) {
+                    Navigation(state.startDestination)
                 }
 
                 if (showErrorDialog) {
@@ -67,20 +74,29 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun Navigation(onDataLoaded: () -> Unit) {
+    private fun Navigation(startDestination: Any) {
         val navController = rememberNavController()
+
+        LaunchedEffect(Unit) {
+            viewModel.navigationEvent.collect { destination ->
+                navController.navigate(destination) {
+                    popUpTo(0) { inclusive = true }
+                }
+            }
+        }
+
         AppNavHost(
             navController = navController,
+            startDestination = startDestination,
             isOnboarding = { getOnboardingState() },
-            onFinishOnboarding = { onFinishOnboarding() },
-            onDataLoaded = onDataLoaded
+            onFinishOnboarding = { onFinishOnboarding() }
         )
     }
 
     private fun getOnboardingState(): Boolean = !sharedPreferences.getOnboardingStatus()
 
     private fun onFinishOnboarding() {
-        sharedPreferences.setOnboardingStatus(true)
+        viewModel.onEvent(MainActivityUIEvents.OnboardingFinished)
     }
 }
 
