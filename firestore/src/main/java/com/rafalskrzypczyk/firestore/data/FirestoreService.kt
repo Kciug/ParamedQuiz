@@ -133,7 +133,7 @@ class FirestoreService @Inject constructor(
                 .get(Source.CACHE)
                 .await()
                 .takeIf { it.exists() }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         } ?: firestore.collection(collection).document(documentId).get(Source.SERVER).await()
     }
