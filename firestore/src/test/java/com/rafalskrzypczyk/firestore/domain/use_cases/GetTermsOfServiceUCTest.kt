@@ -16,42 +16,16 @@ import org.junit.Test
 class GetTermsOfServiceUCTest {
 
     private val firestoreApi: FirestoreApi = mockk()
-    private val sharedPrefs: SharedPreferencesApi = mockk(relaxed = true)
-    private val useCase = GetTermsOfServiceUC(firestoreApi, sharedPrefs)
+    private val useCase = GetTermsOfServiceUC(firestoreApi)
 
     @Test
-    fun `when terms already accepted and remote version same then emit Accepted`() = runTest {
-        val remoteTerms = TermsOfServiceDTO(version = 1, content = "Same terms")
-        every { sharedPrefs.getAcceptedTermsVersion() } returns 1
-        every { firestoreApi.getTermsOfServiceUpdates() } returns flowOf(Response.Success(remoteTerms))
+    fun `when fetch terms then return response from firestore`() = runTest {
+        val terms = TermsOfServiceDTO(version = 1, content = "Terms")
+        every { firestoreApi.getTermsOfService() } returns flowOf(Response.Loading, Response.Success(terms))
 
         useCase.invoke().test {
-            assertEquals(TermsOfServiceStatus.Accepted, awaitItem())
-            awaitComplete()
-        }
-    }
-
-    @Test
-    fun `when new version available then emit NeedsAcceptance`() = runTest {
-        val remoteTerms = TermsOfServiceDTO(version = 2, content = "New terms")
-        every { sharedPrefs.getAcceptedTermsVersion() } returns 1
-        every { firestoreApi.getTermsOfServiceUpdates() } returns flowOf(Response.Loading, Response.Success(remoteTerms))
-
-        useCase.invoke().test {
-            assertEquals(TermsOfServiceStatus.Loading, awaitItem())
-            assertEquals(TermsOfServiceStatus.NeedsAcceptance(remoteTerms), awaitItem())
-            awaitComplete()
-        }
-    }
-
-    @Test
-    fun `when error fetching and no previous version then emit Error`() = runTest {
-        every { sharedPrefs.getAcceptedTermsVersion() } returns -1
-        every { firestoreApi.getTermsOfServiceUpdates() } returns flowOf(Response.Loading, Response.Error("Network error"))
-
-        useCase.invoke().test {
-            assertEquals(TermsOfServiceStatus.Loading, awaitItem())
-            assertEquals(TermsOfServiceStatus.Error("Network error"), awaitItem())
+            assertEquals(Response.Loading, awaitItem())
+            assertEquals(Response.Success(terms), awaitItem())
             awaitComplete()
         }
     }

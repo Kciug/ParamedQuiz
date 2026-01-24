@@ -1,5 +1,6 @@
 package com.rafalskrzypczyk.firestore.data
 
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.SetOptions
@@ -118,28 +119,44 @@ class FirestoreService @Inject constructor(
 
     override fun getTermsOfService(): Flow<Response<TermsOfServiceDTO>> = flow {
         emit(Response.Loading)
-        val result = firestore.collection(FirestoreCollections.APP_CONFIG)
-            .document(FirestoreCollections.TERMS_OF_SERVICE)
-            .get()
-            .await()
-            .toObject(TermsOfServiceDTO::class.java)
-        emit(result?.let { Response.Success(it) } ?: Response.Error(resourceProvider.getString(R.string.error_no_data)))
+        val snapshot = getFirestoreDocumentData(FirestoreCollections.APP_CONFIG, FirestoreCollections.TERMS_OF_SERVICE)
+        val terms = snapshot?.toObject(TermsOfServiceDTO::class.java)
+        emit(terms?.let { Response.Success(it) } ?: Response.Error(resourceProvider.getString(R.string.error_no_data)))
     }.catch { emit(Response.Error(it.localizedMessage ?: resourceProvider.getString(R.string.error_unknown))) }
 
-    override fun getTermsOfServiceUpdates(): Flow<Response<TermsOfServiceDTO>> = callbackFlow {
-        val listener = firestore.collection(FirestoreCollections.APP_CONFIG)
-            .document(FirestoreCollections.TERMS_OF_SERVICE)
-            .addSnapshotListener { value, error ->
-                if (error != null) {
-                    trySend(Response.Error(error.localizedMessage ?: resourceProvider.getString(R.string.error_unknown)))
-                    return@addSnapshotListener
-                }
+    override fun getTermsOfServiceUpdates(): Flow<Response<TermsOfServiceDTO>> = attachFirestoreDocumentListener(
+        collection = FirestoreCollections.APP_CONFIG,
+        documentId = FirestoreCollections.TERMS_OF_SERVICE
+    ).map { snapshot ->
+        val terms = snapshot.toObject(TermsOfServiceDTO::class.java)
+        if (terms != null) {
+            Response.Success(terms)
+        } else {
+            Response.Error(resourceProvider.getString(R.string.error_no_data))
+        }
+    }.catch { emit(Response.Error(it.localizedMessage ?: resourceProvider.getString(R.string.error_unknown))) }
 
-                val terms = value?.toObject(TermsOfServiceDTO::class.java)
-                if (terms != null) {
-                    trySend(Response.Success(terms))
-                }
+    private suspend fun getFirestoreDocumentData(collection: String, documentId: String): DocumentSnapshot? {
+        return try {
+            firestore.collection(collection).document(documentId)
+                .get(Source.CACHE)
+                .await()
+                .takeIf { it.exists() }
+                ?: firestore.collection(collection).document(documentId).get(Source.SERVER).await()
+        } catch (e: Exception) {
+            firestore.collection(collection).document(documentId).get(Source.SERVER).await()
+        }
+    }
+
+    private fun attachFirestoreDocumentListener(collection: String, documentId: String): Flow<DocumentSnapshot> = callbackFlow {
+        val listener = firestore.collection(collection).document(documentId).addSnapshotListener { value, error ->
+            if (value?.metadata?.isFromCache == true) return@addSnapshotListener
+            if (error != null) {
+                close(error)
+                return@addSnapshotListener
             }
+            value?.let { trySend(it) }
+        }
         awaitClose { listener.remove() }
     }
 

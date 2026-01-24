@@ -2,7 +2,7 @@ package com.rafalskrzypczyk.home_screen.presentation.terms_of_service
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.rafalskrzypczyk.firestore.domain.models.TermsOfServiceStatus
+import com.rafalskrzypczyk.core.api_response.Response
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,26 +25,22 @@ class TermsOfServiceVM @Inject constructor(
 
     private fun loadTerms() {
         viewModelScope.launch {
-            useCases.getTermsOfServiceUC(forceCheck = true).collect { status ->
-                when (status) {
-                    TermsOfServiceStatus.Loading -> {
+            useCases.getTermsOfServiceUC().collect { response ->
+                when (response) {
+                    is Response.Loading -> {
                         _state.value = _state.value.copy(isLoading = true, error = null)
                     }
-                    TermsOfServiceStatus.Accepted -> {
-                        _state.value = _state.value.copy(isLoading = false, isAccepted = true)
-                    }
-                    is TermsOfServiceStatus.NeedsAcceptance -> {
+                    is Response.Success -> {
                         _state.value = _state.value.copy(
                             isLoading = false,
-                            terms = status.terms,
-                            isAccepted = false,
+                            terms = response.data,
                             error = null
                         )
                     }
-                    is TermsOfServiceStatus.Error -> {
+                    is Response.Error -> {
                         _state.value = _state.value.copy(
                             isLoading = false,
-                            error = status.message
+                            error = response.error
                         )
                     }
                 }

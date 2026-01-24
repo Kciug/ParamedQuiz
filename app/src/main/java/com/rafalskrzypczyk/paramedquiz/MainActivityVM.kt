@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
 import com.rafalskrzypczyk.firestore.domain.models.TermsOfServiceStatus
-import com.rafalskrzypczyk.firestore.domain.use_cases.GetTermsOfServiceUC
+import com.rafalskrzypczyk.firestore.domain.use_cases.ListenTermsOfServiceUpdatesUC
 import com.rafalskrzypczyk.paramedquiz.navigation.MainMenu
 import com.rafalskrzypczyk.paramedquiz.navigation.Onboarding
 import com.rafalskrzypczyk.paramedquiz.navigation.TermsOfService
@@ -13,14 +13,17 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
 
 @HiltViewModel
 class MainActivityVM @Inject constructor(
     private val sharedPrefs: SharedPreferencesApi,
-    private val getTermsOfServiceUC: GetTermsOfServiceUC
+    private val listenTermsOfServiceUpdatesUC: ListenTermsOfServiceUpdatesUC
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(MainActivityState())
@@ -42,19 +45,21 @@ class MainActivityVM @Inject constructor(
     private fun onOnboardingFinished() {
         sharedPrefs.setOnboardingStatus(true)
         viewModelScope.launch {
-            getTermsOfServiceUC().collect { status ->
-                when (status) {
-                    is TermsOfServiceStatus.Accepted -> {
-                        _navigationEvent.emit(MainMenu)
-                    }
-                    is TermsOfServiceStatus.NeedsAcceptance -> {
-                        _navigationEvent.emit(TermsOfService)
-                    }
-                    is TermsOfServiceStatus.Error -> {
-                        val destination = if (sharedPrefs.getAcceptedTermsVersion() != -1) MainMenu else TermsOfService
-                        _navigationEvent.emit(destination)
-                    }
-                    TermsOfServiceStatus.Loading -> { /* Keep waiting */ }
+            val status = getDefinitiveStatus()
+
+            when (status) {
+                is TermsOfServiceStatus.Accepted -> {
+                    _navigationEvent.emit(MainMenu)
+                }
+                is TermsOfServiceStatus.NeedsAcceptance -> {
+                    _navigationEvent.emit(TermsOfService)
+                }
+                is TermsOfServiceStatus.Error -> {
+                    val destination = if (sharedPrefs.getAcceptedTermsVersion() != -1) MainMenu else TermsOfService
+                    _navigationEvent.emit(destination)
+                }
+                else -> {
+                    _navigationEvent.emit(MainMenu)
                 }
             }
         }
@@ -67,23 +72,33 @@ class MainActivityVM @Inject constructor(
                 return@launch
             }
 
-            getTermsOfServiceUC().collect { status ->
-                when (status) {
-                    is TermsOfServiceStatus.Accepted -> {
-                        _state.update { it.copy(startDestination = MainMenu, isLoading = false) }
-                    }
-                    is TermsOfServiceStatus.NeedsAcceptance -> {
-                        _state.update { it.copy(startDestination = TermsOfService, isLoading = false) }
-                    }
-                    is TermsOfServiceStatus.Error -> {
-                        val destination = if (sharedPrefs.getAcceptedTermsVersion() != -1) MainMenu else TermsOfService
-                        _state.update { it.copy(startDestination = destination, isLoading = false) }
-                    }
-                    TermsOfServiceStatus.Loading -> {
-                        _state.update { it.copy(isLoading = true) }
-                    }
+            val status = getDefinitiveStatus()
+
+            when (status) {
+                is TermsOfServiceStatus.Accepted -> {
+                    _state.update { it.copy(startDestination = MainMenu, isLoading = false) }
+                }
+                is TermsOfServiceStatus.NeedsAcceptance -> {
+                    _state.update { it.copy(startDestination = TermsOfService, isLoading = false) }
+                }
+                is TermsOfServiceStatus.Error -> {
+                    val destination = if (sharedPrefs.getAcceptedTermsVersion() != -1) MainMenu else TermsOfService
+                    _state.update { it.copy(startDestination = destination, isLoading = false) }
+                }
+                else -> {
+                    // Fallback for timeout/null
+                    val destination = if (sharedPrefs.getAcceptedTermsVersion() != -1) MainMenu else TermsOfService
+                    _state.update { it.copy(startDestination = destination, isLoading = false) }
                 }
             }
+        }
+    }
+
+    private suspend fun getDefinitiveStatus(): TermsOfServiceStatus? {
+        return withTimeoutOrNull(3000L) {
+            listenTermsOfServiceUpdatesUC()
+                .filter { it !is TermsOfServiceStatus.Loading }
+                .first()
         }
     }
 }
