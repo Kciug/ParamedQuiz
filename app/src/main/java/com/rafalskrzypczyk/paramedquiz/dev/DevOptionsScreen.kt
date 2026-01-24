@@ -43,11 +43,15 @@ fun DevOptionsScreen(
 
         Column(
             modifier
+                .padding(15.dp)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(15.dp)
         ) {
             Button(onClick = { onEvent.invoke(DevOptionsUIEvents.ResetOnboarding) }) {
                 Text("Reset Onboarding")
+            }
+            Button(onClick = { onEvent.invoke(DevOptionsUIEvents.ClearTermsAcceptance) }) {
+                Text("Reset Terms of Service")
             }
         }
     }

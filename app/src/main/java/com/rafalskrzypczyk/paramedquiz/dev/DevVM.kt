@@ -13,10 +13,15 @@ class DevVM @Inject constructor(
     fun onEvent(event: DevOptionsUIEvents) {
         when(event) {
             DevOptionsUIEvents.ResetOnboarding -> resetOnboarding()
+            DevOptionsUIEvents.ClearTermsAcceptance -> clearTerms()
         }
     }
 
     private fun resetOnboarding() {
         sharedPreferences.setOnboardingStatus(false)
+    }
+
+    private fun clearTerms() {
+        sharedPreferences.setAcceptedTermsVersion(-1)
     }
 }

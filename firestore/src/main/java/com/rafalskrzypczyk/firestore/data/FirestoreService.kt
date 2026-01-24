@@ -133,9 +133,9 @@ class FirestoreService @Inject constructor(
                 .get(Source.CACHE)
                 .await()
                 .takeIf { it.exists() }
-        } catch (_ : Exception) {
-            firestore.collection(collection).document(documentId).get(Source.SERVER).await()
-        }
+        } catch (e: Exception) {
+            null
+        } ?: firestore.collection(collection).document(documentId).get(Source.SERVER).await()
     }
 
     private fun attachFirestoreDocumentListener(collection: String, documentId: String): Flow<DocumentSnapshot> = callbackFlow {
