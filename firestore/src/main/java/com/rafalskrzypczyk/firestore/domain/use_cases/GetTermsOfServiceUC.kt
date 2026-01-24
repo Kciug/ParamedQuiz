@@ -4,7 +4,6 @@ import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.firestore.domain.FirestoreApi
 import com.rafalskrzypczyk.firestore.domain.models.TermsOfServiceDTO
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class GetTermsOfServiceUC @Inject constructor(

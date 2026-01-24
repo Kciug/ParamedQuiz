@@ -32,12 +32,7 @@ class FirestoreService @Inject constructor(
 ) : FirestoreApi {
     override fun getUserData(userId: String): Flow<Response<UserDataDTO>> = flow {
         emit(Response.Loading)
-        val result = firestore.collection(FirestoreCollections.USER_DATA_COLLECTION)
-            .document(userId)
-            .get()
-            .await()
-            .toObject(UserDataDTO::class.java)
-
+        val result = getFirestoreDocumentData(FirestoreCollections.USER_DATA_COLLECTION, userId)?.toObject(UserDataDTO::class.java)
         emit(result?.let { Response.Success(it) } ?: Response.Error(resourceProvider.getString(R.string.error_no_data)))
     }.catch { emit(Response.Error(it.localizedMessage ?: resourceProvider.getString(R.string.error_unknown))) }
 
@@ -89,11 +84,7 @@ class FirestoreService @Inject constructor(
 
     override fun getUserScore(userId: String): Flow<Response<ScoreDTO>> = flow {
         emit(Response.Loading)
-        val result = firestore.collection(FirestoreCollections.USER_SCORE)
-            .document(userId)
-            .get()
-            .await()
-            .toObject(ScoreDTO::class.java)
+        val result = getFirestoreDocumentData(FirestoreCollections.USER_SCORE, userId)?.toObject(ScoreDTO::class.java)
         emit(result?.let { Response.Success(it) } ?: Response.Error(resourceProvider.getString(R.string.error_no_data)))
     }.catch { emit(Response.Error(it.localizedMessage ?: resourceProvider.getString(R.string.error_unknown))) }
 
@@ -142,8 +133,7 @@ class FirestoreService @Inject constructor(
                 .get(Source.CACHE)
                 .await()
                 .takeIf { it.exists() }
-                ?: firestore.collection(collection).document(documentId).get(Source.SERVER).await()
-        } catch (e: Exception) {
+        } catch (_ : Exception) {
             firestore.collection(collection).document(documentId).get(Source.SERVER).await()
         }
     }

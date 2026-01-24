@@ -2,10 +2,8 @@ package com.rafalskrzypczyk.firestore.domain.use_cases
 
 import app.cash.turbine.test
 import com.rafalskrzypczyk.core.api_response.Response
-import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
 import com.rafalskrzypczyk.firestore.domain.FirestoreApi
 import com.rafalskrzypczyk.firestore.domain.models.TermsOfServiceDTO
-import com.rafalskrzypczyk.firestore.domain.models.TermsOfServiceStatus
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.flowOf
