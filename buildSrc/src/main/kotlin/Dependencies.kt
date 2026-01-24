@@ -2,6 +2,7 @@ import org.gradle.api.artifacts.dsl.DependencyHandler
 
 object Dependencies {
     const val ANDROID_CORE_KTX = "androidx.core:core-ktx:${Versions.CORE_KTX}"
+    const val SPLASH_SCREEN = "androidx.core:core-splashscreen:${Versions.SPLASH_SCREEN}"
 
     // UI
     const val COMPOSE_BOM = "androidx.compose:compose-bom:${Versions.COMPOSE_BOM}"

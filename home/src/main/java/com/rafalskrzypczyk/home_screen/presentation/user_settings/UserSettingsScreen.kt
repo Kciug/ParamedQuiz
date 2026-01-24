@@ -28,6 +28,7 @@ import androidx.compose.material.icons.automirrored.rounded.Logout
 import androidx.compose.material.icons.outlined.Badge
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.DeleteForever
+import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.Scaffold
@@ -67,6 +68,7 @@ fun UserSettingsScreen(
     onEvent: (UserSettingsUIEvents) -> Unit,
     onNavigateBack: () -> Unit,
     onSignOut: () -> Unit,
+    onTermsOfService: () -> Unit,
 ) {
     val context = LocalContext.current
     val successMsg = stringResource(com.rafalskrzypczyk.core.R.string.desc_success)
@@ -95,7 +97,8 @@ fun UserSettingsScreen(
                     UserSettingsContent(
                         state = state,
                         onEvent = onEvent,
-                        onSignOut = onSignOut
+                        onSignOut = onSignOut,
+                        onTermsOfService = onTermsOfService
                     )
                     
                     if (state.responseState == ResponseState.Loading) {
@@ -165,7 +168,8 @@ private fun UserSettingsContent(
     modifier: Modifier = Modifier,
     state: UserSettingsState,
     onEvent: (UserSettingsUIEvents) -> Unit,
-    onSignOut: () -> Unit
+    onSignOut: () -> Unit,
+    onTermsOfService: () -> Unit,
 ) {
     Column (modifier = modifier.fillMaxSize()) {
         LazyColumn(
@@ -231,11 +235,19 @@ private fun UserSettingsContent(
                 )
             }
 
+            item {
+                SettingsCategoryHeader(stringResource(R.string.settings_category_other))
+            }
+
+            item {
+                SettingsItemRow(
+                    title = stringResource(R.string.terms_of_service_title),
+                    icon = Icons.Outlined.Description,
+                    onClick = onTermsOfService
+                )
+            }
+
             if (!state.isAnonymous) {
-                item {
-                    SettingsCategoryHeader(stringResource(R.string.settings_category_other))
-                }
-                
                 item {
                     SettingsItemRow(
                         title = stringResource(R.string.title_delete_account),
@@ -308,6 +320,7 @@ private fun UserSettingsPreview() {
                 onEvent = {},
                 onNavigateBack = {},
                 onSignOut = {},
+                onTermsOfService = {}
             )
         }
     }

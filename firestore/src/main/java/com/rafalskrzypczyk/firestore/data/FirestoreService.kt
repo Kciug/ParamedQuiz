@@ -1,5 +1,6 @@
 package com.rafalskrzypczyk.firestore.data
 
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.SetOptions
@@ -13,6 +14,7 @@ import com.rafalskrzypczyk.firestore.domain.models.IssueReportDTO
 import com.rafalskrzypczyk.firestore.domain.models.QuestionDTO
 import com.rafalskrzypczyk.firestore.domain.models.ScoreDTO
 import com.rafalskrzypczyk.firestore.domain.models.SwipeQuestionDTO
+import com.rafalskrzypczyk.firestore.domain.models.TermsOfServiceDTO
 import com.rafalskrzypczyk.firestore.domain.models.TranslationQuestionDTO
 import com.rafalskrzypczyk.firestore.domain.models.UserDataDTO
 import kotlinx.coroutines.channels.awaitClose
@@ -21,7 +23,6 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -31,12 +32,7 @@ class FirestoreService @Inject constructor(
 ) : FirestoreApi {
     override fun getUserData(userId: String): Flow<Response<UserDataDTO>> = flow {
         emit(Response.Loading)
-        val result = firestore.collection(FirestoreCollections.USER_DATA_COLLECTION)
-            .document(userId)
-            .get()
-            .await()
-            .toObject(UserDataDTO::class.java)
-
+        val result = getFirestoreDocumentData(FirestoreCollections.USER_DATA_COLLECTION, userId)?.toObject(UserDataDTO::class.java)
         emit(result?.let { Response.Success(it) } ?: Response.Error(resourceProvider.getString(R.string.error_no_data)))
     }.catch { emit(Response.Error(it.localizedMessage ?: resourceProvider.getString(R.string.error_unknown))) }
 
@@ -88,11 +84,7 @@ class FirestoreService @Inject constructor(
 
     override fun getUserScore(userId: String): Flow<Response<ScoreDTO>> = flow {
         emit(Response.Loading)
-        val result = firestore.collection(FirestoreCollections.USER_SCORE)
-            .document(userId)
-            .get()
-            .await()
-            .toObject(ScoreDTO::class.java)
+        val result = getFirestoreDocumentData(FirestoreCollections.USER_SCORE, userId)?.toObject(ScoreDTO::class.java)
         emit(result?.let { Response.Success(it) } ?: Response.Error(resourceProvider.getString(R.string.error_no_data)))
     }.catch { emit(Response.Error(it.localizedMessage ?: resourceProvider.getString(R.string.error_unknown))) }
 
@@ -114,6 +106,48 @@ class FirestoreService @Inject constructor(
         val docId = firestore.collection(FirestoreCollections.ISSUES_REPORTS).document().id
         val reportWithId = report.copy(id = docId)
         emit(modifyFirestoreDocument(docId, reportWithId, FirestoreCollections.ISSUES_REPORTS))
+    }
+
+    override fun getTermsOfService(): Flow<Response<TermsOfServiceDTO>> = flow {
+        emit(Response.Loading)
+        val snapshot = getFirestoreDocumentData(FirestoreCollections.APP_CONFIG, FirestoreCollections.TERMS_OF_SERVICE)
+        val terms = snapshot?.toObject(TermsOfServiceDTO::class.java)
+        emit(terms?.let { Response.Success(it) } ?: Response.Error(resourceProvider.getString(R.string.error_no_data)))
+    }.catch { emit(Response.Error(it.localizedMessage ?: resourceProvider.getString(R.string.error_unknown))) }
+
+    override fun getTermsOfServiceUpdates(): Flow<Response<TermsOfServiceDTO>> = attachFirestoreDocumentListener(
+        collection = FirestoreCollections.APP_CONFIG,
+        documentId = FirestoreCollections.TERMS_OF_SERVICE
+    ).map { snapshot ->
+        val terms = snapshot.toObject(TermsOfServiceDTO::class.java)
+        if (terms != null) {
+            Response.Success(terms)
+        } else {
+            Response.Error(resourceProvider.getString(R.string.error_no_data))
+        }
+    }.catch { emit(Response.Error(it.localizedMessage ?: resourceProvider.getString(R.string.error_unknown))) }
+
+    private suspend fun getFirestoreDocumentData(collection: String, documentId: String): DocumentSnapshot? {
+        return try {
+            firestore.collection(collection).document(documentId)
+                .get(Source.CACHE)
+                .await()
+                .takeIf { it.exists() }
+        } catch (_: Exception) {
+            null
+        } ?: firestore.collection(collection).document(documentId).get(Source.SERVER).await()
+    }
+
+    private fun attachFirestoreDocumentListener(collection: String, documentId: String): Flow<DocumentSnapshot> = callbackFlow {
+        val listener = firestore.collection(collection).document(documentId).addSnapshotListener { value, error ->
+            if (value?.metadata?.isFromCache == true) return@addSnapshotListener
+            if (error != null) {
+                close(error)
+                return@addSnapshotListener
+            }
+            value?.let { trySend(it) }
+        }
+        awaitClose { listener.remove() }
     }
 
     private suspend fun getFirestoreData(collection: String): QuerySnapshot? {

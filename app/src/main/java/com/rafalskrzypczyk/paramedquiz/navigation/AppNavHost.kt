@@ -13,13 +13,14 @@ import androidx.navigation.compose.NavHost
 @Composable
 fun AppNavHost(
     navController: NavHostController,
+    startDestination: Any,
     isOnboarding: () -> Boolean,
     onFinishOnboarding: () -> Unit,
 ) {
     NavHost(
         modifier = Modifier.background(MaterialTheme.colorScheme.background),
         navController = navController,
-        startDestination = if(isOnboarding()) Onboarding else MainMenu,
+        startDestination = startDestination,
         enterTransition = {
             slideIntoContainer(
                 towards = AnimatedContentTransitionScope.SlideDirection.Left,
@@ -45,6 +46,11 @@ fun AppNavHost(
             )
         }
     ) {
+        termsOfServiceDestination(
+            onAccepted = { navController.navigateToMainMenu() },
+            onNavigateBack = { navController.popBackStack() }
+        )
+
         signupDestination(
             onExit = { navController.popBackStack() },
             onAuthenticated = {
@@ -76,6 +82,7 @@ fun AppNavHost(
         userSettingsDestination(
             onNavigateBack = { navController.popBackStack() },
             onSignOut = { navController.navigateToSignup(popUpToUserPage = true) },
+            onTermsOfService = { navController.navigateToTermsOfService(isMandatory = false) }
         )
 
         mainModeDestination(
@@ -95,7 +102,6 @@ fun AppNavHost(
             navigateToSignup = { navController.navigateToSignup() },
             onFinishOnboarding = {
                 onFinishOnboarding()
-                navController.navigateToMainMenu()
             }
         )
 

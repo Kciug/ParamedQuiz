@@ -5,10 +5,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import com.rafalskrzypczyk.home_screen.presentation.home_page.HomeScreen
 import com.rafalskrzypczyk.home_screen.presentation.home_page.HomeScreenVM
 import com.rafalskrzypczyk.home_screen.presentation.onboarding.OnboardingScreen
 import com.rafalskrzypczyk.home_screen.presentation.onboarding.OnboardingVM
+import com.rafalskrzypczyk.home_screen.presentation.terms_of_service.TermsOfServiceScreen
+import com.rafalskrzypczyk.home_screen.presentation.terms_of_service.TermsOfServiceVM
 import com.rafalskrzypczyk.home_screen.presentation.user_page.UserPageScreen
 import com.rafalskrzypczyk.home_screen.presentation.user_page.UserPageVM
 import com.rafalskrzypczyk.home_screen.presentation.user_settings.UserSettingsScreen
@@ -27,6 +30,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 object Signup
+
 
 fun NavGraphBuilder.signupDestination(
     onExit: () -> Unit,
@@ -141,6 +145,7 @@ object UserSettings
 fun NavGraphBuilder.userSettingsDestination(
     onNavigateBack: () -> Unit,
     onSignOut: () -> Unit,
+    onTermsOfService: () -> Unit,
 ) {
     composable<UserSettings> {
         val viewModel = hiltViewModel<UserSettingsVM>()
@@ -151,6 +156,7 @@ fun NavGraphBuilder.userSettingsDestination(
             onEvent = viewModel::onEvent,
             onNavigateBack = onNavigateBack,
             onSignOut = onSignOut,
+            onTermsOfService = onTermsOfService
         )
     }
 }
@@ -260,4 +266,34 @@ fun NavGraphBuilder.devDestination(
 
 fun NavController.navigateToDevOptions() {
     navigate(route = Dev)
+}
+
+@Serializable
+data class TermsOfService(val isMandatory: Boolean = true)
+
+fun NavGraphBuilder.termsOfServiceDestination(
+    onAccepted: () -> Unit,
+    onNavigateBack: () -> Unit,
+) {
+    composable<TermsOfService> {
+        val viewModel = hiltViewModel<TermsOfServiceVM>()
+        val state = viewModel.state.collectAsStateWithLifecycle()
+        val route = it.toRoute<TermsOfService>()
+
+        TermsOfServiceScreen(
+            state = state.value,
+            isMandatory = route.isMandatory,
+            onEvent = viewModel::onEvent,
+            onAccepted = onAccepted,
+            onNavigateBack = onNavigateBack
+        )
+    }
+}
+
+fun NavController.navigateToTermsOfService(isMandatory: Boolean = true) {
+    navigate(route = TermsOfService(isMandatory = isMandatory)) {
+        if (isMandatory) {
+            popUpTo(0)
+        }
+    }
 }
