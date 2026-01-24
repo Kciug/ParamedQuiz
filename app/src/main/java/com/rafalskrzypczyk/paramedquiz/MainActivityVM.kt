@@ -52,10 +52,10 @@ class MainActivityVM @Inject constructor(
                     _navigationEvent.emit(MainMenu)
                 }
                 is TermsOfServiceStatus.NeedsAcceptance -> {
-                    _navigationEvent.emit(TermsOfService)
+                    _navigationEvent.emit(TermsOfService(isMandatory = true))
                 }
                 is TermsOfServiceStatus.Error -> {
-                    val destination = if (sharedPrefs.getAcceptedTermsVersion() != -1) MainMenu else TermsOfService
+                    val destination = if (sharedPrefs.getAcceptedTermsVersion() != -1) MainMenu else TermsOfService(isMandatory = true)
                     _navigationEvent.emit(destination)
                 }
                 else -> {
@@ -79,15 +79,15 @@ class MainActivityVM @Inject constructor(
                     _state.update { it.copy(startDestination = MainMenu, isLoading = false) }
                 }
                 is TermsOfServiceStatus.NeedsAcceptance -> {
-                    _state.update { it.copy(startDestination = TermsOfService, isLoading = false) }
+                    _state.update { it.copy(startDestination = TermsOfService(isMandatory = true), isLoading = false) }
                 }
                 is TermsOfServiceStatus.Error -> {
-                    val destination = if (sharedPrefs.getAcceptedTermsVersion() != -1) MainMenu else TermsOfService
+                    val destination = if (sharedPrefs.getAcceptedTermsVersion() != -1) MainMenu else TermsOfService(isMandatory = true)
                     _state.update { it.copy(startDestination = destination, isLoading = false) }
                 }
                 else -> {
                     // Fallback for timeout/null
-                    val destination = if (sharedPrefs.getAcceptedTermsVersion() != -1) MainMenu else TermsOfService
+                    val destination = if (sharedPrefs.getAcceptedTermsVersion() != -1) MainMenu else TermsOfService(isMandatory = true)
                     _state.update { it.copy(startDestination = destination, isLoading = false) }
                 }
             }

@@ -30,8 +30,10 @@ import com.rafalskrzypczyk.home.R
 @Composable
 fun TermsOfServiceScreen(
     state: TermsOfServiceState,
+    isMandatory: Boolean,
     onEvent: (TermsOfServiceUIEvents) -> Unit,
-    onAccepted: () -> Unit
+    onAccepted: () -> Unit,
+    onNavigateBack: () -> Unit,
 ) {
     LaunchedEffect(Unit) {
         onEvent(TermsOfServiceUIEvents.LoadTerms)
@@ -46,7 +48,9 @@ fun TermsOfServiceScreen(
     Scaffold(
         topBar = {
             TermsOfServiceTopBar(
-                title = stringResource(R.string.terms_of_service_title)
+                title = stringResource(R.string.terms_of_service_title),
+                showBackButton = !isMandatory,
+                onNavigateBack = onNavigateBack
             )
         }
     ) { padding ->
@@ -84,13 +88,15 @@ fun TermsOfServiceScreen(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(Dimens.DEFAULT_PADDING))
+                    if (isMandatory) {
+                        Spacer(modifier = Modifier.height(Dimens.DEFAULT_PADDING))
 
-                    ButtonPrimary(
-                        title = stringResource(R.string.accept_terms_button),
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = { onEvent(TermsOfServiceUIEvents.AcceptTerms) }
-                    )
+                        ButtonPrimary(
+                            title = stringResource(R.string.accept_terms_button),
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = { onEvent(TermsOfServiceUIEvents.AcceptTerms) }
+                        )
+                    }
                 }
             }
         }

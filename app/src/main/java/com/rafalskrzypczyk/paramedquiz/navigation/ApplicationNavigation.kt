@@ -5,6 +5,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import com.rafalskrzypczyk.home_screen.presentation.home_page.HomeScreen
 import com.rafalskrzypczyk.home_screen.presentation.home_page.HomeScreenVM
 import com.rafalskrzypczyk.home_screen.presentation.onboarding.OnboardingScreen
@@ -144,6 +145,7 @@ object UserSettings
 fun NavGraphBuilder.userSettingsDestination(
     onNavigateBack: () -> Unit,
     onSignOut: () -> Unit,
+    onTermsOfService: () -> Unit,
 ) {
     composable<UserSettings> {
         val viewModel = hiltViewModel<UserSettingsVM>()
@@ -154,6 +156,7 @@ fun NavGraphBuilder.userSettingsDestination(
             onEvent = viewModel::onEvent,
             onNavigateBack = onNavigateBack,
             onSignOut = onSignOut,
+            onTermsOfService = onTermsOfService
         )
     }
 }
@@ -266,25 +269,31 @@ fun NavController.navigateToDevOptions() {
 }
 
 @Serializable
-object TermsOfService
+data class TermsOfService(val isMandatory: Boolean = true)
 
 fun NavGraphBuilder.termsOfServiceDestination(
-    onAccepted: () -> Unit
+    onAccepted: () -> Unit,
+    onNavigateBack: () -> Unit,
 ) {
     composable<TermsOfService> {
         val viewModel = hiltViewModel<TermsOfServiceVM>()
         val state = viewModel.state.collectAsStateWithLifecycle()
+        val route = it.toRoute<TermsOfService>()
 
         TermsOfServiceScreen(
             state = state.value,
+            isMandatory = route.isMandatory,
             onEvent = viewModel::onEvent,
-            onAccepted = onAccepted
+            onAccepted = onAccepted,
+            onNavigateBack = onNavigateBack
         )
     }
 }
 
-fun NavController.navigateToTermsOfService() {
-    navigate(route = TermsOfService) {
-        popUpTo(0)
+fun NavController.navigateToTermsOfService(isMandatory: Boolean = true) {
+    navigate(route = TermsOfService(isMandatory = isMandatory)) {
+        if (isMandatory) {
+            popUpTo(0)
+        }
     }
 }

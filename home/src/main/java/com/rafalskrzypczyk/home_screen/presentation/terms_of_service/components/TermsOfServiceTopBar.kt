@@ -16,13 +16,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import com.rafalskrzypczyk.core.composables.BackButton
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.TextHeadline
 
 @Composable
 fun TermsOfServiceTopBar(
     title: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showBackButton: Boolean = false,
+    onNavigateBack: () -> Unit = {}
 ) {
     Box(
         modifier = modifier
@@ -42,6 +45,11 @@ fun TermsOfServiceTopBar(
             .padding(Dimens.DEFAULT_PADDING),
         contentAlignment = Alignment.Center
     ) {
+        if (showBackButton) {
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterStart) {
+                BackButton(onNavigateBack = onNavigateBack)
+            }
+        }
         TextHeadline(text = title)
     }
 }

@@ -47,7 +47,8 @@ fun AppNavHost(
         }
     ) {
         termsOfServiceDestination(
-            onAccepted = { navController.navigateToMainMenu() }
+            onAccepted = { navController.navigateToMainMenu() },
+            onNavigateBack = { navController.popBackStack() }
         )
 
         signupDestination(
@@ -81,6 +82,7 @@ fun AppNavHost(
         userSettingsDestination(
             onNavigateBack = { navController.popBackStack() },
             onSignOut = { navController.navigateToSignup(popUpToUserPage = true) },
+            onTermsOfService = { navController.navigateToTermsOfService(isMandatory = false) }
         )
 
         mainModeDestination(
