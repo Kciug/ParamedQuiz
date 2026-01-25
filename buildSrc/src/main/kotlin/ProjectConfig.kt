@@ -3,6 +3,6 @@ object ProjectConfig {
     const val MIN_SDK = 24
     const val TARGET_SDK = 35
     const val COMPILE_SDK = 35
-    const val VERSION_CODE = 10010
-    const val VERSION_NAME = "1.1.0"
+    const val VERSION_CODE = 10011
+    const val VERSION_NAME = "1.2.0"
 }
