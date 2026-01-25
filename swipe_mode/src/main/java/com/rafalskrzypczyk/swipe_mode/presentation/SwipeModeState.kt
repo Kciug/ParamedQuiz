@@ -25,6 +25,7 @@ data class SwipeModeState(
     val type1Errors: Int = 0, // False Negatives (User said False, was True)
     val type2Errors: Int = 0,  // False Positives (User said True, was False)
     
+    val showAd: Boolean = false,
     val showReportDialog: Boolean = false,
     val showReportSuccessToast: Boolean = false,
     val reportableQuestionContent: String = ""

@@ -26,6 +26,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import android.app.Activity
+import androidx.compose.runtime.remember
+import com.rafalskrzypczyk.core.ads.AdManagerEntryPoint
+import dagger.hilt.android.EntryPointAccessors
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.BaseQuizScreen
 import com.rafalskrzypczyk.core.composables.Dimens
@@ -44,6 +48,25 @@ fun SwipeModeScreen(
 ) {
     val context = LocalContext.current
     val successMsg = stringResource(com.rafalskrzypczyk.core.R.string.report_issue_success)
+
+    val adManager = remember {
+        EntryPointAccessors.fromApplication(context, AdManagerEntryPoint::class.java).adManager()
+    }
+
+    LaunchedEffect(state.showAd) {
+        if (state.showAd) {
+            val activity = context as? Activity
+            if (activity != null) {
+                adManager.showInterstitial(
+                    activity = activity,
+                    onAdShown = { onEvent(SwipeModeUIEvents.OnAdShown) },
+                    onAdDismissed = { onEvent(SwipeModeUIEvents.OnAdDismissed) }
+                )
+            } else {
+                onEvent(SwipeModeUIEvents.OnAdDismissed)
+            }
+        }
+    }
 
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE

@@ -78,6 +78,7 @@ dependencies {
     implementation(project(":swipe_mode"))
     implementation(project(":score"))
     implementation(project(":translation_mode"))
+    implementation(project(":ads"))
     implementation(project(":firestore"))
 
     implementation(Dependencies.SPLASH_SCREEN)
