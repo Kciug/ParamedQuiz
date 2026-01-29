@@ -79,6 +79,7 @@ dependencies {
     implementation(project(":score"))
     implementation(project(":translation_mode"))
     implementation(project(":ads"))
+    implementation(project(":billing"))
     implementation(project(":firestore"))
 
     implementation(Dependencies.SPLASH_SCREEN)

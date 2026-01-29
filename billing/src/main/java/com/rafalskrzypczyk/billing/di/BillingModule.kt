@@ -19,4 +19,10 @@ abstract class BillingModule {
     abstract fun bindBillingRepository(
         billingRepositoryImpl: BillingRepositoryImpl
     ): BillingRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindPremiumStatusProvider(
+        billingPremiumStatusProvider: com.rafalskrzypczyk.billing.data.BillingPremiumStatusProvider
+    ): com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 }
