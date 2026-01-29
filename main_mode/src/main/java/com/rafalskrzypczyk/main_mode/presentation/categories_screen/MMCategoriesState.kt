@@ -14,5 +14,7 @@ data class MMCategoriesState (
     val responseState: ResponseState = ResponseState.Idle,
     val userIcon: Int? = null,
     val categories: List<CategoryUIM> = emptyList(),
-    val unlockCategory: Boolean = false
+    val unlockCategory: Boolean = false,
+    val selectedCategoryForPurchase: CategoryUIM? = null,
+    val productPrice: String? = null
 )
