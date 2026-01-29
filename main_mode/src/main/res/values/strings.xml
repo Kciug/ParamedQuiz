@@ -39,4 +39,14 @@
     <string name="btn_review_answers">Przegląd odpowiedzi</string>
     <string name="review_answers_title">Przegląd odpowiedzi</string>
     <string name="question_precision">Precyzja pytania</string>
+
+    <plurals name="questions_count_plurals">
+        <item quantity="one">%d pytanie</item>
+        <item quantity="few">%d pytania</item>
+        <item quantity="many">%d pytań</item>
+        <item quantity="other">%d pytań</item>
+    </plurals>
+
+    <string name="purchase_one_time_label">Dostęp dożywotni • Zakup jednorazowy</string>
+    <string name="purchase_includes_ad_free">Ten zakup usuwa reklamy w całej aplikacji</string>
 </resources>
