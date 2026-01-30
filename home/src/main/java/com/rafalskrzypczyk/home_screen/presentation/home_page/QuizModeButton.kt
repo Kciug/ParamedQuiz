@@ -32,12 +32,15 @@ import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.core.utils.rememberDebouncedClick
 
 
+import com.rafalskrzypczyk.core.composables.LockedOverlay
+
 @Composable
 fun QuizModeButton(
     modifier: Modifier = Modifier,
     title: String,
     description: String,
     imageRes: Int,
+    locked: Boolean = false,
     onClick: () -> Unit
 ) {
     Box {
@@ -49,19 +52,25 @@ fun QuizModeButton(
             onClick = rememberDebouncedClick(onClick = onClick),
             shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT),
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        top = Dimens.DEFAULT_PADDING,
-                        start = Dimens.DEFAULT_PADDING + Dimens.IMAGE_SIZE_MEDIUM,
-                        end = Dimens.DEFAULT_PADDING,
-                        bottom = Dimens.DEFAULT_PADDING
-                    ),
-                verticalArrangement = Arrangement.SpaceEvenly,
-            ) {
-                TextHeadline(title)
-                TextPrimary(description)
+            Box {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            top = Dimens.DEFAULT_PADDING,
+                            start = Dimens.DEFAULT_PADDING + Dimens.IMAGE_SIZE_MEDIUM,
+                            end = Dimens.DEFAULT_PADDING,
+                            bottom = Dimens.DEFAULT_PADDING
+                        ),
+                    verticalArrangement = Arrangement.SpaceEvenly,
+                ) {
+                    TextHeadline(title)
+                    TextPrimary(description)
+                }
+                
+                if (locked) {
+                    LockedOverlay(modifier = Modifier.matchParentSize())
+                }
             }
         }
         Image(

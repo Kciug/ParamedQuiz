@@ -72,4 +72,9 @@
     <string name="report_issue_send">Wyślij</string>
     <string name="report_issue_cancel">Anuluj</string>
     <string name="report_issue_success">Zgłoszenie wysłane. Dziękujemy!</string>
+
+    <string name="purchase_one_time_label">Dostęp dożywotni • Zakup jednorazowy</string>
+    <string name="purchase_includes_ad_free">Ten zakup usuwa reklamy w całej aplikacji</string>
+    <string name="price_loading">Pobieranie ceny...</string>
+    <string name="btn_buy">Kup teraz</string>
 </resources>

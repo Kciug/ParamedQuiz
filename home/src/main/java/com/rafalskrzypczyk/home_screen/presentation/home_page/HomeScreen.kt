@@ -1,5 +1,6 @@
 package com.rafalskrzypczyk.home_screen.presentation.home_page
 
+import android.app.Activity
 import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -26,6 +27,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Upcoming
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -39,11 +41,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import com.rafalskrzypczyk.core.composables.BasePurchaseDialog
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.InfoDialog
 import com.rafalskrzypczyk.core.composables.TextHeadline
+import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.composables.top_bars.MainTopBar
 import com.rafalskrzypczyk.core.ui.theme.MQGreen
 import com.rafalskrzypczyk.core.ui.theme.MQYellow
@@ -63,8 +69,10 @@ fun HomeScreen(
     onNavigateToDevOptions: () -> Unit
 ) {
     var showDailyExerciseAlreadyDoneAlert by remember { mutableStateOf(false) }
-
     var showRevisionsUnavailableAlert by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    val activity = remember(context) { context as? Activity }
 
     val addons = listOf(
         Addon(
@@ -88,6 +96,32 @@ fun HomeScreen(
 
     LaunchedEffect(Unit) {
         onEvent.invoke(HomeUIEvents.GetData)
+    }
+    
+    if (state.showTranslationModePurchaseDialog) {
+        BasePurchaseDialog(
+            price = state.translationModePrice,
+            onDismiss = { onEvent(HomeUIEvents.CloseTranslationModePurchaseDialog) },
+            onConfirm = {
+                if (activity != null) {
+                    onEvent(HomeUIEvents.BuyTranslationMode(activity))
+                }
+            }
+        ) {
+             Column(
+                 horizontalAlignment = Alignment.CenterHorizontally,
+                 verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL)
+             ) {
+                 TextHeadline(
+                     text = stringResource(com.rafalskrzypczyk.core.R.string.title_translation_mode),
+                     textAlign = TextAlign.Center
+                 )
+                 TextPrimary(
+                     text = stringResource(R.string.mode_translation_desc),
+                     textAlign = TextAlign.Center
+                 )
+             }
+        }
     }
 
     Scaffold(
@@ -123,9 +157,16 @@ fun HomeScreen(
             )
             HomeScreenAddonsMenu(addons = addons)
             HomeScreenQuizModesMenu(
+                isTranslationModeUnlocked = state.isTranslationModeUnlocked,
                 onNavigateToMainMode = onNavigateToMainMode,
                 onNavigateToSwipeMode = onNavigateToSwipeMode,
-                onNavigateToTranslationMode = onNavigateToTranslationMode
+                onNavigateToTranslationMode = {
+                    if (state.isTranslationModeUnlocked) {
+                        onNavigateToTranslationMode()
+                    } else {
+                        onEvent(HomeUIEvents.OpenTranslationModePurchaseDialog)
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom)))
@@ -183,6 +224,7 @@ fun HomeScreenAddonsMenu(
 @Composable
 fun HomeScreenQuizModesMenu(
     modifier: Modifier = Modifier,
+    isTranslationModeUnlocked: Boolean,
     onNavigateToMainMode: () -> Unit,
     onNavigateToSwipeMode: () -> Unit,
     onNavigateToTranslationMode: () -> Unit
@@ -207,7 +249,8 @@ fun HomeScreenQuizModesMenu(
         QuizModeButton(
             title = stringResource(com.rafalskrzypczyk.core.R.string.title_translation_mode),
             description = stringResource(R.string.mode_translation_desc),
-            imageRes = com.rafalskrzypczyk.core.R.drawable.mediquiz_translations
+            imageRes = com.rafalskrzypczyk.core.R.drawable.mediquiz_translations,
+            locked = !isTranslationModeUnlocked
         ) { onNavigateToTranslationMode() }
         Card (
             modifier = Modifier.padding(top = Dimens.ELEMENTS_SPACING),
