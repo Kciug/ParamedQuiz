@@ -20,13 +20,16 @@ class BillingPremiumStatusProvider @Inject constructor(
             purchaseList.any { it.purchaseState == Purchase.PurchaseState.PURCHASED }
         }
 
-    override fun hasAccessTo(contentId: String): Flow<Boolean> = billingRepository.purchases
+    override val ownedProductIds: Flow<Set<String>> = billingRepository.purchases
         .map { purchaseList ->
-            val ownedProductIds = purchaseList
+            purchaseList
                 .filter { it.purchaseState == Purchase.PurchaseState.PURCHASED }
-                .flatMap { it.products } // Purchase.products is a list of Strings (SKUs)
+                .flatMap { it.products }
+                .toSet()
+        }
 
-            // Access granted if user owns the Full Package OR the specific content ID
-            ownedProductIds.contains(BillingIds.ID_FULL_PACKAGE) || ownedProductIds.contains(contentId)
+    override fun hasAccessTo(contentId: String): Flow<Boolean> = ownedProductIds
+        .map { ownedIds ->
+            ownedIds.contains(BillingIds.ID_FULL_PACKAGE) || ownedIds.contains(contentId)
         }
 }

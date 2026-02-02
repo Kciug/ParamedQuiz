@@ -79,7 +79,9 @@ class HomeScreenVM @Inject constructor(
         }
         
         viewModelScope.launch {
-            premiumStatusProvider.hasAccessTo(BillingIds.ID_TRANSLATION_MODE).collectLatest { hasAccess ->
+            premiumStatusProvider.ownedProductIds.collectLatest { ownedIds ->
+                val hasAccess = ownedIds.contains(BillingIds.ID_FULL_PACKAGE) || 
+                                ownedIds.contains(BillingIds.ID_TRANSLATION_MODE)
                 _state.update { it.copy(isTranslationModeUnlocked = hasAccess) }
             }
         }
