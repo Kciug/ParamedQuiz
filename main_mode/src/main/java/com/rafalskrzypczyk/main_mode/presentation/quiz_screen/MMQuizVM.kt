@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
+import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.main_mode.domain.quiz.MMQuizUseCases
 import com.rafalskrzypczyk.main_mode.presentation.quiz_base.BaseQuizVM
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,8 +16,9 @@ import javax.inject.Inject
 @HiltViewModel
 class MMQuizVM @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val useCases: MMQuizUseCases
-): BaseQuizVM(useCases = useCases.base) {
+    private val useCases: MMQuizUseCases,
+    premiumStatusProvider: PremiumStatusProvider
+): BaseQuizVM(useCases = useCases.base, premiumStatusProvider = premiumStatusProvider) {
     private val categoryId: Long = savedStateHandle.get<Long>("categoryId") ?: -1
     private val categoryTitle: String = savedStateHandle.get<String>("categoryTitle") ?: ""
 

@@ -78,6 +78,7 @@ fun MMQuizScreen(
         quizTopPanel = { MMQuizTopPanel(score = state.userScore, correctAnswers = state.correctAnswers) },
         currentQuestionIndex = state.currentQuestionNumber,
         quizFinished = state.isQuizFinished,
+        waitingForAd = state.showAd,
         quizFinishedState = state.quizFinishedState,
         quizFinishedExtras = {
             if (state.isDailyExercise) {

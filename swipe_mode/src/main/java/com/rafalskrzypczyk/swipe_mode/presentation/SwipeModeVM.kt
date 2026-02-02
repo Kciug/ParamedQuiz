@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedState
+import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.report_issues.IssueReport
 import com.rafalskrzypczyk.swipe_mode.domain.SwipeModeUseCases
 import com.rafalskrzypczyk.swipe_mode.domain.SwipeQuestion
@@ -18,7 +19,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SwipeModeVM @Inject constructor(
-    val useCases: SwipeModeUseCases
+    val useCases: SwipeModeUseCases,
+    private val premiumStatusProvider: PremiumStatusProvider
 ) : ViewModel() {
     private val _state = MutableStateFlow(SwipeModeState())
     val state = _state.asStateFlow()
@@ -31,6 +33,7 @@ class SwipeModeVM @Inject constructor(
     private var bestStreak: Int = 0
     private var earnedPoints: Int = 0
     private var isStreakUpdatedInSession = false
+    private var isAdsFree: Boolean = false
 
     // Timing stats
     private var quizStartTime: Long = 0L
@@ -45,6 +48,11 @@ class SwipeModeVM @Inject constructor(
         viewModelScope.launch {
             useCases.getUserScore().collectLatest { score ->
                 _state.update { it.copy(userScore = score.score) }
+            }
+        }
+        viewModelScope.launch {
+            premiumStatusProvider.isAdsFree.collectLatest { 
+                isAdsFree = it
             }
         }
         viewModelScope.launch {
@@ -76,13 +84,13 @@ class SwipeModeVM @Inject constructor(
             SwipeModeUIEvents.OnBackDiscarded -> _state.update { it.copy(showExitConfirmation = false) }
             is SwipeModeUIEvents.ToggleReportDialog -> toggleReportDialog(event.show)
             is SwipeModeUIEvents.OnReportIssue -> reportIssue(event.description)
-            SwipeModeUIEvents.OnAdDismissed -> onAdDismissed()
+            SwipeModeUIEvents.OnAdDismissed -> finishQuiz()
             SwipeModeUIEvents.OnAdShown -> onAdShown()
         }
     }
 
     private fun onAdShown() {
-        _state.update { it.copy(isQuizFinished = true) }
+        // Do nothing, wait for dismissal
     }
 
     private fun toggleReportDialog(show: Boolean) {
@@ -189,7 +197,7 @@ class SwipeModeVM @Inject constructor(
         else setFinishedState()
     }
 
-    private fun onAdDismissed() {
+    private fun finishQuiz() {
         val totalDuration = System.currentTimeMillis() - quizStartTime
         val questionsAnswered = currentQuestionIndex
         val averageTime = if (questionsAnswered > 0) totalResponseTimeAccumulator / questionsAnswered else 0L
@@ -211,6 +219,10 @@ class SwipeModeVM @Inject constructor(
     }
 
     private fun setFinishedState() {
-        _state.update { it.copy(showAd = true) }
+        if(isAdsFree) {
+            finishQuiz()
+        } else {
+            _state.update { it.copy(showAd = true) }
+        }
     }
 }

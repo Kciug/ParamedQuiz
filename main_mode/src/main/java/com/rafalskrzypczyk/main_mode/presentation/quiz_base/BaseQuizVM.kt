@@ -9,6 +9,7 @@ import com.rafalskrzypczyk.core.report_issues.IssueReport
 import com.rafalskrzypczyk.main_mode.domain.models.Question
 import com.rafalskrzypczyk.main_mode.domain.quiz_base.BaseQuizUseCases
 import com.rafalskrzypczyk.main_mode.domain.quiz_base.QuizEngine
+import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -16,7 +17,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 abstract class BaseQuizVM (
-    private val useCases: BaseQuizUseCases
+    private val useCases: BaseQuizUseCases,
+    private val premiumStatusProvider: PremiumStatusProvider
 ): ViewModel() {
     @Suppress("PropertyName")
     protected val _state = MutableStateFlow(QuizState())
@@ -26,12 +28,18 @@ abstract class BaseQuizVM (
 
     protected var earnedPoints: Int = 0
     protected var isStreakUpdatedInSession: Boolean = false
+    private var isAdsFree: Boolean = false
     
     // Timing
     private var currentQuestionStartTime: Long = 0L
 
     init {
         loadUserScore()
+        viewModelScope.launch {
+            premiumStatusProvider.isAdsFree.collectLatest { 
+                isAdsFree = it
+            }
+        }
     }
 
     abstract suspend fun loadQuestions()
@@ -47,13 +55,13 @@ abstract class BaseQuizVM (
             is MMQuizUIEvents.ToggleReviewDialog -> toggleReviewDialog(event.show)
             is MMQuizUIEvents.ToggleReportDialog -> toggleReportDialog(event.show)
             is MMQuizUIEvents.OnReportIssue -> reportIssue(event.description)
-            MMQuizUIEvents.OnAdDismissed -> onAdDismissed()
+            MMQuizUIEvents.OnAdDismissed -> finishQuiz()
             MMQuizUIEvents.OnAdShown -> onAdShown()
         }
     }
 
     private fun onAdShown() {
-        _state.update { it.copy(isQuizFinished = true) }
+        // Do nothing, wait for dismissal
     }
     
     fun toggleReviewDialog(show: Boolean) {
@@ -208,10 +216,14 @@ abstract class BaseQuizVM (
     }
 
     protected open fun setFinishedState() {
-        _state.update { it.copy(showAd = true) }
+        if(isAdsFree) {
+            finishQuiz()
+        } else {
+            _state.update { it.copy(showAd = true) }
+        }
     }
 
-    private fun onAdDismissed() {
+    private fun finishQuiz() {
         _state.update { it.copy(
             showAd = false,
             isQuizFinished = true,
