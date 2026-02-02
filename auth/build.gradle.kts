@@ -1,9 +1,6 @@
 plugins {
-    `android-library`
-    `kotlin-android`
+    id("paramedquiz.android.feature")
 }
-
-apply<SharedGradleProjectConfig>()
 
 android {
     namespace = "com.rafalskrzypczyk.auth"
@@ -14,14 +11,25 @@ android {
 }
 
 dependencies {
-    implementation(project(":core"))
     implementation(project(":firestore"))
     implementation(project(":score"))
 
-    coreKtx()
-    implementation(Dependencies.COMPOSE_RUNTIME)
-    firebase()
-    googleCredentials()
-    daggerHilt()
-    tests()
-}
+    implementation(libs.androidx.compose.runtime)
+    
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+    
+        implementation(libs.androidx.credentials)
+    
+        implementation(libs.androidx.credentials.play.services)
+    
+        implementation(libs.google.identity.googleid)
+    
+    
+    
+        testImplementation(libs.bundles.unit.test)
+    
+    }
+    
+    

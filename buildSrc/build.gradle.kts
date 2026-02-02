@@ -8,8 +8,36 @@ repositories {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.20")
-    implementation("com.android.tools.build:gradle:8.13.0")
-    implementation("org.jetbrains.kotlin.plugin.compose:org.jetbrains.kotlin.plugin.compose.gradle.plugin:2.1.20")
-    implementation("com.squareup:javapoet:1.13.0")
+    implementation(files("../gradle/libs.versions.toml"))
+    implementation("com.android.tools.build:gradle:8.7.3")
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.0")
+    implementation("org.jetbrains.kotlin.plugin.compose:org.jetbrains.kotlin.plugin.compose.gradle.plugin:2.0.0")
+    implementation("com.google.dagger:hilt-android-gradle-plugin:2.55")
 }
+
+
+gradlePlugin {
+    plugins {
+        register("androidApplication") {
+            id = "paramedquiz.android.application"
+            implementationClass = "AndroidApplicationConventionPlugin"
+        }
+        register("androidLibrary") {
+            id = "paramedquiz.android.library"
+            implementationClass = "AndroidLibraryConventionPlugin"
+        }
+        register("androidCompose") {
+            id = "paramedquiz.android.compose"
+            implementationClass = "AndroidComposeConventionPlugin"
+        }
+                register("androidHilt") {
+                    id = "paramedquiz.android.hilt"
+                    implementationClass = "AndroidHiltConventionPlugin"
+                }
+                register("androidFeature") {
+                    id = "paramedquiz.android.feature"
+                    implementationClass = "AndroidFeatureConventionPlugin"
+                }
+            }
+        }
+        

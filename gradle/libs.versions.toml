@@ -2,39 +2,100 @@
 agp = "8.7.3"
 kotlin = "2.0.0"
 coreKtx = "1.15.0"
+splashScreen = "1.0.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.10.1"
 composeBom = "2025.03.01"
+composeNavigation = "2.8.9"
+composeViewModel = "2.8.7"
+composeMaterialIconsExt = "1.7.8"
 appcompat = "1.7.0"
 material = "1.12.0"
 playServicesAds = "23.6.0"
 billing = "7.1.1"
+hilt = "2.55"
+hiltNavigation = "1.2.0"
+firebaseBom = "33.10.0"
+credentials = "1.3.0"
+googleId = "1.1.1"
+kotlinxSerializationJson = "1.8.0"
+coroutinesTest = "1.10.1"
+mockk = "1.13.16"
+turbine = "1.2.0"
 
 [libraries]
-androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx_core_ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx_core_splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashScreen" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
-androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
-androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
-androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
-androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
-androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
-androidx-ui = { group = "androidx.compose.ui", name = "ui" }
-androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
-androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
-androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
-androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
-androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
-androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
-androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+androidx_junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+androidx_espresso_core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+androidx_lifecycle_runtime_ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+androidx_activity_compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+androidx_compose_bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
+androidx_compose_runtime = { group = "androidx.compose.runtime", name = "runtime" }
+androidx_ui = { group = "androidx.compose.ui", name = "ui" }
+androidx_ui_graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+androidx_ui_tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+androidx_ui_tooling_preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+androidx_ui_test_manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+androidx_ui_test_junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+androidx_material3 = { group = "androidx.compose.material3", name = "material3" }
+androidx_navigation_compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "composeNavigation" }
+androidx_lifecycle_viewmodel_compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "composeViewModel" }
+androidx_compose_material_icons_extended = { group = "androidx.compose.material", name = "material-icons-extended-android", version.ref = "composeMaterialIconsExt" }
+androidx_appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
-play-services-ads = { group = "com.google.android.gms", name = "play-services-ads", version.ref = "playServicesAds" }
-billing-ktx = { group = "com.android.billingclient", name = "billing-ktx", version.ref = "billing" }
+play_services_ads = { group = "com.google.android.gms", name = "play-services-ads", version.ref = "playServicesAds" }
+billing_ktx = { group = "com.android.billingclient", name = "billing-ktx", version.ref = "billing" }
+hilt_android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+hilt_compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
+hilt_navigation_compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigation" }
+firebase_bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
+firebase_auth = { group = "com.google.firebase", name = "firebase-auth-ktx" }
+firebase_firestore = { group = "com.google.firebase", name = "firebase-firestore-ktx" }
+androidx_credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
+androidx_credentials_play_services = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentials" }
+google_identity_googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleId" }
+kotlinx_serialization_json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+kotlinx_coroutines_test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutinesTest" }
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
+
+# Dependencies for convention plugins
+android_gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
+kotlin_gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+compose_compiler_gradlePlugin = { group = "org.jetbrains.kotlin", name = "compose-compiler-gradle-plugin", version.ref = "kotlin" }
+
+[bundles]
+compose = [
+    "androidx_ui",
+    "androidx_ui_graphics",
+    "androidx_ui_tooling_preview",
+    "androidx_material3",
+    "androidx_navigation_compose",
+    "androidx_lifecycle_viewmodel_compose",
+    "androidx_compose_material_icons_extended"
+]
+ui_test = [
+    "androidx_ui_test_junit4",
+    "androidx_ui_test_manifest"
+]
+unit_test = [
+    "junit",
+    "kotlinx_coroutines_test",
+    "mockk",
+    "turbine"
+]
 
 [plugins]
-android-application = { id = "com.android.application", version.ref = "agp" }
-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-android-library = { id = "com.android.library", version.ref = "agp" }
+android_application = { id = "com.android.application", version.ref = "agp" }
+kotlin_android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin_compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+android_library = { id = "com.android.library", version.ref = "agp" }
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+google_services = { id = "com.google.gms.google-services", version = "4.4.2" }
+kotlin_serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
