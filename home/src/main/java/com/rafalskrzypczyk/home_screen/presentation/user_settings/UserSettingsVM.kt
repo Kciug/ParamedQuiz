@@ -56,6 +56,7 @@ class UserSettingsVM @Inject constructor(
                                     responseState = ResponseState.Idle,
                                     userName = userData.name,
                                     userEmail = userData.email,
+                                    isPremium = userData.isPremium,
                                     accountType = userData.authenticationMethod,
                                     isAnonymous = false
                                 )

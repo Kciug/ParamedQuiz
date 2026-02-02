@@ -5,6 +5,7 @@ import androidx.compose.runtime.Immutable
 @Immutable
 data class OnboardingState(
     val isLogged: Boolean = false,
+    val isPremium: Boolean = false,
     val userName: String = "",
     val userEmail: String = ""
 )

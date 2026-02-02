@@ -13,6 +13,7 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,6 +24,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
@@ -43,6 +45,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -61,15 +64,19 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.rafalskrzypczyk.core.composables.ButtonPrimary
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.PreviewContainer
 import com.rafalskrzypczyk.core.composables.TextHeadline
 import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.ui.theme.MQGreen
+import com.rafalskrzypczyk.core.ui.theme.MQYellow
 import com.rafalskrzypczyk.home.R
 
 @Composable
@@ -345,16 +352,7 @@ fun OnboardingSequenceLoginPage(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = painterResource(com.rafalskrzypczyk.core.R.drawable.avatar_default),
-                contentDescription = stringResource(com.rafalskrzypczyk.core.R.string.desc_user_avatar),
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .shadow(Dimens.ELEVATION, CircleShape, clip = false)
-                    .clip(CircleShape)
-                    .background(Color.Transparent)
-                    .size(Dimens.IMAGE_SIZE)
-            )
+            OnboardingLoginAvatar(isPremium = state.isPremium)
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
@@ -382,16 +380,7 @@ fun OnboardingSequenceLoginPage(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING, Alignment.CenterVertically)
         ) {
-            Image(
-                painter = painterResource(com.rafalskrzypczyk.core.R.drawable.avatar_default),
-                contentDescription = stringResource(com.rafalskrzypczyk.core.R.string.desc_user_avatar),
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .shadow(Dimens.ELEVATION, CircleShape, clip = false)
-                    .clip(CircleShape)
-                    .background(Color.Transparent)
-                    .size(Dimens.IMAGE_SIZE)
-            )
+            OnboardingLoginAvatar(isPremium = state.isPremium)
             TextHeadline(headlineText)
             TextPrimary(
                 text = messageText,
@@ -403,6 +392,53 @@ fun OnboardingSequenceLoginPage(
                 ButtonPrimary(
                     title = stringResource(R.string.ob_page_login_btn),
                     onClick = onNavigateToRegister
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun OnboardingLoginAvatar(
+    isPremium: Boolean
+) {
+    val borderModifier = if (isPremium) {
+        Modifier.border(Dimens.OUTLINE_THICKNESS, MQYellow, CircleShape)
+    } else {
+        Modifier
+    }
+
+    Box {
+        Image(
+            painter = painterResource(com.rafalskrzypczyk.core.R.drawable.avatar_default),
+            contentDescription = stringResource(com.rafalskrzypczyk.core.R.string.desc_user_avatar),
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .shadow(Dimens.ELEVATION, CircleShape, clip = false)
+                .clip(CircleShape)
+                .background(Color.Transparent)
+                .then(borderModifier)
+                .size(Dimens.IMAGE_SIZE)
+        )
+
+        if (isPremium) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .offset(y = Dimens.SMALL_PADDING)
+                    .background(MQYellow, RoundedCornerShape(Dimens.RADIUS_SMALL))
+                    .border(
+                        1.dp,
+                        MaterialTheme.colorScheme.background,
+                        RoundedCornerShape(Dimens.RADIUS_SMALL)
+                    )
+                    .padding(horizontal = Dimens.SMALL_PADDING, vertical = 2.dp)
+            ) {
+                Text(
+                    text = stringResource(com.rafalskrzypczyk.core.R.string.premium_badge),
+                    color = Color.Black,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold
                 )
             }
         }
