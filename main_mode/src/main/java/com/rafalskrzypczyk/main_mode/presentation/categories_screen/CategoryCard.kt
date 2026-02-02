@@ -9,12 +9,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.outlined.Style
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -29,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.rafalskrzypczyk.core.composables.Dimens
+import com.rafalskrzypczyk.core.composables.LockedOverlay
 import com.rafalskrzypczyk.core.composables.TextHeadline
 import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
@@ -88,26 +87,8 @@ fun CategoryCard(
                 }
             }
 
-            if(!category.unlocked) CategoryLockedOverlay(modifier = Modifier.matchParentSize())
+            if(!category.unlocked) LockedOverlay(modifier = Modifier.matchParentSize())
         }
-    }
-}
-
-@Composable
-fun CategoryLockedOverlay(
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .background(color = MaterialTheme.colorScheme.background.copy(alpha = 0.5f)),
-        contentAlignment = Alignment.Center
-    ) {
-        Icon(
-            imageVector = Icons.Default.Lock,
-            contentDescription = stringResource(R.string.desc_category_locked),
-            tint = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.size(Dimens.IMAGE_SIZE_SMALL)
-        )
     }
 }
 

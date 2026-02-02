@@ -23,23 +23,30 @@
     <string name="categories_header_title">Witaj!</string>
     <string name="categories_header_subtitle">Co dzisiaj ćwiczymy?</string>
     <string name="categories_list_header">Kategorie</string>
-    <string name="category_questions_count">%s pytań</string>
-    <string name="category_locked_dialog_title">Kategoria zablokowana</string>
-    <string name="category_locked_dialog_message">Aby odblokować tę kategorię, musisz ukończyć poprzednie kategorie z wynikiem co najmniej 50%.</string>
-    
-    <!-- Quiz Stats -->
-    <string name="stats_accuracy">Celność</string>
+
+    <string name="purchase_dialog_title">Odblokuj Kategorię</string>
+    <string name="price_label">Cena: %s</string>
+    <string name="price_loading">Pobieranie ceny...</string>
+    <string name="btn_buy">Kup teraz</string>
+    <string name="btn_cancel">Anuluj</string>
+
+    <string name="daily_exercise_finished_title">Zadanie dnia zakończone!</string>
+    <string name="daily_exercise_finished_msg">Świetna robota! Wróć jutro po kolejne wyzwanie.</string>
+    <string name="stats_accuracy">Poprawność</string>
     <string name="stats_precision">Precyzja</string>
-    <string name="stats_avg_time">Śr. czas odp.</string>
-    <string name="stats_total_time">Czas całkowity</string>
-    <string name="btn_review_answers">Przejrzyj odpowiedzi</string>
-    <string name="review_answers_title">Twoje odpowiedzi</string>
-    <string name="question_precision">Precyzja: %d%%</string>
-    <string name="answer_correct_label">Poprawna</string>
-    <string name="answer_incorrect_label">Błędna</string>
-    <string name="answer_missed_label">Pominięta</string>
-    
-    <!-- Daily Exercise Extras -->
-    <string name="daily_exercise_finished_title">Zadanie wykonane!</string>
-    <string name="daily_exercise_finished_msg">Wróć jutro po kolejną dawkę wiedzy.</string>
+    <string name="stats_avg_time">Średni czas</string>
+    <string name="stats_total_time">Całkowity czas</string>
+    <string name="btn_review_answers">Przegląd odpowiedzi</string>
+    <string name="review_answers_title">Przegląd odpowiedzi</string>
+    <string name="question_precision">Precyzja pytania</string>
+
+    <plurals name="questions_count_plurals">
+        <item quantity="one">%d pytanie</item>
+        <item quantity="few">%d pytania</item>
+        <item quantity="many">%d pytań</item>
+        <item quantity="other">%d pytań</item>
+    </plurals>
+
+    <string name="purchase_one_time_label">Dostęp dożywotni • Zakup jednorazowy</string>
+    <string name="purchase_includes_ad_free">Ten zakup usuwa reklamy w całej aplikacji</string>
 </resources>

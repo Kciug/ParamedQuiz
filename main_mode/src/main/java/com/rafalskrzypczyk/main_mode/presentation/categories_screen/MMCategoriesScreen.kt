@@ -26,6 +26,10 @@ import com.rafalskrzypczyk.core.composables.Loading
 import com.rafalskrzypczyk.core.composables.top_bars.MainTopBarWithNav
 import com.rafalskrzypczyk.score.domain.StreakState
 
+import android.app.Activity
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
+
 @Composable
 fun MMCategoriesScreen(
     state: MMCategoriesState,
@@ -34,8 +38,24 @@ fun MMCategoriesScreen(
     onUserPanel: () -> Unit,
     onStartCategory: (Long, String) -> Unit
 ) {
+    val context = LocalContext.current
+    val activity = remember(context) { context as? Activity }
+
     LaunchedEffect(Unit) {
         onEvent(MMCategoriesUIEvents.GetData)
+    }
+    
+    if (state.selectedCategoryForPurchase != null) {
+        PurchaseCategoryDialog(
+            category = state.selectedCategoryForPurchase,
+            price = state.productPrice,
+            onDismiss = { onEvent(MMCategoriesUIEvents.ClosePurchaseDialog) },
+            onConfirm = { 
+                if (activity != null) {
+                    onEvent(MMCategoriesUIEvents.BuyCategory(activity)) 
+                }
+            }
+        )
     }
 
     Scaffold(
@@ -44,6 +64,7 @@ fun MMCategoriesScreen(
                 userScore = state.userScore,
                 userStreak = state.userStreak,
                 isUserLoggedIn = state.isUserLoggedIn,
+                isPremium = state.isPremium,
                 userAvatar = state.userAvatar,
                 onNavigateBack = onNavigateBack,
                 onNavigateToUserPanel = onUserPanel,
@@ -69,7 +90,12 @@ fun MMCategoriesScreen(
                     contentPadding = innerPadding,
                     categories = state.categories,
                     onStartCategory = onStartCategory,
-                    onUnlockCategory = { onEvent(MMCategoriesUIEvents.OnUnlockCategory(it)) }
+                    onUnlockCategory = { 
+                        val category = state.categories.find { c -> c.id == it }
+                        if (category != null) {
+                            onEvent(MMCategoriesUIEvents.OpenPurchaseDialog(category))
+                        }
+                    }
                 )
             }
         }

@@ -47,7 +47,8 @@ class UserPageVM @Inject constructor(
                 it.copy(
                     isUserLoggedIn = true,
                     userName = user.name,
-                    userEmail = user.email
+                    userEmail = user.email,
+                    isPremium = user.isPremium
                 )
             }
         } else {

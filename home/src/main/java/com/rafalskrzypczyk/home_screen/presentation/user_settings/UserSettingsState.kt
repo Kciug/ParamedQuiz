@@ -10,6 +10,7 @@ data class UserSettingsState(
     val accountType: UserAuthenticationMethod = UserAuthenticationMethod.NONPASSWORD,
     val userName: String = "",
     val userEmail: String = "",
+    val isPremium: Boolean = false,
     val passwordValidationMessage: String? = null,
     val usernameValidationMessage: String? = null,
     val successConfirmAction: UserSettingsConfirmAction = UserSettingsConfirmAction.CLEAR_STATE,

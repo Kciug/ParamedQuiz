@@ -3,7 +3,7 @@ package com.rafalskrzypczyk.home_screen.presentation.user_settings
 import android.content.res.Configuration
 import android.widget.Toast
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -40,7 +40,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -58,6 +57,7 @@ import com.rafalskrzypczyk.core.composables.SettingsSwitchRow
 import com.rafalskrzypczyk.core.composables.TextCaption
 import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.composables.top_bars.NavTopBar
+import com.rafalskrzypczyk.core.ui.theme.MQYellow
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.core.user_management.UserAuthenticationMethod
 import com.rafalskrzypczyk.home.R
@@ -182,7 +182,8 @@ private fun UserSettingsContent(
                 item {
                     UserSettingsUserDetails(
                         userName = if(state.isAnonymous) stringResource(R.string.user_anonymous) else state.userName,
-                        userEmail = state.userEmail
+                        userEmail = state.userEmail,
+                        isPremium = state.isPremium
                     )
                 }
 
@@ -275,7 +276,8 @@ private fun UserSettingsContent(
 private fun UserSettingsUserDetails(
     modifier: Modifier = Modifier,
     userName: String,
-    userEmail: String
+    userEmail: String,
+    isPremium: Boolean = false
 ) {
     Row (
         modifier = modifier
@@ -284,6 +286,12 @@ private fun UserSettingsUserDetails(
             .wrapContentHeight(),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        val borderModifier = if (isPremium) {
+            Modifier.border(Dimens.OUTLINE_THICKNESS, MQYellow, CircleShape)
+        } else {
+            Modifier
+        }
+
         Image(
             painter = painterResource(com.rafalskrzypczyk.core.R.drawable.avatar_default),
             contentDescription = stringResource(com.rafalskrzypczyk.core.R.string.desc_user_avatar),
@@ -292,7 +300,7 @@ private fun UserSettingsUserDetails(
                 .height(Dimens.IMAGE_SIZE_SMALL)
                 .clip(CircleShape)
                 .aspectRatio(1f)
-                .background(Color.Transparent)
+                .then(borderModifier)
         )
 
         Spacer(modifier = Modifier.width(Dimens.ELEMENTS_SPACING))

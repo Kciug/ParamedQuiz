@@ -38,6 +38,7 @@ fun MainTopBar(
     userStreak: Int,
     userStreakPending: Boolean,
     isUserLoggedIn: Boolean,
+    isPremium: Boolean = false,
     userAvatar: String?,
     onClick: () -> Unit = {},
     onNavigateToUserPanel: () -> Unit,
@@ -79,6 +80,7 @@ fun MainTopBar(
         ) {
             UserAvatarAction(
                 isUserLoggedIn = isUserLoggedIn,
+                isPremium = isPremium,
                 userAvatar = userAvatar
             ) { onNavigateToUserPanel() }
         }
@@ -92,6 +94,7 @@ fun MainTopBarWithNav(
     userStreak: Int,
     userStreakPending: Boolean,
     isUserLoggedIn: Boolean,
+    isPremium: Boolean = false,
     userAvatar: String?,
     onNavigateBack: () -> Unit,
     onNavigateToUserPanel: () -> Unit,
@@ -130,6 +133,7 @@ fun MainTopBarWithNav(
         }
         UserAvatarAction(
             isUserLoggedIn = isUserLoggedIn,
+            isPremium = isPremium,
             userAvatar = userAvatar
         ) { onNavigateToUserPanel() }
     }

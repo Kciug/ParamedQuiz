@@ -18,6 +18,8 @@ dependencies {
     implementation(project(":firestore"))
     implementation(project(":auth"))
     implementation(project(":score"))
+    implementation(project(":billing"))
+    implementation(libs.billing.ktx)
 
     coreKtx()
     implementation(Dependencies.COMPOSE_RUNTIME)

@@ -31,7 +31,8 @@ class OnboardingVM @Inject constructor(
             userManager.getCurrentLoggedUser()?.let { user ->
                 _state.update { it.copy(
                     userName = user.name,
-                    userEmail = user.email
+                    userEmail = user.email,
+                    isPremium = user.isPremium
                 ) }
             }
         }

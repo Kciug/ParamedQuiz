@@ -1,3 +1,11 @@
+# Core Mandates
+
+- **NO COMMENTS POLICY (CRITICAL):**
+  - **STRICTLY FORBIDDEN:** You must NEVER add code comments (`//` or `/* ... */`) explaining *what* or *how* code works.
+  - **NO SECTION HEADERS:** Do not use comments to divide UI code (e.g., `// Header`, `// Buttons`). Use separate Composable functions instead.
+  - **AUTOMATIC REMOVAL:** Before calling `write_file` or `replace`, you MUST scan the content and DELETE any comments you might have generated.
+  - **EXCEPTION:** Only KDoc/Javadoc on public interfaces/classes specifically for library documentation, NEVER inside function bodies.
+
 # ParamedQuiz - Project Overview
 
 ## Project Summary
@@ -106,6 +114,6 @@ The design system is centralized in the `core` module. All new UI MUST use these
         -   If custom dimensions or specific colors are needed, define them as `private const val` or `private val` at the top of the file to maintain readability and ease of adjustment.
         -   Always prioritize `core` UI components (e.g., `TextPrimary`) over raw Composable equivalents.
 8.  **Code Quality & Testing**:
-    -   **No Comments**: **STRICTLY FORBIDDEN** to add comments describing *what* the code does. Redundant comments (e.g. `// Add completely new questions`) are not allowed. Only comment *why* if the logic is complex and non-obvious.
+    -   **No Comments**: **ABSOLUTE BAN**. Code must be self-explanatory. If logic is complex, refactor it into smaller functions with descriptive names instead of adding comments.
     -   **Testing**: Write unit tests for critical business logic, specifically for **ViewModels** and **Use Cases**.
     -   **String Resources**: **MANDATORY**. Never hardcode UI strings. Always extract them to `strings.xml` and use `stringResource()`.

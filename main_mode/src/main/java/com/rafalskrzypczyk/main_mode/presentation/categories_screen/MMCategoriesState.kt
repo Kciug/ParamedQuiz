@@ -10,9 +10,12 @@ data class MMCategoriesState (
     val userStreak: Int = 0,
     val userStreakState: StreakState = StreakState.MISSED,
     val isUserLoggedIn: Boolean = false,
+    val isPremium: Boolean = false,
     val userAvatar: String? = null,
     val responseState: ResponseState = ResponseState.Idle,
     val userIcon: Int? = null,
     val categories: List<CategoryUIM> = emptyList(),
-    val unlockCategory: Boolean = false
+    val unlockCategory: Boolean = false,
+    val selectedCategoryForPurchase: CategoryUIM? = null,
+    val productPrice: String? = null
 )
