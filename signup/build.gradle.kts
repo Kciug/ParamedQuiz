@@ -5,9 +5,6 @@ plugins {
 
 android {
     namespace = "com.rafalskrzypczyk.signup"
-    kotlinOptions {
-        jvmTarget = "11"
-    }
 }
 
 dependencies {

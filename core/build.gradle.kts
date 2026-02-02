@@ -7,10 +7,6 @@ plugins {
 
 android {
     namespace = "com.rafalskrzypczyk.core"
-
-    kotlinOptions {
-        jvmTarget = "11"
-    }
 }
 
 dependencies {

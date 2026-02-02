@@ -4,10 +4,6 @@ plugins {
 
 android {
     namespace = "com.rafalskrzypczyk.firestore"
-
-    kotlinOptions {
-        jvmTarget = "11"
-    }
 }
 
 dependencies {

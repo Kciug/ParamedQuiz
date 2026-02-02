@@ -5,9 +5,6 @@ plugins {
 
 android {
     namespace = "com.rafalskrzypczyk.swipe_mode"
-    kotlinOptions {
-        jvmTarget = "11"
-    }
 }
 
 dependencies {

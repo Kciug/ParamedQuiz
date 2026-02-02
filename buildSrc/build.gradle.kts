@@ -9,9 +9,9 @@ repositories {
 
 dependencies {
     implementation(files("../gradle/libs.versions.toml"))
-    implementation("com.android.tools.build:gradle:8.7.3")
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.0")
-    implementation("org.jetbrains.kotlin.plugin.compose:org.jetbrains.kotlin.plugin.compose.gradle.plugin:2.0.0")
+    implementation("com.android.tools.build:gradle:8.13.2")
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.3.0")
+    implementation("org.jetbrains.kotlin.plugin.compose:org.jetbrains.kotlin.plugin.compose.gradle.plugin:2.3.0")
     implementation("com.google.dagger:hilt-android-gradle-plugin:2.55")
 }
 

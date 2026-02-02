@@ -5,9 +5,6 @@ plugins {
 
 android {
     namespace = "com.rafalskrzypczyk.ads"
-    kotlinOptions {
-        jvmTarget = "11"
-    }
 }
 
 dependencies {

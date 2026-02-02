@@ -30,14 +30,10 @@ android {
             signingConfig = signingConfigs.getByName("release")
         }
     }
-
-    kotlinOptions {
-        jvmTarget = "11"
-    }
 }
 
 hilt {
-    enableAggregatingTask = true
+    enableAggregatingTask = false
 }
 
 dependencies {
@@ -60,5 +56,16 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     
-    implementation(libs.kotlinx.serialization.json)
-}
+        implementation(libs.kotlinx.serialization.json)
+    
+    
+    
+        implementation(platform(libs.firebase.bom))
+    
+        implementation(libs.firebase.auth)
+    
+        implementation(libs.firebase.firestore)
+    
+    }
+    
+    

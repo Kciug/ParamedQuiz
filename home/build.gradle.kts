@@ -4,10 +4,6 @@ plugins {
 
 android {
     namespace = "com.rafalskrzypczyk.home"
-
-    kotlinOptions {
-        jvmTarget = "11"
-    }
 }
 
 dependencies {

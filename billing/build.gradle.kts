@@ -6,10 +6,6 @@ plugins {
 
 android {
     namespace = "com.rafalskrzypczyk.billing"
-
-    kotlinOptions {
-        jvmTarget = "11"
-    }
 }
 
 dependencies {

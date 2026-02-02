@@ -5,6 +5,8 @@ import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.kotlin
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 class AndroidApplicationConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
@@ -41,6 +43,12 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                             "proguard-rules.pro"
                         )
                     }
+                }
+            }
+
+            tasks.withType(KotlinCompile::class.java).configureEach {
+                compilerOptions {
+                    jvmTarget.set(JvmTarget.JVM_11)
                 }
             }
 
