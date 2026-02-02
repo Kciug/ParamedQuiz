@@ -49,6 +49,6 @@ class MMCategoriesVMTest {
         
         viewModel.onEvent(MMCategoriesUIEvents.OpenPurchaseDialog(category))
         
-        coVerify { billingRepository.queryProducts(listOf("category_1")) }
+        coVerify { billingRepository.queryProducts(listOf("1")) }
     }
 }
