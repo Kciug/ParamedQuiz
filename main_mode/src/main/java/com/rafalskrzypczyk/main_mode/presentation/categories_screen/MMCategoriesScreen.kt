@@ -64,6 +64,7 @@ fun MMCategoriesScreen(
                 userScore = state.userScore,
                 userStreak = state.userStreak,
                 isUserLoggedIn = state.isUserLoggedIn,
+                isPremium = state.isPremium,
                 userAvatar = state.userAvatar,
                 onNavigateBack = onNavigateBack,
                 onNavigateToUserPanel = onUserPanel,

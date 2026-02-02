@@ -130,6 +130,7 @@ fun HomeScreen(
                 userScore = state.userScore,
                 userStreak = state.userStreak,
                 isUserLoggedIn = state.isUserLoggedIn,
+                isPremium = state.isPremium,
                 userAvatar = state.userAvatar,
                 userStreakPending = state.userStreakState == StreakState.PENDING,
                 onClick = onNavigateToDevOptions

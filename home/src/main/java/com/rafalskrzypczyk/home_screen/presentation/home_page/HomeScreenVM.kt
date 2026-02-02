@@ -67,7 +67,13 @@ class HomeScreenVM @Inject constructor(
         viewModelScope.launch {
             useCases.getUserData().collectLatest { response ->
                 if (response is Response.Success) {
-                    _state.update { it.copy(userName = response.data?.name) }
+                    val user = response.data
+                    _state.update { 
+                        it.copy(
+                            userName = user?.name,
+                            isPremium = user?.isPremium ?: false
+                        ) 
+                    }
                 }
             }
         }

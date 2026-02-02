@@ -7,6 +7,7 @@ data class HomeScreenState (
     val userStreak: Int = 0,
     val userStreakState: StreakState = StreakState.MISSED,
     val isUserLoggedIn: Boolean = false,
+    val isPremium: Boolean = false,
     val userAvatar: String? = null,
     val isNewDailyExerciseAvailable: Boolean = false,
     val userName: String? = null,

@@ -7,7 +7,8 @@ import com.rafalskrzypczyk.score.domain.StreakState
 
 @Immutable
 data class UserPageState (
-    val isUserLoggedIn: Boolean = false, // Nowe pole
+    val isUserLoggedIn: Boolean = false,
+    val isPremium: Boolean = false,
     val error: String? = null,
     val userName: String = "",
     val userEmail: String = "",

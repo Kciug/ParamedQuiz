@@ -77,4 +77,5 @@
     <string name="purchase_includes_ad_free">Ten zakup usuwa reklamy w całej aplikacji</string>
     <string name="price_loading">Pobieranie ceny...</string>
     <string name="btn_buy">Kup teraz</string>
+    <string name="premium_badge">PREMIUM</string>
 </resources>

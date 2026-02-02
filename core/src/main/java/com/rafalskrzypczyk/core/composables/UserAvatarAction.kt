@@ -2,6 +2,7 @@ package com.rafalskrzypczyk.core.composables
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
@@ -18,21 +19,31 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import com.rafalskrzypczyk.core.R
+import com.rafalskrzypczyk.core.ui.theme.MQYellow
 import com.rafalskrzypczyk.core.utils.rememberDebouncedClick
 
 @Composable
 fun UserAvatarAction(
     modifier: Modifier = Modifier,
     isUserLoggedIn: Boolean,
+    isPremium: Boolean = false,
     @Suppress("unused") userAvatar: String? = null,
     onNavigateToUserPanel: () -> Unit
 ) {
+    val borderModifier = if (isPremium) {
+        Modifier.border(Dimens.OUTLINE_THICKNESS, MQYellow, CircleShape)
+    } else {
+        Modifier
+    }
+
     Box(
         modifier = modifier
             .size(Dimens.IMAGE_SIZE_SMALL)
             .clip(CircleShape)
             .background(Color.Transparent)
+            .then(borderModifier)
             .clickable(onClick = rememberDebouncedClick(onClick = onNavigateToUserPanel)),
         contentAlignment = Alignment.Center
     ) {
@@ -54,5 +65,17 @@ fun UserAvatarAction(
             )
         }
 
+    }
+}
+
+@Composable
+@Preview
+private fun UserAvatarActionPreview() {
+    PreviewContainer {
+        UserAvatarAction(
+            isUserLoggedIn = true,
+            isPremium = true,
+            onNavigateToUserPanel = {}
+        )
     }
 }

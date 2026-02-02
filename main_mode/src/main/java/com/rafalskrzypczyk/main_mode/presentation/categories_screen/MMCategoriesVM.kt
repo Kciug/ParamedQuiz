@@ -54,12 +54,14 @@ class MMCategoriesVM @Inject constructor(
     private fun loadData() {
         viewModelScope.launch {
             useCases.getUserScore().collectLatest { userScore ->
+                val user = useCases.getUser()
                 _state.update {
                     it.copy(
                         userScore = userScore.score,
                         userStreak = userScore.streak,
                         userStreakState = useCases.getStreakState(userScore.lastStreakUpdateDate),
-                        isUserLoggedIn = useCases.checkIsUserLoggedIn()
+                        isUserLoggedIn = useCases.checkIsUserLoggedIn(),
+                        isPremium = user?.isPremium ?: false
                     )
                 }
             }

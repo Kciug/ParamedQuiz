@@ -10,6 +10,7 @@ data class MMCategoriesState (
     val userStreak: Int = 0,
     val userStreakState: StreakState = StreakState.MISSED,
     val isUserLoggedIn: Boolean = false,
+    val isPremium: Boolean = false,
     val userAvatar: String? = null,
     val responseState: ResponseState = ResponseState.Idle,
     val userIcon: Int? = null,
