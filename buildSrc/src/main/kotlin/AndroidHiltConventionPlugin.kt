@@ -1,19 +1,23 @@
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.kotlin.dsl.dependencies
+import org.gradle.kotlin.dsl.getByType
 
 class AndroidHiltConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
+            val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
+
             with(pluginManager) {
                 apply("com.google.dagger.hilt.android")
                 apply("org.jetbrains.kotlin.kapt")
             }
 
             dependencies {
-                add("implementation", libs.findLibraryOrThrow("hilt-android"))
-                add("kapt", libs.findLibraryOrThrow("hilt-compiler"))
-                add("implementation", libs.findLibraryOrThrow("hilt-navigation-compose"))
+                add("implementation", libs.findLibrary("hilt-android").get())
+                add("kapt", libs.findLibrary("hilt-compiler").get())
+                add("implementation", libs.findLibrary("hilt-navigation-compose").get())
             }
         }
     }
