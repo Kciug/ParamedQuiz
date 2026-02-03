@@ -39,7 +39,8 @@ fun TranslationInput(
     modifier: Modifier = Modifier,
     text: String,
     onValueChange: (String) -> Unit,
-    enabled: Boolean,
+    enabled: Boolean = true,
+    readOnly: Boolean = false,
     imeAction: ImeAction = ImeAction.Done,
     onDone: () -> Unit
 ) {
@@ -55,6 +56,7 @@ fun TranslationInput(
         value = text,
         onValueChange = onValueChange,
         enabled = enabled,
+        readOnly = readOnly,
         textStyle = TextStyle(
             fontSize = 18.sp,
             textAlign = TextAlign.Start,
@@ -79,7 +81,7 @@ fun TranslationInput(
                     .padding(horizontal = Dimens.DEFAULT_PADDING),
                 contentAlignment = Alignment.CenterStart
             ) {
-                if (text.isEmpty() && enabled) {
+                if (text.isEmpty() && enabled && !readOnly) {
                     Text(
                         text = stringResource(R.string.input_hint_type_here),
                         style = TextStyle(

@@ -78,4 +78,6 @@
     <string name="price_loading">Pobieranie ceny...</string>
     <string name="btn_buy">Kup teraz</string>
     <string name="premium_badge">PREMIUM</string>
+    <string name="ic_desc_rotate_screen">Odwróć ekran</string>
+    <string name="rotate_screen_info">Dla najlepszych wrażeń z tego trybu odwróć ekran telefonu.</string>
 </resources>

@@ -58,6 +58,10 @@ import com.rafalskrzypczyk.core.composables.ActionButton
 import com.rafalskrzypczyk.core.composables.CorrectAnswersLabel
 import com.rafalskrzypczyk.core.composables.UserPointsLabel
 
+import androidx.compose.ui.platform.LocalConfiguration
+import android.content.res.Configuration
+import com.rafalskrzypczyk.core.composables.RotateDevicePrompt
+
 @Composable
 fun TranslationQuizScreen(
     state: TranslationQuizState,
@@ -66,6 +70,9 @@ fun TranslationQuizScreen(
 ) {
     val context = LocalContext.current
     val successReportMsg = stringResource(com.rafalskrzypczyk.core.R.string.report_issue_success)
+
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     LaunchedEffect(state.showReportSuccessToast) {
         if (state.showReportSuccessToast) {
@@ -104,12 +111,16 @@ fun TranslationQuizScreen(
                 ResponseState.Loading -> Loading()
                 is ResponseState.Error -> ErrorDialog(responseState.message) { onNavigateBack() }
                 ResponseState.Success -> {
-                    TranslationQuizContent(
-                        paddingValues = innerPadding,
-                        titlePanel = titlePanel,
-                        state = state,
-                        onEvent = onEvent
-                    )
+                    if (isLandscape) {
+                        RotateDevicePrompt(modifier = Modifier.padding(innerPadding))
+                    } else {
+                        TranslationQuizContent(
+                            paddingValues = innerPadding,
+                            titlePanel = titlePanel,
+                            state = state,
+                            onEvent = onEvent
+                        )
+                    }
                 }
             }
         }
@@ -210,8 +221,9 @@ fun TranslationQuizContent(
                         .weight(1f)
                         .focusRequester(focusRequester),
                     text = question.userAnswer,
-                    onValueChange = { onEvent(TranslationQuizEvents.OnAnswerChanged(it)) },
-                    enabled = !question.isAnswered,
+                    onValueChange = { if (!question.isAnswered) onEvent(TranslationQuizEvents.OnAnswerChanged(it)) },
+                    readOnly = false, // Keep editable to prevent keyboard closing
+                    enabled = true,
                     imeAction = if (question.isAnswered) ImeAction.Next else ImeAction.Done,
                     onDone = {
                         if (!question.isAnswered) {

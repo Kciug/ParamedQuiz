@@ -37,7 +37,7 @@ import com.rafalskrzypczyk.core.composables.ErrorDialog
 import com.rafalskrzypczyk.core.composables.Loading
 import com.rafalskrzypczyk.core.composables.PreviewContainer
 import com.rafalskrzypczyk.core.composables.ReportIssueDialog
-import com.rafalskrzypczyk.core.composables.TextPrimary
+import com.rafalskrzypczyk.core.composables.RotateDevicePrompt
 import com.rafalskrzypczyk.swipe_mode.R
 
 @Composable
@@ -118,7 +118,7 @@ fun SwipeModeScreen(
                 is ResponseState.Error -> ErrorDialog(responseState.message) { onNavigateBack() }
                 ResponseState.Success -> {
                     if(isLandscape) {
-                        SwipeModeLandscapeInformation(modifier = modifier)
+                        RotateDevicePrompt(modifier = modifier)
                     } else {
                         SwipeModeScreenContent(
                             modifier = modifier,
@@ -176,25 +176,6 @@ fun SwipeModeScreenContent(
             correctAnswers = state.correctAnswers,
             currentStreak = state.currentStreak,
             bestStreak = state.bestStreak
-        )
-    }
-}
-
-@Composable
-fun SwipeModeLandscapeInformation(modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Icon(
-            imageVector = Icons.Default.ScreenRotation,
-            contentDescription = stringResource(R.string.ic_desc_rotate_screen),
-            tint = MaterialTheme.colorScheme.primary
-        )
-        TextPrimary(
-            text = stringResource(R.string.rotate_screen_info),
-            textAlign = TextAlign.Center
         )
     }
 }
