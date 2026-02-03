@@ -28,6 +28,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -38,7 +39,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.rafalskrzypczyk.core.composables.ButtonPrimary
 import com.rafalskrzypczyk.core.composables.ButtonSecondary
 import com.rafalskrzypczyk.core.composables.ButtonTertiary
@@ -133,14 +134,16 @@ fun LoginScreenContent(
             onValueChange = { emailText = it },
             hint = stringResource(R.string.hint_email),
             keyboardType = KeyboardType.Email,
-            imeAction = ImeAction.Next
+            imeAction = ImeAction.Next,
+            contentType = ContentType.EmailAddress
         )
 
         PasswordTextFieldPrimary(
             password = passwordText,
             onPasswordChange = { passwordText = it },
             hint = stringResource(R.string.hint_password),
-            imeAction = ImeAction.Done
+            imeAction = ImeAction.Done,
+            contentType = ContentType.Password
         )
 
         ButtonPrimary(
