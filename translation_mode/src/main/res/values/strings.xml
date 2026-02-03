@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="translate_phrase_instruction">Przetłumacz zwrot:</string>
-    <string name="input_hint_type_here">Wpisz tutaj...</string>
+    <string name="input_hint_type_here">Wpisz tutaj…</string>
     <string name="btn_check_answer">Sprawdź</string>
     <string name="feedback_correct">Dobrze!</string>
     <string name="feedback_incorrect">Niestety! Nie udało się…</string>

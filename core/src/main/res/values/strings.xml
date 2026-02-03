@@ -75,7 +75,7 @@
 
     <string name="purchase_one_time_label">Dostęp dożywotni • Zakup jednorazowy</string>
     <string name="purchase_includes_ad_free">Ten zakup usuwa reklamy w całej aplikacji</string>
-    <string name="price_loading">Pobieranie ceny...</string>
+    <string name="price_loading">Pobieranie ceny…</string>
     <string name="btn_buy">Kup teraz</string>
     <string name="premium_badge">PREMIUM</string>
     <string name="ic_desc_rotate_screen">Odwróć ekran</string>

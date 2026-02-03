@@ -12,8 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -31,7 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -54,8 +54,6 @@ fun TranslationQuizFinishedExtras(
 ) {
     val answeredQuestions = questions.count { it.isAnswered }
     val correctAnswers = questions.count { it.isCorrect }
-    val wrongAnswersCount = answeredQuestions - correctAnswers
-    
     val percentage = if (answeredQuestions > 0) ((correctAnswers.toFloat() / answeredQuestions) * 100).toInt() else 0
 
     Surface(
@@ -104,9 +102,8 @@ fun TranslationReviewDialog(
     questions: List<TranslationQuestionUIM>,
     onDismiss: () -> Unit
 ) {
-    val configuration = LocalConfiguration.current
-    val screenHeight = configuration.screenHeightDp.dp
-    // Show all answered questions, not just errors
+    val windowInfo = LocalWindowInfo.current
+    val screenHeight = windowInfo.containerDpSize.height
     val answeredQuestions = questions.filter { it.isAnswered }
 
     Dialog(

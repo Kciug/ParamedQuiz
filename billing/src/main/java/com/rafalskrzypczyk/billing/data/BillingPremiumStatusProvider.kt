@@ -10,7 +10,7 @@ import javax.inject.Singleton
 
 @Singleton
 class BillingPremiumStatusProvider @Inject constructor(
-    private val billingRepository: BillingRepository
+    billingRepository: BillingRepository
 ) : PremiumStatusProvider {
 
     // Any purchase removes ads
