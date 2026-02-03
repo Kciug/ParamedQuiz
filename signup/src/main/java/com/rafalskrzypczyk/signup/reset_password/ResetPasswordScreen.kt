@@ -4,12 +4,12 @@ import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -24,6 +24,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -55,7 +56,6 @@ fun ResetPasswordScreen(
     val state = viewModel.state.collectAsStateWithLifecycle()
 
     Scaffold (
-        contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             NavTopBar(
                 title = stringResource(R.string.title_reset_password),
@@ -65,7 +65,9 @@ fun ResetPasswordScreen(
             ) { onNavigateBack() }
         }
     ) { innerPadding ->
-        val modifier = Modifier.padding(innerPadding)
+        val modifier = Modifier
+            .padding(innerPadding)
+            .consumeWindowInsets(innerPadding)
 
         if(state.value.isLoading) Loading()
         else ResetPasswordScreenContent(
@@ -88,34 +90,39 @@ fun ResetPasswordScreenContent(
     onEvent: (ResetPasswordUIEvents) -> Unit,
     onNavigateBack: () -> Unit,
 ) {
-    Column(
+    Box(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = Dimens.DEFAULT_PADDING)
-            .verticalScroll(rememberScrollState())
             .imePadding(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING, Alignment.CenterVertically)
+        contentAlignment = Alignment.Center
     ) {
-        Image(
-            painter = painterResource(com.rafalskrzypczyk.core.R.drawable.email),
-            contentDescription = stringResource(R.string.desc_login),
-            contentScale = ContentScale.Crop,
+        Column(
             modifier = Modifier
-                .shadow(Dimens.ELEVATION, CircleShape, clip = false)
-                .clip(CircleShape)
-                .background(Color.Transparent)
-                .size(Dimens.IMAGE_SIZE)
-        )
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = Dimens.DEFAULT_PADDING, vertical = Dimens.DEFAULT_PADDING),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
+        ) {
+            Image(
+                painter = painterResource(com.rafalskrzypczyk.core.R.drawable.email),
+                contentDescription = stringResource(R.string.desc_login),
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .shadow(Dimens.ELEVATION, CircleShape, clip = false)
+                    .clip(CircleShape)
+                    .background(Color.Transparent)
+                    .size(Dimens.IMAGE_SIZE)
+            )
 
-        if(isSuccess) {
-            ResetPasswordSuccessContent(
-                onNavigateBack = onNavigateBack,
-            )
-        } else {
-            ResetPasswordInput(
-                onEvent = onEvent,
-            )
+            if(isSuccess) {
+                ResetPasswordSuccessContent(
+                    onNavigateBack = onNavigateBack,
+                )
+            } else {
+                ResetPasswordInput(
+                    onEvent = onEvent,
+                )
+            }
         }
     }
 }
@@ -133,7 +140,8 @@ fun ResetPasswordInput(
         onValueChange = { emailText = it },
         hint = stringResource(R.string.hint_email),
         keyboardType = KeyboardType.Email,
-        imeAction = ImeAction.Done
+        imeAction = ImeAction.Done,
+        contentType = ContentType.EmailAddress
     )
 
     ButtonPrimary(
@@ -168,22 +176,6 @@ private fun ResetPasswordInputPreview() {
             ResetPasswordScreenContent(
                 modifier = Modifier,
                 isSuccess = false,
-                onEvent = {},
-                onNavigateBack = {},
-            )
-        }
-    }
-}
-
-@Composable
-@Preview
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
-private fun ResetPasswordSuccessPreview() {
-    ParamedQuizTheme {
-        Surface {
-            ResetPasswordScreenContent(
-                modifier = Modifier,
-                isSuccess = true,
                 onEvent = {},
                 onNavigateBack = {},
             )

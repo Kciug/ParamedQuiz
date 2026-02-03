@@ -1,28 +1,22 @@
 plugins {
-    `android-library`
-    `kotlin-android`
-    kotlin("plugin.serialization") version "2.0.21"
+    id("paramedquiz.android.feature")
+    alias(libs.plugins.kotlin.serialization)
 }
-
-apply<SharedGradleProjectConfig>()
 
 android {
     namespace = "com.rafalskrzypczyk.swipe_mode"
-    kotlinOptions {
-        jvmTarget = "11"
-    }
 }
 
 dependencies {
-    implementation(project(":core"))
     implementation(project(":firestore"))
     implementation(project(":auth"))
     implementation(project(":score"))
 
-    coreKtx()
-    implementation(Dependencies.COMPOSE_RUNTIME)
-    ui()
-    daggerHilt()
-    tests()
-    kotlinxSerialization()
-}
+    implementation(libs.androidx.compose.runtime)
+    implementation(libs.kotlinx.serialization.json)
+
+        testImplementation(libs.bundles.unit.test)
+
+    }
+
+    

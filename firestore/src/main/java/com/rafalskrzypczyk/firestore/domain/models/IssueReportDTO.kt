@@ -1,5 +1,8 @@
 package com.rafalskrzypczyk.firestore.domain.models
 
+import androidx.annotation.Keep
+
+@Keep
 data class IssueReportDTO(
     val id: String = "",
     val questionId: String = "",

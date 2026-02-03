@@ -82,6 +82,7 @@ fun SwipeModeScreen(
         quizTopPanel = { SwipeModeQuizPanel(score = state.userScore) },
         currentQuestionIndex = state.currentQuestionNumber,
         quizFinished = state.isQuizFinished,
+        waitingForAd = state.showAd,
         quizFinishedState = state.quizFinishedState,
         quizFinishedExtras = {
              SwipeModeFinishedExtras(

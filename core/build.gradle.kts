@@ -1,24 +1,20 @@
 plugins {
-    `android-library`
-    `kotlin-android`
-    kotlin("plugin.serialization") version "2.0.21"
+    id("paramedquiz.android.library")
+    id("paramedquiz.android.compose")
+    id("paramedquiz.android.hilt")
+    alias(libs.plugins.kotlin.serialization)
 }
-
-apply<SharedGradleProjectConfig>()
 
 android {
     namespace = "com.rafalskrzypczyk.core"
-
-    kotlinOptions {
-        jvmTarget = "11"
-    }
 }
 
 dependencies {
-    coreKtx()
-    implementation(Dependencies.COMPOSE_RUNTIME)
-    ui()
-    tests()
-    daggerHilt()
-    kotlinxSerialization()
+    implementation(libs.androidx.compose.runtime)
+    implementation(libs.kotlinx.serialization.json)
+
+    testImplementation(libs.bundles.unit.test)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
 }
+    

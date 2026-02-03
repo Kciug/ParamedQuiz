@@ -6,9 +6,12 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.OutlinedFlag
@@ -31,6 +34,7 @@ fun BaseQuizScreen(
     quizTopPanel: @Composable () -> Unit = {},
     currentQuestionIndex: Int = 0,
     quizFinished: Boolean,
+    waitingForAd: Boolean = false,
     quizFinishedState: QuizFinishedState,
     quizFinishedExtras: @Composable () -> Unit = {},
     showBackConfirmation: Boolean,
@@ -59,34 +63,51 @@ fun BaseQuizScreen(
             onBackAction()
     }
 
+    val contentState = when {
+        quizFinished -> QuizContentState.Finished
+        waitingForAd -> QuizContentState.WaitingForAd
+        else -> QuizContentState.Active
+    }
+
     AnimatedContent(
-        targetState = quizFinished,
+        targetState = contentState,
         transitionSpec = {
             scaleIn() togetherWith scaleOut()
         },
         label = "quizFinishedTransition"
-    ) { quizFinished ->
-        if(quizFinished) {
-            QuizFinishedScreen(
-                state = quizFinishedState,
-                onNavigateBack = { onNavigateBack() }
-            ) { quizFinishedExtras() }
-        } else {
-            Scaffold(
-                contentWindowInsets = WindowInsets.safeDrawing,
-                topBar = {
-                    QuizTopBar(
-                        titlePanel = {
-                            if (!titlePanelConsumed.value) {
-                                defaultTitlePanel()
-                            }
-                        },
-                        quizPanel = { quizTopPanel() },
-                        actions = { ReportAction { onReportIssue() } }
-                    ) { onBackAction() }
+    ) { targetState ->
+        when(targetState) {
+            QuizContentState.Finished -> {
+                QuizFinishedScreen(
+                    state = quizFinishedState,
+                    enterDelay = 0,
+                    onNavigateBack = { onNavigateBack() }
+                ) { quizFinishedExtras() }
+            }
+            QuizContentState.WaitingForAd -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.background)
+                )
+            }
+            QuizContentState.Active -> {
+                Scaffold(
+                    contentWindowInsets = WindowInsets.safeDrawing,
+                    topBar = {
+                        QuizTopBar(
+                            titlePanel = {
+                                if (!titlePanelConsumed.value) {
+                                    defaultTitlePanel()
+                                }
+                            },
+                            quizPanel = { quizTopPanel() },
+                            actions = { ReportAction { onReportIssue() } }
+                        ) { onBackAction() }
+                    }
+                ) { innerPadding ->
+                    quizContent(innerPadding, consumableTitlePanel)
                 }
-            ) { innerPadding ->
-                quizContent(innerPadding, consumableTitlePanel)
             }
         }
     }
@@ -129,6 +150,12 @@ fun ReportAction(
         icon = Icons.Rounded.OutlinedFlag,
         description = "Settings"
     ) { onAction() }
+}
+
+private enum class QuizContentState {
+    Active,
+    WaitingForAd,
+    Finished
 }
 
 @Preview

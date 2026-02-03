@@ -1,31 +1,19 @@
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.plugin.compose")
-    id("com.google.dagger.hilt.android")
-    id("com.google.gms.google-services")
-
-    kotlin("plugin.serialization") version "2.0.21"
-    kotlin("kapt")
+    id("paramedquiz.android.application")
+    id("paramedquiz.android.compose")
+    id("paramedquiz.android.hilt")
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
     namespace = "com.rafalskrzypczyk.paramedquiz"
-    compileSdk = ProjectConfig.COMPILE_SDK
 
     defaultConfig {
-        applicationId = ProjectConfig.APP_ID
-        minSdk = ProjectConfig.MIN_SDK
-        targetSdk = ProjectConfig.TARGET_SDK
-        versionCode = ProjectConfig.VERSION_CODE
-        versionName = ProjectConfig.VERSION_NAME
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-
-    @Suppress("UnstableApiUsage")
-    androidResources {
-        localeFilters += "pl"
+        androidResources {
+            @Suppress("UnstableApiUsage")
+            localeFilters += "pl"
+        }
     }
 
     signingConfigs {
@@ -43,30 +31,12 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("release")
-            isMinifyEnabled = true
-
-            isShrinkResources = true
-
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
         }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-    kotlinOptions {
-        jvmTarget = "11"
-    }
-    buildFeatures {
-        compose = true
     }
 }
 
 hilt {
-    enableAggregatingTask = true
+    enableAggregatingTask = false
 }
 
 dependencies {
@@ -82,11 +52,17 @@ dependencies {
     implementation(project(":billing"))
     implementation(project(":firestore"))
 
-    implementation(Dependencies.SPLASH_SCREEN)
-    coreKtx()
-    implementation(Dependencies.COMPOSE_RUNTIME)
-    ui()
-    tests()
-    daggerHilt()
-    kotlinxSerialization()
+    implementation(libs.androidx.core.splashscreen)
+    implementation(libs.androidx.compose.runtime)
+    
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    
+    implementation(libs.kotlinx.serialization.json)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
 }
+    
+    

@@ -29,9 +29,9 @@ fun SequentiallyAnimatedColumn(
     contentPadding: PaddingValues = PaddingValues(Dimens.DEFAULT_PADDING),
     content: List<@Composable () -> Unit>
 ) {
-    val visibleStates = remember { content.map { mutableStateOf(false) } }
+    val visibleStates = remember(content.size) { content.map { mutableStateOf(false) } }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(content.size) {
         delay(enterDelay)
         content.forEachIndexed { index, _ ->
             visibleStates[index].value = true

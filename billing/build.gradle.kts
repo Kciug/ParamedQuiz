@@ -1,23 +1,18 @@
 plugins {
-    `android-library`
-    `kotlin-android`
+    id("paramedquiz.android.library")
+    id("paramedquiz.android.compose")
+    id("paramedquiz.android.hilt")
 }
-
-apply<SharedGradleProjectConfig>()
 
 android {
     namespace = "com.rafalskrzypczyk.billing"
-
-    kotlinOptions {
-        jvmTarget = "11"
-    }
 }
 
 dependencies {
     implementation(project(":core"))
     implementation(libs.billing.ktx)
-    coreKtx()
-    daggerHilt()
-    ui()
-    tests()
+
+    testImplementation(libs.bundles.unit.test)
 }
+    
+    

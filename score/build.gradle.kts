@@ -1,25 +1,22 @@
 plugins {
-    `android-library`
-    `kotlin-android`
-    kotlin("plugin.serialization") version "2.0.21"
+    id("paramedquiz.android.feature")
+    alias(libs.plugins.kotlin.serialization)
 }
-
-apply<SharedGradleProjectConfig>()
 
 android {
     namespace = "com.rafalskrzypczyk.score"
-    kotlinOptions {
-        jvmTarget = "11"
-    }
 }
 
 dependencies {
-    implementation(project(":core"))
     implementation(project(":firestore"))
 
-    coreKtx()
-    daggerHilt()
-    tests()
-    kotlinxSerialization()
-    firebase()
-}
+    implementation(libs.kotlinx.serialization.json)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+
+        testImplementation(libs.bundles.unit.test)
+
+    }
+
+    

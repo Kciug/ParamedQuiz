@@ -19,8 +19,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentType
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -36,6 +39,7 @@ fun TextFieldPrimary(
     hint: String = "",
     keyboardType: KeyboardType = KeyboardType.Text,
     imeAction: ImeAction = ImeAction.None,
+    contentType: ContentType? = null
 ) {
     BaseTextField(
         textValue = textValue,
@@ -43,6 +47,7 @@ fun TextFieldPrimary(
         hint = hint,
         keyboardType = keyboardType,
         imeAction = imeAction,
+        contentType = contentType,
         visualTransformation = VisualTransformation.None,
         trailingIcon = null,
         singleLine = true,
@@ -58,14 +63,17 @@ fun TextFieldMultiLine(
     hint: String = "",
     minLines: Int = 5,
     maxLines: Int = 10,
-    imeAction: ImeAction = ImeAction.Default
+    keyboardType: KeyboardType = KeyboardType.Text,
+    imeAction: ImeAction = ImeAction.Default,
+    contentType: ContentType? = null
 ) {
     BaseTextField(
         textValue = textValue,
         onValueChange = onValueChange,
         hint = hint,
-        keyboardType = KeyboardType.Text,
+        keyboardType = keyboardType,
         imeAction = imeAction,
+        contentType = contentType,
         visualTransformation = VisualTransformation.None,
         trailingIcon = null,
         singleLine = false,
@@ -82,7 +90,8 @@ fun PasswordTextFieldPrimary(
     password: String = "",
     onPasswordChange: (String) -> Unit,
     hint: String = "",
-    imeAction: ImeAction = ImeAction.None
+    imeAction: ImeAction = ImeAction.None,
+    contentType: ContentType? = ContentType.Password
 ) {
     var showPassword by remember { mutableStateOf(false) }
 
@@ -92,6 +101,7 @@ fun PasswordTextFieldPrimary(
         hint = hint,
         keyboardType = KeyboardType.Password,
         imeAction = imeAction,
+        contentType = contentType,
         visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
         trailingIcon = {
             val icon = if (showPassword) Icons.Default.Visibility else Icons.Default.VisibilityOff
@@ -114,6 +124,7 @@ private fun BaseTextField(
     hint: String,
     keyboardType: KeyboardType,
     imeAction: ImeAction,
+    contentType: ContentType?,
     visualTransformation: VisualTransformation,
     trailingIcon: (@Composable (() -> Unit))? = null,
     singleLine: Boolean,
@@ -135,7 +146,12 @@ private fun BaseTextField(
         maxLines = maxLines,
         modifier = modifier
             .fillMaxWidth()
-            .clip(shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT)),
+            .clip(shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT))
+            .semantics {
+                if (contentType != null) {
+                    this.contentType = contentType
+                }
+            },
         colors = TextFieldDefaults.colors(
             focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
             unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
