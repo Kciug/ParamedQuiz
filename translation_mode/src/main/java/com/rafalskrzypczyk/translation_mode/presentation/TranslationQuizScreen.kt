@@ -31,6 +31,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.BaseQuizScreen
 import com.rafalskrzypczyk.core.composables.ButtonPrimary
@@ -46,6 +47,14 @@ import com.rafalskrzypczyk.translation_mode.presentation.components.TranslationI
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.runtime.remember
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.text.input.ImeAction
+import com.rafalskrzypczyk.core.composables.ActionButton
 import com.rafalskrzypczyk.core.composables.CorrectAnswersLabel
 import com.rafalskrzypczyk.core.composables.UserPointsLabel
 
@@ -129,7 +138,13 @@ fun TranslationQuizContent(
     state: TranslationQuizState,
     onEvent: (TranslationQuizEvents) -> Unit
 ) {
-    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(state.currentQuestionIndex, state.isQuizFinished) {
+        if (!state.isQuizFinished) {
+            focusRequester.requestFocus()
+        }
+    }
 
     AnimatedContent(
         targetState = state.currentQuestion,
@@ -142,16 +157,18 @@ fun TranslationQuizContent(
         if (question == null) return@AnimatedContent
 
         Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.BottomCenter
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
         ) {
+            // Scrollable Content
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = Dimens.DEFAULT_PADDING)
-                    .padding(top = paddingValues.calculateTopPadding())
-                    .padding(bottom = Dimens.DEFAULT_PADDING * 5)
-                    .verticalScroll(rememberScrollState()),
+                    // Add padding at the bottom to prevent content from being hidden behind the input
+                    .padding(bottom = 100.dp)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = Dimens.DEFAULT_PADDING),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Box(modifier = Modifier.fillMaxWidth()) {
@@ -177,35 +194,43 @@ fun TranslationQuizContent(
                         TextTitle(text = question.phrase, textAlign = TextAlign.Center)
                     }
                 }
+            }
 
-                Spacer(modifier = Modifier.weight(1f))
-
+            // Fixed Input Section (Sticky Bottom)
+            Row(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(Dimens.DEFAULT_PADDING),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
+            ) {
                 TranslationInput(
+                    modifier = Modifier
+                        .weight(1f)
+                        .focusRequester(focusRequester),
                     text = question.userAnswer,
                     onValueChange = { onEvent(TranslationQuizEvents.OnAnswerChanged(it)) },
                     enabled = !question.isAnswered,
+                    imeAction = if (question.isAnswered) ImeAction.Next else ImeAction.Done,
                     onDone = {
-                        keyboardController?.hide()
-                        onEvent(TranslationQuizEvents.OnSubmitAnswer)
+                        if (!question.isAnswered) {
+                            onEvent(TranslationQuizEvents.OnSubmitAnswer)
+                        } else {
+                            onEvent(TranslationQuizEvents.OnNextQuestion)
+                        }
                     }
                 )
 
-                Spacer(modifier = Modifier.weight(1f))
-            }
-
-            if (!question.isAnswered) {
-                ButtonPrimary(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = Dimens.DEFAULT_PADDING)
-                        .padding(bottom = paddingValues.calculateBottomPadding() + Dimens.DEFAULT_PADDING),
-                    title = stringResource(R.string.btn_check_answer),
-                    onClick = {
-                        keyboardController?.hide()
-                        onEvent(TranslationQuizEvents.OnSubmitAnswer)
-                    },
-                    enabled = question.userAnswer.isNotBlank()
-                )
+                if (!question.isAnswered) {
+                    ActionButton(
+                        icon = Icons.Default.Check,
+                        description = stringResource(R.string.btn_check_answer),
+                        onClick = { onEvent(TranslationQuizEvents.OnSubmitAnswer) },
+                        enabled = question.userAnswer.isNotBlank(),
+                        showBackground = true
+                    )
+                }
             }
 
             AnimatedVisibility(
@@ -216,7 +241,7 @@ fun TranslationQuizContent(
                 TranslationFeedbackPanel(
                     question = question,
                     onNext = { onEvent(TranslationQuizEvents.OnNextQuestion) },
-                    bottomPadding = paddingValues.calculateBottomPadding()
+                    bottomPadding = 0.dp
                 )
             }
         }
