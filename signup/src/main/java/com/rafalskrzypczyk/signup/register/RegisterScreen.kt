@@ -102,12 +102,12 @@ fun RegisterScreenContent(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .imePadding()
-            .verticalScroll(rememberScrollState()),
+            .imePadding(),
         contentAlignment = Alignment.Center
     ) {
         Column(
             modifier = Modifier
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = Dimens.DEFAULT_PADDING, vertical = Dimens.DEFAULT_PADDING),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
