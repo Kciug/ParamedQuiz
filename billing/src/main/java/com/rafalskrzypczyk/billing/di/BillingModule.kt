@@ -3,26 +3,34 @@
 package com.rafalskrzypczyk.billing.di
 
 import com.rafalskrzypczyk.billing.data.BillingRepositoryImpl
+import com.rafalskrzypczyk.billing.data.MockBillingRepository
 import com.rafalskrzypczyk.billing.domain.BillingRepository
-import dagger.Binds
 import dagger.Module
+import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class BillingModule {
+object BillingModule {
 
-    @Binds
-    @Singleton
-    abstract fun bindBillingRepository(
-        billingRepositoryImpl: BillingRepositoryImpl
-    ): BillingRepository
+    private const val USE_MOCK_BILLING = true
 
-    @Binds
+    @Provides
     @Singleton
-    abstract fun bindPremiumStatusProvider(
-        billingPremiumStatusProvider: com.rafalskrzypczyk.billing.data.BillingPremiumStatusProvider
-    ): com.rafalskrzypczyk.core.billing.PremiumStatusProvider
+    fun provideBillingRepository(
+        realImpl: BillingRepositoryImpl,
+        mockImpl: MockBillingRepository
+    ): BillingRepository {
+        return if (USE_MOCK_BILLING) mockImpl else realImpl
+    }
+
+    @Provides
+    @Singleton
+    fun providePremiumStatusProvider(
+        provider: com.rafalskrzypczyk.billing.data.BillingPremiumStatusProvider
+    ): com.rafalskrzypczyk.core.billing.PremiumStatusProvider {
+        return provider
+    }
 }

@@ -1,6 +1,5 @@
 package com.rafalskrzypczyk.billing.data
 
-import com.android.billingclient.api.Purchase
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
@@ -17,13 +16,13 @@ class BillingPremiumStatusProvider @Inject constructor(
     // Any purchase removes ads
     override val isAdsFree: Flow<Boolean> = billingRepository.purchases
         .map { purchaseList ->
-            purchaseList.any { it.purchaseState == Purchase.PurchaseState.PURCHASED }
+            purchaseList.any { it.isPurchased }
         }
 
     override val ownedProductIds: Flow<Set<String>> = billingRepository.purchases
         .map { purchaseList ->
             purchaseList
-                .filter { it.purchaseState == Purchase.PurchaseState.PURCHASED }
+                .filter { it.isPurchased }
                 .flatMap { it.products }
                 .toSet()
         }

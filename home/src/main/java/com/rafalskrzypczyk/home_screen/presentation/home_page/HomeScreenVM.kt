@@ -3,7 +3,7 @@ package com.rafalskrzypczyk.home_screen.presentation.home_page
 import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.android.billingclient.api.ProductDetails
+import com.rafalskrzypczyk.billing.domain.AppProduct
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
@@ -27,13 +27,13 @@ class HomeScreenVM @Inject constructor(
     private val _state = MutableStateFlow(HomeScreenState())
     val state = _state.asStateFlow()
     
-    private var translationModeProductDetails: ProductDetails? = null
+    private var translationModeProductDetails: AppProduct? = null
 
     init {
         viewModelScope.launch {
             billingRepository.availableProducts.collectLatest { products ->
-                translationModeProductDetails = products.find { it.productId == BillingIds.ID_TRANSLATION_MODE }
-                _state.update { it.copy(translationModePrice = translationModeProductDetails?.oneTimePurchaseOfferDetails?.formattedPrice) }
+                translationModeProductDetails = products.find { it.id == BillingIds.ID_TRANSLATION_MODE }
+                _state.update { it.copy(translationModePrice = translationModeProductDetails?.price) }
             }
         }
         
