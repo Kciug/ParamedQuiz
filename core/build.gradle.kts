@@ -12,9 +12,9 @@ android {
 dependencies {
     implementation(libs.androidx.compose.runtime)
     implementation(libs.kotlinx.serialization.json)
-    
+
     testImplementation(libs.bundles.unit.test)
     androidTestImplementation(libs.androidx.junit)
-        androidTestImplementation(libs.androidx.espresso.core)
-    }
+    androidTestImplementation(libs.androidx.espresso.core)
+}
     

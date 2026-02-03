@@ -11,9 +11,8 @@ android {
 dependencies {
     implementation(project(":core"))
     implementation(libs.billing.ktx)
-    
-        testImplementation(libs.bundles.unit.test)
-    
-    }
+
+    testImplementation(libs.bundles.unit.test)
+}
     
     
