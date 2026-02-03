@@ -32,7 +32,6 @@ import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -50,6 +49,7 @@ import com.rafalskrzypczyk.core.composables.ConfirmationDialog
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.ErrorDialog
 import com.rafalskrzypczyk.core.composables.Loading
+import com.rafalskrzypczyk.core.composables.PreviewContainer
 import com.rafalskrzypczyk.core.composables.SettingsCategoryHeader
 import com.rafalskrzypczyk.core.composables.SettingsDialog
 import com.rafalskrzypczyk.core.composables.SettingsItemRow
@@ -58,7 +58,6 @@ import com.rafalskrzypczyk.core.composables.TextCaption
 import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.composables.top_bars.NavTopBar
 import com.rafalskrzypczyk.core.ui.theme.MQYellow
-import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.core.user_management.UserAuthenticationMethod
 import com.rafalskrzypczyk.home.R
 
@@ -317,19 +316,53 @@ private fun UserSettingsUserDetails(
 @Composable
 @Preview
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
-private fun UserSettingsPreview() {
-    ParamedQuizTheme {
-        Surface {
-            UserSettingsScreen(
-                state = UserSettingsState(
-                    userName = stringResource(com.rafalskrzypczyk.core.R.string.placeholder_name),
-                    userEmail = stringResource(com.rafalskrzypczyk.core.R.string.placeholder_email)
-                ),
-                onEvent = {},
-                onNavigateBack = {},
-                onSignOut = {},
-                onTermsOfService = {}
-            )
-        }
+private fun UserNonPasswordSettingsPreview() {
+    PreviewContainer {
+        UserSettingsScreen(
+            state = UserSettingsState(
+                userName = stringResource(com.rafalskrzypczyk.core.R.string.placeholder_name),
+                userEmail = stringResource(com.rafalskrzypczyk.core.R.string.placeholder_email)
+            ),
+            onEvent = {},
+            onNavigateBack = {},
+            onSignOut = {},
+            onTermsOfService = {}
+        )
+    }
+}
+
+@Composable
+@Preview
+private fun UserPasswordSettingsPreview() {
+    PreviewContainer {
+        UserSettingsScreen(
+            state = UserSettingsState(
+                accountType = UserAuthenticationMethod.PASSWORD,
+                userName = stringResource(com.rafalskrzypczyk.core.R.string.placeholder_name),
+                userEmail = stringResource(com.rafalskrzypczyk.core.R.string.placeholder_email)
+            ),
+            onEvent = {},
+            onNavigateBack = {},
+            onSignOut = {},
+            onTermsOfService = {}
+        )
+    }
+}
+
+@Composable
+@Preview
+private fun UserAnonymousSettingsPreview() {
+    PreviewContainer {
+        UserSettingsScreen(
+            state = UserSettingsState(
+                isAnonymous = true,
+                userName = stringResource(com.rafalskrzypczyk.core.R.string.placeholder_name),
+                userEmail = stringResource(com.rafalskrzypczyk.core.R.string.placeholder_email)
+            ),
+            onEvent = {},
+            onNavigateBack = {},
+            onSignOut = {},
+            onTermsOfService = {}
+        )
     }
 }
