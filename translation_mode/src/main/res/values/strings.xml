@@ -10,7 +10,7 @@
     <string name="btn_continue">Dalej</string>
 
     <string name="extras_accuracy">Skuteczność: %d%%</string>
-    <string name="btn_review_errors">Przejrzyj błędy</string>
+    <string name="btn_review_answers">Twoje odpowiedzi</string>
     <string name="extras_perfect_score">Perfekcyjna pisownia!</string>
     <string name="extras_your_answer">Twoja odpowiedź:</string>
     <string name="extras_correct_answer">Poprawnie:</string>

@@ -13,11 +13,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -75,15 +81,15 @@ fun TranslationQuizFinishedExtras(
                 color = if (percentage >= 50) MQGreen else MQRed
             )
 
-            if (wrongAnswersCount > 0) {
+            if (answeredQuestions > 0) {
                 Button(
                     onClick = onReviewClick,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(Dimens.RADIUS_SMALL)
                 ) {
-                    Text(text = stringResource(R.string.btn_review_errors))
+                    Text(text = stringResource(R.string.btn_review_answers))
                 }
-            } else if (answeredQuestions > 0) {
+            } else {
                 TextHeadline(
                     text = stringResource(R.string.extras_perfect_score),
                     color = MQGreen
@@ -100,7 +106,8 @@ fun TranslationReviewDialog(
 ) {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
-    val wrongAnswers = questions.filter { !it.isCorrect && it.isAnswered }
+    // Show all answered questions, not just errors
+    val answeredQuestions = questions.filter { it.isAnswered }
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -118,14 +125,14 @@ fun TranslationReviewDialog(
                 modifier = Modifier.padding(Dimens.DEFAULT_PADDING)
             ) {
                 TextHeadline(
-                    text = stringResource(R.string.btn_review_errors),
+                    text = stringResource(R.string.btn_review_answers),
                     modifier = Modifier.padding(bottom = Dimens.ELEMENTS_SPACING)
                 )
                 LazyColumn(
                     modifier = Modifier.weight(1f, fill = false),
                     verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
                 ) {
-                    items(wrongAnswers) { question ->
+                    items(answeredQuestions) { question ->
                         ReviewCard(question)
                     }
                 }
@@ -154,44 +161,91 @@ private fun ReviewCard(question: TranslationQuestionUIM) {
                 .fillMaxWidth()
                 .padding(Dimens.DEFAULT_PADDING)
         ) {
-            TextHeadline(text = question.phrase)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                TextHeadline(
+                    text = question.phrase,
+                    modifier = Modifier.weight(1f)
+                )
+                
+                val statusIcon = if (question.isCorrect) Icons.Outlined.Check else Icons.Outlined.Close
+                val statusColor = if (question.isCorrect) MQGreen else MQRed
+                
+                Icon(
+                    imageVector = statusIcon,
+                    contentDescription = null,
+                    tint = statusColor,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
+            
+            HorizontalDivider()
             
             Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
             
             TextCaption(text = stringResource(R.string.extras_your_answer))
             Spacer(modifier = Modifier.height(Dimens.SMALL_PADDING))
+            
+            val answerBgColor = if (question.isCorrect) MQGreen.copy(alpha = 0.2f) else MQRed.copy(alpha = 0.2f)
+            val answerContentColor = if (question.isCorrect) MQGreen else MQRed
+
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(Dimens.RADIUS_SMALL))
-                    .background(MQRed.copy(alpha = 0.2f))
-                    .padding(horizontal = Dimens.DEFAULT_PADDING, vertical = 4.dp)
+                    .background(answerBgColor)
+                    .padding(horizontal = Dimens.DEFAULT_PADDING, vertical = 8.dp),
+                contentAlignment = Alignment.CenterStart
             ) {
-                TextCaption(
+                Text(
                     text = question.userAnswer,
-                    color = MQRed
+                    color = answerContentColor,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold
                 )
             }
 
-            Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
+            val showOtherTranslations = question.isCorrect && question.possibleTranslations.size > 1
+            val showCorrectTranslations = !question.isCorrect
 
-            TextCaption(text = stringResource(R.string.extras_correct_answer))
-            Spacer(modifier = Modifier.height(Dimens.SMALL_PADDING))
-            
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(Dimens.SMALL_PADDING),
-                verticalArrangement = Arrangement.spacedBy(Dimens.SMALL_PADDING)
-            ) {
-                question.possibleTranslations.forEach { translation ->
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(Dimens.RADIUS_SMALL))
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                            .padding(horizontal = Dimens.DEFAULT_PADDING, vertical = 4.dp)
-                    ) {
-                        TextCaption(
-                            text = translation,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+            if (showOtherTranslations || showCorrectTranslations) {
+                Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
+
+                val label = if (question.isCorrect) {
+                    stringResource(R.string.feedback_other_correct_translations)
+                } else {
+                    stringResource(R.string.extras_correct_answer)
+                }
+
+                TextCaption(text = label)
+                Spacer(modifier = Modifier.height(Dimens.SMALL_PADDING))
+                
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.SMALL_PADDING),
+                    verticalArrangement = Arrangement.spacedBy(Dimens.SMALL_PADDING)
+                ) {
+                    val translationsToShow = if (question.isCorrect) {
+                        question.possibleTranslations.filter { !it.equals(question.userAnswer, ignoreCase = true) }
+                    } else {
+                        question.possibleTranslations
+                    }
+
+                    translationsToShow.forEach { translation ->
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(Dimens.RADIUS_SMALL))
+                                .background(MQGreen.copy(alpha = 0.2f))
+                                .padding(horizontal = Dimens.DEFAULT_PADDING, vertical = 4.dp)
+                        ) {
+                            TextCaption(
+                                text = translation,
+                                color = MQGreen
+                            )
+                        }
                     }
                 }
             }
