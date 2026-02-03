@@ -73,10 +73,17 @@ fun TranslationQuizScreen(
 
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     LaunchedEffect(state.showReportSuccessToast) {
         if (state.showReportSuccessToast) {
             Toast.makeText(context, successReportMsg, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    LaunchedEffect(state.isQuizFinished) {
+        if (state.isQuizFinished) {
+            keyboardController?.hide()
         }
     }
 
@@ -172,11 +179,9 @@ fun TranslationQuizContent(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Scrollable Content
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    // Add padding at the bottom to prevent content from being hidden behind the input
                     .padding(bottom = 100.dp)
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = Dimens.DEFAULT_PADDING),
@@ -207,7 +212,6 @@ fun TranslationQuizContent(
                 }
             }
 
-            // Fixed Input Section (Sticky Bottom)
             Row(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)

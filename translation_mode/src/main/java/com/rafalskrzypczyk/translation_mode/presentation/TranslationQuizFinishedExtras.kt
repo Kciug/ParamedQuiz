@@ -46,11 +46,11 @@ fun TranslationQuizFinishedExtras(
     onReviewClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val totalQuestions = questions.size
+    val answeredQuestions = questions.count { it.isAnswered }
     val correctAnswers = questions.count { it.isCorrect }
-    val wrongAnswersCount = totalQuestions - correctAnswers
+    val wrongAnswersCount = answeredQuestions - correctAnswers
     
-    val percentage = if (totalQuestions > 0) ((correctAnswers.toFloat() / totalQuestions) * 100).toInt() else 0
+    val percentage = if (answeredQuestions > 0) ((correctAnswers.toFloat() / answeredQuestions) * 100).toInt() else 0
 
     Surface(
         modifier = modifier.fillMaxWidth(),
@@ -83,7 +83,7 @@ fun TranslationQuizFinishedExtras(
                 ) {
                     Text(text = stringResource(R.string.btn_review_errors))
                 }
-            } else {
+            } else if (answeredQuestions > 0) {
                 TextHeadline(
                     text = stringResource(R.string.extras_perfect_score),
                     color = MQGreen
