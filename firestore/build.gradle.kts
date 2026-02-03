@@ -4,6 +4,10 @@ plugins {
 
 android {
     namespace = "com.rafalskrzypczyk.firestore"
+
+    defaultConfig {
+        consumerProguardFiles("proguard-rules.pro")
+    }
 }
 
 dependencies {
