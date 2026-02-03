@@ -4,14 +4,14 @@ import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -69,14 +69,15 @@ fun LoginScreen(
     }
 
     Scaffold (
-        contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             NavTopBar(
                 title = stringResource(R.string.title_signup)
             ) { onNavigateBack() }
         }
     ) { innerPadding ->
-        val modifier = Modifier.padding(innerPadding)
+        val modifier = Modifier
+            .padding(innerPadding)
+            .consumeWindowInsets(innerPadding)
 
         if(state.value.isLoading){
             Loading()
@@ -107,70 +108,75 @@ fun LoginScreenContent(
     var emailText by rememberSaveable { mutableStateOf("") }
     var passwordText by rememberSaveable { mutableStateOf("") }
 
-    Column (
+    Box(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = Dimens.DEFAULT_PADDING)
-            .verticalScroll(rememberScrollState())
-            .imePadding(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING, Alignment.CenterVertically)
+            .imePadding()
+            .verticalScroll(rememberScrollState()),
+        contentAlignment = Alignment.Center
     ) {
-        Image(
-            painter = painterResource(com.rafalskrzypczyk.core.R.drawable.account),
-            contentDescription = stringResource(R.string.desc_login),
-            contentScale = ContentScale.Crop,
+        Column (
             modifier = Modifier
-                .shadow(Dimens.ELEVATION, CircleShape, clip = false)
-                .clip(CircleShape)
-                .background(Color.Transparent)
-                .size(Dimens.IMAGE_SIZE)
-        )
+                .padding(horizontal = Dimens.DEFAULT_PADDING, vertical = Dimens.DEFAULT_PADDING),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
+        ) {
+            Image(
+                painter = painterResource(com.rafalskrzypczyk.core.R.drawable.account),
+                contentDescription = stringResource(R.string.desc_login),
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .shadow(Dimens.ELEVATION, CircleShape, clip = false)
+                    .clip(CircleShape)
+                    .background(Color.Transparent)
+                    .size(Dimens.IMAGE_SIZE)
+            )
 
-        TextPrimary(stringResource(R.string.label_login))
+            TextPrimary(stringResource(R.string.label_login))
 
-        TextFieldPrimary(
-            textValue = emailText,
-            onValueChange = { emailText = it },
-            hint = stringResource(R.string.hint_email),
-            keyboardType = KeyboardType.Email,
-            imeAction = ImeAction.Next,
-            contentType = ContentType.EmailAddress
-        )
+            TextFieldPrimary(
+                textValue = emailText,
+                onValueChange = { emailText = it },
+                hint = stringResource(R.string.hint_email),
+                keyboardType = KeyboardType.Email,
+                imeAction = ImeAction.Next,
+                contentType = ContentType.EmailAddress
+            )
 
-        PasswordTextFieldPrimary(
-            password = passwordText,
-            onPasswordChange = { passwordText = it },
-            hint = stringResource(R.string.hint_password),
-            imeAction = ImeAction.Done,
-            contentType = ContentType.Password
-        )
+            PasswordTextFieldPrimary(
+                password = passwordText,
+                onPasswordChange = { passwordText = it },
+                hint = stringResource(R.string.hint_password),
+                imeAction = ImeAction.Done,
+                contentType = ContentType.Password
+            )
 
-        ButtonPrimary(
-            title = stringResource(R.string.btn_login),
-            onClick = { onEvent(LoginUIEvents.LoginWithCredentials(emailText, passwordText)) },
-            enabled = passwordText.isNotBlank() && emailText.isNotBlank()
-        )
+            ButtonPrimary(
+                title = stringResource(R.string.btn_login),
+                onClick = { onEvent(LoginUIEvents.LoginWithCredentials(emailText, passwordText)) },
+                enabled = passwordText.isNotBlank() && emailText.isNotBlank()
+            )
 
-        HorizontalDivider()
+            HorizontalDivider()
 
-        LoginWithSocialMediaSection(
-            loginWithGoogle = {
-                onEvent.invoke(LoginUIEvents.LoginWithGoogle(context))
-            }
-        )
+            LoginWithSocialMediaSection(
+                loginWithGoogle = {
+                    onEvent.invoke(LoginUIEvents.LoginWithGoogle(context))
+                }
+            )
 
-        HorizontalDivider()
+            HorizontalDivider()
 
-        ButtonSecondary(
-            title = stringResource(R.string.btn_register),
-            onClick = { onRegister() }
-        )
+            ButtonSecondary(
+                title = stringResource(R.string.btn_register),
+                onClick = { onRegister() }
+            )
 
-        ButtonTertiary(
-            title = stringResource(R.string.btn_reset_password),
-            onClick = { onResetPassword() }
-        )
+            ButtonTertiary(
+                title = stringResource(R.string.btn_reset_password),
+                onClick = { onResetPassword() }
+            )
+        }
     }
 }
 

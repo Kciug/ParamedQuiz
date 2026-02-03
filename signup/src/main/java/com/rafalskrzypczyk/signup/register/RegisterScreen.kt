@@ -4,12 +4,12 @@ import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -31,8 +31,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentType
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -63,7 +61,6 @@ fun RegisterScreen(
     }
 
     Scaffold (
-        contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             NavTopBar(
                 title = stringResource(R.string.title_register),
@@ -73,7 +70,9 @@ fun RegisterScreen(
             ) { onNavigateBack() }
         }
     ) { innerPadding ->
-        val modifier = Modifier.padding(innerPadding)
+        val modifier = Modifier
+            .padding(innerPadding)
+            .consumeWindowInsets(innerPadding)
 
         if(state.value.isLoading){
             Loading()
@@ -100,66 +99,70 @@ fun RegisterScreenContent(
     var passwordText by rememberSaveable { mutableStateOf("") }
     var passwordConfirmationText by rememberSaveable { mutableStateOf("") }
 
-
-    Column(
+    Box(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = Dimens.DEFAULT_PADDING)
-            .verticalScroll(rememberScrollState())
-            .imePadding(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING, Alignment.CenterVertically)
+            .imePadding()
+            .verticalScroll(rememberScrollState()),
+        contentAlignment = Alignment.Center
     ) {
-        Image(
-            painter = painterResource(com.rafalskrzypczyk.core.R.drawable.email),
-            contentDescription = stringResource(R.string.desc_login),
-            contentScale = ContentScale.Crop,
+        Column(
             modifier = Modifier
-                .shadow(Dimens.ELEVATION, CircleShape, clip = false)
-                .clip(CircleShape)
-                .background(Color.Transparent)
-                .size(Dimens.IMAGE_SIZE)
-        )
+                .padding(horizontal = Dimens.DEFAULT_PADDING, vertical = Dimens.DEFAULT_PADDING),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
+        ) {
+            Image(
+                painter = painterResource(com.rafalskrzypczyk.core.R.drawable.email),
+                contentDescription = stringResource(R.string.desc_login),
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .shadow(Dimens.ELEVATION, CircleShape, clip = false)
+                    .clip(CircleShape)
+                    .background(Color.Transparent)
+                    .size(Dimens.IMAGE_SIZE)
+            )
 
-        TextFieldPrimary(
-            textValue = nameText,
-            onValueChange = { nameText = it },
-            hint = stringResource(R.string.hint_user_name),
-            keyboardType = KeyboardType.Text,
-            imeAction = ImeAction.Next,
-            contentType = ContentType.Username
-        )
+            TextFieldPrimary(
+                textValue = nameText,
+                onValueChange = { nameText = it },
+                hint = stringResource(R.string.hint_user_name),
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Next,
+                contentType = ContentType.Username
+            )
 
-        TextFieldPrimary(
-            textValue = emailText,
-            onValueChange = { emailText = it },
-            hint = stringResource(R.string.hint_email),
-            keyboardType = KeyboardType.Email,
-            imeAction = ImeAction.Next,
-            contentType = ContentType.EmailAddress
-        )
+            TextFieldPrimary(
+                textValue = emailText,
+                onValueChange = { emailText = it },
+                hint = stringResource(R.string.hint_email),
+                keyboardType = KeyboardType.Email,
+                imeAction = ImeAction.Next,
+                contentType = ContentType.EmailAddress
+            )
 
-        PasswordTextFieldPrimary(
-            password = passwordText,
-            onPasswordChange = { passwordText = it },
-            hint = stringResource(R.string.hint_password),
-            imeAction = ImeAction.Next,
-            contentType = ContentType.NewPassword
-        )
+            PasswordTextFieldPrimary(
+                password = passwordText,
+                onPasswordChange = { passwordText = it },
+                hint = stringResource(R.string.hint_password),
+                imeAction = ImeAction.Next,
+                contentType = ContentType.NewPassword
+            )
 
-        PasswordTextFieldPrimary(
-            password = passwordConfirmationText,
-            onPasswordChange = { passwordConfirmationText = it },
-            hint = stringResource(R.string.hint_password_confirmation),
-            imeAction = ImeAction.Done,
-            contentType = ContentType.NewPassword
-        )
+            PasswordTextFieldPrimary(
+                password = passwordConfirmationText,
+                onPasswordChange = { passwordConfirmationText = it },
+                hint = stringResource(R.string.hint_password_confirmation),
+                imeAction = ImeAction.Done,
+                contentType = ContentType.NewPassword
+            )
 
-        ButtonPrimary(
-            title = stringResource(R.string.btn_register),
-            onClick = { onEvent(RegisterUIEvents.RegisterWithCredentials(nameText, emailText, passwordText)) },
-            enabled = passwordText.isNotBlank() && passwordText == passwordConfirmationText
-        )
+            ButtonPrimary(
+                title = stringResource(R.string.btn_register),
+                onClick = { onEvent(RegisterUIEvents.RegisterWithCredentials(nameText, emailText, passwordText)) },
+                enabled = passwordText.isNotBlank() && passwordText == passwordConfirmationText
+            )
+        }
     }
 }
 
