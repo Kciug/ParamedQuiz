@@ -18,6 +18,8 @@ import com.rafalskrzypczyk.core.composables.TextFieldPrimary
 import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.home.R
 
+import androidx.compose.ui.autofill.ContentType
+
 @Composable
 fun UserSettingsChangeUserName(
     validationMessage: String? = null,
@@ -32,7 +34,8 @@ fun UserSettingsChangeUserName(
             textValue = newUserName,
             onValueChange = { newUserName = it },
             hint = stringResource(R.string.hint_new_username),
-            imeAction = ImeAction.Done
+            imeAction = ImeAction.Done,
+            contentType = ContentType.Username
         )
 
         if (validationMessage.isNullOrEmpty().not()) {
@@ -68,6 +71,7 @@ fun UserSettingsChangePassword(
             onPasswordChange = { oldPassword = it },
             hint = stringResource(R.string.hint_old_password),
             imeAction = ImeAction.Next,
+            contentType = ContentType.Password
         )
 
         PasswordTextFieldPrimary(
@@ -75,6 +79,7 @@ fun UserSettingsChangePassword(
             onPasswordChange = { newPassword = it },
             hint = stringResource(R.string.hint_new_password),
             imeAction = ImeAction.Next,
+            contentType = ContentType.NewPassword
         )
 
         PasswordTextFieldPrimary(
@@ -82,6 +87,7 @@ fun UserSettingsChangePassword(
             onPasswordChange = { newPasswordRepeat = it },
             hint = stringResource(R.string.hint_password_repeat),
             imeAction = ImeAction.Done,
+            contentType = ContentType.NewPassword
         )
 
         if (validationMessage.isNullOrEmpty().not()) {
@@ -119,7 +125,8 @@ fun UserSettingsDeleteAccountWithPassword(
             password = password,
             onPasswordChange = { password = it },
             hint = stringResource(R.string.hint_old_password),
-            imeAction = ImeAction.Done
+            imeAction = ImeAction.Done,
+            contentType = ContentType.Password
         )
 
         ButtonPrimary(
