@@ -27,8 +27,6 @@ import com.rafalskrzypczyk.paramedquiz.dev.DevVM
 import com.rafalskrzypczyk.signup.SignupNavHost
 import com.rafalskrzypczyk.swipe_mode.navigation.SwipeModeNavHost
 import com.rafalskrzypczyk.swipe_mode.presentation.SwipeModeEntryVM
-import com.rafalskrzypczyk.translation_mode.presentation.TranslationQuizScreen
-import com.rafalskrzypczyk.translation_mode.presentation.TranslationQuizViewModel
 import kotlinx.serialization.Serializable
 
 @Serializable

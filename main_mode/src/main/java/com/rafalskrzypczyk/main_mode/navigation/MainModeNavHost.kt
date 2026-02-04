@@ -37,25 +37,25 @@ fun MainModeNavHost(
         startDestination = startDest,
         enterTransition = {
             slideIntoContainer(
-                towards = AnimatedContentTransitionScope.SlideDirection.Companion.Left,
+                towards = AnimatedContentTransitionScope.SlideDirection.Left,
                 animationSpec = tween()
             ) + scaleIn()
         },
         exitTransition = {
             slideOutOfContainer(
-                towards = AnimatedContentTransitionScope.SlideDirection.Companion.Left,
+                towards = AnimatedContentTransitionScope.SlideDirection.Left,
                 animationSpec = tween()
             )
         },
         popEnterTransition = {
             slideIntoContainer(
-                towards = AnimatedContentTransitionScope.SlideDirection.Companion.Right,
+                towards = AnimatedContentTransitionScope.SlideDirection.Right,
                 animationSpec = tween()
             ) + scaleIn()
         },
         popExitTransition = {
             slideOutOfContainer(
-                towards = AnimatedContentTransitionScope.SlideDirection.Companion.Right,
+                towards = AnimatedContentTransitionScope.SlideDirection.Right,
                 animationSpec = tween()
             )
         }

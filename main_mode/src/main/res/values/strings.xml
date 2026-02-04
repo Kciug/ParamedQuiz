@@ -26,7 +26,7 @@
 
     <string name="purchase_dialog_title">Odblokuj Kategorię</string>
     <string name="price_label">Cena: %s</string>
-    <string name="price_loading">Pobieranie ceny...</string>
+    <string name="price_loading">Pobieranie ceny…</string>
     <string name="btn_buy">Kup teraz</string>
     <string name="btn_cancel">Anuluj</string>
 
