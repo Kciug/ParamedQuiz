@@ -48,6 +48,9 @@
 
     <string name="finish_title">Ukończyłeś quiz!</string>
     <string name="btn_back">Wróć</string>
+    <string name="btn_next">Dalej</string>
+    <string name="btn_finish">Zakończ</string>
+    <string name="btn_skip">Pomiń</string>
 
     <string name="desc_user_score">Punkty</string>
     <string name="desc_user_streak">Seria</string>
