@@ -28,8 +28,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -374,35 +372,40 @@ fun OnboardingIconComposition(
 ) {
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier.size(240.dp)
+        modifier = Modifier.size(260.dp)
     ) {
-        // Tła głównej ikony
         Box(
             modifier = Modifier
-                .size(140.dp)
+                .size(130.dp)
                 .background(
-                    color = mainIconColor.copy(alpha = 0.1f),
+                    color = mainIconColor.copy(alpha = 0.12f),
                     shape = CircleShape
                 )
         )
         Box(
             modifier = Modifier
-                .size(190.dp)
+                .size(160.dp)
                 .background(
-                    color = mainIconColor.copy(alpha = 0.05f),
+                    color = mainIconColor.copy(alpha = 0.06f),
                     shape = CircleShape
                 )
         )
         
+        val offsets = listOf(
+            Pair(105.dp, (-55).dp),
+            Pair((-110).dp, 25.dp),
+            Pair(45.dp, 90.dp),
+            Pair((-35).dp, (-100).dp)
+        )
+
         secondaryIcons.forEachIndexed { index, icon ->
-            val offsetXPx = if (index % 2 == 0) 95.dp else (-95).dp
-            val offsetYPx = if (index < 2) (-40).dp else 50.dp
+            val offset = offsets.getOrNull(index) ?: Pair(0.dp, 0.dp)
             
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .offset(x = offsetXPx, y = offsetYPx)
-                    .size(54.dp)
+                    .offset(x = offset.first, y = offset.second)
+                    .size(48.dp)
                     .background(
                         color = mainIconColor.copy(alpha = 0.12f),
                         shape = CircleShape
@@ -411,8 +414,8 @@ fun OnboardingIconComposition(
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = mainIconColor.copy(alpha = 0.5f),
-                    modifier = Modifier.size(28.dp)
+                    tint = mainIconColor.copy(alpha = 0.45f),
+                    modifier = Modifier.size(26.dp)
                 )
             }
         }
@@ -422,13 +425,7 @@ fun OnboardingIconComposition(
             contentDescription = null,
             tint = mainIconColor,
             modifier = Modifier
-                .size(90.dp)
-                .shadow(
-                    elevation = 15.dp,
-                    shape = CircleShape,
-                    spotColor = mainIconColor,
-                    ambientColor = mainIconColor
-                )
+                .size(85.dp)
         )
     }
 }
