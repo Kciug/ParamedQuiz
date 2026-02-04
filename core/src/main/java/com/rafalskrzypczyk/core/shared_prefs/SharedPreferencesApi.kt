@@ -19,6 +19,8 @@ interface SharedPreferencesApi {
     fun setTranslationModeOnboardingSeen(seen: Boolean)
     fun getTranslationModeOnboardingSeen(): Boolean
 
+    fun resetModularOnboarding()
+
     fun getAcceptedTermsVersion(): Int
     fun setAcceptedTermsVersion(version: Int)
 }

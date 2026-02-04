@@ -78,6 +78,14 @@ class SharedPreferencesService @Inject constructor(
         return sharedPreferences.getBoolean(KEY_ONBOARDING_TRANSLATION_MODE_STATUS, false)
     }
 
+    override fun resetModularOnboarding() {
+        sharedPreferences.edit {
+            remove(KEY_ONBOARDING_MAIN_MODE_STATUS)
+            remove(KEY_ONBOARDING_SWIPE_MODE_STATUS)
+            remove(KEY_ONBOARDING_TRANSLATION_MODE_STATUS)
+        }
+    }
+
     override fun getAcceptedTermsVersion(): Int {
         return sharedPreferences.getInt(KEY_ACCEPTED_TERMS_VERSION, -1)
     }
