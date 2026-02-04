@@ -18,6 +18,8 @@ import com.rafalskrzypczyk.home_screen.presentation.user_settings.UserSettingsSc
 import com.rafalskrzypczyk.home_screen.presentation.user_settings.UserSettingsVM
 import com.rafalskrzypczyk.main_mode.navigation.MainModeNavHost
 import com.rafalskrzypczyk.main_mode.presentation.MainModeEntryVM
+import com.rafalskrzypczyk.translation_mode.navigation.TranslationModeNavHost
+import com.rafalskrzypczyk.translation_mode.presentation.TranslationModeEntryVM
 import com.rafalskrzypczyk.main_mode.presentation.daily_exercise.DailyExerciseVM
 import com.rafalskrzypczyk.main_mode.presentation.quiz_base.MMQuizScreen
 import com.rafalskrzypczyk.paramedquiz.dev.DevOptionsScreen
@@ -217,13 +219,12 @@ fun NavGraphBuilder.translationModeDestination(
     onNavigateBack: () -> Unit
 ) {
     composable<TranslationMode> {
-        val viewModel = hiltViewModel<TranslationQuizViewModel>()
-        val state = viewModel.state.collectAsStateWithLifecycle()
+        val viewModel = hiltViewModel<TranslationModeEntryVM>()
+        val showOnboarding = viewModel.shouldShowOnboarding()
         
-        TranslationQuizScreen(
-            state = state.value,
-            onEvent = viewModel::onEvent,
-            onNavigateBack = onNavigateBack
+        TranslationModeNavHost(
+            onExit = onNavigateBack,
+            showOnboarding = showOnboarding
         )
     }
 }

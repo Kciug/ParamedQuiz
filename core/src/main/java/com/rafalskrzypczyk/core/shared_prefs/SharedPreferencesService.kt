@@ -14,6 +14,7 @@ class SharedPreferencesService @Inject constructor(
         const val KEY_ONBOARDING_STATUS = "onboarding_done"
         const val KEY_ONBOARDING_MAIN_MODE_STATUS = "onboarding_main_mode_done"
         const val KEY_ONBOARDING_SWIPE_MODE_STATUS = "onboarding_swipe_mode_done"
+        const val KEY_ONBOARDING_TRANSLATION_MODE_STATUS = "onboarding_translation_mode_done"
         const val KEY_ACCEPTED_TERMS_VERSION = "accepted_terms_version"
 
         const val DEFAULT_STRING_VALUE = ""
@@ -65,6 +66,16 @@ class SharedPreferencesService @Inject constructor(
 
     override fun getSwipeModeOnboardingSeen(): Boolean {
         return sharedPreferences.getBoolean(KEY_ONBOARDING_SWIPE_MODE_STATUS, false)
+    }
+
+    override fun setTranslationModeOnboardingSeen(seen: Boolean) {
+        sharedPreferences.edit {
+            putBoolean(KEY_ONBOARDING_TRANSLATION_MODE_STATUS, seen)
+        }
+    }
+
+    override fun getTranslationModeOnboardingSeen(): Boolean {
+        return sharedPreferences.getBoolean(KEY_ONBOARDING_TRANSLATION_MODE_STATUS, false)
     }
 
     override fun getAcceptedTermsVersion(): Int {
