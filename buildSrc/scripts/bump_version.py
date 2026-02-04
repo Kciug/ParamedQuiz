@@ -13,44 +13,39 @@ def bump_version(bump_type):
     with open(FILE_PATH, 'r') as f:
         content = f.read()
 
-    # 1. Znajdz i podbij VERSION_CODE
-    # Szuka: const val VERSION_CODE = 10003
-    code_pattern = r'(const\s+val\s+VERSION_CODE\s*=\s*)(\d+)'
+    # 1. Znajdz aktualna wersje
+    name_pattern = r'const\s+val\s+VERSION_NAME\s*=\s*"(\d+)\.(\d+)\.(\d+)"'
+    match = re.search(name_pattern, content)
+    if not match:
+        print("Error: Could not find VERSION_NAME in ProjectConfig.kt")
+        exit(1)
+
+    major = int(match.group(1))
+    minor = int(match.group(2))
+    patch = int(match.group(3))
+    old_version = f"{major}.{minor}.{patch}"
+
+    # 2. Oblicz nowa wersje
+    if bump_type == 'major':
+        major += 1
+        minor = 0
+        patch = 0
+    elif bump_type == 'minor':
+        minor += 1
+        patch = 0
+    else: # patch
+        patch += 1
+
+    new_version = f"{major}.{minor}.{patch}"
+    new_code = major * 10000 + minor * 100 + patch
     
-    def replace_code(match):
-        current_code = int(match.group(2))
-        new_code = current_code + 1
-        print(f"Bumping VERSION_CODE: {current_code} -> {new_code}")
-        return f"{match.group(1)}{new_code}"
-    
-    new_content = re.sub(code_pattern, replace_code, content)
+    print(f"Bumping version ({bump_type}):")
+    print(f"  Name: {old_version} -> {new_version}")
+    print(f"  Code: {new_code}")
 
-    # 2. Znajdz i podbij VERSION_NAME
-    # Szuka: const val VERSION_NAME = "1.0.3"
-    name_pattern = r'(const\s+val\s+VERSION_NAME\s*=\s*")(\d+)\.(\d+)\.(\d+)(")'
-    
-    def replace_name(match):
-        major = int(match.group(2))
-        minor = int(match.group(3))
-        patch = int(match.group(4))
-        
-        old_version = f"{major}.{minor}.{patch}"
-
-        if bump_type == 'major':
-            major += 1
-            minor = 0
-            patch = 0
-        elif bump_type == 'minor':
-            minor += 1
-            patch = 0
-        else: # patch
-            patch += 1
-
-        new_version = f"{major}.{minor}.{patch}"
-        print(f"Bumping VERSION_NAME ({bump_type}): {old_version} -> {new_version}")
-        return f"{match.group(1)}{new_version}{match.group(5)}"
-
-    new_content = re.sub(name_pattern, replace_name, new_content)
+    # 3. Aktualizuj plik
+    new_content = re.sub(r'(const\s+val\s+VERSION_CODE\s*=\s*)\d+', r'\g<1>' + str(new_code), content)
+    new_content = re.sub(r'(const\s+val\s+VERSION_NAME\s*=\s*")\d+\.\d+\.\d+(")', r'\g<1>' + new_version + r'\g<2>', new_content)
 
     with open(FILE_PATH, 'w') as f:
         f.write(new_content)
