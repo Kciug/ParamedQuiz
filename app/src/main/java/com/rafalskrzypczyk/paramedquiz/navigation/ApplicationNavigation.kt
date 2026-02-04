@@ -17,6 +17,7 @@ import com.rafalskrzypczyk.home_screen.presentation.user_page.UserPageVM
 import com.rafalskrzypczyk.home_screen.presentation.user_settings.UserSettingsScreen
 import com.rafalskrzypczyk.home_screen.presentation.user_settings.UserSettingsVM
 import com.rafalskrzypczyk.main_mode.navigation.MainModeNavHost
+import com.rafalskrzypczyk.main_mode.presentation.MainModeEntryVM
 import com.rafalskrzypczyk.main_mode.presentation.daily_exercise.DailyExerciseVM
 import com.rafalskrzypczyk.main_mode.presentation.quiz_base.MMQuizScreen
 import com.rafalskrzypczyk.paramedquiz.dev.DevOptionsScreen
@@ -173,9 +174,13 @@ fun NavGraphBuilder.mainModeDestination(
     onUserPanel: () -> Unit
 ) {
     composable<MainMode> {
+        val viewModel = hiltViewModel<MainModeEntryVM>()
+        val showOnboarding = viewModel.shouldShowOnboarding()
+
         MainModeNavHost(
             onExit = onExit,
-            onUserPanel = onUserPanel
+            onUserPanel = onUserPanel,
+            showOnboarding = showOnboarding
         )
     }
 }

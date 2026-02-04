@@ -53,6 +53,7 @@ fun OnboardingShell(
     nextButtonText: String = stringResource(R.string.btn_next),
     finishButtonText: String = stringResource(R.string.btn_finish),
     showSkipButton: (Int) -> Boolean = { it < pages.size - 1 },
+    header: (@Composable () -> Unit)? = null
 ) {
     var currentPage by rememberSaveable { mutableIntStateOf(0) }
     var movedToNext by remember { mutableStateOf(false) }
@@ -86,6 +87,16 @@ fun OnboardingShell(
                 .padding(Dimens.DEFAULT_PADDING)
         ) {
             OnboardingBackButton(showText = currentPage == 0) { onBackClick() }
+
+            if (header != null) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = Dimens.SMALL_PADDING)
+                ) {
+                    header()
+                }
+            }
 
             if (showSkipButton(currentPage)) {
                 ButtonTertiary(

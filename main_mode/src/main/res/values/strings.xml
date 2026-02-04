@@ -49,4 +49,11 @@
 
     <string name="purchase_one_time_label">Dostęp dożywotni • Zakup jednorazowy</string>
     <string name="purchase_includes_ad_free">Ten zakup usuwa reklamy w całej aplikacji</string>
+
+    <string name="MM_ob_page_1_title">Wybierz kategorię</string>
+    <string name="MM_ob_page_1_message">Dopasuj naukę do swoich potrzeb. Wybierz jeden z wielu dostępnych działów ratownictwa.</string>
+    <string name="MM_ob_page_2_title">Odpowiadaj na pytania</string>
+    <string name="MM_ob_page_2_message">Rozwiązuj testy w swoim tempie. Każde pytanie przybliża Cię do perfekcji.</string>
+    <string name="MM_ob_page_3_title">Śledź postępy</string>
+    <string name="MM_ob_page_3_message">Analizuj swoje wyniki i sprawdzaj, w których dziedzinach jesteś mistrzem.</string>
 </resources>
