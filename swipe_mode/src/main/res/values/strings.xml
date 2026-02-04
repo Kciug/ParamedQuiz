@@ -34,4 +34,11 @@
     
     <string name="feedback_perfect_title">Bezbłędna intuicja!</string>
     <string name="feedback_perfect_msg">Nie popełniłeś żadnych błędów decyzyjnych. Gratulacje!</string>
+
+    <string name="SM_ob_page_1_title">Przesuwaj karty</string>
+    <string name="SM_ob_page_1_message">Przesuń w prawo jeśli to prawda, lub w lewo jeśli to fałsz. Intuicyjna nauka w zasięgu kciuka.</string>
+    <string name="SM_ob_page_2_title">Szybkie decyzje</string>
+    <string name="SM_ob_page_2_message">W ratownictwie czas ma znaczenie. Trenuj szybkość podejmowania decyzji pod presją czasu.</string>
+    <string name="SM_ob_page_3_title">Buduj combo</string>
+    <string name="SM_ob_page_3_message">Odpowiadaj poprawnie pod rząd, aby budować serię i zdobywać więcej punktów. Poczuj rytm nauki!</string>
 </resources>

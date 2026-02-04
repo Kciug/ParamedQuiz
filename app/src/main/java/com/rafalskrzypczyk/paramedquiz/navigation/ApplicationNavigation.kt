@@ -23,8 +23,8 @@ import com.rafalskrzypczyk.main_mode.presentation.quiz_base.MMQuizScreen
 import com.rafalskrzypczyk.paramedquiz.dev.DevOptionsScreen
 import com.rafalskrzypczyk.paramedquiz.dev.DevVM
 import com.rafalskrzypczyk.signup.SignupNavHost
-import com.rafalskrzypczyk.swipe_mode.presentation.SwipeModeScreen
-import com.rafalskrzypczyk.swipe_mode.presentation.SwipeModeVM
+import com.rafalskrzypczyk.swipe_mode.navigation.SwipeModeNavHost
+import com.rafalskrzypczyk.swipe_mode.presentation.SwipeModeEntryVM
 import com.rafalskrzypczyk.translation_mode.presentation.TranslationQuizScreen
 import com.rafalskrzypczyk.translation_mode.presentation.TranslationQuizViewModel
 import kotlinx.serialization.Serializable
@@ -196,13 +196,12 @@ fun NavGraphBuilder.swipeModeDestination(
     onNavigateBack: () -> Unit
 ) {
     composable<SwipeMode> {
-        val viewModel = hiltViewModel<SwipeModeVM>()
-        val state = viewModel.state.collectAsStateWithLifecycle()
+        val viewModel = hiltViewModel<SwipeModeEntryVM>()
+        val showOnboarding = viewModel.shouldShowOnboarding()
 
-        SwipeModeScreen(
-            state = state.value,
-            onEvent = viewModel::onEvent,
-            onNavigateBack = onNavigateBack
+        SwipeModeNavHost(
+            onExit = onNavigateBack,
+            showOnboarding = showOnboarding
         )
     }
 }

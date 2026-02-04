@@ -13,6 +13,9 @@ interface SharedPreferencesApi {
     fun setMainModeOnboardingSeen(seen: Boolean)
     fun getMainModeOnboardingSeen(): Boolean
 
+    fun setSwipeModeOnboardingSeen(seen: Boolean)
+    fun getSwipeModeOnboardingSeen(): Boolean
+
     fun getAcceptedTermsVersion(): Int
     fun setAcceptedTermsVersion(version: Int)
 }
