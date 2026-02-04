@@ -6,14 +6,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.OutlinedFlag
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -33,31 +28,25 @@ fun ReportIssueDialog(
 ) {
     val description = remember { mutableStateOf("") }
 
-    AlertDialog(
-        icon = {
-            Icon(Icons.Rounded.OutlinedFlag, contentDescription = null)
-        },
-        title = {
-            TextHeadline(text = stringResource(R.string.report_issue_title))
-        },
-        text = {
+    BaseCustomDialog(
+        onDismissRequest = onDismiss,
+        icon = Icons.Rounded.OutlinedFlag,
+        title = stringResource(R.string.report_issue_title),
+        content = {
             Column {
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(Dimens.RADIUS_SMALL),
-                    color = MaterialTheme.colorScheme.surfaceVariant
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = Dimens.DEFAULT_PADDING)
                 ) {
-                    Column(modifier = Modifier.padding(Dimens.DEFAULT_PADDING)) {
-                        TextCaption(
-                            text = stringResource(R.string.report_issue_question_preview),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        TextPrimary(
-                            text = questionText,
-                            modifier = Modifier.padding(top = 4.dp),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
+                    TextCaption(
+                        text = stringResource(R.string.report_issue_question_preview),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    TextPrimary(
+                        text = questionText,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
                 }
                 
                 Spacer(modifier = Modifier.height(Dimens.DEFAULT_PADDING))
@@ -71,22 +60,29 @@ fun ReportIssueDialog(
                 )
             }
         },
-        onDismissRequest = onDismiss,
-        confirmButton = {
+        buttons = {
+            TextButton(onClick = rememberDebouncedClick(onClick = onDismiss)) {
+                TextPrimary(
+                    text = stringResource(R.string.report_issue_cancel),
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+            
+            val isEnabled = description.value.isNotBlank()
+            val sendColor = if (isEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+            
             TextButton(
                 onClick = rememberDebouncedClick {
-                    if (description.value.isNotBlank()) {
+                    if (isEnabled) {
                         onSend(description.value)
                     }
                 },
-                enabled = description.value.isNotBlank()
+                enabled = isEnabled
             ) {
-                Text(text = stringResource(R.string.report_issue_send))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = rememberDebouncedClick(onClick = onDismiss)) {
-                Text(text = stringResource(R.string.report_issue_cancel))
+                TextPrimary(
+                    text = stringResource(R.string.report_issue_send),
+                    color = sendColor
+                )
             }
         }
     )

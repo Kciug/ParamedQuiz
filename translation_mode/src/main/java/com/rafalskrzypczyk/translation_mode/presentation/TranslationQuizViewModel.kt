@@ -25,11 +25,13 @@ class TranslationQuizViewModel @Inject constructor(
     private val _state = MutableStateFlow(TranslationQuizState())
     val state = _state.asStateFlow()
 
+    private var earnedPointsSession: Int = 0
+
     init {
-        loadQuestions()
+        loadData()
     }
 
-    private fun loadQuestions() {
+    private fun loadData() {
         useCases.getTranslationQuestions().onEach { response ->
             when (response) {
                 is Response.Loading -> _state.update { it.copy(responseState = ResponseState.Loading) }
@@ -46,6 +48,10 @@ class TranslationQuizViewModel @Inject constructor(
                     attachQuestionsListener()
                 }
             }
+        }.launchIn(viewModelScope)
+
+        useCases.getUserScore().onEach { userScore ->
+            _state.update { it.copy(userScore = userScore.score) }
         }.launchIn(viewModelScope)
     }
 
@@ -92,10 +98,22 @@ class TranslationQuizViewModel @Inject constructor(
             TranslationQuizEvents.OnNextQuestion -> nextQuestion()
             TranslationQuizEvents.OnBackDiscarded -> _state.update { it.copy(showExitConfirmation = false) }
             TranslationQuizEvents.OnBackPressed -> _state.update { it.copy(showExitConfirmation = true) }
-            is TranslationQuizEvents.OnBackConfirmed -> event.navigateBack()
+            is TranslationQuizEvents.OnBackConfirmed -> handleExitQuiz(event.navigateBack)
             is TranslationQuizEvents.ToggleReportDialog -> _state.update { it.copy(showReportDialog = event.show) }
             is TranslationQuizEvents.ToggleReviewDialog -> _state.update { it.copy(showReviewDialog = event.show) }
             is TranslationQuizEvents.OnReportIssue -> reportIssue(event.description)
+        }
+    }
+
+    private fun handleExitQuiz(navigateBack: () -> Unit) {
+        _state.update { it.copy(showExitConfirmation = false) }
+        val state = _state.value
+        val isStarted = state.currentQuestionIndex > 0 || state.questions.getOrNull(0)?.isAnswered == true
+        
+        if (!isStarted) {
+            navigateBack()
+        } else {
+            finishQuiz()
         }
     }
 
@@ -112,7 +130,8 @@ class TranslationQuizViewModel @Inject constructor(
         val updatedQuestions = currentState.questions.toMutableList()
         updatedQuestions[index] = currentQ.copy(isAnswered = true, isCorrect = isCorrect)
 
-        val earnedPoints = useCases.updateScoreWithQuestion(currentQ.id, isCorrect)
+        val points = useCases.updateScoreWithQuestion(currentQ.id, isCorrect)
+        earnedPointsSession += points
         val newCorrectCount = if (isCorrect) currentState.correctAnswersCount + 1 else currentState.correctAnswersCount
 
         if (isCorrect) {
@@ -122,8 +141,8 @@ class TranslationQuizViewModel @Inject constructor(
         _state.update {
             it.copy(
                 questions = updatedQuestions,
-                userScore = currentState.userScore + earnedPoints,
                 correctAnswersCount = newCorrectCount
+                // userScore will be updated via flow from UseCases
             )
         }
     }
@@ -140,19 +159,14 @@ class TranslationQuizViewModel @Inject constructor(
     }
 
     private fun finishQuiz() {
-        val state = _state.value
-        val totalQuestions = state.questions.size
-        val correctAnswers = state.correctAnswersCount
-        val score = state.userScore
-
         _state.update {
             it.copy(
                 isQuizFinished = true,
                 quizFinishedState = QuizFinishedState(
-                    seenQuestions = totalQuestions,
-                    correctAnswers = correctAnswers,
-                    points = score,
-                    earnedPoints = score
+                    seenQuestions = it.questions.count { q -> q.isAnswered },
+                    correctAnswers = it.correctAnswersCount,
+                    points = it.userScore, // Total User Score
+                    earnedPoints = earnedPointsSession // Points earned in this session
                 )
             )
         }

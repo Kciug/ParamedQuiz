@@ -3,7 +3,7 @@ package com.rafalskrzypczyk.main_mode.presentation.categories_screen
 import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.android.billingclient.api.ProductDetails
+import com.rafalskrzypczyk.billing.domain.AppProduct
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.core.api_response.Response
@@ -31,7 +31,7 @@ class MMCategoriesVM @Inject constructor(
     private val _state = MutableStateFlow(MMCategoriesState())
     val state = _state.asStateFlow()
     
-    private var availableProducts: List<ProductDetails> = emptyList()
+    private var availableProducts: List<AppProduct> = emptyList()
 
     init {
         viewModelScope.launch {
@@ -148,7 +148,7 @@ class MMCategoriesVM @Inject constructor(
     private fun buyCategory(activity: Activity) {
         val category = state.value.selectedCategoryForPurchase ?: return
         val productId = category.id.toString()
-        val productDetails = availableProducts.find { it.productId == productId }
+        val productDetails = availableProducts.find { it.id == productId }
         
         if (productDetails != null) {
             billingRepository.launchBillingFlow(activity, productDetails)
@@ -159,9 +159,9 @@ class MMCategoriesVM @Inject constructor(
     private fun updatePriceInState() {
         val category = state.value.selectedCategoryForPurchase ?: return
         val productId = category.id.toString()
-        val details = availableProducts.find { it.productId == productId }
+        val details = availableProducts.find { it.id == productId }
         
-        val price = details?.oneTimePurchaseOfferDetails?.formattedPrice
+        val price = details?.price
         _state.update { it.copy(productPrice = price) }
     }
 }

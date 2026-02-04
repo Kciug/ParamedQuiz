@@ -1,6 +1,6 @@
 package com.rafalskrzypczyk.billing.data
 
-import com.android.billingclient.api.Purchase
+import com.rafalskrzypczyk.billing.domain.AppPurchase
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.billing.domain.BillingRepository
 import io.mockk.every
@@ -25,8 +25,7 @@ class BillingPremiumStatusProviderTest {
 
     @Test
     fun `isAdsFree returns true when purchases list is not empty`() = runTest {
-        val purchase = mockk<Purchase>()
-        every { purchase.purchaseState } returns Purchase.PurchaseState.PURCHASED
+        val purchase = AppPurchase(products = emptyList(), isPurchased = true)
         every { billingRepository.purchases } returns flowOf(listOf(purchase))
 
         premiumStatusProvider.isAdsFree.collect { isAdsFree ->
@@ -45,9 +44,7 @@ class BillingPremiumStatusProviderTest {
 
     @Test
     fun `hasAccessTo returns true when user owns full package`() = runTest {
-        val purchase = mockk<Purchase>()
-        every { purchase.purchaseState } returns Purchase.PurchaseState.PURCHASED
-        every { purchase.products } returns listOf(BillingIds.ID_FULL_PACKAGE)
+        val purchase = AppPurchase(products = listOf(BillingIds.ID_FULL_PACKAGE), isPurchased = true)
         every { billingRepository.purchases } returns flowOf(listOf(purchase))
 
         premiumStatusProvider.hasAccessTo("some_random_id").collect { hasAccess ->
@@ -58,9 +55,7 @@ class BillingPremiumStatusProviderTest {
     @Test
     fun `hasAccessTo returns true when user owns specific product`() = runTest {
         val targetId = "target_product_id"
-        val purchase = mockk<Purchase>()
-        every { purchase.purchaseState } returns Purchase.PurchaseState.PURCHASED
-        every { purchase.products } returns listOf(targetId)
+        val purchase = AppPurchase(products = listOf(targetId), isPurchased = true)
         every { billingRepository.purchases } returns flowOf(listOf(purchase))
 
         premiumStatusProvider.hasAccessTo(targetId).collect { hasAccess ->
@@ -79,9 +74,7 @@ class BillingPremiumStatusProviderTest {
 
     @Test
     fun `hasAccessTo returns false when user owns different product`() = runTest {
-        val purchase = mockk<Purchase>()
-        every { purchase.purchaseState } returns Purchase.PurchaseState.PURCHASED
-        every { purchase.products } returns listOf("other_id")
+        val purchase = AppPurchase(products = listOf("other_id"), isPurchased = true)
         every { billingRepository.purchases } returns flowOf(listOf(purchase))
 
         premiumStatusProvider.hasAccessTo("target_id").collect { hasAccess ->

@@ -36,9 +36,12 @@ import com.rafalskrzypczyk.translation_mode.R
 
 @Composable
 fun TranslationInput(
+    modifier: Modifier = Modifier,
     text: String,
     onValueChange: (String) -> Unit,
-    enabled: Boolean,
+    enabled: Boolean = true,
+    readOnly: Boolean = false,
+    imeAction: ImeAction = ImeAction.Done,
     onDone: () -> Unit
 ) {
     var isFocused by remember { mutableStateOf(false) }
@@ -53,36 +56,37 @@ fun TranslationInput(
         value = text,
         onValueChange = onValueChange,
         enabled = enabled,
+        readOnly = readOnly,
         textStyle = TextStyle(
-            fontSize = 20.sp,
-            textAlign = TextAlign.Center,
+            fontSize = 18.sp,
+            textAlign = TextAlign.Start,
             color = MaterialTheme.colorScheme.primary,
             fontWeight = FontWeight.Bold
         ),
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-        keyboardActions = KeyboardActions(onDone = { onDone() }),
+        keyboardOptions = KeyboardOptions(imeAction = imeAction),
+        keyboardActions = KeyboardActions(onDone = { onDone() }, onNext = { onDone() }),
         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-        modifier = Modifier.onFocusChanged { isFocused = it.isFocused },
+        modifier = modifier.onFocusChanged { isFocused = it.isFocused },
         decorationBox = { innerTextField: @Composable () -> Unit ->
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(150.dp)
-                    .clip(RoundedCornerShape(Dimens.RADIUS_DEFAULT))
+                    .height(60.dp)
+                    .clip(RoundedCornerShape(Dimens.RADIUS_SMALL))
                     .background(Color.Transparent)
                     .border(
                         border = BorderStroke(2.dp, borderColor),
-                        shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT)
+                        shape = RoundedCornerShape(Dimens.RADIUS_SMALL)
                     )
-                    .padding(Dimens.DEFAULT_PADDING),
-                contentAlignment = Alignment.Center
+                    .padding(horizontal = Dimens.DEFAULT_PADDING),
+                contentAlignment = Alignment.CenterStart
             ) {
-                if (text.isEmpty() && enabled) {
+                if (text.isEmpty() && enabled && !readOnly) {
                     Text(
                         text = stringResource(R.string.input_hint_type_here),
                         style = TextStyle(
-                            fontSize = 20.sp,
-                            textAlign = TextAlign.Center,
+                            fontSize = 18.sp,
+                            textAlign = TextAlign.Start,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                         )
                     )

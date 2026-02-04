@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="translate_phrase_instruction">Przetłumacz zwrot:</string>
-    <string name="input_hint_type_here">Wpisz tutaj...</string>
+    <string name="input_hint_type_here">Wpisz tutaj…</string>
     <string name="btn_check_answer">Sprawdź</string>
     <string name="feedback_correct">Dobrze!</string>
     <string name="feedback_incorrect">Niestety! Nie udało się…</string>
@@ -10,7 +10,7 @@
     <string name="btn_continue">Dalej</string>
 
     <string name="extras_accuracy">Skuteczność: %d%%</string>
-    <string name="btn_review_errors">Przejrzyj błędy</string>
+    <string name="btn_review_answers">Twoje odpowiedzi</string>
     <string name="extras_perfect_score">Perfekcyjna pisownia!</string>
     <string name="extras_your_answer">Twoja odpowiedź:</string>
     <string name="extras_correct_answer">Poprawnie:</string>

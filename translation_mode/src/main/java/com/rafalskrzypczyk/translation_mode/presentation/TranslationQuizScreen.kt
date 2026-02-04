@@ -8,7 +8,6 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,9 +30,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.BaseQuizScreen
-import com.rafalskrzypczyk.core.composables.ButtonPrimary
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.ErrorDialog
 import com.rafalskrzypczyk.core.composables.Loading
@@ -46,8 +45,19 @@ import com.rafalskrzypczyk.translation_mode.presentation.components.TranslationI
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.runtime.remember
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.text.input.ImeAction
+import com.rafalskrzypczyk.core.composables.ActionButton
 import com.rafalskrzypczyk.core.composables.CorrectAnswersLabel
 import com.rafalskrzypczyk.core.composables.UserPointsLabel
+
+import androidx.compose.ui.platform.LocalConfiguration
+import android.content.res.Configuration
+import com.rafalskrzypczyk.core.composables.RotateDevicePrompt
 
 @Composable
 fun TranslationQuizScreen(
@@ -58,9 +68,19 @@ fun TranslationQuizScreen(
     val context = LocalContext.current
     val successReportMsg = stringResource(com.rafalskrzypczyk.core.R.string.report_issue_success)
 
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val keyboardController = LocalSoftwareKeyboardController.current
+
     LaunchedEffect(state.showReportSuccessToast) {
         if (state.showReportSuccessToast) {
             Toast.makeText(context, successReportMsg, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    LaunchedEffect(state.isQuizFinished) {
+        if (state.isQuizFinished) {
+            keyboardController?.hide()
         }
     }
 
@@ -95,12 +115,16 @@ fun TranslationQuizScreen(
                 ResponseState.Loading -> Loading()
                 is ResponseState.Error -> ErrorDialog(responseState.message) { onNavigateBack() }
                 ResponseState.Success -> {
-                    TranslationQuizContent(
-                        paddingValues = innerPadding,
-                        titlePanel = titlePanel,
-                        state = state,
-                        onEvent = onEvent
-                    )
+                    if (isLandscape) {
+                        RotateDevicePrompt(modifier = Modifier.padding(innerPadding))
+                    } else {
+                        TranslationQuizContent(
+                            paddingValues = innerPadding,
+                            titlePanel = titlePanel,
+                            state = state,
+                            onEvent = onEvent
+                        )
+                    }
                 }
             }
         }
@@ -129,7 +153,13 @@ fun TranslationQuizContent(
     state: TranslationQuizState,
     onEvent: (TranslationQuizEvents) -> Unit
 ) {
-    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(state.currentQuestionIndex, state.isQuizFinished) {
+        if (!state.isQuizFinished) {
+            focusRequester.requestFocus()
+        }
+    }
 
     AnimatedContent(
         targetState = state.currentQuestion,
@@ -142,16 +172,16 @@ fun TranslationQuizContent(
         if (question == null) return@AnimatedContent
 
         Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.BottomCenter
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = Dimens.DEFAULT_PADDING)
-                    .padding(top = paddingValues.calculateTopPadding())
-                    .padding(bottom = Dimens.DEFAULT_PADDING * 5)
-                    .verticalScroll(rememberScrollState()),
+                    .padding(bottom = 100.dp)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = Dimens.DEFAULT_PADDING),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Box(modifier = Modifier.fillMaxWidth()) {
@@ -177,35 +207,43 @@ fun TranslationQuizContent(
                         TextTitle(text = question.phrase, textAlign = TextAlign.Center)
                     }
                 }
+            }
 
-                Spacer(modifier = Modifier.weight(1f))
-
+            Row(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(Dimens.DEFAULT_PADDING),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
+            ) {
                 TranslationInput(
+                    modifier = Modifier
+                        .weight(1f)
+                        .focusRequester(focusRequester),
                     text = question.userAnswer,
-                    onValueChange = { onEvent(TranslationQuizEvents.OnAnswerChanged(it)) },
-                    enabled = !question.isAnswered,
+                    onValueChange = { if (!question.isAnswered) onEvent(TranslationQuizEvents.OnAnswerChanged(it)) },
+                    readOnly = false, // Keep editable to prevent keyboard closing
+                    enabled = true,
+                    imeAction = if (question.isAnswered) ImeAction.Next else ImeAction.Done,
                     onDone = {
-                        keyboardController?.hide()
-                        onEvent(TranslationQuizEvents.OnSubmitAnswer)
+                        if (!question.isAnswered) {
+                            onEvent(TranslationQuizEvents.OnSubmitAnswer)
+                        } else {
+                            onEvent(TranslationQuizEvents.OnNextQuestion)
+                        }
                     }
                 )
 
-                Spacer(modifier = Modifier.weight(1f))
-            }
-
-            if (!question.isAnswered) {
-                ButtonPrimary(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = Dimens.DEFAULT_PADDING)
-                        .padding(bottom = paddingValues.calculateBottomPadding() + Dimens.DEFAULT_PADDING),
-                    title = stringResource(R.string.btn_check_answer),
-                    onClick = {
-                        keyboardController?.hide()
-                        onEvent(TranslationQuizEvents.OnSubmitAnswer)
-                    },
-                    enabled = question.userAnswer.isNotBlank()
-                )
+                if (!question.isAnswered) {
+                    ActionButton(
+                        icon = Icons.Default.Check,
+                        description = stringResource(R.string.btn_check_answer),
+                        onClick = { onEvent(TranslationQuizEvents.OnSubmitAnswer) },
+                        enabled = question.userAnswer.isNotBlank(),
+                        showBackground = true
+                    )
+                }
             }
 
             AnimatedVisibility(
@@ -216,7 +254,7 @@ fun TranslationQuizContent(
                 TranslationFeedbackPanel(
                     question = question,
                     onNext = { onEvent(TranslationQuizEvents.OnNextQuestion) },
-                    bottomPadding = paddingValues.calculateBottomPadding()
+                    bottomPadding = 0.dp
                 )
             }
         }

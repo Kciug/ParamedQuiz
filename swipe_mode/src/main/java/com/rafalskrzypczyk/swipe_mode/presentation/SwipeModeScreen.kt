@@ -6,16 +6,11 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ScreenRotation
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
@@ -24,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import android.app.Activity
 import androidx.compose.runtime.remember
@@ -37,8 +31,7 @@ import com.rafalskrzypczyk.core.composables.ErrorDialog
 import com.rafalskrzypczyk.core.composables.Loading
 import com.rafalskrzypczyk.core.composables.PreviewContainer
 import com.rafalskrzypczyk.core.composables.ReportIssueDialog
-import com.rafalskrzypczyk.core.composables.TextPrimary
-import com.rafalskrzypczyk.swipe_mode.R
+import com.rafalskrzypczyk.core.composables.RotateDevicePrompt
 
 @Composable
 fun SwipeModeScreen(
@@ -118,7 +111,7 @@ fun SwipeModeScreen(
                 is ResponseState.Error -> ErrorDialog(responseState.message) { onNavigateBack() }
                 ResponseState.Success -> {
                     if(isLandscape) {
-                        SwipeModeLandscapeInformation(modifier = modifier)
+                        RotateDevicePrompt(modifier = modifier)
                     } else {
                         SwipeModeScreenContent(
                             modifier = modifier,
@@ -176,25 +169,6 @@ fun SwipeModeScreenContent(
             correctAnswers = state.correctAnswers,
             currentStreak = state.currentStreak,
             bestStreak = state.bestStreak
-        )
-    }
-}
-
-@Composable
-fun SwipeModeLandscapeInformation(modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Icon(
-            imageVector = Icons.Default.ScreenRotation,
-            contentDescription = stringResource(R.string.ic_desc_rotate_screen),
-            tint = MaterialTheme.colorScheme.primary
-        )
-        TextPrimary(
-            text = stringResource(R.string.rotate_screen_info),
-            textAlign = TextAlign.Center
         )
     }
 }
