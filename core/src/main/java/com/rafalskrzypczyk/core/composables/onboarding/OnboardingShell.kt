@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -86,25 +87,32 @@ fun OnboardingShell(
                 .fillMaxSize()
                 .padding(Dimens.DEFAULT_PADDING)
         ) {
-            OnboardingBackButton(showText = currentPage == 0) { onBackClick() }
-
-            if (header != null) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.TopCenter),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 Box(
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .padding(top = Dimens.SMALL_PADDING)
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.CenterStart
                 ) {
+                    OnboardingBackButton(showText = currentPage == 0) { onBackClick() }
+
+                    if (showSkipButton(currentPage)) {
+                        ButtonTertiary(
+                            title = skipButtonText,
+                            onClick = { onFinish() },
+                            fillMaxWidth = false,
+                            modifier = Modifier.align(Alignment.CenterEnd)
+                        )
+                    }
+                }
+
+                if (header != null) {
+                    Spacer(Modifier.height(Dimens.ELEMENTS_SPACING))
                     header()
                 }
-            }
-
-            if (showSkipButton(currentPage)) {
-                ButtonTertiary(
-                    title = skipButtonText,
-                    onClick = { onFinish() },
-                    fillMaxWidth = false,
-                    modifier = Modifier.align(Alignment.TopEnd)
-                )
             }
 
             AnimatedContent(
