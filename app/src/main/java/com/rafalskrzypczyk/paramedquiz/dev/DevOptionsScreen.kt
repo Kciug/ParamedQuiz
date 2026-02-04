@@ -50,6 +50,9 @@ fun DevOptionsScreen(
             Button(onClick = { onEvent.invoke(DevOptionsUIEvents.ResetOnboarding) }) {
                 Text("Reset Onboarding")
             }
+            Button(onClick = { onEvent.invoke(DevOptionsUIEvents.ResetModularOnboarding) }) {
+                Text("Reset Modular Onboarding")
+            }
             Button(onClick = { onEvent.invoke(DevOptionsUIEvents.ClearTermsAcceptance) }) {
                 Text("Reset Terms of Service")
             }

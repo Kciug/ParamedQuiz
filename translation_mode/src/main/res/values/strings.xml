@@ -14,4 +14,11 @@
     <string name="extras_perfect_score">Perfekcyjna pisownia!</string>
     <string name="extras_your_answer">Twoja odpowiedź:</string>
     <string name="extras_correct_answer">Poprawnie:</string>
+
+    <string name="TM_ob_page_1_title">Angielski medyczny</string>
+    <string name="TM_ob_page_1_message">Poszerzaj swoje słownictwo fachowe. Naucz się kluczowych terminów używanych w ratownictwie na całym świecie.</string>
+    <string name="TM_ob_page_2_title">Wpisz tłumaczenie</string>
+    <string name="TM_ob_page_2_message">Nie tylko rozpoznawaj, ale ucz się pisać. Aktywne wpisywanie słówek to najskuteczniejsza metoda nauki języka.</string>
+    <string name="TM_ob_page_3_title">Wzmocnij pamięć</string>
+    <string name="TM_ob_page_3_message">Regularne powtórki i sprawdzanie pisowni pozwolą Ci na swobodną komunikację w sytuacjach zawodowych.</string>
 </resources>

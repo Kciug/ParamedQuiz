@@ -10,6 +10,17 @@ interface SharedPreferencesApi {
     fun setOnboardingStatus(done: Boolean)
     fun getOnboardingStatus(): Boolean
 
+    fun setMainModeOnboardingSeen(seen: Boolean)
+    fun getMainModeOnboardingSeen(): Boolean
+
+    fun setSwipeModeOnboardingSeen(seen: Boolean)
+    fun getSwipeModeOnboardingSeen(): Boolean
+
+    fun setTranslationModeOnboardingSeen(seen: Boolean)
+    fun getTranslationModeOnboardingSeen(): Boolean
+
+    fun resetModularOnboarding()
+
     fun getAcceptedTermsVersion(): Int
     fun setAcceptedTermsVersion(version: Int)
 }

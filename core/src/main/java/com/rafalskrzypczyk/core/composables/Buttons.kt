@@ -90,13 +90,14 @@ fun ButtonTertiary(
     title: String,
     onClick: () -> Unit,
     debounced: Boolean = true,
+    fillMaxWidth: Boolean = true,
 ) {
     val finalOnClick = if (debounced) rememberDebouncedClick(onClick = onClick) else onClick
 
     Button(
         onClick = finalOnClick,
         modifier = modifier
-            .fillMaxWidth()
+            .then(if (fillMaxWidth) Modifier.fillMaxWidth() else Modifier)
             .wrapContentHeight(),
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.Transparent,

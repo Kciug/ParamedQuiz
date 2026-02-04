@@ -6,8 +6,9 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.background
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -16,6 +17,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.rafalskrzypczyk.main_mode.presentation.categories_screen.MMCategoriesScreen
 import com.rafalskrzypczyk.main_mode.presentation.categories_screen.MMCategoriesVM
+import com.rafalskrzypczyk.main_mode.presentation.onboarding.MainModeOnboardingScreen
+import com.rafalskrzypczyk.main_mode.presentation.onboarding.MainModeOnboardingVM
 import com.rafalskrzypczyk.main_mode.presentation.quiz_base.MMQuizScreen
 import com.rafalskrzypczyk.main_mode.presentation.quiz_screen.MMQuizVM
 import kotlinx.serialization.Serializable
@@ -23,39 +26,49 @@ import kotlinx.serialization.Serializable
 @Composable
 fun MainModeNavHost(
     onExit: () -> Unit,
-    onUserPanel: () -> Unit
+    onUserPanel: () -> Unit,
+    showOnboarding: Boolean
 ) {
     val mainModeNavController = rememberNavController()
+    val startDest: Any = remember { if (showOnboarding) Onboarding else Categories }
 
     NavHost(
         modifier = Modifier.background(MaterialTheme.colorScheme.background),
         navController = mainModeNavController,
-        startDestination = Categories,
+        startDestination = startDest,
         enterTransition = {
             slideIntoContainer(
-                towards = AnimatedContentTransitionScope.SlideDirection.Companion.Left,
+                towards = AnimatedContentTransitionScope.SlideDirection.Left,
                 animationSpec = tween()
             ) + scaleIn()
         },
         exitTransition = {
             slideOutOfContainer(
-                towards = AnimatedContentTransitionScope.SlideDirection.Companion.Left,
+                towards = AnimatedContentTransitionScope.SlideDirection.Left,
                 animationSpec = tween()
             )
         },
         popEnterTransition = {
             slideIntoContainer(
-                towards = AnimatedContentTransitionScope.SlideDirection.Companion.Right,
+                towards = AnimatedContentTransitionScope.SlideDirection.Right,
                 animationSpec = tween()
             ) + scaleIn()
         },
         popExitTransition = {
             slideOutOfContainer(
-                towards = AnimatedContentTransitionScope.SlideDirection.Companion.Right,
+                towards = AnimatedContentTransitionScope.SlideDirection.Right,
                 animationSpec = tween()
             )
         }
     ) {
+        mainModeOnboardingDestination(
+            onNavigateBack = onExit,
+            onFinishOnboarding = {
+                mainModeNavController.navigate(Categories) {
+                    popUpTo(Onboarding) { inclusive = true }
+                }
+            }
+        )
         mainModeCategoriesDestination(
             onExit = onExit,
             onUserPanel = onUserPanel,
@@ -71,6 +84,25 @@ fun MainModeNavHost(
 
 @Serializable
 object Categories
+
+@Serializable
+object Onboarding
+
+fun NavGraphBuilder.mainModeOnboardingDestination(
+    onNavigateBack: () -> Unit,
+    onFinishOnboarding: () -> Unit
+) {
+    composable<Onboarding> {
+        val viewModel = hiltViewModel<MainModeOnboardingVM>()
+        
+        MainModeOnboardingScreen(
+            onNavigateBack = onNavigateBack,
+            onFinishOnboarding = {
+                viewModel.finishOnboarding(onSuccess = onFinishOnboarding)
+            }
+        )
+    }
+}
 
 fun NavGraphBuilder.mainModeCategoriesDestination(
     onExit: () -> Unit,

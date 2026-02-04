@@ -1,6 +1,6 @@
 package com.rafalskrzypczyk.paramedquiz.navigation
 
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -16,16 +16,18 @@ import com.rafalskrzypczyk.home_screen.presentation.user_page.UserPageScreen
 import com.rafalskrzypczyk.home_screen.presentation.user_page.UserPageVM
 import com.rafalskrzypczyk.home_screen.presentation.user_settings.UserSettingsScreen
 import com.rafalskrzypczyk.home_screen.presentation.user_settings.UserSettingsVM
+import androidx.compose.runtime.remember
 import com.rafalskrzypczyk.main_mode.navigation.MainModeNavHost
+import com.rafalskrzypczyk.main_mode.presentation.MainModeEntryVM
+import com.rafalskrzypczyk.translation_mode.navigation.TranslationModeNavHost
+import com.rafalskrzypczyk.translation_mode.presentation.TranslationModeEntryVM
 import com.rafalskrzypczyk.main_mode.presentation.daily_exercise.DailyExerciseVM
 import com.rafalskrzypczyk.main_mode.presentation.quiz_base.MMQuizScreen
 import com.rafalskrzypczyk.paramedquiz.dev.DevOptionsScreen
 import com.rafalskrzypczyk.paramedquiz.dev.DevVM
 import com.rafalskrzypczyk.signup.SignupNavHost
-import com.rafalskrzypczyk.swipe_mode.presentation.SwipeModeScreen
-import com.rafalskrzypczyk.swipe_mode.presentation.SwipeModeVM
-import com.rafalskrzypczyk.translation_mode.presentation.TranslationQuizScreen
-import com.rafalskrzypczyk.translation_mode.presentation.TranslationQuizViewModel
+import com.rafalskrzypczyk.swipe_mode.navigation.SwipeModeNavHost
+import com.rafalskrzypczyk.swipe_mode.presentation.SwipeModeEntryVM
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -173,9 +175,13 @@ fun NavGraphBuilder.mainModeDestination(
     onUserPanel: () -> Unit
 ) {
     composable<MainMode> {
+        val viewModel = hiltViewModel<MainModeEntryVM>()
+        val showOnboarding = remember { viewModel.shouldShowOnboarding() }
+
         MainModeNavHost(
             onExit = onExit,
-            onUserPanel = onUserPanel
+            onUserPanel = onUserPanel,
+            showOnboarding = showOnboarding
         )
     }
 }
@@ -191,13 +197,12 @@ fun NavGraphBuilder.swipeModeDestination(
     onNavigateBack: () -> Unit
 ) {
     composable<SwipeMode> {
-        val viewModel = hiltViewModel<SwipeModeVM>()
-        val state = viewModel.state.collectAsStateWithLifecycle()
+        val viewModel = hiltViewModel<SwipeModeEntryVM>()
+        val showOnboarding = remember { viewModel.shouldShowOnboarding() }
 
-        SwipeModeScreen(
-            state = state.value,
-            onEvent = viewModel::onEvent,
-            onNavigateBack = onNavigateBack
+        SwipeModeNavHost(
+            onExit = onNavigateBack,
+            showOnboarding = showOnboarding
         )
     }
 }
@@ -213,13 +218,12 @@ fun NavGraphBuilder.translationModeDestination(
     onNavigateBack: () -> Unit
 ) {
     composable<TranslationMode> {
-        val viewModel = hiltViewModel<TranslationQuizViewModel>()
-        val state = viewModel.state.collectAsStateWithLifecycle()
+        val viewModel = hiltViewModel<TranslationModeEntryVM>()
+        val showOnboarding = remember { viewModel.shouldShowOnboarding() }
         
-        TranslationQuizScreen(
-            state = state.value,
-            onEvent = viewModel::onEvent,
-            onNavigateBack = onNavigateBack
+        TranslationModeNavHost(
+            onExit = onNavigateBack,
+            showOnboarding = showOnboarding
         )
     }
 }

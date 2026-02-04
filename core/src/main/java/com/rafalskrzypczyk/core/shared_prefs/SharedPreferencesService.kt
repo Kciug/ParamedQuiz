@@ -12,6 +12,9 @@ class SharedPreferencesService @Inject constructor(
     companion object {
         const val KEY_CURRENT_USER = "current_user"
         const val KEY_ONBOARDING_STATUS = "onboarding_done"
+        const val KEY_ONBOARDING_MAIN_MODE_STATUS = "onboarding_main_mode_done"
+        const val KEY_ONBOARDING_SWIPE_MODE_STATUS = "onboarding_swipe_mode_done"
+        const val KEY_ONBOARDING_TRANSLATION_MODE_STATUS = "onboarding_translation_mode_done"
         const val KEY_ACCEPTED_TERMS_VERSION = "accepted_terms_version"
 
         const val DEFAULT_STRING_VALUE = ""
@@ -43,6 +46,44 @@ class SharedPreferencesService @Inject constructor(
 
     override fun getOnboardingStatus(): Boolean {
         return sharedPreferences.getBoolean(KEY_ONBOARDING_STATUS, false)
+    }
+
+    override fun setMainModeOnboardingSeen(seen: Boolean) {
+        sharedPreferences.edit {
+            putBoolean(KEY_ONBOARDING_MAIN_MODE_STATUS, seen)
+        }
+    }
+
+    override fun getMainModeOnboardingSeen(): Boolean {
+        return sharedPreferences.getBoolean(KEY_ONBOARDING_MAIN_MODE_STATUS, false)
+    }
+
+    override fun setSwipeModeOnboardingSeen(seen: Boolean) {
+        sharedPreferences.edit {
+            putBoolean(KEY_ONBOARDING_SWIPE_MODE_STATUS, seen)
+        }
+    }
+
+    override fun getSwipeModeOnboardingSeen(): Boolean {
+        return sharedPreferences.getBoolean(KEY_ONBOARDING_SWIPE_MODE_STATUS, false)
+    }
+
+    override fun setTranslationModeOnboardingSeen(seen: Boolean) {
+        sharedPreferences.edit {
+            putBoolean(KEY_ONBOARDING_TRANSLATION_MODE_STATUS, seen)
+        }
+    }
+
+    override fun getTranslationModeOnboardingSeen(): Boolean {
+        return sharedPreferences.getBoolean(KEY_ONBOARDING_TRANSLATION_MODE_STATUS, false)
+    }
+
+    override fun resetModularOnboarding() {
+        sharedPreferences.edit {
+            remove(KEY_ONBOARDING_MAIN_MODE_STATUS)
+            remove(KEY_ONBOARDING_SWIPE_MODE_STATUS)
+            remove(KEY_ONBOARDING_TRANSLATION_MODE_STATUS)
+        }
     }
 
     override fun getAcceptedTermsVersion(): Int {
