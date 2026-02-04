@@ -6,6 +6,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.background
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -24,7 +25,7 @@ fun SwipeModeNavHost(
     showOnboarding: Boolean
 ) {
     val navController = rememberNavController()
-    val startDest: Any = if (showOnboarding) Onboarding else SwipeQuiz
+    val startDest: Any = remember { if (showOnboarding) Onboarding else SwipeQuiz }
 
     NavHost(
         modifier = Modifier.background(MaterialTheme.colorScheme.background),

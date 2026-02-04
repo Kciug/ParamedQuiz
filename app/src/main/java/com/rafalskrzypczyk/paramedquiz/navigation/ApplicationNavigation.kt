@@ -16,6 +16,7 @@ import com.rafalskrzypczyk.home_screen.presentation.user_page.UserPageScreen
 import com.rafalskrzypczyk.home_screen.presentation.user_page.UserPageVM
 import com.rafalskrzypczyk.home_screen.presentation.user_settings.UserSettingsScreen
 import com.rafalskrzypczyk.home_screen.presentation.user_settings.UserSettingsVM
+import androidx.compose.runtime.remember
 import com.rafalskrzypczyk.main_mode.navigation.MainModeNavHost
 import com.rafalskrzypczyk.main_mode.presentation.MainModeEntryVM
 import com.rafalskrzypczyk.translation_mode.navigation.TranslationModeNavHost
@@ -175,7 +176,7 @@ fun NavGraphBuilder.mainModeDestination(
 ) {
     composable<MainMode> {
         val viewModel = hiltViewModel<MainModeEntryVM>()
-        val showOnboarding = viewModel.shouldShowOnboarding()
+        val showOnboarding = remember { viewModel.shouldShowOnboarding() }
 
         MainModeNavHost(
             onExit = onExit,
@@ -197,7 +198,7 @@ fun NavGraphBuilder.swipeModeDestination(
 ) {
     composable<SwipeMode> {
         val viewModel = hiltViewModel<SwipeModeEntryVM>()
-        val showOnboarding = viewModel.shouldShowOnboarding()
+        val showOnboarding = remember { viewModel.shouldShowOnboarding() }
 
         SwipeModeNavHost(
             onExit = onNavigateBack,
@@ -218,7 +219,7 @@ fun NavGraphBuilder.translationModeDestination(
 ) {
     composable<TranslationMode> {
         val viewModel = hiltViewModel<TranslationModeEntryVM>()
-        val showOnboarding = viewModel.shouldShowOnboarding()
+        val showOnboarding = remember { viewModel.shouldShowOnboarding() }
         
         TranslationModeNavHost(
             onExit = onNavigateBack,
