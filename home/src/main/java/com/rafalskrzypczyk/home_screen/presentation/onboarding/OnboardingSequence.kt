@@ -29,16 +29,22 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Celebration
+import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Emergency
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Flight
-import androidx.compose.material.icons.filled.ForkRight
-import androidx.compose.material.icons.filled.QuestionMark
+import androidx.compose.material.icons.filled.FactCheck
+import androidx.compose.material.icons.filled.Gavel
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.MedicalServices
+import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.Science
+import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material.icons.rounded.CheckCircleOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -71,6 +77,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rafalskrzypczyk.core.composables.ButtonPrimary
+import com.rafalskrzypczyk.core.composables.ButtonTertiary
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.PreviewContainer
 import com.rafalskrzypczyk.core.composables.TextHeadline
@@ -101,7 +108,12 @@ fun OnboardingSequence(
             OnboardingSequencePage(
                 title = stringResource(R.string.ob_page_1_title),
                 message = stringResource(R.string.ob_page_1_message),
-                icon = Icons.Default.Emergency,
+                iconCompose = {
+                    OnboardingIconComposition(
+                        mainIcon = Icons.Default.Emergency,
+                        mainIconColor = MaterialTheme.colorScheme.primary
+                    )
+                },
                 nextButtonTitleCallback = continueButtonTextCallback
             )
         },
@@ -109,7 +121,13 @@ fun OnboardingSequence(
             OnboardingSequencePage(
                 title = stringResource(R.string.ob_page_2_title),
                 message = stringResource(R.string.ob_page_2_message),
-                icon = Icons.Default.QuestionMark,
+                iconCompose = {
+                    OnboardingIconComposition(
+                        mainIcon = Icons.Default.MenuBook,
+                        mainIconColor = MQYellow,
+                        secondaryIcons = listOf(Icons.Default.Science, Icons.Default.MedicalServices)
+                    )
+                },
                 nextButtonTitleCallback = continueButtonTextCallback
             )
         },
@@ -117,7 +135,13 @@ fun OnboardingSequence(
             OnboardingSequencePage(
                 title = stringResource(R.string.ob_page_3_title),
                 message = stringResource(R.string.ob_page_3_message),
-                icon = Icons.Default.ForkRight,
+                iconCompose = {
+                    OnboardingIconComposition(
+                        mainIcon = Icons.Default.Dashboard,
+                        mainIconColor = MaterialTheme.colorScheme.secondary,
+                        secondaryIcons = listOf(Icons.Default.History, Icons.Default.TrendingUp)
+                    )
+                },
                 nextButtonTitleCallback = continueButtonTextCallback
             )
         },
@@ -125,7 +149,13 @@ fun OnboardingSequence(
             OnboardingSequencePage(
                 title = stringResource(R.string.ob_page_4_title),
                 message = stringResource(R.string.ob_page_4_message),
-                icon = Icons.Default.Favorite,
+                iconCompose = {
+                    OnboardingIconComposition(
+                        mainIcon = Icons.Default.VerifiedUser,
+                        mainIconColor = MQGreen,
+                        secondaryIcons = listOf(Icons.Default.Gavel, Icons.Default.FactCheck)
+                    )
+                },
                 nextButtonTitleCallback = continueButtonTextCallback
             )
         },
@@ -141,7 +171,12 @@ fun OnboardingSequence(
             OnboardingSequencePage(
                 title = stringResource(R.string.ob_page_end_title),
                 message = stringResource(R.string.ob_page_end_message),
-                icon = Icons.Default.Celebration,
+                iconCompose = {
+                    OnboardingIconComposition(
+                        mainIcon = Icons.Default.Celebration,
+                        mainIconColor = MQYellow
+                    )
+                },
                 nextButtonTitle = stringResource(R.string.ob_btn_finish),
                 nextButtonTitleCallback = continueButtonTextCallback,
             )
@@ -184,6 +219,15 @@ fun OnboardingSequence(
                 .padding(Dimens.DEFAULT_PADDING)
         ) {
             AnimatedBackButton(showText = currentPage == 0) { onBackClick() }
+
+            if (currentPage < pages.size - 1 && !(currentPage == 4 && !state.isLogged)) {
+                ButtonTertiary(
+                    title = stringResource(R.string.ob_btn_skip),
+                    onClick = { onFinish() },
+                    fillMaxWidth = false,
+                    modifier = Modifier.align(Alignment.TopEnd)
+                )
+            }
 
             AnimatedContent(
                 targetState = currentPage,
@@ -289,7 +333,7 @@ fun OnboardingSequencePage(
     modifier: Modifier = Modifier,
     title: String,
     message: String,
-    icon: ImageVector,
+    iconCompose: @Composable () -> Unit,
     nextButtonTitle: String = stringResource(R.string.ob_btn_next),
     nextButtonTitleCallback: (String) -> Unit
 ) {
@@ -302,28 +346,89 @@ fun OnboardingSequencePage(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Row(
+        iconCompose()
+        
+        Spacer(Modifier.height(Dimens.LARGE_PADDING))
+        
+        TextHeadline(
+            text = title,
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .size(Dimens.IMAGE_SIZE_SMALL)
-                    .background(
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
-                        shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT)
-                    )
-            )
-            Spacer(Modifier.width(Dimens.ELEMENTS_SPACING))
-            TextHeadline(title)
-        }
+            textAlign = TextAlign.Center
+        )
+        
         Spacer(Modifier.height(Dimens.ELEMENTS_SPACING))
+        
         TextPrimary(
             text = message,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+@Composable
+fun OnboardingIconComposition(
+    mainIcon: ImageVector,
+    mainIconColor: Color,
+    secondaryIcons: List<ImageVector> = emptyList(),
+) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.size(240.dp)
+    ) {
+        // Tła głównej ikony
+        Box(
+            modifier = Modifier
+                .size(140.dp)
+                .background(
+                    color = mainIconColor.copy(alpha = 0.1f),
+                    shape = CircleShape
+                )
+        )
+        Box(
+            modifier = Modifier
+                .size(190.dp)
+                .background(
+                    color = mainIconColor.copy(alpha = 0.05f),
+                    shape = CircleShape
+                )
+        )
+        
+        secondaryIcons.forEachIndexed { index, icon ->
+            val offsetXPx = if (index % 2 == 0) 95.dp else (-95).dp
+            val offsetYPx = if (index < 2) (-40).dp else 50.dp
+            
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .offset(x = offsetXPx, y = offsetYPx)
+                    .size(54.dp)
+                    .background(
+                        color = mainIconColor.copy(alpha = 0.12f),
+                        shape = CircleShape
+                    )
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = mainIconColor.copy(alpha = 0.5f),
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+        }
+
+        Icon(
+            imageVector = mainIcon,
+            contentDescription = null,
+            tint = mainIconColor,
+            modifier = Modifier
+                .size(90.dp)
+                .shadow(
+                    elevation = 15.dp,
+                    shape = CircleShape,
+                    spotColor = mainIconColor,
+                    ambientColor = mainIconColor
+                )
         )
     }
 }
@@ -483,7 +588,12 @@ private fun OnboardingSequencePagePreview() {
             message = "Wczesnym rankiem, gdy mgła unosi się nad wilgotnymi łąkami, słychać charakterystyczny klangor żurawi. " +
                     "Te dostojne ptaki, o rozpiętości skrzydeł przekraczającej dwa metry, od wieków fascynują obserwatorów przyrody. " +
                     "Wędrują tysiące kilometrów, by powrócić w te same miejsca lęgowe, z zadziwiającą dokładnością godną zegarmistrza",
-            icon = Icons.Default.Flight,
+            iconCompose = {
+                OnboardingIconComposition(
+                    mainIcon = Icons.Default.Emergency,
+                    mainIconColor = MaterialTheme.colorScheme.primary
+                )
+            },
             nextButtonTitleCallback = { }
         )
     }
