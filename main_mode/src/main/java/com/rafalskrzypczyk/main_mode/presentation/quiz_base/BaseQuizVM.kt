@@ -201,7 +201,8 @@ abstract class BaseQuizVM (
         val next = quizEngine.nextQuestion()
         if (adHandler.shouldShowAd(
                 answeredCount = state.value.answeredQuestions.size,
-                isQuizFinished = next == null
+                isQuizFinished = next == null,
+                ignoreThreshold = state.value.isDailyExercise
             )
         ) {
             _state.update { it.copy(showAd = true) }
@@ -219,7 +220,8 @@ abstract class BaseQuizVM (
     protected open fun setFinishedState() {
         if (adHandler.shouldShowAd(
                 answeredCount = state.value.answeredQuestions.size,
-                isQuizFinished = true
+                isQuizFinished = true,
+                ignoreThreshold = state.value.isDailyExercise
             )
         ) {
             _state.update { it.copy(showAd = true) }

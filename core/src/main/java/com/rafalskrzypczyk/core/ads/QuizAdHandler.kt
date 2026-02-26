@@ -23,13 +23,17 @@ class QuizAdHandler @Inject constructor(
         }
     }
 
-    fun shouldShowAd(answeredCount: Int, isQuizFinished: Boolean): Boolean {
+    fun shouldShowAd(
+        answeredCount: Int,
+        isQuizFinished: Boolean,
+        ignoreThreshold: Boolean = false
+    ): Boolean {
         if (isAdsFree) return false
 
         val questionsSinceLastAd = answeredCount - lastAdAnsweredCount
 
         if (isQuizFinished) {
-            if (questionsSinceLastAd >= AdConfig.EXIT_AD_THRESHOLD) {
+            if (ignoreThreshold || questionsSinceLastAd >= AdConfig.EXIT_AD_THRESHOLD) {
                 isFinishingQuiz = true
                 lastAdAnsweredCount = answeredCount
                 return true
