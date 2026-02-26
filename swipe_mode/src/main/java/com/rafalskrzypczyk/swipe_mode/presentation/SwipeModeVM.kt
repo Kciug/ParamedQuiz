@@ -143,7 +143,11 @@ class SwipeModeVM @Inject constructor(
     private fun displayNextQuestion() {
         currentQuestionIndex++
         val isAtEnd = currentQuestionIndex >= questions.size
-        if (adHandler.shouldShowAd(currentQuestionIndex, isAtEnd)) {
+        if (adHandler.shouldShowAd(
+                answeredCount = currentQuestionIndex,
+                isQuizFinished = isAtEnd
+            )
+        ) {
             _state.update { it.copy(showAd = true) }
         } else {
             displayQuestion()
@@ -227,7 +231,11 @@ class SwipeModeVM @Inject constructor(
     }
 
     private fun setFinishedState() {
-        if (adHandler.shouldShowAd(currentQuestionIndex, true)) {
+        if (adHandler.shouldShowAd(
+                answeredCount = currentQuestionIndex,
+                isQuizFinished = true
+            )
+        ) {
             _state.update { it.copy(showAd = true) }
         } else {
             finishQuiz()

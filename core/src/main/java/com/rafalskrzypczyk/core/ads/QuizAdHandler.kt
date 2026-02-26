@@ -11,9 +11,11 @@ class QuizAdHandler @Inject constructor(
 ) {
     private var isAdsFree = false
     private var isFinishingQuiz = false
-    private val adFrequency = 20
+    private var lastAdAnsweredCount = 0
 
     fun initialize(scope: CoroutineScope) {
+        lastAdAnsweredCount = 0
+        isFinishingQuiz = false
         scope.launch {
             premiumStatusProvider.isAdsFree.collectLatest { free ->
                 isAdsFree = free
@@ -24,13 +26,21 @@ class QuizAdHandler @Inject constructor(
     fun shouldShowAd(answeredCount: Int, isQuizFinished: Boolean): Boolean {
         if (isAdsFree) return false
 
+        val questionsSinceLastAd = answeredCount - lastAdAnsweredCount
+
         if (isQuizFinished) {
-            isFinishingQuiz = true
-            return true
+            if (questionsSinceLastAd >= AdConfig.EXIT_AD_THRESHOLD) {
+                isFinishingQuiz = true
+                lastAdAnsweredCount = answeredCount
+                return true
+            }
+            return false
         }
 
-        if (answeredCount > 0 && answeredCount % adFrequency == 0) {
+        // Mid-quiz ad: every AD_FREQUENCY questions
+        if (answeredCount > 0 && answeredCount % AdConfig.AD_FREQUENCY == 0 && answeredCount > lastAdAnsweredCount) {
             isFinishingQuiz = false
+            lastAdAnsweredCount = answeredCount
             return true
         }
 

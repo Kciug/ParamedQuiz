@@ -199,7 +199,11 @@ abstract class BaseQuizVM (
 
     protected open fun displayNextQuestion() {
         val next = quizEngine.nextQuestion()
-        if (adHandler.shouldShowAd(state.value.answeredQuestions.size, next == null)) {
+        if (adHandler.shouldShowAd(
+                answeredCount = state.value.answeredQuestions.size,
+                isQuizFinished = next == null
+            )
+        ) {
             _state.update { it.copy(showAd = true) }
         } else {
             displayQuestion()
@@ -213,7 +217,11 @@ abstract class BaseQuizVM (
     }
 
     protected open fun setFinishedState() {
-        if (adHandler.shouldShowAd(state.value.answeredQuestions.size, true)) {
+        if (adHandler.shouldShowAd(
+                answeredCount = state.value.answeredQuestions.size,
+                isQuizFinished = true
+            )
+        ) {
             _state.update { it.copy(showAd = true) }
         } else {
             finishQuiz()
