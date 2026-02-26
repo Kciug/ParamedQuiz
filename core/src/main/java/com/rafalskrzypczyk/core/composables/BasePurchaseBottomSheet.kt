@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -17,7 +18,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.LibraryBooks
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -48,7 +51,7 @@ data class PurchaseModeDetails(
     val questionCount: Int,
     val price: String?,
     val features: List<PurchaseFeature>,
-    val estimatedTime: String = "~5 min/sesja"
+    val estimatedTime: String = "~5"
 )
 
 data class PurchaseFeature(
@@ -63,7 +66,7 @@ fun BasePurchaseBottomSheet(
     onDismiss: () -> Unit,
     details: PurchaseModeDetails,
     onBuyClick: () -> Unit,
-    onTryClick: () -> Unit,
+    onTryClick: (() -> Unit)? = null,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val coroutineScope = rememberCoroutineScope()
@@ -79,13 +82,14 @@ fun BasePurchaseBottomSheet(
         onDismissRequest = { dismiss() },
         sheetState = sheetState,
         dragHandle = null,
-        containerColor = MaterialTheme.colorScheme.background,
-        sheetGesturesEnabled = false
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        sheetGesturesEnabled = false,
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
+                .navigationBarsPadding()
                 .verticalScroll(rememberScrollState())
                 .padding(Dimens.DEFAULT_PADDING),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -98,7 +102,7 @@ fun BasePurchaseBottomSheet(
                 )
             }
 
-            Spacer(modifier = Modifier.height(Dimens.LARGE_PADDING))
+            Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
 
             PremiumBadge()
 
@@ -110,9 +114,9 @@ fun BasePurchaseBottomSheet(
                 modifier = Modifier.padding(horizontal = Dimens.DEFAULT_PADDING)
             )
 
-            Spacer(modifier = Modifier.height(Dimens.LARGE_PADDING))
+            Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
 
-            TextHeadline(
+            TextPrimary(
                 text = stringResource(R.string.title_features),
                 modifier = Modifier.fillMaxWidth()
             )
@@ -124,7 +128,7 @@ fun BasePurchaseBottomSheet(
                 Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
             }
 
-            Spacer(modifier = Modifier.height(Dimens.LARGE_PADDING))
+            Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -134,17 +138,17 @@ fun BasePurchaseBottomSheet(
                     modifier = Modifier.weight(1f),
                     value = details.questionCount.toString(),
                     label = stringResource(R.string.stat_questions),
-                    icon = null // Add icon if needed
+                    icon = Icons.AutoMirrored.Filled.LibraryBooks
                 )
                 StatCard(
                     modifier = Modifier.weight(1f),
                     value = details.estimatedTime,
                     label = stringResource(R.string.stat_time),
-                    icon = null
+                    icon = Icons.Default.Timer
                 )
             }
 
-            Spacer(modifier = Modifier.height(Dimens.LARGE_PADDING))
+            Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
 
             TextTitle(
                 text = details.price ?: "---",
@@ -152,21 +156,21 @@ fun BasePurchaseBottomSheet(
             )
             TextCaption(text = stringResource(R.string.one_time_purchase))
 
-            Spacer(modifier = Modifier.height(Dimens.LARGE_PADDING))
+            Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
 
             ButtonPrimary(
-                title = stringResource(R.string.btn_buy_for, details.price ?: ""),
+                title = stringResource(R.string.btn_buy_for, details.price ?: "---"),
                 onClick = onBuyClick
             )
 
             Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
 
-            ButtonSecondary(
-                title = stringResource(R.string.btn_try),
-                onClick = onTryClick
-            )
-
-            Spacer(modifier = Modifier.height(Dimens.LARGE_PADDING))
+            onTryClick?.let { click ->
+                ButtonSecondary(
+                    title = stringResource(R.string.btn_try),
+                    onClick = click
+                )
+            }
         }
     }
 }
@@ -237,7 +241,7 @@ private fun StatCard(
     modifier: Modifier = Modifier,
     value: String,
     label: String,
-    icon: ImageVector?
+    icon: ImageVector
 ) {
     Card(
         modifier = modifier,
@@ -251,7 +255,13 @@ private fun StatCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL)
         ) {
-            TextTitle(text = value, textAlign = TextAlign.Center)
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(24.dp)
+            )
+            TextScore(text = value, color = MaterialTheme.colorScheme.primary)
             TextCaption(text = label, textAlign = TextAlign.Center)
         }
     }
