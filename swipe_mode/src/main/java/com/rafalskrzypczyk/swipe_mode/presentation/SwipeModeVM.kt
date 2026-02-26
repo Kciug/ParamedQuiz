@@ -2,10 +2,10 @@ package com.rafalskrzypczyk.swipe_mode.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rafalskrzypczyk.core.ads.QuizAdHandler
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedState
-import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.report_issues.IssueReport
 import com.rafalskrzypczyk.swipe_mode.domain.SwipeModeUseCases
 import com.rafalskrzypczyk.swipe_mode.domain.SwipeQuestion
@@ -20,7 +20,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SwipeModeVM @Inject constructor(
     val useCases: SwipeModeUseCases,
-    private val premiumStatusProvider: PremiumStatusProvider
+    private val adHandler: QuizAdHandler
 ) : ViewModel() {
     private val _state = MutableStateFlow(SwipeModeState())
     val state = _state.asStateFlow()
@@ -33,8 +33,6 @@ class SwipeModeVM @Inject constructor(
     private var bestStreak: Int = 0
     private var earnedPoints: Int = 0
     private var isStreakUpdatedInSession = false
-    private var isAdsFree: Boolean = false
-    private var isFinishingQuiz: Boolean = false
 
     // Timing stats
     private var quizStartTime: Long = 0L
@@ -46,14 +44,10 @@ class SwipeModeVM @Inject constructor(
     private var type2Errors: Int = 0
 
     init {
+        adHandler.initialize(viewModelScope)
         viewModelScope.launch {
             useCases.getUserScore().collectLatest { score ->
                 _state.update { it.copy(userScore = score.score) }
-            }
-        }
-        viewModelScope.launch {
-            premiumStatusProvider.isAdsFree.collectLatest { 
-                isAdsFree = it
             }
         }
         viewModelScope.launch {
@@ -70,7 +64,6 @@ class SwipeModeVM @Inject constructor(
                             )
                         }
                         quizStartTime = System.currentTimeMillis()
-                        isFinishingQuiz = false
                         displayQuestion()
                     }
                 }
@@ -93,11 +86,10 @@ class SwipeModeVM @Inject constructor(
 
     private fun handleAdDismissed() {
         _state.update { it.copy(showAd = false) }
-        if (isFinishingQuiz) {
-            finishQuiz()
-        } else {
-            displayQuestion()
-        }
+        adHandler.handleAdDismissed(
+            onContinue = { displayQuestion() },
+            onFinish = { finishQuiz() }
+        )
     }
 
     private fun onAdShown() {
@@ -150,7 +142,8 @@ class SwipeModeVM @Inject constructor(
 
     private fun displayNextQuestion() {
         currentQuestionIndex++
-        if (currentQuestionIndex > 0 && currentQuestionIndex % 20 == 0 && !isAdsFree && currentQuestionIndex < questions.size) {
+        val isAtEnd = currentQuestionIndex >= questions.size
+        if (adHandler.shouldShowAd(currentQuestionIndex, isAtEnd)) {
             _state.update { it.copy(showAd = true) }
         } else {
             displayQuestion()
@@ -234,11 +227,10 @@ class SwipeModeVM @Inject constructor(
     }
 
     private fun setFinishedState() {
-        isFinishingQuiz = true
-        if(isAdsFree) {
-            finishQuiz()
-        } else {
+        if (adHandler.shouldShowAd(currentQuestionIndex, true)) {
             _state.update { it.copy(showAd = true) }
+        } else {
+            finishQuiz()
         }
     }
 }

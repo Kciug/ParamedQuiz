@@ -1,9 +1,9 @@
 package com.rafalskrzypczyk.main_mode.presentation.daily_exercise
 
 import androidx.lifecycle.viewModelScope
+import com.rafalskrzypczyk.core.ads.QuizAdHandler
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
-import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.utils.ResourceProvider
 import com.rafalskrzypczyk.main_mode.R
 import com.rafalskrzypczyk.main_mode.domain.daily_exercise.DailyExerciseUseCases
@@ -18,8 +18,11 @@ import javax.inject.Inject
 class DailyExerciseVM @Inject constructor(
     private val useCases: DailyExerciseUseCases,
     private val resourceProvider: ResourceProvider,
-    premiumStatusProvider: PremiumStatusProvider
-): BaseQuizVM(useCases = useCases.base, premiumStatusProvider = premiumStatusProvider) {
+    adHandler: QuizAdHandler
+): BaseQuizVM(
+    useCases = useCases.base,
+    adHandler = adHandler
+) {
     companion object {
         const val DAILY_EXERCISE_QUESTIONS_AMOUNT = 3
     }

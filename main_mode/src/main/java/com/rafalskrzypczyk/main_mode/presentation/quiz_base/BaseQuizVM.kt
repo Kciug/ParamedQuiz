@@ -2,6 +2,7 @@ package com.rafalskrzypczyk.main_mode.presentation.quiz_base
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rafalskrzypczyk.core.ads.QuizAdHandler
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedState
@@ -9,7 +10,6 @@ import com.rafalskrzypczyk.core.report_issues.IssueReport
 import com.rafalskrzypczyk.main_mode.domain.models.Question
 import com.rafalskrzypczyk.main_mode.domain.quiz_base.BaseQuizUseCases
 import com.rafalskrzypczyk.main_mode.domain.quiz_base.QuizEngine
-import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 
 abstract class BaseQuizVM (
     private val useCases: BaseQuizUseCases,
-    private val premiumStatusProvider: PremiumStatusProvider
+    protected val adHandler: QuizAdHandler
 ): ViewModel() {
     @Suppress("PropertyName")
     protected val _state = MutableStateFlow(QuizState())
@@ -28,19 +28,13 @@ abstract class BaseQuizVM (
 
     protected var earnedPoints: Int = 0
     protected var isStreakUpdatedInSession: Boolean = false
-    private var isAdsFree: Boolean = false
-    private var isFinishingQuiz: Boolean = false
     
     // Timing
     private var currentQuestionStartTime: Long = 0L
 
     init {
         loadUserScore()
-        viewModelScope.launch {
-            premiumStatusProvider.isAdsFree.collectLatest { 
-                isAdsFree = it
-            }
-        }
+        adHandler.initialize(viewModelScope)
     }
 
     abstract suspend fun loadQuestions()
@@ -63,11 +57,10 @@ abstract class BaseQuizVM (
 
     private fun handleAdDismissed() {
         _state.update { it.copy(showAd = false) }
-        if (isFinishingQuiz) {
-            finishQuiz()
-        } else {
-            displayQuestion()
-        }
+        adHandler.handleAdDismissed(
+            onContinue = { displayQuestion() },
+            onFinish = { finishQuiz() }
+        )
     }
 
     private fun onAdShown() {
@@ -159,7 +152,6 @@ abstract class BaseQuizVM (
     }
 
     protected fun initializeQuiz(questions: List<Question>, title: String) {
-        isFinishingQuiz = false
         quizEngine.setQuestions(questions)
         _state.update {
             it.copy(
@@ -207,15 +199,10 @@ abstract class BaseQuizVM (
 
     protected open fun displayNextQuestion() {
         val next = quizEngine.nextQuestion()
-        if (next == null) {
-            setFinishedState()
+        if (adHandler.shouldShowAd(state.value.answeredQuestions.size, next == null)) {
+            _state.update { it.copy(showAd = true) }
         } else {
-            val answeredCount = state.value.answeredQuestions.size
-            if (answeredCount > 0 && answeredCount % 20 == 0 && !isAdsFree) {
-                _state.update { it.copy(showAd = true) }
-            } else {
-                displayQuestion()
-            }
+            displayQuestion()
         }
     }
 
@@ -226,11 +213,10 @@ abstract class BaseQuizVM (
     }
 
     protected open fun setFinishedState() {
-        isFinishingQuiz = true
-        if(isAdsFree) {
-            finishQuiz()
-        } else {
+        if (adHandler.shouldShowAd(state.value.answeredQuestions.size, true)) {
             _state.update { it.copy(showAd = true) }
+        } else {
+            finishQuiz()
         }
     }
 
