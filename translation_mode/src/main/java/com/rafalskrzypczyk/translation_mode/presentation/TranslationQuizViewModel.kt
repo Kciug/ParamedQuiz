@@ -142,7 +142,6 @@ class TranslationQuizViewModel @Inject constructor(
             it.copy(
                 questions = updatedQuestions,
                 correctAnswersCount = newCorrectCount
-                // userScore will be updated via flow from UseCases
             )
         }
     }
@@ -165,8 +164,8 @@ class TranslationQuizViewModel @Inject constructor(
                 quizFinishedState = QuizFinishedState(
                     seenQuestions = it.questions.count { q -> q.isAnswered },
                     correctAnswers = it.correctAnswersCount,
-                    points = it.userScore, // Total User Score
-                    earnedPoints = earnedPointsSession // Points earned in this session
+                    points = it.userScore,
+                    earnedPoints = earnedPointsSession
                 )
             )
         }
