@@ -17,6 +17,8 @@ import javax.inject.Inject
 
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.home_screen.domain.HomeScreenUseCases
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
 @HiltViewModel
 class HomeScreenVM @Inject constructor(
@@ -26,9 +28,13 @@ class HomeScreenVM @Inject constructor(
 ): ViewModel() {
     private val _state = MutableStateFlow(HomeScreenState())
     val state = _state.asStateFlow()
+
+    private val _effect = MutableSharedFlow<HomeSideEffect>()
+    val effect = _effect.asSharedFlow()
     
     private var translationModeProductDetails: AppProduct? = null
     private var swipeModeProductDetails: AppProduct? = null
+    private var pendingPurchaseModeId: String? = null
 
     init {
         viewModelScope.launch {
@@ -56,6 +62,7 @@ class HomeScreenVM @Inject constructor(
             HomeUIEvents.CloseSwipeModePurchaseSheet -> closePurchaseSheet(BillingIds.ID_SWIPE_MODE)
             is HomeUIEvents.BuyTranslationMode -> buyMode(event.activity, BillingIds.ID_TRANSLATION_MODE)
             is HomeUIEvents.BuySwipeMode -> buyMode(event.activity, BillingIds.ID_SWIPE_MODE)
+            HomeUIEvents.NavigationConsumed -> { /* Not needed anymore */ }
         }
     }
 
@@ -91,10 +98,21 @@ class HomeScreenVM @Inject constructor(
         viewModelScope.launch {
             premiumStatusProvider.ownedProductIds.collectLatest { ownedIds ->
                 val hasFull = ownedIds.contains(BillingIds.ID_FULL_PACKAGE)
+                val translationUnlocked = hasFull || ownedIds.contains(BillingIds.ID_TRANSLATION_MODE)
+                val swipeUnlocked = hasFull || ownedIds.contains(BillingIds.ID_SWIPE_MODE)
+
+                if (translationUnlocked && pendingPurchaseModeId == BillingIds.ID_TRANSLATION_MODE) {
+                    pendingPurchaseModeId = null
+                    _effect.emit(HomeSideEffect.PurchaseSuccess(BillingIds.ID_TRANSLATION_MODE))
+                } else if (swipeUnlocked && pendingPurchaseModeId == BillingIds.ID_SWIPE_MODE) {
+                    pendingPurchaseModeId = null
+                    _effect.emit(HomeSideEffect.PurchaseSuccess(BillingIds.ID_SWIPE_MODE))
+                }
+
                 _state.update { 
                     it.copy(
-                        isTranslationModeUnlocked = hasFull || ownedIds.contains(BillingIds.ID_TRANSLATION_MODE),
-                        isSwipeModeUnlocked = hasFull || ownedIds.contains(BillingIds.ID_SWIPE_MODE)
+                        isTranslationModeUnlocked = translationUnlocked,
+                        isSwipeModeUnlocked = swipeUnlocked
                     ) 
                 }
             }
@@ -136,6 +154,7 @@ class HomeScreenVM @Inject constructor(
                 else -> it
             }
         }
+        pendingPurchaseModeId = null
     }
 
     private fun buyMode(activity: Activity, modeId: String) {
@@ -145,8 +164,8 @@ class HomeScreenVM @Inject constructor(
             else -> null
         }
         if (details != null) {
+            pendingPurchaseModeId = modeId
             billingRepository.launchBillingFlow(activity, details)
         }
-        closePurchaseSheet(modeId)
     }
 }

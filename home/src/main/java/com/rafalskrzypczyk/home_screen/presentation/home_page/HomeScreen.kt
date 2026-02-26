@@ -65,6 +65,7 @@ import com.rafalskrzypczyk.score.domain.StreakState
 @Composable
 fun HomeScreen(
     state: HomeScreenState,
+    effect: kotlinx.coroutines.flow.Flow<HomeSideEffect>,
     onEvent: (HomeUIEvents) -> Unit,
     onNavigateToUserPanel: () -> Unit,
     onNavigateToDailyExercise: () -> Unit,
@@ -75,6 +76,7 @@ fun HomeScreen(
 ) {
     var showDailyExerciseAlreadyDoneAlert by remember { mutableStateOf(false) }
     var showRevisionsUnavailableAlert by remember { mutableStateOf(false) }
+    var pendingNavigationMode by remember { mutableStateOf<String?>(null) }
 
     val context = LocalContext.current
     val activity = remember(context) { context as? Activity }
@@ -102,16 +104,33 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         onEvent.invoke(HomeUIEvents.GetData)
     }
+
+    LaunchedEffect(effect) {
+        effect.collect { effect ->
+            when(effect) {
+                is HomeSideEffect.PurchaseSuccess -> {
+                    pendingNavigationMode = effect.modeId
+                }
+            }
+        }
+    }
     
     if (state.showTranslationModePurchaseSheet) {
         BasePurchaseBottomSheet(
-            onDismiss = { onEvent(HomeUIEvents.CloseTranslationModePurchaseSheet) },
+            onDismiss = { 
+                onEvent(HomeUIEvents.CloseTranslationModePurchaseSheet)
+                if (pendingNavigationMode == com.rafalskrzypczyk.billing.domain.BillingIds.ID_TRANSLATION_MODE) {
+                    onNavigateToTranslationMode()
+                    pendingNavigationMode = null
+                }
+            },
             onBuyClick = { 
                 if (activity != null) {
                     onEvent(HomeUIEvents.BuyTranslationMode(activity))
                 }
             },
             onTryClick = { /* Implement try if needed */ },
+            shouldDismiss = pendingNavigationMode == com.rafalskrzypczyk.billing.domain.BillingIds.ID_TRANSLATION_MODE,
             details = PurchaseModeDetails(
                 title = stringResource(com.rafalskrzypczyk.core.R.string.title_translation_mode),
                 description = stringResource(R.string.mode_translation_desc),
@@ -140,13 +159,20 @@ fun HomeScreen(
 
     if (state.showSwipeModePurchaseSheet) {
         BasePurchaseBottomSheet(
-            onDismiss = { onEvent(HomeUIEvents.CloseSwipeModePurchaseSheet) },
+            onDismiss = {
+                onEvent(HomeUIEvents.CloseSwipeModePurchaseSheet)
+                if (pendingNavigationMode == com.rafalskrzypczyk.billing.domain.BillingIds.ID_SWIPE_MODE) {
+                    onNavigateToSwipeMode()
+                    pendingNavigationMode = null
+                }
+            },
             onBuyClick = {
                 if (activity != null) {
                     onEvent(HomeUIEvents.BuySwipeMode(activity))
                 }
             },
             onTryClick = { /* Implement try if needed */ },
+            shouldDismiss = pendingNavigationMode == com.rafalskrzypczyk.billing.domain.BillingIds.ID_SWIPE_MODE,
             details = PurchaseModeDetails(
                 title = stringResource(com.rafalskrzypczyk.core.R.string.title_swipe_mode),
                 description = stringResource(R.string.mode_swipe_desc),
@@ -358,6 +384,7 @@ private fun HomeScreenPreview() {
                     isTranslationModeUnlocked = false,
                     isSwipeModeUnlocked = false
                 ),
+                effect = kotlinx.coroutines.flow.emptyFlow(),
                 onEvent = {},
                 onNavigateToUserPanel = {},
                 onNavigateToMainMode = {},

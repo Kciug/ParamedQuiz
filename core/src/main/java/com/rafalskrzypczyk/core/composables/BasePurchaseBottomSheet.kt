@@ -30,6 +30,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -67,6 +68,7 @@ fun BasePurchaseBottomSheet(
     details: PurchaseModeDetails,
     onBuyClick: () -> Unit,
     onTryClick: (() -> Unit)? = null,
+    shouldDismiss: Boolean = false
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val coroutineScope = rememberCoroutineScope()
@@ -75,6 +77,12 @@ fun BasePurchaseBottomSheet(
         coroutineScope.launch {
             sheetState.hide()
             onDismiss()
+        }
+    }
+
+    LaunchedEffect(shouldDismiss) {
+        if (shouldDismiss) {
+            dismiss()
         }
     }
 

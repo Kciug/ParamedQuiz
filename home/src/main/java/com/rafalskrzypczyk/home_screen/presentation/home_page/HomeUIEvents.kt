@@ -10,4 +10,9 @@ sealed interface HomeUIEvents {
     data object CloseSwipeModePurchaseSheet : HomeUIEvents
     class BuyTranslationMode(val activity: Activity) : HomeUIEvents
     class BuySwipeMode(val activity: Activity) : HomeUIEvents
+    data object NavigationConsumed : HomeUIEvents
+}
+
+sealed interface HomeSideEffect {
+    data class PurchaseSuccess(val modeId: String) : HomeSideEffect
 }
