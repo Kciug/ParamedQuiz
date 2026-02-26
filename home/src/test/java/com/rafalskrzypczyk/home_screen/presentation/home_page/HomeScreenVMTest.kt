@@ -37,7 +37,7 @@ class HomeScreenVMTest {
         every { billingRepository.availableProducts } returns flowOf(emptyList())
         every { useCases.getUserScore() } returns flowOf(mockk(relaxed = true))
         every { useCases.getUserData() } returns flowOf(mockk(relaxed = true))
-        every { premiumStatusProvider.hasAccessTo(any()) } returns flowOf(false)
+        every { premiumStatusProvider.ownedProductIds } returns flowOf(emptySet())
         
         viewModel = HomeScreenVM(useCases, premiumStatusProvider, billingRepository)
     }
@@ -48,8 +48,8 @@ class HomeScreenVMTest {
     }
 
     @Test
-    fun `OpenTranslationModePurchaseDialog triggers queryProducts`() = runTest {
-        viewModel.onEvent(HomeUIEvents.OpenTranslationModePurchaseDialog)
+    fun `OpenTranslationModePurchaseSheet triggers queryProducts`() = runTest {
+        viewModel.onEvent(HomeUIEvents.OpenTranslationModePurchaseSheet)
         
         coVerify { billingRepository.queryProducts(listOf(BillingIds.ID_TRANSLATION_MODE)) }
     }
