@@ -34,6 +34,7 @@ class SwipeModeVM @Inject constructor(
     private var earnedPoints: Int = 0
     private var isStreakUpdatedInSession = false
     private var isAdsFree: Boolean = false
+    private var isFinishingQuiz: Boolean = false
 
     // Timing stats
     private var quizStartTime: Long = 0L
@@ -69,6 +70,7 @@ class SwipeModeVM @Inject constructor(
                             )
                         }
                         quizStartTime = System.currentTimeMillis()
+                        isFinishingQuiz = false
                         displayQuestion()
                     }
                 }
@@ -84,8 +86,17 @@ class SwipeModeVM @Inject constructor(
             SwipeModeUIEvents.OnBackDiscarded -> _state.update { it.copy(showExitConfirmation = false) }
             is SwipeModeUIEvents.ToggleReportDialog -> toggleReportDialog(event.show)
             is SwipeModeUIEvents.OnReportIssue -> reportIssue(event.description)
-            SwipeModeUIEvents.OnAdDismissed -> finishQuiz()
+            SwipeModeUIEvents.OnAdDismissed -> handleAdDismissed()
             SwipeModeUIEvents.OnAdShown -> onAdShown()
+        }
+    }
+
+    private fun handleAdDismissed() {
+        _state.update { it.copy(showAd = false) }
+        if (isFinishingQuiz) {
+            finishQuiz()
+        } else {
+            displayQuestion()
         }
     }
 
@@ -139,7 +150,11 @@ class SwipeModeVM @Inject constructor(
 
     private fun displayNextQuestion() {
         currentQuestionIndex++
-        displayQuestion()
+        if (currentQuestionIndex > 0 && currentQuestionIndex % 20 == 0 && !isAdsFree && currentQuestionIndex < questions.size) {
+            _state.update { it.copy(showAd = true) }
+        } else {
+            displayQuestion()
+        }
     }
 
     private fun submitAnswer(questionId: Long, isCorrect: Boolean) {
@@ -219,6 +234,7 @@ class SwipeModeVM @Inject constructor(
     }
 
     private fun setFinishedState() {
+        isFinishingQuiz = true
         if(isAdsFree) {
             finishQuiz()
         } else {

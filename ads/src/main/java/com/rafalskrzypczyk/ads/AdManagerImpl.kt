@@ -19,9 +19,9 @@ import javax.inject.Singleton
 
 @Singleton
 class AdManagerImpl @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val premiumStatusProvider: PremiumStatusProvider,
-    private val externalScope: CoroutineScope
+    externalScope: CoroutineScope
 ) : AdManager {
 
     private val consentManager = GoogleMobileAdsConsentManager(context)
@@ -30,8 +30,6 @@ class AdManagerImpl @Inject constructor(
     // Test ID for Interstitial
     private val adUnitId = "ca-app-pub-3940256099942544/1033173712"
     
-    private var showCount = 0
-    private val frequency = 2
     private var isAdsFree = false
 
     init {
@@ -75,13 +73,6 @@ class AdManagerImpl @Inject constructor(
 
     override fun showInterstitial(activity: Activity, onAdShown: () -> Unit, onAdDismissed: () -> Unit) {
         if (isAdsFree) {
-            onAdDismissed()
-            return
-        }
-
-        showCount++
-        
-        if (showCount % frequency == 0) {
             onAdDismissed()
             return
         }

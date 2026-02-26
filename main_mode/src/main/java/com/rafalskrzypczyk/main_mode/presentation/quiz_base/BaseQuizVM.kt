@@ -29,6 +29,7 @@ abstract class BaseQuizVM (
     protected var earnedPoints: Int = 0
     protected var isStreakUpdatedInSession: Boolean = false
     private var isAdsFree: Boolean = false
+    private var isFinishingQuiz: Boolean = false
     
     // Timing
     private var currentQuestionStartTime: Long = 0L
@@ -55,8 +56,17 @@ abstract class BaseQuizVM (
             is MMQuizUIEvents.ToggleReviewDialog -> toggleReviewDialog(event.show)
             is MMQuizUIEvents.ToggleReportDialog -> toggleReportDialog(event.show)
             is MMQuizUIEvents.OnReportIssue -> reportIssue(event.description)
-            MMQuizUIEvents.OnAdDismissed -> finishQuiz()
+            MMQuizUIEvents.OnAdDismissed -> handleAdDismissed()
             MMQuizUIEvents.OnAdShown -> onAdShown()
+        }
+    }
+
+    private fun handleAdDismissed() {
+        _state.update { it.copy(showAd = false) }
+        if (isFinishingQuiz) {
+            finishQuiz()
+        } else {
+            displayQuestion()
         }
     }
 
@@ -149,6 +159,7 @@ abstract class BaseQuizVM (
     }
 
     protected fun initializeQuiz(questions: List<Question>, title: String) {
+        isFinishingQuiz = false
         quizEngine.setQuestions(questions)
         _state.update {
             it.copy(
@@ -199,13 +210,12 @@ abstract class BaseQuizVM (
         if (next == null) {
             setFinishedState()
         } else {
-            _state.update {
-                it.copy(
-                    currentQuestionNumber = quizEngine.getCurrentQuestionNumber(),
-                    question = next.toUIM()
-                )
+            val answeredCount = state.value.answeredQuestions.size
+            if (answeredCount > 0 && answeredCount % 20 == 0 && !isAdsFree) {
+                _state.update { it.copy(showAd = true) }
+            } else {
+                displayQuestion()
             }
-            currentQuestionStartTime = System.currentTimeMillis()
         }
     }
 
@@ -216,6 +226,7 @@ abstract class BaseQuizVM (
     }
 
     protected open fun setFinishedState() {
+        isFinishingQuiz = true
         if(isAdsFree) {
             finishQuiz()
         } else {
