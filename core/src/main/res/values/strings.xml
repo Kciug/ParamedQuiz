@@ -83,4 +83,11 @@
     <string name="premium_badge">PREMIUM</string>
     <string name="ic_desc_rotate_screen">Odwróć ekran</string>
     <string name="rotate_screen_info">Dla najlepszych wrażeń z tego trybu odwróć ekran telefonu.</string>
+
+    <string name="title_features">Funkcje</string>
+    <string name="stat_questions">Pytania</string>
+    <string name="stat_time">min/sesja</string>
+    <string name="one_time_purchase">Jednorazowy zakup</string>
+    <string name="btn_buy_for">Kup za %s</string>
+    <string name="btn_try">Wypróbuj</string>
 </resources>

@@ -17,6 +17,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import com.rafalskrzypczyk.core.ui.theme.Link
@@ -30,7 +31,8 @@ fun TextPrimary(
     textAlign: TextAlign? = TextAlign.Unspecified,
     maxLines: Int = Int.MAX_VALUE,
     fontWeight: FontWeight? = null,
-    textDecoration: TextDecoration? = null
+    textDecoration: TextDecoration? = null,
+    fontSize: TextUnit = TextUnit.Unspecified
 ) {
     Text(
         modifier = modifier,
@@ -40,7 +42,8 @@ fun TextPrimary(
         maxLines = maxLines,
         textAlign = textAlign,
         fontWeight = fontWeight,
-        textDecoration = textDecoration
+        textDecoration = textDecoration,
+        fontSize = fontSize
     )
 }
 

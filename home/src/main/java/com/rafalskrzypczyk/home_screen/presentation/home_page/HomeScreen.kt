@@ -23,8 +23,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoFixHigh
+import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.HistoryEdu
+import androidx.compose.material.icons.filled.Swipe
+import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.Upcoming
+import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -42,13 +48,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import com.rafalskrzypczyk.core.composables.BasePurchaseDialog
+import com.rafalskrzypczyk.core.composables.BasePurchaseBottomSheet
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.InfoDialog
+import com.rafalskrzypczyk.core.composables.PurchaseFeature
+import com.rafalskrzypczyk.core.composables.PurchaseModeDetails
 import com.rafalskrzypczyk.core.composables.TextHeadline
-import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.composables.top_bars.MainTopBar
 import com.rafalskrzypczyk.core.ui.theme.MQGreen
 import com.rafalskrzypczyk.core.ui.theme.MQYellow
@@ -59,6 +65,7 @@ import com.rafalskrzypczyk.score.domain.StreakState
 @Composable
 fun HomeScreen(
     state: HomeScreenState,
+    effect: kotlinx.coroutines.flow.Flow<HomeSideEffect>,
     onEvent: (HomeUIEvents) -> Unit,
     onNavigateToUserPanel: () -> Unit,
     onNavigateToDailyExercise: () -> Unit,
@@ -69,6 +76,7 @@ fun HomeScreen(
 ) {
     var showDailyExerciseAlreadyDoneAlert by remember { mutableStateOf(false) }
     var showRevisionsUnavailableAlert by remember { mutableStateOf(false) }
+    var pendingNavigationMode by remember { mutableStateOf<String?>(null) }
 
     val context = LocalContext.current
     val activity = remember(context) { context as? Activity }
@@ -96,31 +104,98 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         onEvent.invoke(HomeUIEvents.GetData)
     }
+
+    LaunchedEffect(effect) {
+        effect.collect { effect ->
+            when(effect) {
+                is HomeSideEffect.PurchaseSuccess -> {
+                    pendingNavigationMode = effect.modeId
+                }
+            }
+        }
+    }
     
-    if (state.showTranslationModePurchaseDialog) {
-        BasePurchaseDialog(
-            price = state.translationModePrice,
-            onDismiss = { onEvent(HomeUIEvents.CloseTranslationModePurchaseDialog) },
-            onConfirm = {
+    if (state.showTranslationModePurchaseSheet) {
+        BasePurchaseBottomSheet(
+            onDismiss = { 
+                onEvent(HomeUIEvents.CloseTranslationModePurchaseSheet)
+                if (pendingNavigationMode == com.rafalskrzypczyk.billing.domain.BillingIds.ID_TRANSLATION_MODE) {
+                    onNavigateToTranslationMode()
+                    pendingNavigationMode = null
+                }
+            },
+            onBuyClick = { 
                 if (activity != null) {
                     onEvent(HomeUIEvents.BuyTranslationMode(activity))
                 }
-            }
-        ) {
-             Column(
-                 horizontalAlignment = Alignment.CenterHorizontally,
-                 verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL)
-             ) {
-                 TextHeadline(
-                     text = stringResource(com.rafalskrzypczyk.core.R.string.title_translation_mode),
-                     textAlign = TextAlign.Center
-                 )
-                 TextPrimary(
-                     text = stringResource(R.string.mode_translation_desc),
-                     textAlign = TextAlign.Center
-                 )
-             }
-        }
+            },
+            shouldDismiss = pendingNavigationMode == com.rafalskrzypczyk.billing.domain.BillingIds.ID_TRANSLATION_MODE,
+            details = PurchaseModeDetails(
+                title = stringResource(com.rafalskrzypczyk.core.R.string.title_translation_mode),
+                description = stringResource(R.string.mode_translation_desc),
+                questionCount = state.translationModeQuestionCount,
+                price = state.translationModePrice,
+                features = listOf(
+                    PurchaseFeature(
+                        title = stringResource(R.string.feature_translation_title),
+                        description = stringResource(R.string.feature_translation_desc),
+                        icon = Icons.Default.Translate
+                    ),
+                    PurchaseFeature(
+                        title = stringResource(R.string.feature_vocabulary_title),
+                        description = stringResource(R.string.feature_vocabulary_desc),
+                        icon = Icons.Default.HistoryEdu
+                    ),
+                    PurchaseFeature(
+                        title = stringResource(R.string.feature_auto_fix_title),
+                        description = stringResource(R.string.feature_auto_fix_desc),
+                        icon = Icons.Default.AutoFixHigh
+                    )
+                )
+            )
+        )
+    }
+
+    if (state.showSwipeModePurchaseSheet) {
+        BasePurchaseBottomSheet(
+            onDismiss = {
+                onEvent(HomeUIEvents.CloseSwipeModePurchaseSheet)
+                if (pendingNavigationMode == com.rafalskrzypczyk.billing.domain.BillingIds.ID_SWIPE_MODE) {
+                    onNavigateToSwipeMode()
+                    pendingNavigationMode = null
+                }
+            },
+            onBuyClick = {
+                if (activity != null) {
+                    onEvent(HomeUIEvents.BuySwipeMode(activity))
+                }
+            },
+            onTryClick = { /* Implement try if needed */ },
+            shouldDismiss = pendingNavigationMode == com.rafalskrzypczyk.billing.domain.BillingIds.ID_SWIPE_MODE,
+            details = PurchaseModeDetails(
+                title = stringResource(com.rafalskrzypczyk.core.R.string.title_swipe_mode),
+                description = stringResource(R.string.mode_swipe_desc),
+                questionCount = state.swipeModeQuestionCount,
+                price = state.swipeModePrice,
+                features = listOf(
+                    PurchaseFeature(
+                        title = stringResource(R.string.feature_swipe_title),
+                        description = stringResource(R.string.feature_swipe_desc),
+                        icon = Icons.Default.Swipe
+                    ),
+                    PurchaseFeature(
+                        title = stringResource(R.string.feature_speed_title),
+                        description = stringResource(R.string.feature_speed_desc),
+                        icon = Icons.Default.Bolt
+                    ),
+                    PurchaseFeature(
+                        title = stringResource(R.string.feature_combo_title),
+                        description = stringResource(R.string.feature_combo_desc),
+                        icon = Icons.Default.Whatshot
+                    )
+                )
+            )
+        )
     }
 
     Scaffold(
@@ -158,13 +233,20 @@ fun HomeScreen(
             HomeScreenAddonsMenu(addons = addons)
             HomeScreenQuizModesMenu(
                 isTranslationModeUnlocked = state.isTranslationModeUnlocked,
+                isSwipeModeUnlocked = state.isSwipeModeUnlocked,
                 onNavigateToMainMode = onNavigateToMainMode,
-                onNavigateToSwipeMode = onNavigateToSwipeMode,
+                onNavigateToSwipeMode = {
+                    if (state.isSwipeModeUnlocked) {
+                        onNavigateToSwipeMode()
+                    } else {
+                        onEvent(HomeUIEvents.OpenSwipeModePurchaseSheet)
+                    }
+                },
                 onNavigateToTranslationMode = {
                     if (state.isTranslationModeUnlocked) {
                         onNavigateToTranslationMode()
                     } else {
-                        onEvent(HomeUIEvents.OpenTranslationModePurchaseDialog)
+                        onEvent(HomeUIEvents.OpenTranslationModePurchaseSheet)
                     }
                 }
             )
@@ -225,6 +307,7 @@ fun HomeScreenAddonsMenu(
 fun HomeScreenQuizModesMenu(
     modifier: Modifier = Modifier,
     isTranslationModeUnlocked: Boolean,
+    isSwipeModeUnlocked: Boolean,
     onNavigateToMainMode: () -> Unit,
     onNavigateToSwipeMode: () -> Unit,
     onNavigateToTranslationMode: () -> Unit
@@ -296,8 +379,11 @@ private fun HomeScreenPreview() {
                     isUserLoggedIn = true,
                     userScore = 95600,
                     userStreak = 24,
-                    isNewDailyExerciseAvailable = true
+                    isNewDailyExerciseAvailable = true,
+                    isTranslationModeUnlocked = false,
+                    isSwipeModeUnlocked = false
                 ),
+                effect = kotlinx.coroutines.flow.emptyFlow(),
                 onEvent = {},
                 onNavigateToUserPanel = {},
                 onNavigateToMainMode = {},

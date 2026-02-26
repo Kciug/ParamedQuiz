@@ -29,4 +29,5 @@ interface FirestoreApi {
     fun sendIssueReport(report: IssueReportDTO) : Flow<Response<Unit>>
     fun getTermsOfService(): Flow<Response<TermsOfServiceDTO>>
     fun getTermsOfServiceUpdates(): Flow<Response<TermsOfServiceDTO>>
+    fun getQuestionsCountUpdates(collection: String): Flow<Int>
 }
