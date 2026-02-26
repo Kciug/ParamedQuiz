@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -29,13 +30,17 @@ class MockBillingRepository @Inject constructor() : BillingRepository {
     }
 
     override fun launchBillingFlow(activity: Activity, product: AppProduct) {
-        // Simulate immediate successful purchase
-        val newPurchase = AppPurchase(
-            products = listOf(product.id),
-            isPurchased = true,
-            purchaseToken = "mock_token_${System.currentTimeMillis()}"
-        )
-        _purchases.update { it + newPurchase }
+        // Simulate immediate successful purchase with delay
+        val scope = kotlinx.coroutines.MainScope()
+        scope.launch {
+            kotlinx.coroutines.delay(1000)
+            val newPurchase = AppPurchase(
+                products = listOf(product.id),
+                isPurchased = true,
+                purchaseToken = "mock_token_${System.currentTimeMillis()}"
+            )
+            _purchases.update { it + newPurchase }
+        }
     }
 
     override suspend fun queryProducts(productIds: List<String>) {

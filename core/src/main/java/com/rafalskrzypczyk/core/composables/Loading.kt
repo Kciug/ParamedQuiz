@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -22,16 +21,19 @@ import androidx.compose.ui.unit.dp
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 
 @Composable
-fun Loading(modifier: Modifier = Modifier.fillMaxSize()) {
+fun Loading(
+    modifier: Modifier = Modifier,
+    baseIconSize: androidx.compose.ui.unit.Dp = 50.dp
+) {
     val infiniteAnimation = rememberInfiniteTransition(label = "infinite")
     val iconSize by infiniteAnimation.animateFloat(
         initialValue = 1f,
         targetValue = 1.3f,
         animationSpec = infiniteRepeatable(
             animation = keyframes {
-                durationMillis = 500 // Cały cykl trwa 500 ms
-                1.3f at 100 // Szybki500e powiększenie do 1.3 w ciągu 100 ms
-                1f at 300 // Wolniejsze zmniejszenie do 1 w ciągu 200 ms
+                durationMillis = 500
+                1.3f at 100
+                1f at 300
                 1f at 500
             },
             repeatMode = RepeatMode.Restart
@@ -39,14 +41,14 @@ fun Loading(modifier: Modifier = Modifier.fillMaxSize()) {
     )
 
     Box(
-        modifier,
+        modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ){
         Icon(
             imageVector = Icons.Default.Favorite,
             contentDescription = null,
-            Modifier.size(50.dp * iconSize),
-            tint = MaterialTheme.colorScheme.primary
+            Modifier.size(baseIconSize * iconSize),
+            tint = androidx.compose.material3.LocalContentColor.current
         )
     }
 }

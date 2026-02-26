@@ -36,11 +36,12 @@ fun ButtonPrimary(
     onClick: () -> Unit,
     enabled: Boolean = true,
     debounced: Boolean = true,
+    loading: Boolean = false,
 ) {
     val finalOnClick = if (debounced) rememberDebouncedClick(onClick = onClick) else onClick
 
     Button(
-        onClick = finalOnClick,
+        onClick = if (loading) { {} } else finalOnClick,
         enabled = enabled,
         modifier = modifier
             .fillMaxWidth()
@@ -51,7 +52,11 @@ fun ButtonPrimary(
             contentColor = Color.White
         )
     ) {
-        Text(text = title)
+        if (loading) {
+            Loading(modifier = Modifier.size(24.dp), baseIconSize = 18.dp)
+        } else {
+            Text(text = title)
+        }
     }
 }
 

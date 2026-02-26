@@ -18,5 +18,7 @@ data class HomeScreenState (
     val isSwipeModeUnlocked: Boolean = false,
     val swipeModePrice: String? = null,
     val showSwipeModePurchaseSheet: Boolean = false,
-    val swipeModeQuestionCount: Int = 0
+    val swipeModeQuestionCount: Int = 0,
+    val isPurchasing: Boolean = false,
+    val purchaseError: String? = null
 )

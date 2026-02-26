@@ -62,7 +62,7 @@ class HomeScreenVM @Inject constructor(
             HomeUIEvents.CloseSwipeModePurchaseSheet -> closePurchaseSheet(BillingIds.ID_SWIPE_MODE)
             is HomeUIEvents.BuyTranslationMode -> buyMode(event.activity, BillingIds.ID_TRANSLATION_MODE)
             is HomeUIEvents.BuySwipeMode -> buyMode(event.activity, BillingIds.ID_SWIPE_MODE)
-            HomeUIEvents.NavigationConsumed -> { /* Not needed anymore */ }
+            HomeUIEvents.NavigationConsumed -> consumeNavigation()
         }
     }
 
@@ -112,7 +112,8 @@ class HomeScreenVM @Inject constructor(
                 _state.update { 
                     it.copy(
                         isTranslationModeUnlocked = translationUnlocked,
-                        isSwipeModeUnlocked = swipeUnlocked
+                        isSwipeModeUnlocked = swipeUnlocked,
+                        isPurchasing = false
                     ) 
                 }
             }
@@ -135,11 +136,12 @@ class HomeScreenVM @Inject constructor(
     
     private fun openPurchaseSheet(modeId: String) {
         _state.update { 
-            when(modeId) {
+            val base = when(modeId) {
                 BillingIds.ID_TRANSLATION_MODE -> it.copy(showTranslationModePurchaseSheet = true)
                 BillingIds.ID_SWIPE_MODE -> it.copy(showSwipeModePurchaseSheet = true)
                 else -> it
             }
+            base.copy(purchaseError = null, isPurchasing = false)
         }
         viewModelScope.launch {
             billingRepository.queryProducts(listOf(modeId))
@@ -152,7 +154,7 @@ class HomeScreenVM @Inject constructor(
                 BillingIds.ID_TRANSLATION_MODE -> it.copy(showTranslationModePurchaseSheet = false)
                 BillingIds.ID_SWIPE_MODE -> it.copy(showSwipeModePurchaseSheet = false)
                 else -> it
-            }
+            }.copy(purchaseError = null, isPurchasing = false)
         }
         pendingPurchaseModeId = null
     }
@@ -165,7 +167,12 @@ class HomeScreenVM @Inject constructor(
         }
         if (details != null) {
             pendingPurchaseModeId = modeId
+            _state.update { it.copy(isPurchasing = true, purchaseError = null) }
             billingRepository.launchBillingFlow(activity, details)
         }
+    }
+
+    private fun consumeNavigation() {
+        // Handle if needed
     }
 }

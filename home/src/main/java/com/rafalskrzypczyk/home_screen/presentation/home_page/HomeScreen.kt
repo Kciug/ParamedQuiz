@@ -76,7 +76,7 @@ fun HomeScreen(
 ) {
     var showDailyExerciseAlreadyDoneAlert by remember { mutableStateOf(false) }
     var showRevisionsUnavailableAlert by remember { mutableStateOf(false) }
-    var pendingNavigationMode by remember { mutableStateOf<String?>(null) }
+    var isDismissingMode by remember { mutableStateOf<String?>(null) }
 
     val context = LocalContext.current
     val activity = remember(context) { context as? Activity }
@@ -109,7 +109,7 @@ fun HomeScreen(
         effect.collect { effect ->
             when(effect) {
                 is HomeSideEffect.PurchaseSuccess -> {
-                    pendingNavigationMode = effect.modeId
+                    // Just let the UI update via state
                 }
             }
         }
@@ -119,9 +119,9 @@ fun HomeScreen(
         BasePurchaseBottomSheet(
             onDismiss = { 
                 onEvent(HomeUIEvents.CloseTranslationModePurchaseSheet)
-                if (pendingNavigationMode == com.rafalskrzypczyk.billing.domain.BillingIds.ID_TRANSLATION_MODE) {
+                if (isDismissingMode == com.rafalskrzypczyk.billing.domain.BillingIds.ID_TRANSLATION_MODE) {
                     onNavigateToTranslationMode()
-                    pendingNavigationMode = null
+                    isDismissingMode = null
                 }
             },
             onBuyClick = { 
@@ -129,7 +129,11 @@ fun HomeScreen(
                     onEvent(HomeUIEvents.BuyTranslationMode(activity))
                 }
             },
-            shouldDismiss = pendingNavigationMode == com.rafalskrzypczyk.billing.domain.BillingIds.ID_TRANSLATION_MODE,
+            onStartClick = { isDismissingMode = com.rafalskrzypczyk.billing.domain.BillingIds.ID_TRANSLATION_MODE },
+            isUnlocked = state.isTranslationModeUnlocked,
+            isPurchasing = state.isPurchasing,
+            purchaseError = state.purchaseError,
+            shouldDismiss = isDismissingMode == com.rafalskrzypczyk.billing.domain.BillingIds.ID_TRANSLATION_MODE,
             details = PurchaseModeDetails(
                 title = stringResource(com.rafalskrzypczyk.core.R.string.title_translation_mode),
                 description = stringResource(R.string.mode_translation_desc),
@@ -160,9 +164,9 @@ fun HomeScreen(
         BasePurchaseBottomSheet(
             onDismiss = {
                 onEvent(HomeUIEvents.CloseSwipeModePurchaseSheet)
-                if (pendingNavigationMode == com.rafalskrzypczyk.billing.domain.BillingIds.ID_SWIPE_MODE) {
+                if (isDismissingMode == com.rafalskrzypczyk.billing.domain.BillingIds.ID_SWIPE_MODE) {
                     onNavigateToSwipeMode()
-                    pendingNavigationMode = null
+                    isDismissingMode = null
                 }
             },
             onBuyClick = {
@@ -170,8 +174,12 @@ fun HomeScreen(
                     onEvent(HomeUIEvents.BuySwipeMode(activity))
                 }
             },
+            onStartClick = { isDismissingMode = com.rafalskrzypczyk.billing.domain.BillingIds.ID_SWIPE_MODE },
             onTryClick = { /* Implement try if needed */ },
-            shouldDismiss = pendingNavigationMode == com.rafalskrzypczyk.billing.domain.BillingIds.ID_SWIPE_MODE,
+            isUnlocked = state.isSwipeModeUnlocked,
+            isPurchasing = state.isPurchasing,
+            purchaseError = state.purchaseError,
+            shouldDismiss = isDismissingMode == com.rafalskrzypczyk.billing.domain.BillingIds.ID_SWIPE_MODE,
             details = PurchaseModeDetails(
                 title = stringResource(com.rafalskrzypczyk.core.R.string.title_swipe_mode),
                 description = stringResource(R.string.mode_swipe_desc),
@@ -236,18 +244,10 @@ fun HomeScreen(
                 isSwipeModeUnlocked = state.isSwipeModeUnlocked,
                 onNavigateToMainMode = onNavigateToMainMode,
                 onNavigateToSwipeMode = {
-                    if (state.isSwipeModeUnlocked) {
-                        onNavigateToSwipeMode()
-                    } else {
-                        onEvent(HomeUIEvents.OpenSwipeModePurchaseSheet)
-                    }
+                    onEvent(HomeUIEvents.OpenSwipeModePurchaseSheet)
                 },
                 onNavigateToTranslationMode = {
-                    if (state.isTranslationModeUnlocked) {
-                        onNavigateToTranslationMode()
-                    } else {
-                        onEvent(HomeUIEvents.OpenTranslationModePurchaseSheet)
-                    }
+                    onEvent(HomeUIEvents.OpenTranslationModePurchaseSheet)
                 }
             )
 
