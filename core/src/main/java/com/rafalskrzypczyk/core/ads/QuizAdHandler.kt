@@ -35,13 +35,11 @@ class QuizAdHandler @Inject constructor(
         if (isQuizFinished) {
             if (ignoreThreshold || questionsSinceLastAd >= AdConfig.EXIT_AD_THRESHOLD) {
                 isFinishingQuiz = true
-                lastAdAnsweredCount = answeredCount
                 return true
             }
             return false
         }
 
-        // Mid-quiz ad: every AD_FREQUENCY questions
         if (answeredCount > 0 && answeredCount % AdConfig.AD_FREQUENCY == 0 && answeredCount > lastAdAnsweredCount) {
             isFinishingQuiz = false
             lastAdAnsweredCount = answeredCount
