@@ -127,6 +127,12 @@ class FirestoreService @Inject constructor(
         }
     }.catch { emit(Response.Error(it.localizedMessage ?: resourceProvider.getString(R.string.error_unknown))) }
 
+    override fun getQuestionsCountUpdates(collection: String): Flow<Int> = flow {
+        val countQuery = firestore.collection(collection).count()
+        val snapshot = countQuery.get(com.google.firebase.firestore.AggregateSource.SERVER).await()
+        emit(snapshot.count.toInt())
+    }.catch { emit(0) }
+
     private suspend fun getFirestoreDocumentData(collection: String, documentId: String): DocumentSnapshot? {
         return try {
             firestore.collection(collection).document(documentId)

@@ -120,4 +120,18 @@
 
     <string name="terms_of_service_title">Regulamin</string>
     <string name="accept_terms_button">Akceptuję regulamin</string>
+
+    <string name="feature_translation_title">Tłumaczenia</string>
+    <string name="feature_translation_desc">Tłumacz kluczowe terminy medyczne i ratownicze.</string>
+    <string name="feature_vocabulary_title">Słownictwo</string>
+    <string name="feature_vocabulary_desc">Ucz się specjalistycznego słownictwa w kontekście.</string>
+    <string name="feature_auto_fix_title">System powtórek</string>
+    <string name="feature_auto_fix_desc">Zoptymalizuj naukę dzięki inteligentnym powtórkom.</string>
+
+    <string name="feature_swipe_title">Przesuń, aby odpowiedzieć</string>
+    <string name="feature_swipe_desc">Szybkie gesty dla dynamicznej nauki.</string>
+    <string name="feature_speed_title">Szybki quiz</string>
+    <string name="feature_speed_desc">Odpowiadaj szybko na pytania prawda/fałsz.</string>
+    <string name="feature_combo_title">Buduj combo</string>
+    <string name="feature_combo_desc">Zdobywaj punkty za serie poprawnych odpowiedzi.</string>
 </resources>

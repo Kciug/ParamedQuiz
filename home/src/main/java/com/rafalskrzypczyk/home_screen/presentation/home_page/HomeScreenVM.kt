@@ -28,12 +28,19 @@ class HomeScreenVM @Inject constructor(
     val state = _state.asStateFlow()
     
     private var translationModeProductDetails: AppProduct? = null
+    private var swipeModeProductDetails: AppProduct? = null
 
     init {
         viewModelScope.launch {
             billingRepository.availableProducts.collectLatest { products ->
                 translationModeProductDetails = products.find { it.id == BillingIds.ID_TRANSLATION_MODE }
-                _state.update { it.copy(translationModePrice = translationModeProductDetails?.price) }
+                swipeModeProductDetails = products.find { it.id == BillingIds.ID_SWIPE_MODE }
+                _state.update { 
+                    it.copy(
+                        translationModePrice = translationModeProductDetails?.price,
+                        swipeModePrice = swipeModeProductDetails?.price
+                    ) 
+                }
             }
         }
         
@@ -43,9 +50,12 @@ class HomeScreenVM @Inject constructor(
     fun onEvent(event: HomeUIEvents) {
         when(event) {
             HomeUIEvents.GetData -> getData()
-            HomeUIEvents.OpenTranslationModePurchaseDialog -> openPurchaseDialog()
-            HomeUIEvents.CloseTranslationModePurchaseDialog -> closePurchaseDialog()
-            is HomeUIEvents.BuyTranslationMode -> buyTranslationMode(event.activity)
+            HomeUIEvents.OpenTranslationModePurchaseSheet -> openPurchaseSheet(BillingIds.ID_TRANSLATION_MODE)
+            HomeUIEvents.CloseTranslationModePurchaseSheet -> closePurchaseSheet(BillingIds.ID_TRANSLATION_MODE)
+            HomeUIEvents.OpenSwipeModePurchaseSheet -> openPurchaseSheet(BillingIds.ID_SWIPE_MODE)
+            HomeUIEvents.CloseSwipeModePurchaseSheet -> closePurchaseSheet(BillingIds.ID_SWIPE_MODE)
+            is HomeUIEvents.BuyTranslationMode -> buyMode(event.activity, BillingIds.ID_TRANSLATION_MODE)
+            is HomeUIEvents.BuySwipeMode -> buyMode(event.activity, BillingIds.ID_SWIPE_MODE)
         }
     }
 
@@ -80,29 +90,63 @@ class HomeScreenVM @Inject constructor(
         
         viewModelScope.launch {
             premiumStatusProvider.ownedProductIds.collectLatest { ownedIds ->
-                val hasAccess = ownedIds.contains(BillingIds.ID_FULL_PACKAGE) || 
-                                ownedIds.contains(BillingIds.ID_TRANSLATION_MODE)
-                _state.update { it.copy(isTranslationModeUnlocked = hasAccess) }
+                val hasFull = ownedIds.contains(BillingIds.ID_FULL_PACKAGE)
+                _state.update { 
+                    it.copy(
+                        isTranslationModeUnlocked = hasFull || ownedIds.contains(BillingIds.ID_TRANSLATION_MODE),
+                        isSwipeModeUnlocked = hasFull || ownedIds.contains(BillingIds.ID_SWIPE_MODE)
+                    ) 
+                }
             }
+        }
+
+        viewModelScope.launch {
+            useCases.getQuestionsCount(com.rafalskrzypczyk.firestore.data.FirestoreCollections.TRANSLATION_QUESTIONS)
+                .collectLatest { count ->
+                    _state.update { it.copy(translationModeQuestionCount = count) }
+                }
+        }
+
+        viewModelScope.launch {
+            useCases.getQuestionsCount(com.rafalskrzypczyk.firestore.data.FirestoreCollections.SWIPE_QUESTIONS)
+                .collectLatest { count ->
+                    _state.update { it.copy(swipeModeQuestionCount = count) }
+                }
         }
     }
     
-    private fun openPurchaseDialog() {
-        _state.update { it.copy(showTranslationModePurchaseDialog = true) }
+    private fun openPurchaseSheet(modeId: String) {
+        _state.update { 
+            when(modeId) {
+                BillingIds.ID_TRANSLATION_MODE -> it.copy(showTranslationModePurchaseSheet = true)
+                BillingIds.ID_SWIPE_MODE -> it.copy(showSwipeModePurchaseSheet = true)
+                else -> it
+            }
+        }
         viewModelScope.launch {
-            billingRepository.queryProducts(listOf(BillingIds.ID_TRANSLATION_MODE))
+            billingRepository.queryProducts(listOf(modeId))
         }
     }
 
-    private fun closePurchaseDialog() {
-        _state.update { it.copy(showTranslationModePurchaseDialog = false) }
+    private fun closePurchaseSheet(modeId: String) {
+        _state.update { 
+            when(modeId) {
+                BillingIds.ID_TRANSLATION_MODE -> it.copy(showTranslationModePurchaseSheet = false)
+                BillingIds.ID_SWIPE_MODE -> it.copy(showSwipeModePurchaseSheet = false)
+                else -> it
+            }
+        }
     }
 
-    private fun buyTranslationMode(activity: Activity) {
-        val details = translationModeProductDetails
+    private fun buyMode(activity: Activity, modeId: String) {
+        val details = when(modeId) {
+            BillingIds.ID_TRANSLATION_MODE -> translationModeProductDetails
+            BillingIds.ID_SWIPE_MODE -> swipeModeProductDetails
+            else -> null
+        }
         if (details != null) {
             billingRepository.launchBillingFlow(activity, details)
         }
-        closePurchaseDialog()
+        closePurchaseSheet(modeId)
     }
 }

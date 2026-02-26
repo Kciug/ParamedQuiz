@@ -13,5 +13,10 @@ data class HomeScreenState (
     val userName: String? = null,
     val isTranslationModeUnlocked: Boolean = false,
     val translationModePrice: String? = null,
-    val showTranslationModePurchaseDialog: Boolean = false
+    val showTranslationModePurchaseSheet: Boolean = false,
+    val translationModeQuestionCount: Int = 0,
+    val isSwipeModeUnlocked: Boolean = false,
+    val swipeModePrice: String? = null,
+    val showSwipeModePurchaseSheet: Boolean = false,
+    val swipeModeQuestionCount: Int = 0
 )
