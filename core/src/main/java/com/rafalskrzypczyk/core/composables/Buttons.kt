@@ -53,7 +53,11 @@ fun ButtonPrimary(
         )
     ) {
         if (loading) {
-            Loading(modifier = Modifier.size(24.dp), baseIconSize = 18.dp)
+            androidx.compose.material3.CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                color = Color.White,
+                strokeWidth = 2.dp
+            )
         } else {
             Text(text = title)
         }
