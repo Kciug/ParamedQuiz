@@ -129,7 +129,6 @@ fun HomeScreen(
                     onEvent(HomeUIEvents.BuyTranslationMode(activity))
                 }
             },
-            onTryClick = { /* Implement try if needed */ },
             shouldDismiss = pendingNavigationMode == com.rafalskrzypczyk.billing.domain.BillingIds.ID_TRANSLATION_MODE,
             details = PurchaseModeDetails(
                 title = stringResource(com.rafalskrzypczyk.core.R.string.title_translation_mode),
