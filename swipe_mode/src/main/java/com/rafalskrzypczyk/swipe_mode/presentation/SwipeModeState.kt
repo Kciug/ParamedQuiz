@@ -31,6 +31,7 @@ data class SwipeModeState(
     val reportableQuestionContent: String = "",
     val isTrial: Boolean = false,
     val showTrialFinishedPanel: Boolean = false,
+    val isLastAnswerFeedbackVisible: Boolean = false,
     val swipeModePrice: String? = null,
     val totalSwipeModeQuestions: Int = 0
 )

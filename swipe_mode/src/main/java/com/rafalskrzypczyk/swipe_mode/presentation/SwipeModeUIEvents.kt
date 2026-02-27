@@ -12,4 +12,5 @@ sealed interface SwipeModeUIEvents {
 
     object BuyMode : SwipeModeUIEvents
     data class ExitTrial(val navigateBack: () -> Unit) : SwipeModeUIEvents
+    object OnFinalFeedbackFinished : SwipeModeUIEvents
 }

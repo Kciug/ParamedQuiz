@@ -9,6 +9,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -21,6 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.ui.theme.MQGreen
 import com.rafalskrzypczyk.core.ui.theme.MQRed
@@ -31,15 +33,21 @@ fun AnswerResultIndicator(
     modifier: Modifier = Modifier,
     answerResult: SwipeModeAnswerResult,
     hideDelay: Long = 500,
-    alphaModifier: Float = 0.2f
+    alphaModifier: Float = 0.2f,
+    isLarge: Boolean = false,
+    onAnimationFinished: () -> Unit = {}
 ) {
     var showResult by remember { mutableStateOf(false) }
 
     LaunchedEffect(answerResult) {
         if(answerResult.result != SwipeQuizResult.NONE){
             showResult = true
-            delay(hideDelay)
+            delay(if (isLarge) hideDelay * 2 else hideDelay)
             showResult = false
+            if (isLarge) {
+                delay(300) 
+                onAnimationFinished()
+            }
         }
     }
 
@@ -50,6 +58,9 @@ fun AnswerResultIndicator(
     val contentDescription = if(isCorrect) "Poprawna odpowiedź" else "Błędna odpowiedź"
 
     val color = if (isCorrect) MQGreen else MQRed
+
+    val iconSize = if (isLarge) 120.dp else 24.dp
+    val backgroundPadding = if (isLarge) Dimens.LARGE_PADDING else Dimens.DEFAULT_PADDING
 
     AnimatedVisibility(
         modifier = modifier,
@@ -70,7 +81,8 @@ fun AnswerResultIndicator(
                     shape = CircleShape,
                     color = color.copy(alpha = alphaModifier)
                 )
-                .padding(Dimens.DEFAULT_PADDING)
+                .padding(backgroundPadding)
+                .size(iconSize)
         )
     }
 }

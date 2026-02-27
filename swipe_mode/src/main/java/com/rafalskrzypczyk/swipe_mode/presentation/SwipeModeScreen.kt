@@ -117,45 +117,60 @@ fun SwipeModeScreen(
     ) { paddingValues, _ ->
         val modifier = Modifier.padding(paddingValues)
 
-        AnimatedContent(
-            targetState = state.showTrialFinishedPanel,
-            transitionSpec = {
-                (fadeIn() + scaleIn(initialScale = 0.9f)) togetherWith (fadeOut() + scaleOut(targetScale = 0.9f))
-            },
-            label = "trialFinishedTransition"
-        ) { isTrialFinished ->
-            if (isTrialFinished) {
-                Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    SwipeModeTrialFinishedPanel(
-                        onBuyClick = { onEvent(SwipeModeUIEvents.BuyMode) },
-                        onExitClick = { onEvent(SwipeModeUIEvents.ExitTrial(onNavigateBack)) },
-                        totalQuestions = state.totalSwipeModeQuestions
-                    )
-                }
-            } else {
-                AnimatedContent(
-                    targetState = state.responseState,
-                    transitionSpec = {
-                        scaleIn() togetherWith scaleOut()
-                    },
-                    label = "responseTransition"
-                ) { responseState ->
-                    when(responseState) {
-                        ResponseState.Idle -> {}
-                        ResponseState.Loading -> Loading()
-                        is ResponseState.Error -> ErrorDialog(responseState.message) { onNavigateBack() }
-                        ResponseState.Success -> {
-                            if(isLandscape) {
-                                RotateDevicePrompt(modifier = modifier)
-                            } else {
-                                SwipeModeScreenContent(
-                                    modifier = modifier,
-                                    state = state,
-                                    onEvent = onEvent
-                               )
+        Box(modifier = Modifier.fillMaxSize()) {
+            AnimatedContent(
+                targetState = state.showTrialFinishedPanel,
+                transitionSpec = {
+                    (fadeIn() + scaleIn(initialScale = 0.9f)) togetherWith (fadeOut() + scaleOut(targetScale = 0.9f))
+                },
+                label = "trialFinishedTransition"
+            ) { isTrialFinished ->
+                if (isTrialFinished) {
+                    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        SwipeModeTrialFinishedPanel(
+                            onBuyClick = { onEvent(SwipeModeUIEvents.BuyMode) },
+                            onExitClick = { onEvent(SwipeModeUIEvents.ExitTrial(onNavigateBack)) },
+                            totalQuestions = state.totalSwipeModeQuestions
+                        )
+                    }
+                } else {
+                    AnimatedContent(
+                        targetState = state.responseState,
+                        transitionSpec = {
+                            scaleIn() togetherWith scaleOut()
+                        },
+                        label = "responseTransition"
+                    ) { responseState ->
+                        when(responseState) {
+                            ResponseState.Idle -> {}
+                            ResponseState.Loading -> Loading()
+                            is ResponseState.Error -> ErrorDialog(responseState.message) { onNavigateBack() }
+                            ResponseState.Success -> {
+                                if(isLandscape) {
+                                    RotateDevicePrompt(modifier = modifier)
+                                } else {
+                                    SwipeModeScreenContent(
+                                        modifier = modifier,
+                                        state = state,
+                                        onEvent = onEvent
+                                   )
+                                }
                             }
                         }
                     }
+                }
+            }
+
+            if (state.isLastAnswerFeedbackVisible) {
+                Box(
+                    modifier = modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    AnswerResultIndicator(
+                        answerResult = state.answerResult,
+                        isLarge = true,
+                        onAnimationFinished = { onEvent(SwipeModeUIEvents.OnFinalFeedbackFinished) }
+                    )
                 }
             }
         }
@@ -196,10 +211,12 @@ fun SwipeModeScreenContent(
                     }
                 }
             }
-            AnswerResultIndicator(
-                modifier = Modifier.align(Alignment.TopCenter),
-                answerResult = state.answerResult
-            )
+            if (!state.isLastAnswerFeedbackVisible) {
+                AnswerResultIndicator(
+                    modifier = Modifier.align(Alignment.TopCenter),
+                    answerResult = state.answerResult
+                )
+            }
         }
         SwipeStatsComponent(
             modifier = Modifier.padding(Dimens.DEFAULT_PADDING),

@@ -140,7 +140,8 @@ class SwipeModeVM @Inject constructor(
                         _state.update {
                             it.copy(
                                 responseState = ResponseState.Success,
-                                questionsCount = questions.size
+                                questionsCount = questions.size,
+                                isLastAnswerFeedbackVisible = false
                             )
                         }
                         if (quizStartTime == 0L) quizStartTime = System.currentTimeMillis()
@@ -187,6 +188,7 @@ class SwipeModeVM @Inject constructor(
             SwipeModeUIEvents.OnAdShown -> onAdShown()
             SwipeModeUIEvents.BuyMode -> buySwipeMode()
             is SwipeModeUIEvents.ExitTrial -> handleExitQuiz(event.navigateBack)
+            SwipeModeUIEvents.OnFinalFeedbackFinished -> finalizeQuiz()
         }
     }
 
@@ -267,14 +269,27 @@ class SwipeModeVM @Inject constructor(
     private fun displayNextQuestion() {
         currentQuestionIndex++
         val isAtEnd = currentQuestionIndex >= questions.size
-        if (adHandler.shouldShowAd(
-                answeredCount = currentQuestionIndex,
-                isQuizFinished = isAtEnd
-            )
-        ) {
-            _state.update { it.copy(showAd = true) }
+        if (isAtEnd) {
+            _state.update { it.copy(isLastAnswerFeedbackVisible = true) }
         } else {
-            displayQuestion()
+            if (adHandler.shouldShowAd(
+                    answeredCount = currentQuestionIndex,
+                    isQuizFinished = false
+                )
+            ) {
+                _state.update { it.copy(showAd = true) }
+            } else {
+                displayQuestion()
+            }
+        }
+    }
+
+    private fun finalizeQuiz() {
+        _state.update { it.copy(isLastAnswerFeedbackVisible = false) }
+        if (isTrialActive && questions.isNotEmpty()) {
+            _state.update { it.copy(showTrialFinishedPanel = true) }
+        } else {
+            setFinishedState()
         }
     }
 
