@@ -11,6 +11,8 @@ dependencies {
     implementation(project(":firestore"))
     implementation(project(":auth"))
     implementation(project(":score"))
+    implementation(project(":billing"))
+    implementation(project(":core"))
 
     implementation(libs.androidx.compose.runtime)
     implementation(libs.kotlinx.serialization.json)

@@ -94,4 +94,8 @@
     <string name="one_time_purchase">Jednorazowy zakup</string>
     <string name="btn_buy_for">Kup za %s</string>
     <string name="btn_try">Wypróbuj</string>
+    <string name="trial_finished_title">Wypróbowałeś tryb swipe!</string>
+    <string name="trial_finished_desc">Wyczerpałeś już darmowe pytania. Kup pełną wersję, aby odblokować wszystkie pytania i cieszyć się nauką bez limitów!</string>
+    <string name="btn_buy_mode">Kup teraz</string>
+    <string name="btn_exit_quiz">Wyjdź</string>
 </resources>

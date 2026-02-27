@@ -83,7 +83,7 @@ fun NavGraphBuilder.mainMenuDestination(
     onNavigateToUserPanel: () -> Unit,
     onNavigateToDailyExercise: () -> Unit,
     onNavigateToMainMode: () -> Unit,
-    onNavigateToSwipeMode: () -> Unit,
+    onNavigateToSwipeMode: (Boolean) -> Unit,
     onNavigateToTranslationMode: () -> Unit,
     onNavigateToDev: () -> Unit
 ) {
@@ -192,7 +192,7 @@ fun NavController.navigateToMainMode() {
 }
 
 @Serializable
-object SwipeMode
+data class SwipeMode(val isTrial: Boolean = false)
 
 fun NavGraphBuilder.swipeModeDestination(
     onNavigateBack: () -> Unit
@@ -200,16 +200,18 @@ fun NavGraphBuilder.swipeModeDestination(
     composable<SwipeMode> {
         val viewModel = hiltViewModel<SwipeModeEntryVM>()
         val showOnboarding = remember { viewModel.shouldShowOnboarding() }
+        val route = it.toRoute<SwipeMode>()
 
         SwipeModeNavHost(
             onExit = onNavigateBack,
-            showOnboarding = showOnboarding
+            showOnboarding = showOnboarding,
+            isTrial = route.isTrial
         )
     }
 }
 
-fun NavController.navigateToSwipeMode() {
-    navigate(route = SwipeMode)
+fun NavController.navigateToSwipeMode(isTrial: Boolean = false) {
+    navigate(route = SwipeMode(isTrial = isTrial))
 }
 
 @Serializable

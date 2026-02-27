@@ -6,10 +6,12 @@ data class SwipeQuestion(
     val id: Long,
     val text: String,
     val isCorrect: Boolean,
+    val isFree: Boolean
 )
 
 fun SwipeQuestionDTO.toDomain() = SwipeQuestion(
     id = id,
     text = text,
-    isCorrect = isCorrect
+    isCorrect = isCorrect,
+    isFree = isFree
 )

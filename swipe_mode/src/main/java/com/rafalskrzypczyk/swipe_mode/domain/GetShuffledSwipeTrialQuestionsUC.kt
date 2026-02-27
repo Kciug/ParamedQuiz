@@ -4,12 +4,13 @@ import com.rafalskrzypczyk.core.api_response.Response
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-class GetShuffledSwipeQuestionsUC @Inject constructor(
+class GetShuffledSwipeTrialQuestionsUC @Inject constructor(
     private val repository: SwipeModeRepository
 ) {
     operator fun invoke() = repository.getSwipeQuestions().map {
         if(it is Response.Success){
-            Response.Success(it.data.shuffled())
+            val trialQuestions = it.data.filter { q -> q.isFree }
+            Response.Success(trialQuestions.shuffled())
         } else {
             it
         }

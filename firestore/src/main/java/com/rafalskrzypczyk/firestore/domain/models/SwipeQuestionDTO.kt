@@ -8,4 +8,6 @@ data class SwipeQuestionDTO(
     val text: String = "",
     @field:JvmField
     val isCorrect: Boolean = false,
+    @field:JvmField
+    val isFree: Boolean = false
 )

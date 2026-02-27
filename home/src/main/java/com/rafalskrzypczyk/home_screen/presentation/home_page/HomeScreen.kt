@@ -70,13 +70,14 @@ fun HomeScreen(
     onNavigateToUserPanel: () -> Unit,
     onNavigateToDailyExercise: () -> Unit,
     onNavigateToMainMode: () -> Unit,
-    onNavigateToSwipeMode: () -> Unit,
+    onNavigateToSwipeMode: (Boolean) -> Unit,
     onNavigateToTranslationMode: () -> Unit,
     onNavigateToDevOptions: () -> Unit
 ) {
     var showDailyExerciseAlreadyDoneAlert by remember { mutableStateOf(false) }
     var showRevisionsUnavailableAlert by remember { mutableStateOf(false) }
     var isDismissingMode by remember { mutableStateOf<String?>(null) }
+    var isTrialMode by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val activity = remember(context) { context as? Activity }
@@ -129,7 +130,10 @@ fun HomeScreen(
                     onEvent(HomeUIEvents.BuyTranslationMode(activity))
                 }
             },
-            onStartClick = { isDismissingMode = com.rafalskrzypczyk.billing.domain.BillingIds.ID_TRANSLATION_MODE },
+            onStartClick = { 
+                isTrialMode = false
+                isDismissingMode = com.rafalskrzypczyk.billing.domain.BillingIds.ID_TRANSLATION_MODE 
+            },
             isUnlocked = state.isTranslationModeUnlocked,
             isPurchasing = state.isPurchasing,
             purchaseError = state.purchaseError,
@@ -165,8 +169,9 @@ fun HomeScreen(
             onDismiss = {
                 onEvent(HomeUIEvents.CloseSwipeModePurchaseSheet)
                 if (isDismissingMode == com.rafalskrzypczyk.billing.domain.BillingIds.ID_SWIPE_MODE) {
-                    onNavigateToSwipeMode()
+                    onNavigateToSwipeMode(isTrialMode)
                     isDismissingMode = null
+                    isTrialMode = false
                 }
             },
             onBuyClick = {
@@ -174,8 +179,14 @@ fun HomeScreen(
                     onEvent(HomeUIEvents.BuySwipeMode(activity))
                 }
             },
-            onStartClick = { isDismissingMode = com.rafalskrzypczyk.billing.domain.BillingIds.ID_SWIPE_MODE },
-            onTryClick = { /* Implement try if needed */ },
+            onStartClick = {
+                isTrialMode = false
+                isDismissingMode = com.rafalskrzypczyk.billing.domain.BillingIds.ID_SWIPE_MODE
+            },
+            onTryClick = {
+                isTrialMode = true
+                isDismissingMode = com.rafalskrzypczyk.billing.domain.BillingIds.ID_SWIPE_MODE
+            },
             isUnlocked = state.isSwipeModeUnlocked,
             isPurchasing = state.isPurchasing,
             purchaseError = state.purchaseError,
@@ -309,7 +320,7 @@ fun HomeScreenQuizModesMenu(
     isTranslationModeUnlocked: Boolean,
     isSwipeModeUnlocked: Boolean,
     onNavigateToMainMode: () -> Unit,
-    onNavigateToSwipeMode: () -> Unit,
+    onNavigateToSwipeMode: (Boolean) -> Unit,
     onNavigateToTranslationMode: () -> Unit
 ) {
     Column(
@@ -328,7 +339,7 @@ fun HomeScreenQuizModesMenu(
             title = stringResource(com.rafalskrzypczyk.core.R.string.title_swipe_mode),
             description = stringResource(R.string.mode_swipe_desc),
             imageRes = com.rafalskrzypczyk.core.R.drawable.mediquiz_swipemode
-        ) { onNavigateToSwipeMode() }
+        ) { onNavigateToSwipeMode(false) }
         QuizModeButton(
             title = stringResource(com.rafalskrzypczyk.core.R.string.title_translation_mode),
             description = stringResource(R.string.mode_translation_desc),
