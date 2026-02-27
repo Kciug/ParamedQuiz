@@ -5,5 +5,5 @@ import kotlinx.coroutines.flow.Flow
 
 interface SwipeModeRepository {
     fun getSwipeQuestions() : Flow<Response<List<SwipeQuestion>>>
-    fun getUpdatedQuestions() : Flow<List<SwipeQuestion>>
+    fun getUpdatedQuestions(isTrial: Boolean = false) : Flow<List<SwipeQuestion>>
 }

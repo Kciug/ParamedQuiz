@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
-import kotlin.collections.map
 
 class SwipeModeRepositoryImpl @Inject constructor(
     private val firestore: FirestoreApi
@@ -20,15 +19,17 @@ class SwipeModeRepositoryImpl @Inject constructor(
     private var swipeQuestions: List<SwipeQuestion>? = null
 
     override fun getSwipeQuestions(): Flow<Response<List<SwipeQuestion>>> = flow {
-        if (!swipeQuestions.isNullOrEmpty()) {
-            emit(Response.Success(swipeQuestions!!))
+        val cached = swipeQuestions
+        if (!cached.isNullOrEmpty()) {
+            emit(Response.Success(cached))
         } else {
             emitAll(
                 firestore.getSwipeQuestions().map {
                     when (it) {
                         is Response.Success -> {
-                            swipeQuestions = it.data.map { dto -> dto.toDomain() }
-                            Response.Success(swipeQuestions!!)
+                            val domainQuestions = it.data.map { dto -> dto.toDomain() }
+                            swipeQuestions = domainQuestions
+                            Response.Success(domainQuestions)
                         }
                         is Response.Error -> Response.Error(it.error)
                         is Response.Loading -> Response.Loading
@@ -38,8 +39,9 @@ class SwipeModeRepositoryImpl @Inject constructor(
         }
     }.flowOn(Dispatchers.Default)
 
-    override fun getUpdatedQuestions(): Flow<List<SwipeQuestion>> = firestore.getUpdatedSwipeQuestions().map {
-        swipeQuestions = it.map { dto -> dto.toDomain() }
-        swipeQuestions!!
+    override fun getUpdatedQuestions(isTrial: Boolean): Flow<List<SwipeQuestion>> = firestore.getUpdatedSwipeQuestions().map { questions ->
+        val domainQuestions = questions.map { dto -> dto.toDomain() }
+        swipeQuestions = domainQuestions
+        if (isTrial) domainQuestions.filter { it.isFree } else domainQuestions
     }.flowOn(Dispatchers.Default)
 }

@@ -1,29 +1,51 @@
 package com.rafalskrzypczyk.swipe_mode.presentation
 
+import android.app.Activity
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rafalskrzypczyk.billing.domain.AppProduct
+import com.rafalskrzypczyk.billing.domain.BillingIds
+import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.core.ads.QuizAdHandler
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
+import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedState
 import com.rafalskrzypczyk.core.report_issues.IssueReport
+import com.rafalskrzypczyk.firestore.data.FirestoreCollections
 import com.rafalskrzypczyk.swipe_mode.domain.SwipeModeUseCases
 import com.rafalskrzypczyk.swipe_mode.domain.SwipeQuestion
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+sealed interface SwipeModeSideEffect {
+    object BuyMode : SwipeModeSideEffect
+}
+
 @HiltViewModel
 class SwipeModeVM @Inject constructor(
     val useCases: SwipeModeUseCases,
-    private val adHandler: QuizAdHandler
+    private val adHandler: QuizAdHandler,
+    private val billingRepository: BillingRepository,
+    private val premiumStatusProvider: PremiumStatusProvider,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     private val _state = MutableStateFlow(SwipeModeState())
     val state = _state.asStateFlow()
+
+    private val _effect = MutableSharedFlow<SwipeModeSideEffect>()
+    val effect = _effect.asSharedFlow()
+
+    private val isTrial: Boolean = savedStateHandle.get<Boolean>("isTrial") ?: false
+    private var swipeModeProductDetails: AppProduct? = null
 
     private var questions: List<SwipeQuestion> = emptyList()
     private var currentQuestionIndex: Int = 0
@@ -44,14 +66,57 @@ class SwipeModeVM @Inject constructor(
     private var type2Errors: Int = 0
 
     init {
+        _state.update { it.copy(isTrial = isTrial) }
         adHandler.initialize(viewModelScope)
         viewModelScope.launch {
             useCases.getUserScore().collectLatest { score ->
                 _state.update { it.copy(userScore = score.score) }
             }
         }
+        
+        if (isTrial) {
+            setupTrial()
+        }
+
+        loadQuestions()
+    }
+
+    private fun setupTrial() {
+        billingRepository.startBillingConnection()
         viewModelScope.launch {
-            useCases.getShuffledSwipeQuestions().collectLatest { response ->
+            billingRepository.availableProducts.collectLatest { products ->
+                swipeModeProductDetails = products.find { it.id == BillingIds.ID_SWIPE_MODE }
+                _state.update { it.copy(swipeModePrice = swipeModeProductDetails?.price) }
+            }
+        }
+        viewModelScope.launch {
+            billingRepository.queryProducts(listOf(BillingIds.ID_SWIPE_MODE))
+        }
+        viewModelScope.launch {
+            useCases.getQuestionsCount(FirestoreCollections.SWIPE_QUESTIONS).collectLatest { count ->
+                _state.update { it.copy(totalSwipeModeQuestions = count) }
+            }
+        }
+        viewModelScope.launch {
+            premiumStatusProvider.ownedProductIds.collectLatest { ownedIds ->
+                val hasFull = ownedIds.contains(BillingIds.ID_FULL_PACKAGE)
+                val swipeUnlocked = hasFull || ownedIds.contains(BillingIds.ID_SWIPE_MODE)
+                if (swipeUnlocked && isTrial) {
+                    finishQuiz()
+                }
+            }
+        }
+    }
+
+    private fun loadQuestions() {
+        val questionsFlow = if (isTrial) {
+            useCases.getShuffledSwipeTrialQuestions()
+        } else {
+            useCases.getShuffledSwipeQuestions()
+        }
+
+        viewModelScope.launch {
+            questionsFlow.collectLatest { response ->
                 when (response) {
                     is Response.Error -> { _state.update { it.copy(responseState = ResponseState.Error(response.error)) }}
                     Response.Loading -> { _state.update { it.copy(responseState = ResponseState.Loading) }}
@@ -64,11 +129,34 @@ class SwipeModeVM @Inject constructor(
                             )
                         }
                         quizStartTime = System.currentTimeMillis()
+                        attachQuestionsListener()
                         displayQuestion()
                     }
                 }
             }
         }
+    }
+
+    private fun attachQuestionsListener() {
+        val updatesFlow = if (isTrial) {
+            useCases.getUpdatedSwipeTrialQuestions()
+        } else {
+            useCases.getUpdatedSwipeQuestions()
+        }
+
+        viewModelScope.launch {
+            updatesFlow.collectLatest { newQuestions ->
+                updateQuestionsData(newQuestions)
+            }
+        }
+    }
+
+    private fun updateQuestionsData(newQuestions: List<SwipeQuestion>) {
+        val updatedQuestions = questions.map { oldQuestion ->
+            newQuestions.find { it.id == oldQuestion.id } ?: oldQuestion
+        }
+        questions = updatedQuestions
+        displayQuestion()
     }
 
     fun onEvent(event: SwipeModeUIEvents) {
@@ -81,6 +169,22 @@ class SwipeModeVM @Inject constructor(
             is SwipeModeUIEvents.OnReportIssue -> reportIssue(event.description)
             SwipeModeUIEvents.OnAdDismissed -> handleAdDismissed()
             SwipeModeUIEvents.OnAdShown -> onAdShown()
+            SwipeModeUIEvents.BuyMode -> buySwipeMode()
+            is SwipeModeUIEvents.ExitTrial -> handleExitQuiz(event.navigateBack)
+        }
+    }
+
+    private fun buySwipeMode() {
+        if (swipeModeProductDetails != null) {
+            viewModelScope.launch {
+                _effect.emit(SwipeModeSideEffect.BuyMode)
+            }
+        }
+    }
+
+    fun launchBillingFlow(activity: Activity) {
+        swipeModeProductDetails?.let {
+            billingRepository.launchBillingFlow(activity, it)
         }
     }
 
@@ -125,7 +229,11 @@ class SwipeModeVM @Inject constructor(
 
     private fun displayQuestion() {
         if(questions.indices.contains(currentQuestionIndex).not()) {
-            setFinishedState()
+            if (isTrial && questions.isNotEmpty()) {
+                _state.update { it.copy(showTrialFinishedPanel = true) }
+            } else {
+                setFinishedState()
+            }
             return
         }
 

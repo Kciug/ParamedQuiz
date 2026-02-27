@@ -70,7 +70,7 @@ fun HomeScreen(
     onNavigateToUserPanel: () -> Unit,
     onNavigateToDailyExercise: () -> Unit,
     onNavigateToMainMode: () -> Unit,
-    onNavigateToSwipeMode: () -> Unit,
+    onNavigateToSwipeMode: (Boolean) -> Unit,
     onNavigateToTranslationMode: () -> Unit,
     onNavigateToDevOptions: () -> Unit
 ) {
@@ -165,7 +165,7 @@ fun HomeScreen(
             onDismiss = {
                 onEvent(HomeUIEvents.CloseSwipeModePurchaseSheet)
                 if (isDismissingMode == com.rafalskrzypczyk.billing.domain.BillingIds.ID_SWIPE_MODE) {
-                    onNavigateToSwipeMode()
+                    onNavigateToSwipeMode(false)
                     isDismissingMode = null
                 }
             },
@@ -175,7 +175,7 @@ fun HomeScreen(
                 }
             },
             onStartClick = { isDismissingMode = com.rafalskrzypczyk.billing.domain.BillingIds.ID_SWIPE_MODE },
-            onTryClick = { /* Implement try if needed */ },
+            onTryClick = { onNavigateToSwipeMode(true) },
             isUnlocked = state.isSwipeModeUnlocked,
             isPurchasing = state.isPurchasing,
             purchaseError = state.purchaseError,
@@ -309,7 +309,7 @@ fun HomeScreenQuizModesMenu(
     isTranslationModeUnlocked: Boolean,
     isSwipeModeUnlocked: Boolean,
     onNavigateToMainMode: () -> Unit,
-    onNavigateToSwipeMode: () -> Unit,
+    onNavigateToSwipeMode: (Boolean) -> Unit,
     onNavigateToTranslationMode: () -> Unit
 ) {
     Column(
@@ -328,7 +328,7 @@ fun HomeScreenQuizModesMenu(
             title = stringResource(com.rafalskrzypczyk.core.R.string.title_swipe_mode),
             description = stringResource(R.string.mode_swipe_desc),
             imageRes = com.rafalskrzypczyk.core.R.drawable.mediquiz_swipemode
-        ) { onNavigateToSwipeMode() }
+        ) { onNavigateToSwipeMode(false) }
         QuizModeButton(
             title = stringResource(com.rafalskrzypczyk.core.R.string.title_translation_mode),
             description = stringResource(R.string.mode_translation_desc),

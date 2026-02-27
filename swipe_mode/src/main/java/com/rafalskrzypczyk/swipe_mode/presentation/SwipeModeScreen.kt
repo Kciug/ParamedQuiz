@@ -1,5 +1,6 @@
 package com.rafalskrzypczyk.swipe_mode.presentation
 
+import android.app.Activity
 import android.content.res.Configuration
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
@@ -14,16 +15,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import android.app.Activity
-import androidx.compose.runtime.remember
 import com.rafalskrzypczyk.core.ads.AdManagerEntryPoint
-import dagger.hilt.android.EntryPointAccessors
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.BaseQuizScreen
 import com.rafalskrzypczyk.core.composables.Dimens
@@ -32,14 +31,32 @@ import com.rafalskrzypczyk.core.composables.Loading
 import com.rafalskrzypczyk.core.composables.PreviewContainer
 import com.rafalskrzypczyk.core.composables.ReportIssueDialog
 import com.rafalskrzypczyk.core.composables.RotateDevicePrompt
+import com.rafalskrzypczyk.swipe_mode.presentation.components.SwipeModeTrialFinishedPanel
+import dagger.hilt.android.EntryPointAccessors
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun SwipeModeScreen(
     state: SwipeModeState,
+    effect: SharedFlow<SwipeModeSideEffect>,
     onEvent: (SwipeModeUIEvents) -> Unit,
     onNavigateBack: () -> Unit,
+    onLaunchBilling: (Activity) -> Unit
 ) {
     val context = LocalContext.current
+
+    LaunchedEffect(effect) {
+        effect.collectLatest { sideEffect ->
+            when(sideEffect) {
+                SwipeModeSideEffect.BuyMode -> {
+                    val activity = context as? Activity
+                    activity?.let { onLaunchBilling(it) }
+                }
+            }
+        }
+    }
+
     val successMsg = stringResource(com.rafalskrzypczyk.core.R.string.report_issue_success)
 
     val adManager = remember {
@@ -98,26 +115,36 @@ fun SwipeModeScreen(
     ) { paddingValues, _ ->
         val modifier = Modifier.padding(paddingValues)
 
-        AnimatedContent(
-            targetState = state.responseState,
-            transitionSpec = {
-                scaleIn() togetherWith scaleOut()
-            },
-            label = "responseTransition"
-        ) { responseState ->
-            when(responseState) {
-                ResponseState.Idle -> {}
-                ResponseState.Loading -> Loading()
-                is ResponseState.Error -> ErrorDialog(responseState.message) { onNavigateBack() }
-                ResponseState.Success -> {
-                    if(isLandscape) {
-                        RotateDevicePrompt(modifier = modifier)
-                    } else {
-                        SwipeModeScreenContent(
-                            modifier = modifier,
-                            state = state,
-                            onEvent = onEvent
-                        )
+        if (state.showTrialFinishedPanel) {
+            Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                SwipeModeTrialFinishedPanel(
+                    onBuyClick = { onEvent(SwipeModeUIEvents.BuyMode) },
+                    onExitClick = { onEvent(SwipeModeUIEvents.ExitTrial(onNavigateBack)) },
+                    totalQuestions = state.totalSwipeModeQuestions
+                )
+            }
+        } else {
+            AnimatedContent(
+                targetState = state.responseState,
+                transitionSpec = {
+                    scaleIn() togetherWith scaleOut()
+                },
+                label = "responseTransition"
+            ) { responseState ->
+                when(responseState) {
+                    ResponseState.Idle -> {}
+                    ResponseState.Loading -> Loading()
+                    is ResponseState.Error -> ErrorDialog(responseState.message) { onNavigateBack() }
+                    ResponseState.Success -> {
+                        if(isLandscape) {
+                            RotateDevicePrompt(modifier = modifier)
+                        } else {
+                            SwipeModeScreenContent(
+                                modifier = modifier,
+                                state = state,
+                                onEvent = onEvent
+                            )
+                        }
                     }
                 }
             }
@@ -179,14 +206,11 @@ fun SwipeModeScreenContent(
 private fun SwipeModeScreenPreview() {
     PreviewContainer {
         SwipeModeScreen(
-            state = SwipeModeState(
-                responseState = ResponseState.Success,
-                questionsPair = listOf(
-                    SwipeQuestionUIModel(0, "Przykładowe pytanie prawda/fałsz")
-                )
-            ),
+            state = SwipeModeState(),
+            effect = kotlinx.coroutines.flow.MutableSharedFlow(),
             onEvent = {},
-            onNavigateBack = {}
+            onNavigateBack = {},
+            onLaunchBilling = {}
         )
     }
 }

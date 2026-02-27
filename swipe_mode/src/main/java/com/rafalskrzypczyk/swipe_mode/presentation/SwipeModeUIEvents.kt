@@ -9,4 +9,7 @@ sealed interface SwipeModeUIEvents {
     data class OnReportIssue(val description: String) : SwipeModeUIEvents
     object OnAdDismissed : SwipeModeUIEvents
     object OnAdShown : SwipeModeUIEvents
+
+    object BuyMode : SwipeModeUIEvents
+    data class ExitTrial(val navigateBack: () -> Unit) : SwipeModeUIEvents
 }

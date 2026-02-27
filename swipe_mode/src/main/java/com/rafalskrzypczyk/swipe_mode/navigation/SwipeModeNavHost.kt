@@ -6,6 +6,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.background
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -22,10 +23,11 @@ import kotlinx.serialization.Serializable
 @Composable
 fun SwipeModeNavHost(
     onExit: () -> Unit,
-    showOnboarding: Boolean
+    showOnboarding: Boolean,
+    isTrial: Boolean = false
 ) {
     val navController = rememberNavController()
-    val startDest: Any = remember { if (showOnboarding) Onboarding else SwipeQuiz }
+    val startDest: Any = remember(showOnboarding, isTrial) { if (showOnboarding) Onboarding else SwipeQuiz(isTrial) }
 
     NavHost(
         modifier = Modifier.background(MaterialTheme.colorScheme.background),
@@ -62,7 +64,7 @@ fun SwipeModeNavHost(
                 onNavigateBack = onExit,
                 onFinishOnboarding = {
                     viewModel.finishOnboarding {
-                        navController.navigate(SwipeQuiz) {
+                        navController.navigate(SwipeQuiz(isTrial)) {
                             popUpTo(Onboarding) { inclusive = true }
                         }
                     }
@@ -72,12 +74,14 @@ fun SwipeModeNavHost(
 
         composable<SwipeQuiz> {
             val viewModel = hiltViewModel<SwipeModeVM>()
-            val state = viewModel.state.collectAsStateWithLifecycle()
+            val state by viewModel.state.collectAsStateWithLifecycle()
 
             SwipeModeScreen(
-                state = state.value,
+                state = state,
+                effect = viewModel.effect,
                 onEvent = viewModel::onEvent,
-                onNavigateBack = onExit
+                onNavigateBack = onExit,
+                onLaunchBilling = { activity -> viewModel.launchBillingFlow(activity) }
             )
         }
     }
@@ -87,4 +91,4 @@ fun SwipeModeNavHost(
 object Onboarding
 
 @Serializable
-object SwipeQuiz
+data class SwipeQuiz(val isTrial: Boolean = false)

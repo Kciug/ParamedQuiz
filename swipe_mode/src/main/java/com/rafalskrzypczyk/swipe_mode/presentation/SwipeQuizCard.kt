@@ -208,7 +208,7 @@ fun SwipeQuestionDecisionIconButton(
 @Composable
 @Preview
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
-private fun SwipeQuizCard() {
+private fun SwipeQuizCardPreview() {
     PreviewContainer {
         SwipeQuestionCard(
             question = SwipeQuestionUIModel(
