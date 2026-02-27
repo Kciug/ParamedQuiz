@@ -285,7 +285,10 @@ class SwipeModeVM @Inject constructor(
     }
 
     private fun finalizeQuiz() {
-        _state.update { it.copy(isLastAnswerFeedbackVisible = false) }
+        _state.update { it.copy(
+            isLastAnswerFeedbackVisible = false,
+            answerResult = SwipeModeAnswerResult(result = SwipeQuizResult.NONE)
+        ) }
         if (isTrialActive && questions.isNotEmpty()) {
             _state.update { it.copy(showTrialFinishedPanel = true) }
         } else {
