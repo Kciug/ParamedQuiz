@@ -77,6 +77,7 @@ fun HomeScreen(
     var showDailyExerciseAlreadyDoneAlert by remember { mutableStateOf(false) }
     var showRevisionsUnavailableAlert by remember { mutableStateOf(false) }
     var isDismissingMode by remember { mutableStateOf<String?>(null) }
+    var isTrialMode by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val activity = remember(context) { context as? Activity }
@@ -129,7 +130,10 @@ fun HomeScreen(
                     onEvent(HomeUIEvents.BuyTranslationMode(activity))
                 }
             },
-            onStartClick = { isDismissingMode = com.rafalskrzypczyk.billing.domain.BillingIds.ID_TRANSLATION_MODE },
+            onStartClick = { 
+                isTrialMode = false
+                isDismissingMode = com.rafalskrzypczyk.billing.domain.BillingIds.ID_TRANSLATION_MODE 
+            },
             isUnlocked = state.isTranslationModeUnlocked,
             isPurchasing = state.isPurchasing,
             purchaseError = state.purchaseError,
@@ -165,8 +169,9 @@ fun HomeScreen(
             onDismiss = {
                 onEvent(HomeUIEvents.CloseSwipeModePurchaseSheet)
                 if (isDismissingMode == com.rafalskrzypczyk.billing.domain.BillingIds.ID_SWIPE_MODE) {
-                    onNavigateToSwipeMode(false)
+                    onNavigateToSwipeMode(isTrialMode)
                     isDismissingMode = null
+                    isTrialMode = false
                 }
             },
             onBuyClick = {
@@ -174,8 +179,14 @@ fun HomeScreen(
                     onEvent(HomeUIEvents.BuySwipeMode(activity))
                 }
             },
-            onStartClick = { isDismissingMode = com.rafalskrzypczyk.billing.domain.BillingIds.ID_SWIPE_MODE },
-            onTryClick = { onNavigateToSwipeMode(true) },
+            onStartClick = {
+                isTrialMode = false
+                isDismissingMode = com.rafalskrzypczyk.billing.domain.BillingIds.ID_SWIPE_MODE
+            },
+            onTryClick = {
+                isTrialMode = true
+                isDismissingMode = com.rafalskrzypczyk.billing.domain.BillingIds.ID_SWIPE_MODE
+            },
             isUnlocked = state.isSwipeModeUnlocked,
             isPurchasing = state.isPurchasing,
             purchaseError = state.purchaseError,
