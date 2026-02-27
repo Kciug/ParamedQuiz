@@ -17,6 +17,7 @@ import com.rafalskrzypczyk.firestore.data.FirestoreCollections
 import com.rafalskrzypczyk.swipe_mode.domain.SwipeModeUseCases
 import com.rafalskrzypczyk.swipe_mode.domain.SwipeQuestion
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -44,7 +45,7 @@ class SwipeModeVM @Inject constructor(
     private val _effect = MutableSharedFlow<SwipeModeSideEffect>()
     val effect = _effect.asSharedFlow()
 
-    private val isTrial: Boolean = savedStateHandle.get<Boolean>("isTrial") ?: false
+    private var isTrialActive: Boolean = savedStateHandle.get<Boolean>("isTrial") ?: false
     private var swipeModeProductDetails: AppProduct? = null
 
     private var questions: List<SwipeQuestion> = emptyList()
@@ -56,6 +57,9 @@ class SwipeModeVM @Inject constructor(
     private var earnedPoints: Int = 0
     private var isStreakUpdatedInSession = false
 
+    private var loadQuestionsJob: Job? = null
+    private var questionsListenerJob: Job? = null
+
     // Timing stats
     private var quizStartTime: Long = 0L
     private var currentQuestionStartTime: Long = 0L
@@ -66,7 +70,7 @@ class SwipeModeVM @Inject constructor(
     private var type2Errors: Int = 0
 
     init {
-        _state.update { it.copy(isTrial = isTrial) }
+        _state.update { it.copy(isTrial = isTrialActive) }
         adHandler.initialize(viewModelScope)
         viewModelScope.launch {
             useCases.getUserScore().collectLatest { score ->
@@ -74,7 +78,7 @@ class SwipeModeVM @Inject constructor(
             }
         }
         
-        if (isTrial) {
+        if (isTrialActive) {
             setupTrial()
         }
 
@@ -101,21 +105,32 @@ class SwipeModeVM @Inject constructor(
             premiumStatusProvider.ownedProductIds.collectLatest { ownedIds ->
                 val hasFull = ownedIds.contains(BillingIds.ID_FULL_PACKAGE)
                 val swipeUnlocked = hasFull || ownedIds.contains(BillingIds.ID_SWIPE_MODE)
-                if (swipeUnlocked && isTrial) {
-                    finishQuiz()
+                if (swipeUnlocked && isTrialActive) {
+                    unlockFullMode()
                 }
             }
         }
     }
 
-    private fun loadQuestions() {
-        val questionsFlow = if (isTrial) {
-            useCases.getShuffledSwipeTrialQuestions()
-        } else {
-            useCases.getShuffledSwipeQuestions()
-        }
+    private fun unlockFullMode() {
+        isTrialActive = false
+        _state.update { it.copy(
+            isTrial = false,
+            showTrialFinishedPanel = false,
+            responseState = ResponseState.Loading
+        ) }
+        loadQuestions()
+    }
 
-        viewModelScope.launch {
+    private fun loadQuestions() {
+        loadQuestionsJob?.cancel()
+        loadQuestionsJob = viewModelScope.launch {
+            val questionsFlow = if (isTrialActive) {
+                useCases.getShuffledSwipeTrialQuestions()
+            } else {
+                useCases.getShuffledSwipeQuestions()
+            }
+
             questionsFlow.collectLatest { response ->
                 when (response) {
                     is Response.Error -> { _state.update { it.copy(responseState = ResponseState.Error(response.error)) }}
@@ -128,9 +143,9 @@ class SwipeModeVM @Inject constructor(
                                 questionsCount = questions.size
                             )
                         }
-                        quizStartTime = System.currentTimeMillis()
-                        attachQuestionsListener()
+                        if (quizStartTime == 0L) quizStartTime = System.currentTimeMillis()
                         displayQuestion()
+                        attachQuestionsListener()
                     }
                 }
             }
@@ -138,13 +153,14 @@ class SwipeModeVM @Inject constructor(
     }
 
     private fun attachQuestionsListener() {
-        val updatesFlow = if (isTrial) {
-            useCases.getUpdatedSwipeTrialQuestions()
-        } else {
-            useCases.getUpdatedSwipeQuestions()
-        }
+        questionsListenerJob?.cancel()
+        questionsListenerJob = viewModelScope.launch {
+            val updatesFlow = if (isTrialActive) {
+                useCases.getUpdatedSwipeTrialQuestions()
+            } else {
+                useCases.getUpdatedSwipeQuestions()
+            }
 
-        viewModelScope.launch {
             updatesFlow.collectLatest { newQuestions ->
                 updateQuestionsData(newQuestions)
             }
@@ -229,7 +245,7 @@ class SwipeModeVM @Inject constructor(
 
     private fun displayQuestion() {
         if(questions.indices.contains(currentQuestionIndex).not()) {
-            if (isTrial && questions.isNotEmpty()) {
+            if (isTrialActive && questions.isNotEmpty()) {
                 _state.update { it.copy(showTrialFinishedPanel = true) }
             } else {
                 setFinishedState()

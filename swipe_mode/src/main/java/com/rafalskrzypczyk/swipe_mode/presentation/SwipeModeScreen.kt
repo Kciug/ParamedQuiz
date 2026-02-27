@@ -4,6 +4,8 @@ import android.app.Activity
 import android.content.res.Configuration
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
@@ -115,35 +117,43 @@ fun SwipeModeScreen(
     ) { paddingValues, _ ->
         val modifier = Modifier.padding(paddingValues)
 
-        if (state.showTrialFinishedPanel) {
-            Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                SwipeModeTrialFinishedPanel(
-                    onBuyClick = { onEvent(SwipeModeUIEvents.BuyMode) },
-                    onExitClick = { onEvent(SwipeModeUIEvents.ExitTrial(onNavigateBack)) },
-                    totalQuestions = state.totalSwipeModeQuestions
-                )
-            }
-        } else {
-            AnimatedContent(
-                targetState = state.responseState,
-                transitionSpec = {
-                    scaleIn() togetherWith scaleOut()
-                },
-                label = "responseTransition"
-            ) { responseState ->
-                when(responseState) {
-                    ResponseState.Idle -> {}
-                    ResponseState.Loading -> Loading()
-                    is ResponseState.Error -> ErrorDialog(responseState.message) { onNavigateBack() }
-                    ResponseState.Success -> {
-                        if(isLandscape) {
-                            RotateDevicePrompt(modifier = modifier)
-                        } else {
-                            SwipeModeScreenContent(
-                                modifier = modifier,
-                                state = state,
-                                onEvent = onEvent
-                            )
+        AnimatedContent(
+            targetState = state.showTrialFinishedPanel,
+            transitionSpec = {
+                (fadeIn() + scaleIn(initialScale = 0.9f)) togetherWith (fadeOut() + scaleOut(targetScale = 0.9f))
+            },
+            label = "trialFinishedTransition"
+        ) { isTrialFinished ->
+            if (isTrialFinished) {
+                Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    SwipeModeTrialFinishedPanel(
+                        onBuyClick = { onEvent(SwipeModeUIEvents.BuyMode) },
+                        onExitClick = { onEvent(SwipeModeUIEvents.ExitTrial(onNavigateBack)) },
+                        totalQuestions = state.totalSwipeModeQuestions
+                    )
+                }
+            } else {
+                AnimatedContent(
+                    targetState = state.responseState,
+                    transitionSpec = {
+                        scaleIn() togetherWith scaleOut()
+                    },
+                    label = "responseTransition"
+                ) { responseState ->
+                    when(responseState) {
+                        ResponseState.Idle -> {}
+                        ResponseState.Loading -> Loading()
+                        is ResponseState.Error -> ErrorDialog(responseState.message) { onNavigateBack() }
+                        ResponseState.Success -> {
+                            if(isLandscape) {
+                                RotateDevicePrompt(modifier = modifier)
+                            } else {
+                                SwipeModeScreenContent(
+                                    modifier = modifier,
+                                    state = state,
+                                    onEvent = onEvent
+                               )
+                            }
                         }
                     }
                 }

@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.LibraryBooks
-import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Swipe
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -31,7 +31,6 @@ import com.rafalskrzypczyk.core.composables.TextCaption
 import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.composables.TextScore
 import com.rafalskrzypczyk.core.composables.TextTitle
-import com.rafalskrzypczyk.core.ui.theme.MQGreen
 
 @Composable
 fun SwipeModeTrialFinishedPanel(
@@ -56,9 +55,9 @@ fun SwipeModeTrialFinishedPanel(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
-                imageVector = Icons.Default.CheckCircle,
+                imageVector = Icons.Default.Swipe,
                 contentDescription = null,
-                tint = MQGreen,
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(64.dp)
             )
 
