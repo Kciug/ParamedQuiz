@@ -128,7 +128,11 @@ class TranslationQuizViewModel @Inject constructor(
         val isCorrect = currentQ.possibleTranslations.any { it.equals(userAnswer, ignoreCase = true) }
 
         val updatedQuestions = currentState.questions.toMutableList()
-        updatedQuestions[index] = currentQ.copy(isAnswered = true, isCorrect = isCorrect)
+        updatedQuestions[index] = currentQ.copy(
+            userAnswer = userAnswer,
+            isAnswered = true,
+            isCorrect = isCorrect
+        )
 
         val points = useCases.updateScoreWithQuestion(currentQ.id, isCorrect)
         earnedPointsSession += points
@@ -191,8 +195,8 @@ class TranslationQuizViewModel @Inject constructor(
     private fun TranslationQuestionDTO.toUIM(): TranslationQuestionUIM {
         return TranslationQuestionUIM(
             id = this.id,
-            phrase = this.phrase,
-            possibleTranslations = this.translations
+            phrase = this.phrase.trim(),
+            possibleTranslations = this.translations.map { it.trim() }.filter { it.isNotBlank() }
         )
     }
 }
