@@ -98,8 +98,7 @@ class HomeScreenVM @Inject constructor(
                     val user = response.data
                     _state.update { 
                         it.copy(
-                            userName = user?.name,
-                            isPremium = user?.isPremium ?: false
+                            userName = user?.name
                         ) 
                     }
                 }
@@ -122,6 +121,7 @@ class HomeScreenVM @Inject constructor(
 
                 _state.update { 
                     it.copy(
+                        isPremium = hasFull,
                         isTranslationModeUnlocked = translationUnlocked,
                         isSwipeModeUnlocked = swipeUnlocked,
                         isPurchasing = false

@@ -10,18 +10,22 @@ import com.rafalskrzypczyk.home_screen.domain.models.next
 import com.rafalskrzypczyk.home_screen.domain.models.previous
 import com.rafalskrzypczyk.home_screen.domain.user_page.UserPageUseCases
 import com.rafalskrzypczyk.home_screen.presentation.user_page.statistics.BestWorstQuestionsUIM
+import com.rafalskrzypczyk.billing.domain.BillingIds
+import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class UserPageVM @Inject constructor(
-    private val useCases: UserPageUseCases
+    private val useCases: UserPageUseCases,
+    private val premiumStatusProvider: PremiumStatusProvider
 ) : ViewModel() {
     companion object {
         private const val QUESTIONS_TO_SHOW = 5
@@ -47,12 +51,18 @@ class UserPageVM @Inject constructor(
                 it.copy(
                     isUserLoggedIn = true,
                     userName = user.name,
-                    userEmail = user.email,
-                    isPremium = user.isPremium
+                    userEmail = user.email
                 )
             }
         } else {
             _state.update { it.copy(isUserLoggedIn = false) }
+        }
+
+        viewModelScope.launch {
+            premiumStatusProvider.ownedProductIds.collectLatest { ownedIds ->
+                val isPremium = ownedIds.contains(BillingIds.ID_FULL_PACKAGE)
+                _state.update { it.copy(isPremium = isPremium) }
+            }
         }
         
         getScoreData()

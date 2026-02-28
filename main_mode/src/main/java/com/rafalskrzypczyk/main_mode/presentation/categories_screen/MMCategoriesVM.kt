@@ -65,10 +65,16 @@ class MMCategoriesVM @Inject constructor(
                         userScore = userScore.score,
                         userStreak = userScore.streak,
                         userStreakState = useCases.getStreakState(userScore.lastStreakUpdateDate),
-                        isUserLoggedIn = useCases.checkIsUserLoggedIn(),
-                        isPremium = user?.isPremium ?: false
+                        isUserLoggedIn = useCases.checkIsUserLoggedIn()
                     )
                 }
+            }
+        }
+
+        viewModelScope.launch {
+            premiumStatusProvider.ownedProductIds.collectLatest { ownedIds ->
+                val hasFull = ownedIds.contains(BillingIds.ID_FULL_PACKAGE)
+                _state.update { it.copy(isPremium = hasFull) }
             }
         }
 

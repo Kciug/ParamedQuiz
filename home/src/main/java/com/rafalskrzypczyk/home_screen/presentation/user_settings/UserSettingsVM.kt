@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.home_screen.domain.use_cases.UserSettingsUseCases
+import com.rafalskrzypczyk.billing.domain.BillingIds
+import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,7 +18,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class UserSettingsVM @Inject constructor(
-    private val useCases: UserSettingsUseCases
+    private val useCases: UserSettingsUseCases,
+    private val premiumStatusProvider: PremiumStatusProvider
 ) : ViewModel() {
     private val _state = MutableStateFlow(UserSettingsState())
     val state = _state.asStateFlow()
@@ -56,7 +59,6 @@ class UserSettingsVM @Inject constructor(
                                     responseState = ResponseState.Idle,
                                     userName = userData.name,
                                     userEmail = userData.email,
-                                    isPremium = userData.isPremium,
                                     accountType = userData.authenticationMethod,
                                     isAnonymous = false
                                 )
@@ -73,6 +75,13 @@ class UserSettingsVM @Inject constructor(
                         }
                     }
                 }
+            }
+        }
+
+        viewModelScope.launch {
+            premiumStatusProvider.ownedProductIds.collectLatest { ownedIds ->
+                val isPremium = ownedIds.contains(BillingIds.ID_FULL_PACKAGE)
+                _state.update { it.copy(isPremium = isPremium) }
             }
         }
     }

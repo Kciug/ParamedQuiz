@@ -183,7 +183,7 @@ abstract class BaseQuizVM (
     private fun displayQuestion() {
         val q = quizEngine.getCurrentQuestion()
         if (q == null) {
-            _state.update { it.copy(isQuizFinished = true) }
+            setFinishedState()
             return
         }
         
@@ -230,7 +230,7 @@ abstract class BaseQuizVM (
         }
     }
 
-    private fun finishQuiz() {
+    protected open fun finishQuiz() {
         useCases.incrementCompletedQuizzes()
         _state.update { it.copy(
             showAd = false,
