@@ -39,7 +39,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
-        adManager.initialize(this)
         
         if (sharedPreferences.getInstallDate() == 0L) {
             sharedPreferences.setInstallDate(System.currentTimeMillis())
@@ -71,6 +70,8 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
+        adManager.initialize(this)
 
         splashScreen.setKeepOnScreenCondition {
             viewModel.state.value.isLoading
