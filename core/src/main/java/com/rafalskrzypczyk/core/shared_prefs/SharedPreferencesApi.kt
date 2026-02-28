@@ -34,6 +34,9 @@ interface SharedPreferencesApi {
     fun isAppRated(): Boolean
     fun setAppRated(rated: Boolean)
 
+    fun isRatingPromptDisabled(): Boolean
+    fun setRatingPromptDisabled(disabled: Boolean)
+
     fun getLastRatingPromptDate(): Long
     fun setLastRatingPromptDate(timestamp: Long)
 }

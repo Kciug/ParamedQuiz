@@ -8,7 +8,7 @@ class CheckAppRatingEligibilityUC @Inject constructor(
     private val sharedPrefs: SharedPreferencesApi
 ) {
     operator fun invoke(): Boolean {
-        if (sharedPrefs.isAppRated()) return false
+        if (sharedPrefs.isAppRated() || sharedPrefs.isRatingPromptDisabled()) return false
 
         val installDate = sharedPrefs.getInstallDate()
         val daysSinceInstall = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis() - installDate)
@@ -19,6 +19,8 @@ class CheckAppRatingEligibilityUC @Inject constructor(
 
         val lastPromptDate = sharedPrefs.getLastRatingPromptDate()
         val daysSinceLastPrompt = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis() - lastPromptDate)
-        return daysSinceLastPrompt >= 14
+        if (daysSinceLastPrompt < 14) return false
+
+        return true
     }
 }

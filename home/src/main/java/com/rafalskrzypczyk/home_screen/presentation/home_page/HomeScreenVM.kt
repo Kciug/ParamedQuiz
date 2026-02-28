@@ -67,6 +67,8 @@ class HomeScreenVM @Inject constructor(
             HomeUIEvents.OnDismissRating -> dismissRating()
             HomeUIEvents.OnRateStore -> rateStore()
             HomeUIEvents.OnSendFeedback -> sendFeedback()
+            HomeUIEvents.OnNeverAskAgain -> neverAskAgain()
+            HomeUIEvents.OnBackToRating -> backToRating()
         }
     }
 
@@ -171,6 +173,15 @@ class HomeScreenVM @Inject constructor(
         viewModelScope.launch {
             _effect.emit(HomeSideEffect.OpenFeedbackMail)
         }
+    }
+
+    private fun neverAskAgain() {
+        useCases.disableRatingPrompt()
+        _state.update { it.copy(ratingPromptState = RatingPromptState.HIDDEN) }
+    }
+
+    private fun backToRating() {
+        _state.update { it.copy(ratingPromptState = RatingPromptState.QUESTION) }
     }
     
     private fun openPurchaseSheet(modeId: String) {

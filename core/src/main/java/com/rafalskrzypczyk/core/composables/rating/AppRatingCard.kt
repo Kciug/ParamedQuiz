@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.RateReview
@@ -42,6 +43,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.rafalskrzypczyk.core.R
 import com.rafalskrzypczyk.core.composables.ButtonPrimary
+import com.rafalskrzypczyk.core.composables.ButtonTertiary
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.ui.theme.MQRed
 import com.rafalskrzypczyk.core.ui.theme.MQYellow
@@ -53,7 +55,9 @@ fun AppRatingCard(
     onRate: (Int) -> Unit,
     onDismiss: () -> Unit,
     onStoreClick: () -> Unit,
-    onFeedbackClick: () -> Unit
+    onFeedbackClick: () -> Unit,
+    onNeverAskAgain: () -> Unit,
+    onBack: () -> Unit
 ) {
     if (state == RatingPromptState.HIDDEN) return
 
@@ -67,6 +71,23 @@ fun AppRatingCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
+            if (state == RatingPromptState.POSITIVE_FEEDBACK || state == RatingPromptState.NEGATIVE_FEEDBACK) {
+                IconButton(
+                    onClick = onBack,
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(Dimens.DEFAULT_PADDING / 2)
+                        .size(24.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+
             IconButton(
                 onClick = onDismiss,
                 modifier = Modifier
@@ -95,7 +116,7 @@ fun AppRatingCard(
                     label = "ratingStageTransition"
                 ) { currentState ->
                     when (currentState) {
-                        RatingPromptState.QUESTION -> RatingQuestionStep(onRate)
+                        RatingPromptState.QUESTION -> RatingQuestionStep(onRate, onNeverAskAgain)
                         RatingPromptState.POSITIVE_FEEDBACK -> PositiveStep(onStoreClick)
                         RatingPromptState.NEGATIVE_FEEDBACK -> NegativeStep(onFeedbackClick)
                         else -> Unit
@@ -107,45 +128,56 @@ fun AppRatingCard(
 }
 
 @Composable
-private fun RatingQuestionStep(onRate: (Int) -> Unit) {
+private fun RatingQuestionStep(
+    onRate: (Int) -> Unit,
+    onNeverAskAgain: () -> Unit
+) {
     var rating by remember { mutableIntStateOf(0) }
 
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = Icons.Default.RateReview,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(40.dp)
-        )
-        Spacer(modifier = Modifier.width(Dimens.ELEMENTS_SPACING))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = stringResource(R.string.rating_question_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.RateReview,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(40.dp)
             )
-            Spacer(modifier = Modifier.height(4.dp))
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(2.dp)
-            ) {
-                (1..5).forEach { index ->
-                    Icon(
-                        imageVector = if (index <= rating) Icons.Default.Star else Icons.Outlined.StarOutline,
-                        contentDescription = null,
-                        tint = MQYellow,
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clickable {
-                                rating = index
-                                onRate(index)
-                            }
-                    )
+            Spacer(modifier = Modifier.width(Dimens.ELEMENTS_SPACING))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.rating_question_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
+                    (1..5).forEach { index ->
+                        Icon(
+                            imageVector = if (index <= rating) Icons.Default.Star else Icons.Outlined.StarOutline,
+                            contentDescription = null,
+                            tint = MQYellow,
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clickable {
+                                    rating = index
+                                    onRate(index)
+                                }
+                        )
+                    }
                 }
             }
         }
+        Spacer(modifier = Modifier.height(Dimens.SMALL_PADDING))
+        ButtonTertiary(
+            title = stringResource(R.string.btn_never_ask_again),
+            onClick = onNeverAskAgain,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        )
     }
 }
 
@@ -194,7 +226,7 @@ private fun FeedbackLayout(
                 modifier = Modifier.size(40.dp)
             )
             Spacer(modifier = Modifier.width(Dimens.ELEMENTS_SPACING))
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,

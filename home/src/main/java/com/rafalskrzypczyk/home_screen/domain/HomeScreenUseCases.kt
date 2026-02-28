@@ -1,6 +1,7 @@
 package com.rafalskrzypczyk.home_screen.domain
 
 import com.rafalskrzypczyk.core.domain.use_cases.CheckAppRatingEligibilityUC
+import com.rafalskrzypczyk.core.domain.use_cases.DisableRatingPromptUC
 import com.rafalskrzypczyk.core.domain.use_cases.DismissAppRatingUC
 import com.rafalskrzypczyk.core.domain.use_cases.SetAppRatedUC
 import com.rafalskrzypczyk.core.user_management.CheckIsUserLoggedInUC
@@ -19,5 +20,6 @@ data class HomeScreenUseCases @Inject constructor(
     val getQuestionsCount: GetQuestionsCountUC,
     val checkAppRatingEligibility: CheckAppRatingEligibilityUC,
     val setAppRated: SetAppRatedUC,
-    val dismissAppRating: DismissAppRatingUC
+    val dismissAppRating: DismissAppRatingUC,
+    val disableRatingPrompt: DisableRatingPromptUC
 )

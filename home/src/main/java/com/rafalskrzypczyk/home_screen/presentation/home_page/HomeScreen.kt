@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -51,7 +52,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.core.net.toUri
 import com.rafalskrzypczyk.core.composables.BasePurchaseBottomSheet
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.InfoDialog
@@ -59,6 +59,7 @@ import com.rafalskrzypczyk.core.composables.PurchaseFeature
 import com.rafalskrzypczyk.core.composables.PurchaseModeDetails
 import com.rafalskrzypczyk.core.composables.TextHeadline
 import com.rafalskrzypczyk.core.composables.rating.AppRatingCard
+import com.rafalskrzypczyk.core.composables.rating.RatingPromptState
 import com.rafalskrzypczyk.core.composables.top_bars.MainTopBar
 import com.rafalskrzypczyk.core.ui.theme.MQGreen
 import com.rafalskrzypczyk.core.ui.theme.MQYellow
@@ -271,7 +272,7 @@ fun HomeScreen(
             ) {
                 Column {
                     TextHeadline(
-                        text = stringResource(R.string.title_rating_section),
+                        text = stringResource(com.rafalskrzypczyk.home.R.string.title_rating_section),
                         modifier = Modifier.padding(start = Dimens.DEFAULT_PADDING, top = Dimens.DEFAULT_PADDING)
                     )
                     AppRatingCard(
@@ -279,7 +280,9 @@ fun HomeScreen(
                         onRate = { rating -> onEvent(HomeUIEvents.OnRatingSelected(rating)) },
                         onDismiss = { onEvent(HomeUIEvents.OnDismissRating) },
                         onStoreClick = { onEvent(HomeUIEvents.OnRateStore) },
-                        onFeedbackClick = { onEvent(HomeUIEvents.OnSendFeedback) }
+                        onFeedbackClick = { onEvent(HomeUIEvents.OnSendFeedback) },
+                        onNeverAskAgain = { onEvent(HomeUIEvents.OnNeverAskAgain) },
+                        onBack = { onEvent(HomeUIEvents.OnBackToRating) }
                     )
                 }
             }
@@ -323,10 +326,9 @@ fun HomeScreen(
 }
 
 private fun sendFeedbackEmail(context: Context) {
-    val contactMail = context.getString(com.rafalskrzypczyk.core.R.string.contact_mail)
     val intent = Intent(Intent.ACTION_SENDTO).apply {
-        data = "mailto:${contactMail}".toUri()
-        putExtra(Intent.EXTRA_SUBJECT, context.getString(com.rafalskrzypczyk.core.R.string.feedback_mail_topic))
+        data = Uri.parse("mailto:support@paramedquiz.com")
+        putExtra(Intent.EXTRA_SUBJECT, "Feedback - ParamedQuiz Android")
     }
     try {
         context.startActivity(Intent.createChooser(intent, "Wyślij opinię…"))

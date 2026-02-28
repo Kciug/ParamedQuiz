@@ -19,6 +19,7 @@ class SharedPreferencesService @Inject constructor(
         const val KEY_INSTALL_DATE = "install_date"
         const val KEY_COMPLETED_QUIZZES_COUNT = "completed_quizzes_count"
         const val KEY_APP_RATED = "app_rated"
+        const val KEY_RATING_PROMPT_DISABLED = "rating_prompt_disabled"
         const val KEY_LAST_RATING_PROMPT_DATE = "last_rating_prompt_date"
 
         const val DEFAULT_STRING_VALUE = ""
@@ -134,6 +135,16 @@ class SharedPreferencesService @Inject constructor(
     override fun setAppRated(rated: Boolean) {
         sharedPreferences.edit {
             putBoolean(KEY_APP_RATED, rated)
+        }
+    }
+
+    override fun isRatingPromptDisabled(): Boolean {
+        return sharedPreferences.getBoolean(KEY_RATING_PROMPT_DISABLED, false)
+    }
+
+    override fun setRatingPromptDisabled(disabled: Boolean) {
+        sharedPreferences.edit {
+            putBoolean(KEY_RATING_PROMPT_DISABLED, disabled)
         }
     }
 

@@ -16,6 +16,8 @@ sealed interface HomeUIEvents {
     data object OnDismissRating : HomeUIEvents
     data object OnRateStore : HomeUIEvents
     data object OnSendFeedback : HomeUIEvents
+    data object OnNeverAskAgain : HomeUIEvents
+    data object OnBackToRating : HomeUIEvents
 }
 
 sealed interface HomeSideEffect {
