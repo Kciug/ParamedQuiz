@@ -134,4 +134,5 @@
     <string name="feature_speed_desc">Odpowiadaj szybko na pytania prawda/fałsz.</string>
     <string name="feature_combo_title">Buduj combo</string>
     <string name="feature_combo_desc">Zdobywaj punkty za serie poprawnych odpowiedzi.</string>
+    <string name="title_rating_section">Oceń nas!</string>
 </resources>

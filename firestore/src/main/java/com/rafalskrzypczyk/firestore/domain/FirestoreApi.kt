@@ -2,6 +2,7 @@ package com.rafalskrzypczyk.firestore.domain
 
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.firestore.domain.models.CategoryDTO
+import com.rafalskrzypczyk.firestore.domain.models.FeedbackDTO
 import com.rafalskrzypczyk.firestore.domain.models.IssueReportDTO
 import com.rafalskrzypczyk.firestore.domain.models.QuestionDTO
 import com.rafalskrzypczyk.firestore.domain.models.ScoreDTO
@@ -27,6 +28,7 @@ interface FirestoreApi {
     fun updateUserScore(userId: String, score: ScoreDTO) : Flow<Response<Unit>>
     fun deleteUserScore(userId: String) : Flow<Response<Unit>>
     fun sendIssueReport(report: IssueReportDTO) : Flow<Response<Unit>>
+    fun saveFeedback(feedback: FeedbackDTO) : Flow<Response<Unit>>
     fun getTermsOfService(): Flow<Response<TermsOfServiceDTO>>
     fun getTermsOfServiceUpdates(): Flow<Response<TermsOfServiceDTO>>
     fun getQuestionsCountUpdates(collection: String): Flow<Int>

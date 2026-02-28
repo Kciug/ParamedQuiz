@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -23,16 +24,22 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.filled.AutoFixHigh
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.HistoryEdu
+import androidx.compose.material.icons.filled.PriorityHigh
 import androidx.compose.material.icons.filled.Swipe
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.Upcoming
 import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -48,19 +55,26 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.rafalskrzypczyk.core.composables.BasePurchaseBottomSheet
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.InfoDialog
 import com.rafalskrzypczyk.core.composables.PurchaseFeature
 import com.rafalskrzypczyk.core.composables.PurchaseModeDetails
 import com.rafalskrzypczyk.core.composables.TextHeadline
+import com.rafalskrzypczyk.core.composables.TextPrimary
+import com.rafalskrzypczyk.core.composables.rating.AppRatingCard
 import com.rafalskrzypczyk.core.composables.top_bars.MainTopBar
 import com.rafalskrzypczyk.core.ui.theme.MQGreen
+import com.rafalskrzypczyk.core.ui.theme.MQRed
 import com.rafalskrzypczyk.core.ui.theme.MQYellow
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
+import com.rafalskrzypczyk.core.utils.InAppReviewManager
 import com.rafalskrzypczyk.home.R
 import com.rafalskrzypczyk.score.domain.StreakState
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun HomeScreen(
@@ -76,11 +90,13 @@ fun HomeScreen(
 ) {
     var showDailyExerciseAlreadyDoneAlert by remember { mutableStateOf(false) }
     var showRevisionsUnavailableAlert by remember { mutableStateOf(false) }
+    var showFeedbackSuccessAlert by remember { mutableStateOf(false) }
     var isDismissingMode by remember { mutableStateOf<String?>(null) }
     var isTrialMode by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val activity = remember(context) { context as? Activity }
+    val reviewManager = remember(context) { InAppReviewManager(context) }
 
     val addons = listOf(
         Addon(
@@ -107,10 +123,15 @@ fun HomeScreen(
     }
 
     LaunchedEffect(effect) {
-        effect.collect { effect ->
+        effect.collectLatest { effect ->
             when(effect) {
                 is HomeSideEffect.PurchaseSuccess -> {
-                    // Just let the UI update via state
+                }
+                HomeSideEffect.LaunchReviewFlow -> {
+                    activity?.let { reviewManager.launchReviewFlow(it) }
+                }
+                HomeSideEffect.FeedbackSuccess -> {
+                    showFeedbackSuccessAlert = true
                 }
             }
         }
@@ -250,6 +271,95 @@ fun HomeScreen(
                     .padding(top = Dimens.DEFAULT_PADDING)
             )
             HomeScreenAddonsMenu(addons = addons)
+            
+            androidx.compose.animation.AnimatedVisibility(
+                visible = state.ratingPromptState != com.rafalskrzypczyk.core.composables.rating.RatingPromptState.HIDDEN,
+                enter = androidx.compose.animation.expandVertically() + androidx.compose.animation.fadeIn(),
+                exit = androidx.compose.animation.shrinkVertically() + androidx.compose.animation.fadeOut()
+            ) {
+                Column {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = Dimens.DEFAULT_PADDING)
+                            .padding(top = Dimens.DEFAULT_PADDING),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        TextHeadline(
+                            text = stringResource(R.string.title_rating_section),
+                        )
+                        IconButton(
+                            onClick = { onEvent(HomeUIEvents.OnDismissRating) },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(Dimens.DEFAULT_PADDING))
+                    AppRatingCard(
+                        state = state.ratingPromptState,
+                        feedbackText = state.feedbackText,
+                        onFeedbackChange = { feedback -> onEvent(HomeUIEvents.OnFeedbackChanged(feedback)) },
+                        onRate = { rating -> onEvent(HomeUIEvents.OnRatingSelected(rating)) },
+                        onStoreClick = { onEvent(HomeUIEvents.OnRateStore) },
+                        onFeedbackClick = { onEvent(HomeUIEvents.OnSendFeedback) },
+                        onBack = { onEvent(HomeUIEvents.OnBackToRating) },
+                        isLoading = state.isSendingFeedback,
+                        enabled = !state.isSendingFeedback
+                    )
+                }
+            }
+
+            if (state.ratingPromptState == com.rafalskrzypczyk.core.composables.rating.RatingPromptState.CLOSING_OPTIONS) {
+                com.rafalskrzypczyk.core.composables.BaseCustomDialog(
+                    onDismissRequest = { onEvent(HomeUIEvents.OnBackToRating) },
+                    icon = Icons.AutoMirrored.Default.HelpOutline,
+                    title = stringResource(com.rafalskrzypczyk.core.R.string.rating_dismiss_title),
+                    content = {
+                        TextPrimary(
+                            text = stringResource(com.rafalskrzypczyk.core.R.string.rating_dismiss_desc),
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center
+                        )
+                    },
+                    buttons = {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL),
+                            horizontalAlignment = Alignment.End
+                        ) {
+                            androidx.compose.material3.TextButton(
+                                onClick = { onEvent(HomeUIEvents.OnDismissRating) },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                TextPrimary(
+                                    text = stringResource(com.rafalskrzypczyk.core.R.string.btn_dismiss_later),
+                                    color = MaterialTheme.colorScheme.primary,
+                                    textAlign = TextAlign.End,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                            androidx.compose.material3.TextButton(
+                                onClick = { onEvent(HomeUIEvents.OnNeverAskAgain) },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                TextPrimary(
+                                    text = stringResource(com.rafalskrzypczyk.core.R.string.btn_dismiss_never),
+                                    color = MaterialTheme.colorScheme.error,
+                                    textAlign = TextAlign.End,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                        }
+                    }
+                )
+            }
+
             HomeScreenQuizModesMenu(
                 isTranslationModeUnlocked = state.isTranslationModeUnlocked,
                 isSwipeModeUnlocked = state.isSwipeModeUnlocked,
@@ -286,6 +396,31 @@ fun HomeScreen(
             onDismiss = { showRevisionsUnavailableAlert = false }
         )
     }
+
+    if(showFeedbackSuccessAlert) {
+        InfoDialog(
+            title = stringResource(id = com.rafalskrzypczyk.core.R.string.desc_success),
+            message = stringResource(id = com.rafalskrzypczyk.core.R.string.rating_feedback_success),
+            icon = Icons.Default.Favorite,
+            headerColor = MQRed,
+            onDismiss = { 
+                showFeedbackSuccessAlert = false 
+                onEvent(HomeUIEvents.OnFeedbackSuccessConsumed)
+            }
+        )
+    }
+
+    if(state.feedbackErrorMessage != null) {
+        InfoDialog(
+            title = stringResource(id = com.rafalskrzypczyk.core.R.string.desc_error),
+            message = state.feedbackErrorMessage,
+            icon = Icons.Default.PriorityHigh,
+            headerColor = MQRed,
+            onDismiss = { 
+                onEvent(HomeUIEvents.OnFeedbackErrorConsumed)
+            }
+        )
+    }
 }
 
 @Composable
@@ -306,7 +441,6 @@ fun HomeScreenAddonsMenu(
         ) {
             items(addons, key = { it.title }) { addon ->
                 AddonButton(
-                    //modifier = cardWidthModifier,
                     addon = addon
                 )
             }

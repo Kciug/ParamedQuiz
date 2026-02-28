@@ -12,6 +12,7 @@ android {
 dependencies {
     implementation(libs.androidx.compose.runtime)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.google.play.review)
 
     testImplementation(libs.bundles.unit.test)
     androidTestImplementation(libs.androidx.junit)

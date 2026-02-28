@@ -41,6 +41,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         adManager.initialize(this)
         
+        if (sharedPreferences.getInstallDate() == 0L) {
+            sharedPreferences.setInstallDate(System.currentTimeMillis())
+        }
+        
         splashScreen.setKeepOnScreenCondition {
             viewModel.state.value.isLoading
         }

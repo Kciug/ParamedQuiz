@@ -6,19 +6,20 @@ import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.billing.domain.AppProduct
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.billing.domain.BillingRepository
+import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
+import com.rafalskrzypczyk.core.composables.rating.RatingPromptState
+import com.rafalskrzypczyk.core.domain.UserFeedback
+import com.rafalskrzypczyk.home_screen.domain.HomeScreenUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
-import com.rafalskrzypczyk.core.api_response.Response
-import com.rafalskrzypczyk.home_screen.domain.HomeScreenUseCases
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
 
 @HiltViewModel
 class HomeScreenVM @Inject constructor(
@@ -63,10 +64,20 @@ class HomeScreenVM @Inject constructor(
             is HomeUIEvents.BuyTranslationMode -> buyMode(event.activity, BillingIds.ID_TRANSLATION_MODE)
             is HomeUIEvents.BuySwipeMode -> buyMode(event.activity, BillingIds.ID_SWIPE_MODE)
             HomeUIEvents.NavigationConsumed -> consumeNavigation()
+            is HomeUIEvents.OnRatingSelected -> handleRatingSelected(event.rating)
+            HomeUIEvents.OnDismissRating -> dismissRating()
+            HomeUIEvents.OnRateStore -> rateStore()
+            HomeUIEvents.OnSendFeedback -> sendFeedback()
+            is HomeUIEvents.OnFeedbackChanged -> handleFeedbackChanged(event.feedback)
+            HomeUIEvents.OnNeverAskAgain -> neverAskAgain()
+            HomeUIEvents.OnBackToRating -> backToRating()
+            HomeUIEvents.OnFeedbackSuccessConsumed -> _state.update { it.copy(ratingPromptState = RatingPromptState.HIDDEN) }
+            HomeUIEvents.OnFeedbackErrorConsumed -> _state.update { it.copy(feedbackErrorMessage = null) }
         }
     }
 
     private fun getData() {
+        checkRatingEligibility()
         viewModelScope.launch {
             useCases.getUserScore().collectLatest { userScore ->
                 _state.update {
@@ -133,6 +144,79 @@ class HomeScreenVM @Inject constructor(
                 }
         }
     }
+
+    private fun checkRatingEligibility() {
+        if (useCases.checkAppRatingEligibility()) {
+            _state.update { it.copy(ratingPromptState = RatingPromptState.QUESTION) }
+        }
+    }
+
+    private fun handleRatingSelected(rating: Int) {
+        if (rating >= 4) {
+            _state.update { it.copy(ratingPromptState = RatingPromptState.POSITIVE_FEEDBACK, ratingValue = rating) }
+        } else {
+            _state.update { it.copy(ratingPromptState = RatingPromptState.NEGATIVE_FEEDBACK, ratingValue = rating) }
+        }
+    }
+
+    private fun handleFeedbackChanged(feedback: String) {
+        _state.update { it.copy(feedbackText = feedback) }
+    }
+
+    private fun dismissRating() {
+        if (state.value.ratingPromptState == RatingPromptState.CLOSING_OPTIONS) {
+            finalDismiss()
+        } else {
+            _state.update { it.copy(ratingPromptState = RatingPromptState.CLOSING_OPTIONS) }
+        }
+    }
+
+    private fun finalDismiss() {
+        useCases.dismissAppRating()
+        _state.update { it.copy(ratingPromptState = RatingPromptState.HIDDEN) }
+    }
+
+    private fun rateStore() {
+        useCases.setAppRated()
+        _state.update { it.copy(ratingPromptState = RatingPromptState.HIDDEN) }
+        viewModelScope.launch {
+            _effect.emit(HomeSideEffect.LaunchReviewFlow)
+        }
+    }
+
+    private fun sendFeedback() {
+        val currentState = state.value
+        val feedback = UserFeedback(
+            feedback = currentState.feedbackText,
+            rating = currentState.ratingValue
+        )
+        viewModelScope.launch {
+            useCases.saveFeedback(feedback).collectLatest { response ->
+                when(response) {
+                    is Response.Loading -> {
+                        _state.update { it.copy(isSendingFeedback = true, feedbackErrorMessage = null) }
+                    }
+                    is Response.Success -> {
+                        _state.update { it.copy(isSendingFeedback = false, feedbackText = "") }
+                        useCases.setAppRated()
+                        _effect.emit(HomeSideEffect.FeedbackSuccess)
+                    }
+                    is Response.Error -> {
+                        _state.update { it.copy(isSendingFeedback = false, feedbackErrorMessage = response.error) }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun neverAskAgain() {
+        useCases.disableRatingPrompt()
+        _state.update { it.copy(ratingPromptState = RatingPromptState.HIDDEN) }
+    }
+
+    private fun backToRating() {
+        _state.update { it.copy(ratingPromptState = RatingPromptState.QUESTION) }
+    }
     
     private fun openPurchaseSheet(modeId: String) {
         _state.update { 
@@ -173,6 +257,5 @@ class HomeScreenVM @Inject constructor(
     }
 
     private fun consumeNavigation() {
-        // Handle if needed
     }
 }

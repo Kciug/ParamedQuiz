@@ -2,14 +2,17 @@ package com.rafalskrzypczyk.firestore.data
 
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.Source
 import com.rafalskrzypczyk.core.R
 import com.rafalskrzypczyk.core.api_response.Response
+import com.rafalskrzypczyk.core.utils.FirebaseError
 import com.rafalskrzypczyk.core.utils.ResourceProvider
 import com.rafalskrzypczyk.firestore.domain.FirestoreApi
 import com.rafalskrzypczyk.firestore.domain.models.CategoryDTO
+import com.rafalskrzypczyk.firestore.domain.models.FeedbackDTO
 import com.rafalskrzypczyk.firestore.domain.models.IssueReportDTO
 import com.rafalskrzypczyk.firestore.domain.models.QuestionDTO
 import com.rafalskrzypczyk.firestore.domain.models.ScoreDTO
@@ -28,13 +31,14 @@ import javax.inject.Inject
 
 class FirestoreService @Inject constructor(
     private val firestore: FirebaseFirestore,
-    private val resourceProvider: ResourceProvider
+    private val resourceProvider: ResourceProvider,
+    private val firebaseError: FirebaseError
 ) : FirestoreApi {
     override fun getUserData(userId: String): Flow<Response<UserDataDTO>> = flow {
         emit(Response.Loading)
         val result = getFirestoreDocumentData(FirestoreCollections.USER_DATA_COLLECTION, userId)?.toObject(UserDataDTO::class.java)
         emit(result?.let { Response.Success(it) } ?: Response.Error(resourceProvider.getString(R.string.error_no_data)))
-    }.catch { emit(Response.Error(it.localizedMessage ?: resourceProvider.getString(R.string.error_unknown))) }
+    }.catch { emit(Response.Error(handleError(it))) }
 
     override fun updateUserData(userData: UserDataDTO): Flow<Response<Unit>> = flow {
         emit(Response.Loading)
@@ -50,13 +54,13 @@ class FirestoreService @Inject constructor(
         emit(Response.Loading)
         val questions = getFirestoreData(FirestoreCollections.QUIZ_MODE_CATEGORIES)?.toObjects(CategoryDTO::class.java) ?: emptyList()
         emit(Response.Success(questions))
-    }.catch { emit(Response.Error(it.localizedMessage ?: resourceProvider.getString(R.string.error_unknown))) }
+    }.catch { emit(Response.Error(handleError(it))) }
 
     override fun getQuizQuestions(): Flow<Response<List<QuestionDTO>>> = flow {
         emit(Response.Loading)
         val questions = getFirestoreData(FirestoreCollections.QUIZ_MODE_QUESTIONS)?.toObjects(QuestionDTO::class.java) ?: emptyList()
         emit(Response.Success(questions))
-    }.catch { emit(Response.Error(it.localizedMessage ?: resourceProvider.getString(R.string.error_unknown))) }
+    }.catch { emit(Response.Error(handleError(it))) }
 
     override fun getUpdatedCategories(): Flow<List<CategoryDTO>> = attachFirestoreListener(FirestoreCollections.QUIZ_MODE_CATEGORIES)
         .map { it.toObjects(CategoryDTO::class.java) }
@@ -68,7 +72,7 @@ class FirestoreService @Inject constructor(
         emit(Response.Loading)
         val questions = getFirestoreData(FirestoreCollections.SWIPE_QUESTIONS)?.toObjects(SwipeQuestionDTO::class.java) ?: emptyList()
         emit(Response.Success(questions))
-    }.catch { emit(Response.Error(it.localizedMessage ?: resourceProvider.getString(R.string.error_unknown))) }
+    }.catch { emit(Response.Error(handleError(it))) }
 
     override fun getUpdatedSwipeQuestions(): Flow<List<SwipeQuestionDTO>> = attachFirestoreListener(FirestoreCollections.SWIPE_QUESTIONS)
         .map { it.toObjects(SwipeQuestionDTO::class.java) }
@@ -77,7 +81,7 @@ class FirestoreService @Inject constructor(
         emit(Response.Loading)
         val questions = getFirestoreData(FirestoreCollections.TRANSLATION_QUESTIONS)?.toObjects(TranslationQuestionDTO::class.java) ?: emptyList()
         emit(Response.Success(questions))
-    }.catch { emit(Response.Error(it.localizedMessage ?: resourceProvider.getString(R.string.error_unknown))) }
+    }.catch { emit(Response.Error(handleError(it))) }
 
     override fun getUpdatedTranslationQuestions(): Flow<List<TranslationQuestionDTO>> = attachFirestoreListener(FirestoreCollections.TRANSLATION_QUESTIONS)
         .map { it.toObjects(TranslationQuestionDTO::class.java) }
@@ -86,7 +90,7 @@ class FirestoreService @Inject constructor(
         emit(Response.Loading)
         val result = getFirestoreDocumentData(FirestoreCollections.USER_SCORE, userId)?.toObject(ScoreDTO::class.java)
         emit(result?.let { Response.Success(it) } ?: Response.Error(resourceProvider.getString(R.string.error_no_data)))
-    }.catch { emit(Response.Error(it.localizedMessage ?: resourceProvider.getString(R.string.error_unknown))) }
+    }.catch { emit(Response.Error(handleError(it))) }
 
     override fun updateUserScore(
         userId: String,
@@ -108,12 +112,19 @@ class FirestoreService @Inject constructor(
         emit(modifyFirestoreDocument(docId, reportWithId, FirestoreCollections.ISSUES_REPORTS))
     }
 
+    override fun saveFeedback(feedback: FeedbackDTO): Flow<Response<Unit>> = flow {
+        emit(Response.Loading)
+        val docId = firestore.collection(FirestoreCollections.APP_FEEDBACK).document().id
+        val feedbackWithId = feedback.copy(id = docId)
+        emit(modifyFirestoreDocument(docId, feedbackWithId, FirestoreCollections.APP_FEEDBACK))
+    }
+
     override fun getTermsOfService(): Flow<Response<TermsOfServiceDTO>> = flow {
         emit(Response.Loading)
         val snapshot = getFirestoreDocumentData(FirestoreCollections.APP_CONFIG, FirestoreCollections.TERMS_OF_SERVICE)
         val terms = snapshot?.toObject(TermsOfServiceDTO::class.java)
         emit(terms?.let { Response.Success(it) } ?: Response.Error(resourceProvider.getString(R.string.error_no_data)))
-    }.catch { emit(Response.Error(it.localizedMessage ?: resourceProvider.getString(R.string.error_unknown))) }
+    }.catch { emit(Response.Error(handleError(it))) }
 
     override fun getTermsOfServiceUpdates(): Flow<Response<TermsOfServiceDTO>> = attachFirestoreDocumentListener(
         collection = FirestoreCollections.APP_CONFIG,
@@ -125,13 +136,21 @@ class FirestoreService @Inject constructor(
         } else {
             Response.Error(resourceProvider.getString(R.string.error_no_data))
         }
-    }.catch { emit(Response.Error(it.localizedMessage ?: resourceProvider.getString(R.string.error_unknown))) }
+    }.catch { emit(Response.Error(handleError(it))) }
 
     override fun getQuestionsCountUpdates(collection: String): Flow<Int> = flow {
         val countQuery = firestore.collection(collection).count()
         val snapshot = countQuery.get(com.google.firebase.firestore.AggregateSource.SERVER).await()
         emit(snapshot.count.toInt())
     }.catch { emit(0) }
+
+    private fun handleError(e: Throwable): String {
+        return if (e is FirebaseFirestoreException) {
+            firebaseError.localizedError(e.code.name)
+        } else {
+            e.localizedMessage ?: resourceProvider.getString(R.string.error_unknown)
+        }
+    }
 
     private suspend fun getFirestoreDocumentData(collection: String, documentId: String): DocumentSnapshot? {
         return try {
@@ -188,7 +207,7 @@ class FirestoreService @Inject constructor(
                 .await()
             Response.Success(Unit)
         } catch (e: Exception) {
-            Response.Error(e.localizedMessage ?: resourceProvider.getString(R.string.error_unknown))
+            Response.Error(handleError(e))
         }
     }
 
@@ -203,7 +222,7 @@ class FirestoreService @Inject constructor(
                 .await()
             Response.Success(Unit)
         } catch (e: Exception) {
-            Response.Error(e.localizedMessage ?: resourceProvider.getString(R.string.error_unknown))
+            Response.Error(handleError(e))
         }
     }
 }

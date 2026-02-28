@@ -56,6 +56,12 @@ fun DevOptionsScreen(
             Button(onClick = { onEvent.invoke(DevOptionsUIEvents.ClearTermsAcceptance) }) {
                 Text("Reset Terms of Service")
             }
+            Button(onClick = { onEvent.invoke(DevOptionsUIEvents.ResetRatingStats) }) {
+                Text("Reset Rating Stats")
+            }
+            Button(onClick = { onEvent.invoke(DevOptionsUIEvents.TriggerRatingPrompt) }) {
+                Text("Trigger Rating Prompt")
+            }
         }
     }
 }

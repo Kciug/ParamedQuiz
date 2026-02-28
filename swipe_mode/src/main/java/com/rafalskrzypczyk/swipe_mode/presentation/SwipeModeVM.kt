@@ -352,6 +352,7 @@ class SwipeModeVM @Inject constructor(
     }
 
     private fun finishQuiz() {
+        useCases.incrementCompletedQuizzes()
         val totalDuration = System.currentTimeMillis() - quizStartTime
         val questionsAnswered = currentQuestionIndex
         val averageTime = if (questionsAnswered > 0) totalResponseTimeAccumulator / questionsAnswered else 0L

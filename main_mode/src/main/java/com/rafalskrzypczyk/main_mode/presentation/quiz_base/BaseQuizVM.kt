@@ -231,6 +231,7 @@ abstract class BaseQuizVM (
     }
 
     private fun finishQuiz() {
+        useCases.incrementCompletedQuizzes()
         _state.update { it.copy(
             showAd = false,
             isQuizFinished = true,

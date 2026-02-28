@@ -16,6 +16,11 @@ class SharedPreferencesService @Inject constructor(
         const val KEY_ONBOARDING_SWIPE_MODE_STATUS = "onboarding_swipe_mode_done"
         const val KEY_ONBOARDING_TRANSLATION_MODE_STATUS = "onboarding_translation_mode_done"
         const val KEY_ACCEPTED_TERMS_VERSION = "accepted_terms_version"
+        const val KEY_INSTALL_DATE = "install_date"
+        const val KEY_COMPLETED_QUIZZES_COUNT = "completed_quizzes_count"
+        const val KEY_APP_RATED = "app_rated"
+        const val KEY_RATING_PROMPT_DISABLED = "rating_prompt_disabled"
+        const val KEY_LAST_RATING_PROMPT_DATE = "last_rating_prompt_date"
 
         const val DEFAULT_STRING_VALUE = ""
     }
@@ -93,6 +98,63 @@ class SharedPreferencesService @Inject constructor(
     override fun setAcceptedTermsVersion(version: Int) {
         sharedPreferences.edit {
             putInt(KEY_ACCEPTED_TERMS_VERSION, version)
+        }
+    }
+
+    override fun getInstallDate(): Long {
+        return sharedPreferences.getLong(KEY_INSTALL_DATE, 0L)
+    }
+
+    override fun setInstallDate(timestamp: Long) {
+        sharedPreferences.edit {
+            putLong(KEY_INSTALL_DATE, timestamp)
+        }
+    }
+
+    override fun getCompletedQuizzesCount(): Int {
+        return sharedPreferences.getInt(KEY_COMPLETED_QUIZZES_COUNT, 0)
+    }
+
+    override fun incrementCompletedQuizzesCount() {
+        val currentCount = getCompletedQuizzesCount()
+        sharedPreferences.edit {
+            putInt(KEY_COMPLETED_QUIZZES_COUNT, currentCount + 1)
+        }
+    }
+
+    override fun resetCompletedQuizzesCount() {
+        sharedPreferences.edit {
+            putInt(KEY_COMPLETED_QUIZZES_COUNT, 0)
+        }
+    }
+
+    override fun isAppRated(): Boolean {
+        return sharedPreferences.getBoolean(KEY_APP_RATED, false)
+    }
+
+    override fun setAppRated(rated: Boolean) {
+        sharedPreferences.edit {
+            putBoolean(KEY_APP_RATED, rated)
+        }
+    }
+
+    override fun isRatingPromptDisabled(): Boolean {
+        return sharedPreferences.getBoolean(KEY_RATING_PROMPT_DISABLED, false)
+    }
+
+    override fun setRatingPromptDisabled(disabled: Boolean) {
+        sharedPreferences.edit {
+            putBoolean(KEY_RATING_PROMPT_DISABLED, disabled)
+        }
+    }
+
+    override fun getLastRatingPromptDate(): Long {
+        return sharedPreferences.getLong(KEY_LAST_RATING_PROMPT_DATE, 0L)
+    }
+
+    override fun setLastRatingPromptDate(timestamp: Long) {
+        sharedPreferences.edit {
+            putLong(KEY_LAST_RATING_PROMPT_DATE, timestamp)
         }
     }
 }
