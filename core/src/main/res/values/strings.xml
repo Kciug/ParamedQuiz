@@ -109,5 +109,6 @@
     <string name="feedback_mail_topic">Feedback - MediQuiz Android</string>
 
     <string name="contact_mail">contact@frontfolks.com</string>
+    <string name="btn_rate_later">Oceń później</string>
     <string name="btn_never_ask_again">Nigdy nie pytaj ponownie</string>
 </resources>

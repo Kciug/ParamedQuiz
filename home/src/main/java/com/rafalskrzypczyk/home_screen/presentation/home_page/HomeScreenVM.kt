@@ -156,8 +156,7 @@ class HomeScreenVM @Inject constructor(
     }
 
     private fun dismissRating() {
-        useCases.dismissAppRating()
-        _state.update { it.copy(ratingPromptState = RatingPromptState.HIDDEN) }
+        _state.update { it.copy(ratingPromptState = RatingPromptState.CLOSING_OPTIONS) }
     }
 
     private fun rateStore() {
