@@ -7,6 +7,5 @@ data class UserData(
     val id: String,
     val email: String,
     val name: String,
-    val authenticationMethod: UserAuthenticationMethod,
-    val isPremium: Boolean = true
+    val authenticationMethod: UserAuthenticationMethod
 )
