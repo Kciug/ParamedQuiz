@@ -6,9 +6,9 @@ import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.billing.domain.AppProduct
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.billing.domain.BillingRepository
+import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.composables.rating.RatingPromptState
-import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.home_screen.domain.HomeScreenUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -156,7 +156,16 @@ class HomeScreenVM @Inject constructor(
     }
 
     private fun dismissRating() {
-        _state.update { it.copy(ratingPromptState = RatingPromptState.CLOSING_OPTIONS) }
+        if (state.value.ratingPromptState == RatingPromptState.CLOSING_OPTIONS) {
+            finalDismiss()
+        } else {
+            _state.update { it.copy(ratingPromptState = RatingPromptState.CLOSING_OPTIONS) }
+        }
+    }
+
+    private fun finalDismiss() {
+        useCases.dismissAppRating()
+        _state.update { it.copy(ratingPromptState = RatingPromptState.HIDDEN) }
     }
 
     private fun rateStore() {
