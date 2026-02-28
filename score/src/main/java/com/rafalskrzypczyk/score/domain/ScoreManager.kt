@@ -82,9 +82,13 @@ class ScoreManager @Inject constructor(
     }
 
     fun onUserRegister() {
-        if(!score.value.isEmpty()) {
-            forceSync()
-            repository.clearLocalScoreData()
+        ioScope.launch {
+            repository.saveUserScore(score.value).collectLatest {
+                if(it is Response.Error) _errorFlow.emit(it.error)
+                if(it is Response.Success) {
+                    repository.clearLocalScoreData()
+                }
+            }
         }
     }
 
