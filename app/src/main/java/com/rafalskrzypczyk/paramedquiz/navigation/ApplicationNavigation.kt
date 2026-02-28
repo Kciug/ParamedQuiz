@@ -139,6 +139,7 @@ fun NavController.navigateToUserPage(){
         route = UserPage
     ) {
         popUpTo<Signup> { inclusive = true }
+        launchSingleTop = true
     }
 }
 
