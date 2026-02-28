@@ -35,6 +35,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -139,6 +141,7 @@ private fun RatingQuestionStep(
     enabled: Boolean = true
 ) {
     var rating by remember { mutableIntStateOf(0) }
+    val haptic = LocalHapticFeedback.current
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -173,6 +176,7 @@ private fun RatingQuestionStep(
                         modifier = Modifier
                             .size(40.dp)
                             .clickable(enabled = enabled) {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 rating = index
                                 onRate(index)
                             }
