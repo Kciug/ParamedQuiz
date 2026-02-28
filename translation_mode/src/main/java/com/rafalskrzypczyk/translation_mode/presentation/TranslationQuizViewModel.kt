@@ -158,6 +158,7 @@ class TranslationQuizViewModel @Inject constructor(
     }
 
     private fun finishQuiz() {
+        useCases.incrementCompletedQuizzes()
         _state.update {
             it.copy(
                 isQuizFinished = true,
