@@ -8,6 +8,7 @@ import com.rafalskrzypczyk.core.utils.ResourceProvider
 import com.rafalskrzypczyk.main_mode.R
 import com.rafalskrzypczyk.main_mode.domain.daily_exercise.DailyExerciseUseCases
 import com.rafalskrzypczyk.main_mode.presentation.quiz_base.BaseQuizVM
+import com.rafalskrzypczyk.score.domain.ScoreManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
@@ -18,6 +19,7 @@ import javax.inject.Inject
 class DailyExerciseVM @Inject constructor(
     private val useCases: DailyExerciseUseCases,
     private val resourceProvider: ResourceProvider,
+    private val scoreManager: ScoreManager,
     adHandler: QuizAdHandler
 ): BaseQuizVM(
     useCases = useCases.base,
@@ -57,20 +59,12 @@ class DailyExerciseVM @Inject constructor(
         }
     }
 
-    override fun displayNextQuestion() {
-        super.displayNextQuestion()
-        if (state.value.isQuizFinished) {
-            if (useCases.updateStreak()) {
-                isStreakUpdatedInSession = true
-                val currentStreak = useCases.base.getStreak()
-                _state.update {
-                    it.copy(quizFinishedState = it.quizFinishedState.copy(
-                        isStreakUpdated = true,
-                        streak = currentStreak
-                    ))
-                }
-            }
-            useCases.updateLastDailyExerciseDate()
+    override fun finishQuiz() {
+        if (useCases.updateStreak()) {
+            isStreakUpdatedInSession = true
         }
+        useCases.updateLastDailyExerciseDate()
+        scoreManager.forceSync()
+        super.finishQuiz()
     }
 }
