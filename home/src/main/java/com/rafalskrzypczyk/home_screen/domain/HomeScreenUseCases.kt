@@ -1,5 +1,8 @@
 package com.rafalskrzypczyk.home_screen.domain
 
+import com.rafalskrzypczyk.core.domain.use_cases.CheckAppRatingEligibilityUC
+import com.rafalskrzypczyk.core.domain.use_cases.DismissAppRatingUC
+import com.rafalskrzypczyk.core.domain.use_cases.SetAppRatedUC
 import com.rafalskrzypczyk.core.user_management.CheckIsUserLoggedInUC
 import com.rafalskrzypczyk.firestore.domain.use_cases.GetQuestionsCountUC
 import com.rafalskrzypczyk.home_screen.domain.use_cases.GetUserDataUC
@@ -13,5 +16,8 @@ data class HomeScreenUseCases @Inject constructor(
     val getStreakState: GetStreakStateUC,
     val checkIsUserLoggedIn: CheckIsUserLoggedInUC,
     val checkDailyExerciseAvailability: CheckDailyExerciseAvailabilityUC,
-    val getQuestionsCount: GetQuestionsCountUC
+    val getQuestionsCount: GetQuestionsCountUC,
+    val checkAppRatingEligibility: CheckAppRatingEligibilityUC,
+    val setAppRated: SetAppRatedUC,
+    val dismissAppRating: DismissAppRatingUC
 )

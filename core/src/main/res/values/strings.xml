@@ -98,4 +98,15 @@
     <string name="trial_finished_desc">Wyczerpałeś już darmowe pytania. Kup pełną wersję, aby odblokować wszystkie pytania i cieszyć się nauką bez limitów!</string>
     <string name="btn_buy_mode">Kup teraz</string>
     <string name="btn_exit_quiz">Wyjdź</string>
+    <string name="rating_question_title">Jak oceniasz MediQuiz?</string>
+    <string name="rating_positive_title">Cieszymy się!</string>
+    <string name="btn_rate_store">Oceń w Google Play</string>
+    <string name="rating_negative_title">Przykro nam…</string>
+    <string name="btn_send_feedback">Wyślij opinię</string>
+    <string name="rating_positive_desc_short">Twoja opinia nam pomaga!</string>
+    <string name="rating_negative_desc_short">Napisz nam, co możemy poprawić.</string>
+    <string name="title_rating_section">Oceń nas!</string>
+    <string name="feedback_mail_topic">Feedback - MediQuiz Android</string>
+
+    <string name="contact_mail">contact@frontfolks.com</string>
 </resources>

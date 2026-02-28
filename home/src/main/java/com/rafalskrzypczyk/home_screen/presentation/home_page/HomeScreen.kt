@@ -1,6 +1,8 @@
 package com.rafalskrzypczyk.home_screen.presentation.home_page
 
 import android.app.Activity
+import android.content.Context
+import android.content.Intent
 import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -49,18 +51,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.net.toUri
 import com.rafalskrzypczyk.core.composables.BasePurchaseBottomSheet
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.InfoDialog
 import com.rafalskrzypczyk.core.composables.PurchaseFeature
 import com.rafalskrzypczyk.core.composables.PurchaseModeDetails
 import com.rafalskrzypczyk.core.composables.TextHeadline
+import com.rafalskrzypczyk.core.composables.rating.AppRatingCard
 import com.rafalskrzypczyk.core.composables.top_bars.MainTopBar
 import com.rafalskrzypczyk.core.ui.theme.MQGreen
 import com.rafalskrzypczyk.core.ui.theme.MQYellow
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
+import com.rafalskrzypczyk.core.utils.InAppReviewManager
 import com.rafalskrzypczyk.home.R
 import com.rafalskrzypczyk.score.domain.StreakState
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun HomeScreen(
@@ -81,6 +87,7 @@ fun HomeScreen(
 
     val context = LocalContext.current
     val activity = remember(context) { context as? Activity }
+    val reviewManager = remember(context) { InAppReviewManager(context) }
 
     val addons = listOf(
         Addon(
@@ -107,10 +114,16 @@ fun HomeScreen(
     }
 
     LaunchedEffect(effect) {
-        effect.collect { effect ->
+        effect.collectLatest { effect ->
             when(effect) {
                 is HomeSideEffect.PurchaseSuccess -> {
                     // Just let the UI update via state
+                }
+                HomeSideEffect.LaunchReviewFlow -> {
+                    activity?.let { reviewManager.launchReviewFlow(it) }
+                }
+                HomeSideEffect.OpenFeedbackMail -> {
+                    sendFeedbackEmail(context)
                 }
             }
         }
@@ -250,6 +263,27 @@ fun HomeScreen(
                     .padding(top = Dimens.DEFAULT_PADDING)
             )
             HomeScreenAddonsMenu(addons = addons)
+            
+            androidx.compose.animation.AnimatedVisibility(
+                visible = state.ratingPromptState != com.rafalskrzypczyk.core.composables.rating.RatingPromptState.HIDDEN,
+                enter = androidx.compose.animation.expandVertically() + androidx.compose.animation.fadeIn(),
+                exit = androidx.compose.animation.shrinkVertically() + androidx.compose.animation.fadeOut()
+            ) {
+                Column {
+                    TextHeadline(
+                        text = stringResource(R.string.title_rating_section),
+                        modifier = Modifier.padding(start = Dimens.DEFAULT_PADDING, top = Dimens.DEFAULT_PADDING)
+                    )
+                    AppRatingCard(
+                        state = state.ratingPromptState,
+                        onRate = { rating -> onEvent(HomeUIEvents.OnRatingSelected(rating)) },
+                        onDismiss = { onEvent(HomeUIEvents.OnDismissRating) },
+                        onStoreClick = { onEvent(HomeUIEvents.OnRateStore) },
+                        onFeedbackClick = { onEvent(HomeUIEvents.OnSendFeedback) }
+                    )
+                }
+            }
+
             HomeScreenQuizModesMenu(
                 isTranslationModeUnlocked = state.isTranslationModeUnlocked,
                 isSwipeModeUnlocked = state.isSwipeModeUnlocked,
@@ -286,6 +320,17 @@ fun HomeScreen(
             onDismiss = { showRevisionsUnavailableAlert = false }
         )
     }
+}
+
+private fun sendFeedbackEmail(context: Context) {
+    val contactMail = context.getString(com.rafalskrzypczyk.core.R.string.contact_mail)
+    val intent = Intent(Intent.ACTION_SENDTO).apply {
+        data = "mailto:${contactMail}".toUri()
+        putExtra(Intent.EXTRA_SUBJECT, context.getString(com.rafalskrzypczyk.core.R.string.feedback_mail_topic))
+    }
+    try {
+        context.startActivity(Intent.createChooser(intent, "Wyślij opinię…"))
+    } catch (_: Exception) {}
 }
 
 @Composable

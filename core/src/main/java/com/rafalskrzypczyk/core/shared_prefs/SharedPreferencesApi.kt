@@ -23,4 +23,17 @@ interface SharedPreferencesApi {
 
     fun getAcceptedTermsVersion(): Int
     fun setAcceptedTermsVersion(version: Int)
+
+    fun getInstallDate(): Long
+    fun setInstallDate(timestamp: Long)
+
+    fun getCompletedQuizzesCount(): Int
+    fun incrementCompletedQuizzesCount()
+    fun resetCompletedQuizzesCount()
+
+    fun isAppRated(): Boolean
+    fun setAppRated(rated: Boolean)
+
+    fun getLastRatingPromptDate(): Long
+    fun setLastRatingPromptDate(timestamp: Long)
 }

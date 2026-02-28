@@ -7,18 +7,18 @@ import com.rafalskrzypczyk.billing.domain.AppProduct
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
+import com.rafalskrzypczyk.core.composables.rating.RatingPromptState
+import com.rafalskrzypczyk.core.api_response.Response
+import com.rafalskrzypczyk.home_screen.domain.HomeScreenUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
-import com.rafalskrzypczyk.core.api_response.Response
-import com.rafalskrzypczyk.home_screen.domain.HomeScreenUseCases
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
 
 @HiltViewModel
 class HomeScreenVM @Inject constructor(
@@ -63,10 +63,15 @@ class HomeScreenVM @Inject constructor(
             is HomeUIEvents.BuyTranslationMode -> buyMode(event.activity, BillingIds.ID_TRANSLATION_MODE)
             is HomeUIEvents.BuySwipeMode -> buyMode(event.activity, BillingIds.ID_SWIPE_MODE)
             HomeUIEvents.NavigationConsumed -> consumeNavigation()
+            is HomeUIEvents.OnRatingSelected -> handleRatingSelected(event.rating)
+            HomeUIEvents.OnDismissRating -> dismissRating()
+            HomeUIEvents.OnRateStore -> rateStore()
+            HomeUIEvents.OnSendFeedback -> sendFeedback()
         }
     }
 
     private fun getData() {
+        checkRatingEligibility()
         viewModelScope.launch {
             useCases.getUserScore().collectLatest { userScore ->
                 _state.update {
@@ -131,6 +136,40 @@ class HomeScreenVM @Inject constructor(
                 .collectLatest { count ->
                     _state.update { it.copy(swipeModeQuestionCount = count) }
                 }
+        }
+    }
+
+    private fun checkRatingEligibility() {
+        if (useCases.checkAppRatingEligibility()) {
+            _state.update { it.copy(ratingPromptState = RatingPromptState.QUESTION) }
+        }
+    }
+
+    private fun handleRatingSelected(rating: Int) {
+        if (rating >= 4) {
+            _state.update { it.copy(ratingPromptState = RatingPromptState.POSITIVE_FEEDBACK) }
+        } else {
+            _state.update { it.copy(ratingPromptState = RatingPromptState.NEGATIVE_FEEDBACK) }
+        }
+    }
+
+    private fun dismissRating() {
+        useCases.dismissAppRating()
+        _state.update { it.copy(ratingPromptState = RatingPromptState.HIDDEN) }
+    }
+
+    private fun rateStore() {
+        useCases.setAppRated()
+        _state.update { it.copy(ratingPromptState = RatingPromptState.HIDDEN) }
+        viewModelScope.launch {
+            _effect.emit(HomeSideEffect.LaunchReviewFlow)
+        }
+    }
+
+    private fun sendFeedback() {
+        _state.update { it.copy(ratingPromptState = RatingPromptState.HIDDEN) }
+        viewModelScope.launch {
+            _effect.emit(HomeSideEffect.OpenFeedbackMail)
         }
     }
     
