@@ -45,10 +45,6 @@ class MainActivity : ComponentActivity() {
             sharedPreferences.setInstallDate(System.currentTimeMillis())
         }
         
-        splashScreen.setKeepOnScreenCondition {
-            viewModel.state.value.isLoading
-        }
-
         enableEdgeToEdge()
         setContent {
             ParamedQuizTheme {
@@ -74,6 +70,10 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+        }
+
+        splashScreen.setKeepOnScreenCondition {
+            viewModel.state.value.isLoading
         }
     }
 
