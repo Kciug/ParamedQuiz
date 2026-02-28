@@ -9,6 +9,7 @@ import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.composables.rating.RatingPromptState
+import com.rafalskrzypczyk.core.domain.UserFeedback
 import com.rafalskrzypczyk.home_screen.domain.HomeScreenUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -67,8 +68,11 @@ class HomeScreenVM @Inject constructor(
             HomeUIEvents.OnDismissRating -> dismissRating()
             HomeUIEvents.OnRateStore -> rateStore()
             HomeUIEvents.OnSendFeedback -> sendFeedback()
+            is HomeUIEvents.OnFeedbackChanged -> handleFeedbackChanged(event.feedback)
             HomeUIEvents.OnNeverAskAgain -> neverAskAgain()
             HomeUIEvents.OnBackToRating -> backToRating()
+            HomeUIEvents.OnFeedbackSuccessConsumed -> _state.update { it.copy(ratingPromptState = RatingPromptState.HIDDEN) }
+            HomeUIEvents.OnFeedbackErrorConsumed -> _state.update { it.copy(feedbackErrorMessage = null) }
         }
     }
 
@@ -149,10 +153,14 @@ class HomeScreenVM @Inject constructor(
 
     private fun handleRatingSelected(rating: Int) {
         if (rating >= 4) {
-            _state.update { it.copy(ratingPromptState = RatingPromptState.POSITIVE_FEEDBACK) }
+            _state.update { it.copy(ratingPromptState = RatingPromptState.POSITIVE_FEEDBACK, ratingValue = rating) }
         } else {
-            _state.update { it.copy(ratingPromptState = RatingPromptState.NEGATIVE_FEEDBACK) }
+            _state.update { it.copy(ratingPromptState = RatingPromptState.NEGATIVE_FEEDBACK, ratingValue = rating) }
         }
+    }
+
+    private fun handleFeedbackChanged(feedback: String) {
+        _state.update { it.copy(feedbackText = feedback) }
     }
 
     private fun dismissRating() {
@@ -177,9 +185,27 @@ class HomeScreenVM @Inject constructor(
     }
 
     private fun sendFeedback() {
-        _state.update { it.copy(ratingPromptState = RatingPromptState.HIDDEN) }
+        val currentState = state.value
+        val feedback = UserFeedback(
+            feedback = currentState.feedbackText,
+            rating = currentState.ratingValue
+        )
         viewModelScope.launch {
-            _effect.emit(HomeSideEffect.OpenFeedbackMail)
+            useCases.saveFeedback(feedback).collectLatest { response ->
+                when(response) {
+                    is Response.Loading -> {
+                        _state.update { it.copy(isSendingFeedback = true, feedbackErrorMessage = null) }
+                    }
+                    is Response.Success -> {
+                        _state.update { it.copy(isSendingFeedback = false, feedbackText = "") }
+                        useCases.setAppRated()
+                        _effect.emit(HomeSideEffect.FeedbackSuccess)
+                    }
+                    is Response.Error -> {
+                        _state.update { it.copy(isSendingFeedback = false, feedbackErrorMessage = response.error) }
+                    }
+                }
+            }
         }
     }
 
@@ -231,6 +257,5 @@ class HomeScreenVM @Inject constructor(
     }
 
     private fun consumeNavigation() {
-        // Handle if needed
     }
 }

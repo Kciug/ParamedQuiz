@@ -39,7 +39,8 @@ fun TextFieldPrimary(
     hint: String = "",
     keyboardType: KeyboardType = KeyboardType.Text,
     imeAction: ImeAction = ImeAction.None,
-    contentType: ContentType? = null
+    contentType: ContentType? = null,
+    enabled: Boolean = true
 ) {
     BaseTextField(
         textValue = textValue,
@@ -51,7 +52,8 @@ fun TextFieldPrimary(
         visualTransformation = VisualTransformation.None,
         trailingIcon = null,
         singleLine = true,
-        modifier = modifier
+        modifier = modifier,
+        enabled = enabled
     )
 }
 
@@ -65,7 +67,8 @@ fun TextFieldMultiLine(
     maxLines: Int = 10,
     keyboardType: KeyboardType = KeyboardType.Text,
     imeAction: ImeAction = ImeAction.Default,
-    contentType: ContentType? = null
+    contentType: ContentType? = null,
+    enabled: Boolean = true
 ) {
     BaseTextField(
         textValue = textValue,
@@ -79,7 +82,8 @@ fun TextFieldMultiLine(
         singleLine = false,
         minLines = minLines,
         maxLines = maxLines,
-        modifier = modifier
+        modifier = modifier,
+        enabled = enabled
     )
 }
 
@@ -91,7 +95,8 @@ fun PasswordTextFieldPrimary(
     onPasswordChange: (String) -> Unit,
     hint: String = "",
     imeAction: ImeAction = ImeAction.None,
-    contentType: ContentType? = ContentType.Password
+    contentType: ContentType? = ContentType.Password,
+    enabled: Boolean = true
 ) {
     var showPassword by remember { mutableStateOf(false) }
 
@@ -107,12 +112,13 @@ fun PasswordTextFieldPrimary(
             val icon = if (showPassword) Icons.Default.Visibility else Icons.Default.VisibilityOff
             val desc = if (showPassword) "Ukryj hasło" else "Pokaż hasło"
 
-            IconButton(onClick = { showPassword = !showPassword }) {
+            IconButton(onClick = { showPassword = !showPassword }, enabled = enabled) {
                 Icon(imageVector = icon, contentDescription = desc)
             }
         },
         singleLine = true,
-        modifier = modifier
+        modifier = modifier,
+        enabled = enabled
     )
 }
 
@@ -129,7 +135,8 @@ private fun BaseTextField(
     trailingIcon: (@Composable (() -> Unit))? = null,
     singleLine: Boolean,
     minLines: Int = 1,
-    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE
+    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
+    enabled: Boolean = true
 ) {
     TextField(
         value = textValue,
@@ -144,6 +151,7 @@ private fun BaseTextField(
         singleLine = singleLine,
         minLines = minLines,
         maxLines = maxLines,
+        enabled = enabled,
         modifier = modifier
             .fillMaxWidth()
             .clip(shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT))

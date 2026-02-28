@@ -9,6 +9,7 @@ object FirestoreCollections {
     const val SWIPE_QUESTIONS = "development_swipe_questions"
     const val TRANSLATION_QUESTIONS = "development_translations"
     const val ISSUES_REPORTS = "issues_reports"
+    const val APP_FEEDBACK = "app_feedback"
 
     const val APP_CONFIG = "app_config"
     const val TERMS_OF_SERVICE = "terms_of_service"

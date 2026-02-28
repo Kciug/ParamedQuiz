@@ -22,5 +22,9 @@ data class HomeScreenState (
     val swipeModeQuestionCount: Int = 0,
     val isPurchasing: Boolean = false,
     val purchaseError: String? = null,
-    val ratingPromptState: RatingPromptState = RatingPromptState.HIDDEN
+    val ratingPromptState: RatingPromptState = RatingPromptState.HIDDEN,
+    val ratingValue: Int = 0,
+    val feedbackText: String = "",
+    val isSendingFeedback: Boolean = false,
+    val feedbackErrorMessage: String? = null
 )

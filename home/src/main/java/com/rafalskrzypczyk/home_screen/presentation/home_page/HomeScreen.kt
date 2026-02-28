@@ -1,8 +1,6 @@
 package com.rafalskrzypczyk.home_screen.presentation.home_page
 
 import android.app.Activity
-import android.content.Context
-import android.content.Intent
 import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -31,7 +29,9 @@ import androidx.compose.material.icons.filled.AutoFixHigh
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.HistoryEdu
+import androidx.compose.material.icons.filled.PriorityHigh
 import androidx.compose.material.icons.filled.Swipe
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.Upcoming
@@ -58,7 +58,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import com.rafalskrzypczyk.core.composables.BasePurchaseBottomSheet
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.InfoDialog
@@ -69,6 +68,7 @@ import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.composables.rating.AppRatingCard
 import com.rafalskrzypczyk.core.composables.top_bars.MainTopBar
 import com.rafalskrzypczyk.core.ui.theme.MQGreen
+import com.rafalskrzypczyk.core.ui.theme.MQRed
 import com.rafalskrzypczyk.core.ui.theme.MQYellow
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.core.utils.InAppReviewManager
@@ -90,6 +90,7 @@ fun HomeScreen(
 ) {
     var showDailyExerciseAlreadyDoneAlert by remember { mutableStateOf(false) }
     var showRevisionsUnavailableAlert by remember { mutableStateOf(false) }
+    var showFeedbackSuccessAlert by remember { mutableStateOf(false) }
     var isDismissingMode by remember { mutableStateOf<String?>(null) }
     var isTrialMode by remember { mutableStateOf(false) }
 
@@ -125,13 +126,12 @@ fun HomeScreen(
         effect.collectLatest { effect ->
             when(effect) {
                 is HomeSideEffect.PurchaseSuccess -> {
-                    // Just let the UI update via state
                 }
                 HomeSideEffect.LaunchReviewFlow -> {
                     activity?.let { reviewManager.launchReviewFlow(it) }
                 }
-                HomeSideEffect.OpenFeedbackMail -> {
-                    sendFeedbackEmail(context)
+                HomeSideEffect.FeedbackSuccess -> {
+                    showFeedbackSuccessAlert = true
                 }
             }
         }
@@ -303,10 +303,14 @@ fun HomeScreen(
                     Spacer(modifier = Modifier.height(Dimens.DEFAULT_PADDING))
                     AppRatingCard(
                         state = state.ratingPromptState,
+                        feedbackText = state.feedbackText,
+                        onFeedbackChange = { feedback -> onEvent(HomeUIEvents.OnFeedbackChanged(feedback)) },
                         onRate = { rating -> onEvent(HomeUIEvents.OnRatingSelected(rating)) },
                         onStoreClick = { onEvent(HomeUIEvents.OnRateStore) },
                         onFeedbackClick = { onEvent(HomeUIEvents.OnSendFeedback) },
-                        onBack = { onEvent(HomeUIEvents.OnBackToRating) }
+                        onBack = { onEvent(HomeUIEvents.OnBackToRating) },
+                        isLoading = state.isSendingFeedback,
+                        enabled = !state.isSendingFeedback
                     )
                 }
             }
@@ -392,17 +396,31 @@ fun HomeScreen(
             onDismiss = { showRevisionsUnavailableAlert = false }
         )
     }
-}
 
-private fun sendFeedbackEmail(context: Context) {
-    val contactMail = context.getString(com.rafalskrzypczyk.core.R.string.contact_mail)
-    val intent = Intent(Intent.ACTION_SENDTO).apply {
-        data = "mailto:${contactMail}".toUri()
-        putExtra(Intent.EXTRA_SUBJECT, com.rafalskrzypczyk.core.R.string.feedback_mail_topic)
+    if(showFeedbackSuccessAlert) {
+        InfoDialog(
+            title = stringResource(id = com.rafalskrzypczyk.core.R.string.desc_success),
+            message = stringResource(id = com.rafalskrzypczyk.core.R.string.rating_feedback_success),
+            icon = Icons.Default.Favorite,
+            headerColor = MQRed,
+            onDismiss = { 
+                showFeedbackSuccessAlert = false 
+                onEvent(HomeUIEvents.OnFeedbackSuccessConsumed)
+            }
+        )
     }
-    try {
-        context.startActivity(Intent.createChooser(intent, "Wyślij opinię…"))
-    } catch (_: Exception) {}
+
+    if(state.feedbackErrorMessage != null) {
+        InfoDialog(
+            title = stringResource(id = com.rafalskrzypczyk.core.R.string.desc_error),
+            message = state.feedbackErrorMessage,
+            icon = Icons.Default.PriorityHigh,
+            headerColor = MQRed,
+            onDismiss = { 
+                onEvent(HomeUIEvents.OnFeedbackErrorConsumed)
+            }
+        )
+    }
 }
 
 @Composable
@@ -423,7 +441,6 @@ fun HomeScreenAddonsMenu(
         ) {
             items(addons, key = { it.title }) { addon ->
                 AddonButton(
-                    //modifier = cardWidthModifier,
                     addon = addon
                 )
             }

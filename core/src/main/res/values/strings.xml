@@ -116,4 +116,7 @@
     <string name="rating_dismiss_desc">Twoja opinia pomaga nam rozwijać MediQuiz. Możesz nas ocenić w dowolnym momencie.</string>
     <string name="btn_dismiss_later">Później</string>
     <string name="btn_dismiss_never">Nie pytaj ponownie</string>
-</resources>
+
+    <string name="rating_feedback_success">Dziękujemy za Twoją opinię! Pomagasz nam ulepszać MediQuiz.</string>
+    <string name="rating_feedback_error">Wystąpił błąd podczas wysyłania opinii. Spróbuj ponownie później.</string>
+    </resources>

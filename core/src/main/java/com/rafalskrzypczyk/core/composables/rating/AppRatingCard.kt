@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import com.rafalskrzypczyk.core.R
 import com.rafalskrzypczyk.core.composables.ButtonPrimary
 import com.rafalskrzypczyk.core.composables.Dimens
+import com.rafalskrzypczyk.core.composables.TextFieldMultiLine
 import com.rafalskrzypczyk.core.ui.theme.MQRed
 import com.rafalskrzypczyk.core.ui.theme.MQYellow
 
@@ -49,10 +50,14 @@ import com.rafalskrzypczyk.core.ui.theme.MQYellow
 fun AppRatingCard(
     modifier: Modifier = Modifier,
     state: RatingPromptState,
+    feedbackText: String = "",
+    onFeedbackChange: (String) -> Unit = {},
     onRate: (Int) -> Unit,
     onStoreClick: () -> Unit,
     onFeedbackClick: () -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    isLoading: Boolean = false,
+    enabled: Boolean = true
 ) {
     if (state == RatingPromptState.HIDDEN) return
 
@@ -79,7 +84,8 @@ fun AppRatingCard(
                 when (currentState) {
                     RatingPromptState.QUESTION, RatingPromptState.CLOSING_OPTIONS -> {
                         RatingQuestionStep(
-                            onRate = onRate
+                            onRate = onRate,
+                            enabled = enabled
                         )
                     }
 
@@ -91,7 +97,9 @@ fun AppRatingCard(
                             iconColor = MQRed,
                             actionTitle = stringResource(R.string.btn_rate_store),
                             onAction = onStoreClick,
-                            onBack = onBack
+                            onBack = onBack,
+                            isLoading = isLoading,
+                            enabled = enabled
                         )
                     }
 
@@ -103,8 +111,19 @@ fun AppRatingCard(
                             iconColor = MQYellow,
                             actionTitle = stringResource(R.string.btn_send_feedback),
                             onAction = onFeedbackClick,
-                            onBack = onBack
-                        )
+                            onBack = onBack,
+                            isLoading = isLoading,
+                            enabled = enabled
+                        ) {
+                            TextFieldMultiLine(
+                                textValue = feedbackText,
+                                onValueChange = onFeedbackChange,
+                                hint = stringResource(R.string.report_issue_description_hint),
+                                modifier = Modifier.fillMaxWidth(),
+                                minLines = 3,
+                                enabled = enabled
+                            )
+                        }
                     }
 
                     else -> Unit
@@ -116,7 +135,8 @@ fun AppRatingCard(
 
 @Composable
 private fun RatingQuestionStep(
-    onRate: (Int) -> Unit
+    onRate: (Int) -> Unit,
+    enabled: Boolean = true
 ) {
     var rating by remember { mutableIntStateOf(0) }
 
@@ -152,7 +172,7 @@ private fun RatingQuestionStep(
                         tint = MQYellow,
                         modifier = Modifier
                             .size(40.dp)
-                            .clickable {
+                            .clickable(enabled = enabled) {
                                 rating = index
                                 onRate(index)
                             }
@@ -171,7 +191,10 @@ private fun FeedbackStep(
     iconColor: androidx.compose.ui.graphics.Color,
     actionTitle: String,
     onAction: () -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    isLoading: Boolean = false,
+    enabled: Boolean = true,
+    content: @Composable (() -> Unit)? = null
 ) {
     Column {
         Row(
@@ -198,6 +221,10 @@ private fun FeedbackStep(
                 )
             }
         }
+        if (content != null) {
+            Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
+            content()
+        }
         Spacer(modifier = Modifier.height(Dimens.DEFAULT_PADDING))
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -208,12 +235,15 @@ private fun FeedbackStep(
                 icon = Icons.AutoMirrored.Filled.ArrowBack,
                 description = stringResource(R.string.btn_back),
                 showBackground = false,
-                onClick = onBack
+                onClick = onBack,
+                enabled = enabled && !isLoading
             )
             ButtonPrimary(
                 title = actionTitle,
                 onClick = onAction,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                loading = isLoading,
+                enabled = enabled
             )
         }
     }
