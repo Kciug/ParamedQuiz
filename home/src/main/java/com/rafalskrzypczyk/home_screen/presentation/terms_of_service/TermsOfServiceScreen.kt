@@ -19,13 +19,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.fromHtml
 import com.rafalskrzypczyk.core.composables.ButtonPrimary
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.ErrorDialog
 import com.rafalskrzypczyk.core.composables.Loading
-import com.rafalskrzypczyk.core.utils.toAnnotatedString
-import com.rafalskrzypczyk.home_screen.presentation.terms_of_service.components.TermsOfServiceTopBar
 import com.rafalskrzypczyk.home.R
+import com.rafalskrzypczyk.home_screen.presentation.terms_of_service.components.TermsOfServiceTopBar
 
 @Composable
 fun TermsOfServiceScreen(
@@ -80,7 +81,7 @@ fun TermsOfServiceScreen(
                         ) {
                             item {
                                 Text(
-                                    text = terms.content.toAnnotatedString(),
+                                    text = AnnotatedString.fromHtml(terms.content),
                                     modifier = Modifier.fillMaxWidth(),
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
