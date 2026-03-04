@@ -85,14 +85,16 @@ fun TextCaption(
     text: String,
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.onSurfaceVariant,
-    textAlign: TextAlign? = TextAlign.Unspecified
+    textAlign: TextAlign? = TextAlign.Unspecified,
+    fontWeight: FontWeight? = null
 ) {
     Text(
         modifier = modifier,
         text = text,
         style = MaterialTheme.typography.labelSmall,
         color = color,
-        textAlign = textAlign
+        textAlign = textAlign,
+        fontWeight = fontWeight
     )
 }
 
