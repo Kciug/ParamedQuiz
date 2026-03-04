@@ -1,0 +1,33 @@
+package com.rafalskrzypczyk.home_screen.domain.user_page
+
+import com.rafalskrzypczyk.cem_mode.domain.CemRepository
+import com.rafalskrzypczyk.core.api_response.Response
+import com.rafalskrzypczyk.home_screen.domain.CalculateResultUC
+import com.rafalskrzypczyk.home_screen.domain.models.ModeResult
+import com.rafalskrzypczyk.score.domain.ScoreManager
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import javax.inject.Inject
+
+class GetCemModeResultUC @Inject constructor(
+    private val scoreManager: ScoreManager,
+    private val cemRepository: CemRepository,
+    private val calculateResult: CalculateResultUC
+) {
+    operator fun invoke(): Flow<Response<ModeResult?>> {
+        val score = scoreManager.getScore()
+
+        return cemRepository.getAllCemQuestions().map { response ->
+            when(response) {
+                is Response.Loading -> Response.Loading
+                is Response.Error -> Response.Error(response.error)
+                is Response.Success -> {
+                    val questions = response.data
+                    val filteredScore = score.seenQuestions.filter { it.questionId in questions.map { it.id } }
+                    val result = calculateResult(filteredScore)
+                    Response.Success(result)
+                }
+            }
+        }
+    }
+}

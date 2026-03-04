@@ -202,6 +202,29 @@ class UserPageVM @Inject constructor(
                 }
             }
         }
+
+        viewModelScope.launch {
+            useCases.getCemModeResult().collect { response ->
+                when(response) {
+                    is Response.Error -> {
+                        _state.update { it.copy(cemModeResultResponse = ResponseState.Error(response.error)) }
+                    }
+                    Response.Loading -> {
+                        _state.update { it.copy(cemModeResultResponse = ResponseState.Loading) }
+                    }
+                    is Response.Success -> {
+                        val data = response.data
+                        _state.update { it.copy(
+                            cemModeResultResponse = ResponseState.Success,
+                            cemModeResultAvailable = data != null,
+                            cemModeResult = data?.score ?: 0,
+                            cemModeCorrect = data?.correctAnswers ?: 0,
+                            cemModeTotal = data?.totalAnswers ?: 0
+                        ) }
+                    }
+                }
+            }
+        }
     }
 
     private fun getQuestionsData() {

@@ -25,6 +25,7 @@ fun UserStatisticsComponent(
     mainModeResultAvailable: Boolean,
     swipeModeResultAvailable: Boolean,
     translationModeResultAvailable: Boolean,
+    cemModeResultAvailable: Boolean,
     overallResult: Int,
     mainModeResult: Int,
     mainModeCorrect: Int = 0,
@@ -35,6 +36,9 @@ fun UserStatisticsComponent(
     translationModeResult: Int,
     translationModeCorrect: Int = 0,
     translationModeTotal: Int = 0,
+    cemModeResult: Int,
+    cemModeCorrect: Int = 0,
+    cemModeTotal: Int = 0,
     totalCorrect: Int,
     totalIncorrect: Int,
     totalUnique: Int,
@@ -85,6 +89,15 @@ fun UserStatisticsComponent(
                 totalAnswers = translationModeTotal,
                 isAvailable = translationModeResultAvailable
             )
+
+            ModeScoreTile(
+                mode = QuizMode.CemMode,
+                title = stringResource(R.string.stats_result_cem_mode),
+                score = cemModeResult,
+                correctAnswers = cemModeCorrect,
+                totalAnswers = cemModeTotal,
+                isAvailable = cemModeResultAvailable
+            )
             
             TextHeadline(text = stringResource(R.string.stats_best_worst_header))
             
@@ -119,6 +132,10 @@ private fun UserStatisticsComponentPreview() {
             translationModeResult = 55,
             translationModeCorrect = 55,
             translationModeTotal = 100,
+            cemModeResultAvailable = true,
+            cemModeResult = 45,
+            cemModeCorrect = 45,
+            cemModeTotal = 100,
             totalCorrect = 120,
             totalIncorrect = 20,
             totalUnique = 100,
