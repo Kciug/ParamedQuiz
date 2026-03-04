@@ -2,4 +2,12 @@
 <resources>
     <string name="title_cem_mode_quiz_card">Quiz</string>
     <string name="title_cem_subcategories_header">Kategorie</string>
+    <string name="title_cem_mode">Pytania egzaminacyjne</string>
+
+    <string name="cem_ob_page_1_title">Pytania egzaminacyjne</string>
+    <string name="cem_ob_page_1_message">Ćwicz z prawdziwymi pytaniami egzaminacyjnymi, aby przygotować się do egzaminów.</string>
+    <string name="cem_ob_page_2_title">Kategorie i podkategorie</string>
+    <string name="cem_ob_page_2_message">Pytania są pogrupowane w kategorie i podkategorie, aby ułatwić naukę.</string>
+    <string name="cem_ob_page_3_title">Ucz się z wyjaśnień</string>
+    <string name="cem_ob_page_3_message">Po udzieleniu odpowiedzi przeczytaj szczegółowe wyjaśnienia, aby pogłębić swoją wiedzę.</string>
 </resources>

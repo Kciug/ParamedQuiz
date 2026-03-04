@@ -16,6 +16,9 @@ import androidx.navigation.compose.rememberNavController
 import com.rafalskrzypczyk.cem_mode.presentation.categories_screen.CemCategoriesScreen
 import com.rafalskrzypczyk.cem_mode.presentation.categories_screen.CemCategoriesVM
 import com.rafalskrzypczyk.cem_mode.presentation.quiz_screen.CemQuizVM
+import com.rafalskrzypczyk.cem_mode.presentation.onboarding.CemOnboardingScreen
+import com.rafalskrzypczyk.cem_mode.presentation.onboarding.CemOnboardingVM
+import com.rafalskrzypczyk.cem_mode.presentation.CemModeEntryVM
 import com.rafalskrzypczyk.core.quiz.models.CategoryUIM
 import com.rafalskrzypczyk.main_mode.presentation.quiz_base.MMQuizScreen
 
@@ -25,11 +28,13 @@ fun CemModeNavHost(
     onUserPanel: () -> Unit
 ) {
     val cemNavController = rememberNavController()
+    val entryViewModel = hiltViewModel<CemModeEntryVM>()
+    val startDestination = if (entryViewModel.isOnboardingSeen()) CemCategoriesRoute() else CemOnboardingRoute
 
     NavHost(
         modifier = Modifier.background(MaterialTheme.colorScheme.background),
         navController = cemNavController,
-        startDestination = CemCategoriesRoute(),
+        startDestination = startDestination,
         enterTransition = {
             slideIntoContainer(
                 towards = AnimatedContentTransitionScope.SlideDirection.Left,
@@ -55,6 +60,18 @@ fun CemModeNavHost(
             )
         }
     ) {
+        cemOnboardingDestination(
+            onNavigateBack = {
+                if (!cemNavController.popBackStack()) {
+                    onExit()
+                }
+            },
+            onFinishOnboarding = {
+                cemNavController.navigate(CemCategoriesRoute()) {
+                    popUpTo(CemOnboardingRoute) { inclusive = true }
+                }
+            }
+        )
         cemCategoriesDestination(
             onUserPanel = onUserPanel,
             onCategoryClick = { category ->
@@ -78,6 +95,22 @@ fun CemModeNavHost(
                 if (!cemNavController.popBackStack()) {
                     onExit()
                 }
+            }
+        )
+    }
+}
+
+fun NavGraphBuilder.cemOnboardingDestination(
+    onNavigateBack: () -> Unit,
+    onFinishOnboarding: () -> Unit
+) {
+    composable<CemOnboardingRoute> {
+        val viewModel = hiltViewModel<CemOnboardingVM>()
+
+        CemOnboardingScreen(
+            onNavigateBack = onNavigateBack,
+            onFinishOnboarding = {
+                viewModel.finishOnboarding(onFinishOnboarding)
             }
         )
     }
