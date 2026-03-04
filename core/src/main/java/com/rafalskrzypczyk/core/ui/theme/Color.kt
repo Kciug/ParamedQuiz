@@ -49,6 +49,7 @@ val OnErrorDark = Color(0xFFFFFFFF)
 val MQYellow = Color(0xFFFFD400)
 val MQRed = Color(0xFFFF2600)
 val MQGreen = Color(0xFF009900)
+val MQBlue = Color(0xFF2196F3)
 
 val ModeMain = Color(0xFF007AFF)
 val ModeSwipe = Color(0xFFAF52DE)

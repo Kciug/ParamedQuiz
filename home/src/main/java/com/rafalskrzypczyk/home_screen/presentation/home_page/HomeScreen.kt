@@ -76,6 +76,13 @@ import com.rafalskrzypczyk.home.R
 import com.rafalskrzypczyk.score.domain.StreakState
 import kotlinx.coroutines.flow.collectLatest
 
+import androidx.compose.material.icons.rounded.Bolt
+import androidx.compose.material.icons.rounded.History
+import com.rafalskrzypczyk.core.ui.theme.MQBlue
+import com.rafalskrzypczyk.home_screen.presentation.home_page.components.Addon
+import com.rafalskrzypczyk.home_screen.presentation.home_page.components.HomeScreenAddonsMenu
+import com.rafalskrzypczyk.home_screen.presentation.home_page.components.HomeScreenQuizModesMenu
+
 @Composable
 fun HomeScreen(
     state: HomeScreenState,
@@ -101,7 +108,8 @@ fun HomeScreen(
     val addons = listOf(
         Addon(
             title = stringResource(R.string.title_addon_daily_exercises),
-            imageRes = com.rafalskrzypczyk.core.R.drawable.mediquiz_dailyexercise,
+            icon = Icons.Rounded.Bolt,
+            iconBackgroundColor = MQRed,
             highlighted = state.isNewDailyExerciseAvailable,
             isAvailable = state.isNewDailyExerciseAvailable
         ) {
@@ -113,7 +121,8 @@ fun HomeScreen(
         },
         Addon(
             title = stringResource(R.string.title_addon_review),
-            imageRes = com.rafalskrzypczyk.core.R.drawable.mediquiz_revisions,
+            icon = Icons.Rounded.History,
+            iconBackgroundColor = MQBlue,
             isAvailable = false,
         ) { showRevisionsUnavailableAlert = true },
     )
@@ -420,95 +429,6 @@ fun HomeScreen(
                 onEvent(HomeUIEvents.OnFeedbackErrorConsumed)
             }
         )
-    }
-}
-
-@Composable
-fun HomeScreenAddonsMenu(
-    modifier: Modifier = Modifier,
-    addons: List<Addon>
-) {
-    Column(modifier = modifier.fillMaxWidth()) {
-        TextHeadline(
-            text = stringResource(R.string.title_addons),
-            modifier = Modifier.padding(start = Dimens.DEFAULT_PADDING, top = Dimens.DEFAULT_PADDING)
-        )
-        Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
-
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = Dimens.DEFAULT_PADDING),
-            horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
-        ) {
-            items(addons, key = { it.title }) { addon ->
-                AddonButton(
-                    addon = addon
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun HomeScreenQuizModesMenu(
-    modifier: Modifier = Modifier,
-    isTranslationModeUnlocked: Boolean,
-    isSwipeModeUnlocked: Boolean,
-    onNavigateToMainMode: () -> Unit,
-    onNavigateToSwipeMode: (Boolean) -> Unit,
-    onNavigateToTranslationMode: () -> Unit
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(Dimens.DEFAULT_PADDING),
-        verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL)
-    ) {
-        TextHeadline(stringResource(R.string.title_quiz_modes))
-        QuizModeButton(
-            title = stringResource(com.rafalskrzypczyk.core.R.string.title_main_mode),
-            description = stringResource(R.string.mode_quiz_desc),
-            imageRes = com.rafalskrzypczyk.core.R.drawable.mediquiz_mainmode
-        ) { onNavigateToMainMode() }
-        QuizModeButton(
-            title = stringResource(com.rafalskrzypczyk.core.R.string.title_swipe_mode),
-            description = stringResource(R.string.mode_swipe_desc),
-            imageRes = com.rafalskrzypczyk.core.R.drawable.mediquiz_swipemode
-        ) { onNavigateToSwipeMode(false) }
-        QuizModeButton(
-            title = stringResource(com.rafalskrzypczyk.core.R.string.title_translation_mode),
-            description = stringResource(R.string.mode_translation_desc),
-            imageRes = com.rafalskrzypczyk.core.R.drawable.mediquiz_translations,
-            locked = !isTranslationModeUnlocked
-        ) { onNavigateToTranslationMode() }
-        Card (
-            modifier = Modifier.padding(top = Dimens.ELEMENTS_SPACING),
-            colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-            shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT),
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(
-                                MaterialTheme.colorScheme.surface,
-                                Color.Transparent
-                            ),
-                            endY = 100f
-                        ),
-                    )
-                    .padding(
-                        horizontal = Dimens.DEFAULT_PADDING,
-                        vertical = Dimens.DEFAULT_PADDING * 2
-                    ),
-                horizontalArrangement = Arrangement.Center,
-            ) {
-                TextHeadline(
-                    text = stringResource(R.string.more_modes_soon),
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                )
-            }
-        }
     }
 }
 
