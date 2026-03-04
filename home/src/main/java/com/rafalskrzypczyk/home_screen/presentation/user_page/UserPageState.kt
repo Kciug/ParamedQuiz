@@ -26,5 +26,6 @@ data class UserPageState (
     val mainModeResult: Int = 0,
     val swipeModeResult: Int = 0,
     val translationModeResult: Int = 0,
+    val weeklyStreak: List<Boolean> = List(7) { false },
     val bestWorstQuestions: BestWorstQuestionsUIM = BestWorstQuestionsUIM()
 )

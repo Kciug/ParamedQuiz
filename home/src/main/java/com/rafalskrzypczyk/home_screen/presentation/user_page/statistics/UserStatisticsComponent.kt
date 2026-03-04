@@ -9,7 +9,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.rafalskrzypczyk.core.composables.Dimens
@@ -18,6 +17,8 @@ import com.rafalskrzypczyk.core.composables.TextHeadline
 import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.home.R
 import com.rafalskrzypczyk.home_screen.domain.models.QuestionWithStats
+import com.rafalskrzypczyk.home_screen.presentation.user_page.statistics.components.ModeScoreTile
+import com.rafalskrzypczyk.home_screen.presentation.user_page.statistics.components.OverallScoreTile
 
 @Composable
 fun UserStatisticsComponent(
@@ -34,41 +35,40 @@ fun UserStatisticsComponent(
     onNextMode: () -> Unit,
     onPreviousMode: () -> Unit
 ) {
-    val configuration = LocalConfiguration.current
-    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-
     Column(
-        modifier = modifier.padding(Dimens.DEFAULT_PADDING),
+        modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
     ) {
-        TextHeadline(text = stringResource(R.string.stats_header))
         if(overallResultAvailable) {
-            TextPrimary(text = stringResource(R.string.stats_overall))
-            StatisticsChart(
-                modifier = Modifier
-                    .fillMaxWidth(0.8f)
-                    .padding(Dimens.DEFAULT_PADDING),
-                isLandscape = isLandscape,
-                progress = overallResult,
-                numericalValueText = stringResource(R.string.percentage, overallResult),
-                numericalValueDescription = stringResource(R.string.stats_correct_answers),
-                strokeWidth = Dimens.STAT_BAR_WIDTH_THICK
-            )
+            OverallScoreTile(score = overallResult)
+            
             HorizontalDivider()
-            QuizModesResults(
-                modifier = Modifier.fillMaxWidth(),
-                isLandscape = isLandscape,
-                mainModeResultAvailable = mainModeResultAvailable,
-                swipeModeResultAvailable = swipeModeResultAvailable,
-                translationModeResultAvailable = translationModeResultAvailable,
-                mainModeResult = mainModeResult,
-                swipeModeResult = swipeModeResult,
-                translationModeResult = translationModeResult
+            
+            TextPrimary(text = stringResource(R.string.stats_modes_results))
+            
+            ModeScoreTile(
+                title = stringResource(com.rafalskrzypczyk.core.R.string.title_main_mode),
+                score = mainModeResult,
+                isAvailable = mainModeResultAvailable
             )
+            
+            ModeScoreTile(
+                title = stringResource(com.rafalskrzypczyk.core.R.string.title_swipe_mode),
+                score = swipeModeResult,
+                isAvailable = swipeModeResultAvailable
+            )
+            
+            ModeScoreTile(
+                title = stringResource(R.string.stats_result_translation_mode),
+                score = translationModeResult,
+                isAvailable = translationModeResultAvailable
+            )
+            
             HorizontalDivider()
+            
             BestWorstQuestionsComponent(
-                isLandscape = isLandscape,
+                isLandscape = false,
                 questions = bestWorstQuestions,
                 onNextMode = onNextMode,
                 onPreviousMode = onPreviousMode
@@ -78,8 +78,6 @@ fun UserStatisticsComponent(
         }
     }
 }
-
-
 
 @Composable
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
@@ -101,12 +99,6 @@ private fun UserStatisticsComponentPreview() {
                         question = "Czy to wygląda dobrze?",
                         correctAnswers = 11,
                         wrongAnswers = 3
-                    ),
-                    QuestionWithStats(
-                        id = 2,
-                        question = "Czy to działa?",
-                        correctAnswers = 7,
-                        wrongAnswers = 4
                     )
                 ),
                 worstQuestions = listOf(
@@ -115,12 +107,6 @@ private fun UserStatisticsComponentPreview() {
                         question = "Czy to wygląda źle?",
                         correctAnswers = 2,
                         wrongAnswers = 22
-                    ),
-                    QuestionWithStats(
-                        id = 2,
-                        question = "Czy to czasem przestało działac?",
-                        correctAnswers = 7,
-                        wrongAnswers = 4
                     )
                 )
             ),

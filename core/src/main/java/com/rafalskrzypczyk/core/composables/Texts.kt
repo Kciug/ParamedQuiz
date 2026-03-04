@@ -84,7 +84,7 @@ fun TextTitle(
 fun TextCaption(
     text: String,
     modifier: Modifier = Modifier,
-    color: Color = MaterialTheme.colorScheme.tertiary,
+    color: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     textAlign: TextAlign? = TextAlign.Unspecified
 ) {
     Text(

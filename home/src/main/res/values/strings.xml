@@ -80,6 +80,18 @@
 
     <string name="percentage">%1$d%%</string>
 
+    <string name="stats_streak">Seria</string>
+    <string name="stats_points">Punkty</string>
+    <string name="stats_modes_results">Wyniki trybów</string>
+    
+    <string name="day_mon">Pon</string>
+    <string name="day_tue">Wt</string>
+    <string name="day_wed">Śr</string>
+    <string name="day_thu">Czw</string>
+    <string name="day_fri">Pt</string>
+    <string name="day_sat">Sob</string>
+    <string name="day_sun">Ndz</string>
+
     <string name="frontfolks_website">www.frontfolks.com</string>
     <string name="frontfolks_url">https://www.frontfolks.com/</string>
     <string name="terms_of_service">Warunki serwisu</string>

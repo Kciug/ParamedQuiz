@@ -26,7 +26,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccountCircle
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -60,12 +59,12 @@ import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.SettingsButton
 import com.rafalskrzypczyk.core.composables.TextHeadline
 import com.rafalskrzypczyk.core.composables.TextPrimary
-import com.rafalskrzypczyk.core.composables.UserPointsLabel
-import com.rafalskrzypczyk.core.composables.UserStreakLabel
 import com.rafalskrzypczyk.core.composables.top_bars.NavTopBar
 import com.rafalskrzypczyk.core.ui.theme.MQYellow
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.home_screen.presentation.user_page.statistics.UserStatisticsComponent
+import com.rafalskrzypczyk.home_screen.presentation.user_page.statistics.components.PointsTile
+import com.rafalskrzypczyk.home_screen.presentation.user_page.statistics.components.StreakTile
 import com.rafalskrzypczyk.score.domain.StreakState
 
 
@@ -95,7 +94,8 @@ fun UserPageScreen(
                 modifier = modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
             ) {
                 Spacer(Modifier.height(with(LocalDensity.current) {
                     topBarHeight.toDp() + WindowInsets.safeDrawing.getTop(this).toDp()
@@ -104,23 +104,32 @@ fun UserPageScreen(
                 if (state.isUserLoggedIn) {
                     UserPageUserDetails(
                         userName = state.userName,
-                        userPoints = state.userScore,
-                        userStreak = state.userStreak,
-                        userStreakState = state.userStreakState,
                         isPremium = state.isPremium
                     )
                 } else {
                     GuestUserSection(
-                        userPoints = state.userScore,
-                        userStreak = state.userStreak,
-                        userStreakState = state.userStreakState,
                         onRegisterClick = onOpenRegistration
                     )
                 }
 
-                Spacer(Modifier.height(Dimens.ELEMENTS_SPACING))
+                PointsTile(
+                    modifier = Modifier.padding(horizontal = Dimens.DEFAULT_PADDING),
+                    points = state.userScore
+                )
+                
+                StreakTile(
+                    modifier = Modifier.padding(horizontal = Dimens.DEFAULT_PADDING),
+                    streak = state.userStreak,
+                    weeklyStreak = state.weeklyStreak
+                )
+
+                TextHeadline(
+                    modifier = Modifier.padding(horizontal = Dimens.DEFAULT_PADDING),
+                    text = stringResource(com.rafalskrzypczyk.home.R.string.stats_header)
+                )
 
                 UserStatisticsComponent(
+                    modifier = Modifier.padding(horizontal = Dimens.DEFAULT_PADDING),
                     overallResultAvailable = state.overallResultAvailable,
                     mainModeResultAvailable = state.mainModeResultAvailable,
                     swipeModeResultAvailable = state.swipeModeResultAvailable,
@@ -153,9 +162,6 @@ fun UserPageScreen(
 fun UserPageUserDetails(
     modifier: Modifier = Modifier,
     userName: String,
-    userPoints: Int,
-    userStreak: Int,
-    userStreakState: StreakState,
     isPremium: Boolean = false
 ) {
     Box(
@@ -174,22 +180,12 @@ fun UserPageUserDetails(
                     ),
                     shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT)
                 )
-                .padding(top = Dimens.IMAGE_SIZE / 2 + Dimens.DEFAULT_PADDING),
+                .padding(top = Dimens.IMAGE_SIZE / 2 + Dimens.DEFAULT_PADDING)
+                .padding(bottom = Dimens.DEFAULT_PADDING),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
         ) {
             TextHeadline(userName)
-            Row (
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                UserPointsLabel(value = userPoints)
-                UserStreakLabel(
-                    value = userStreak,
-                    isPending = userStreakState == StreakState.PENDING
-                )
-            }
         }
 
         val borderModifier = if (isPremium) {
@@ -241,9 +237,6 @@ fun UserPageUserDetails(
 @Composable
 fun GuestUserSection(
     modifier: Modifier = Modifier,
-    userPoints: Int,
-    userStreak: Int,
-    userStreakState: StreakState,
     onRegisterClick: () -> Unit
 ) {
     Box(
@@ -263,7 +256,8 @@ fun GuestUserSection(
                     shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT)
                 )
                 .padding(top = Dimens.IMAGE_SIZE / 2 + Dimens.DEFAULT_PADDING)
-                .padding(horizontal = Dimens.DEFAULT_PADDING),
+                .padding(horizontal = Dimens.DEFAULT_PADDING)
+                .padding(bottom = Dimens.DEFAULT_PADDING),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
         ) {
@@ -276,18 +270,6 @@ fun GuestUserSection(
                 title = stringResource(com.rafalskrzypczyk.home.R.string.btn_register_login),
                 onClick = onRegisterClick
             )
-            HorizontalDivider()
-            Row (
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                UserPointsLabel(value = userPoints)
-                UserStreakLabel(
-                    value = userStreak,
-                    isPending = userStreakState == StreakState.PENDING
-                )
-            }
         }
 
         Image(
