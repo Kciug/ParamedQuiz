@@ -10,5 +10,6 @@ fun CemCategory.toUIM(): CategoryUIM = CategoryUIM(
     questionCount = questionsCount.toString(),
     subcategoriesCount = subcategoriesCount,
     unlocked = unlocked,
-    progress = 0f
+    progress = 0f,
+    questionIDs = questionIDs
 )

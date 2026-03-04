@@ -12,5 +12,6 @@ data class CemCategoriesState(
     val isPremium: Boolean = false,
     val userAvatar: String? = null,
     val categories: Response<List<CategoryUIM>> = Response.Loading,
-    val title: String = ""
+    val title: String = "",
+    val parentCategory: CategoryUIM? = null
 )

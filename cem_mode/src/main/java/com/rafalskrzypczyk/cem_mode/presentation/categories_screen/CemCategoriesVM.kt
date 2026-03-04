@@ -41,6 +41,7 @@ class CemCategoriesVM @Inject constructor(
 
     init {
         loadCategories()
+        loadParentCategory()
         observeCategoriesUpdate()
         observeUserData()
         observePremiumStatus()
@@ -48,7 +49,22 @@ class CemCategoriesVM @Inject constructor(
 
     fun onEvent(event: CemCategoriesUIEvents) {
         when (event) {
-            CemCategoriesUIEvents.OnRetry -> loadCategories()
+            CemCategoriesUIEvents.OnRetry -> {
+                loadCategories()
+                loadParentCategory()
+            }
+        }
+    }
+
+    private fun loadParentCategory() {
+        if (parentId == 0L) return
+
+        viewModelScope.launch {
+            useCases.getCemCategory(parentId).collectLatest { response ->
+                if (response is Response.Success) {
+                    _state.update { it.copy(parentCategory = response.data.toUIM()) }
+                }
+            }
         }
     }
 

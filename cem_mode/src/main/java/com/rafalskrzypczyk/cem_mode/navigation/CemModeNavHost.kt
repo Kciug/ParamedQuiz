@@ -64,6 +64,9 @@ fun CemModeNavHost(
                     cemNavController.navigate(CemQuizRoute(categoryId = category.id, categoryTitle = category.title))
                 }
             },
+            onQuizClick = { category ->
+                cemNavController.navigate(CemQuizRoute(categoryId = category.id, categoryTitle = category.title))
+            },
             onNavigateBack = {
                 if (!cemNavController.popBackStack()) {
                     onExit()
@@ -83,6 +86,7 @@ fun CemModeNavHost(
 fun NavGraphBuilder.cemCategoriesDestination(
     onUserPanel: () -> Unit,
     onCategoryClick: (CategoryUIM) -> Unit,
+    onQuizClick: (CategoryUIM) -> Unit,
     onNavigateBack: () -> Unit
 ) {
     composable<CemCategoriesRoute> {
@@ -94,7 +98,8 @@ fun NavGraphBuilder.cemCategoriesDestination(
             onEvent = viewModel::onEvent,
             onNavigateBack = onNavigateBack,
             onUserPanel = onUserPanel,
-            onCategoryClick = onCategoryClick
+            onCategoryClick = onCategoryClick,
+            onQuizClick = onQuizClick
         )
     }
 }

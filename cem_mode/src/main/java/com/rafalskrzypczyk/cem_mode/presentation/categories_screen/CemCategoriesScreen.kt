@@ -9,10 +9,15 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.rafalskrzypczyk.cem_mode.R
+import com.rafalskrzypczyk.cem_mode.presentation.categories_screen.components.CemCategoryQuizCard
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.ErrorDialog
 import com.rafalskrzypczyk.core.composables.Loading
+import com.rafalskrzypczyk.core.composables.TextHeadline
+import com.rafalskrzypczyk.core.composables.TextTitle
 import com.rafalskrzypczyk.core.composables.quiz.CategoryCard
 import com.rafalskrzypczyk.core.composables.top_bars.MainTopBarWithNav
 import com.rafalskrzypczyk.core.quiz.models.CategoryUIM
@@ -24,7 +29,8 @@ fun CemCategoriesScreen(
     onEvent: (CemCategoriesUIEvents) -> Unit,
     onNavigateBack: () -> Unit,
     onUserPanel: () -> Unit,
-    onCategoryClick: (CategoryUIM) -> Unit
+    onCategoryClick: (CategoryUIM) -> Unit,
+    onQuizClick: (CategoryUIM) -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -54,6 +60,32 @@ fun CemCategoriesScreen(
                     contentPadding = PaddingValues(Dimens.DEFAULT_PADDING),
                     verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
                 ) {
+                    if (state.title.isNotEmpty()) {
+                        item {
+                            TextTitle(text = state.title)
+                        }
+                    }
+
+                    state.parentCategory?.let { parent ->
+                        if (parent.questionIDs.isNotEmpty()) {
+                            item {
+                                CemCategoryQuizCard(
+                                    category = parent,
+                                    onClick = { onQuizClick(parent) }
+                                )
+                            }
+                        }
+                    }
+
+                    val showSubcategoriesHeader = response.data.isNotEmpty() && 
+                        state.parentCategory?.questionIDs?.isNotEmpty() == true
+
+                    if (showSubcategoriesHeader) {
+                        item {
+                            TextHeadline(text = stringResource(R.string.title_cem_subcategories_header))
+                        }
+                    }
+
                     items(response.data) { category ->
                         CategoryCard(
                             category = category,

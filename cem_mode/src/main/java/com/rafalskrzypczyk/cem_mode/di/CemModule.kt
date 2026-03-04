@@ -4,6 +4,7 @@ import com.rafalskrzypczyk.cem_mode.data.CemRepositoryImpl
 import com.rafalskrzypczyk.cem_mode.domain.CemRepository
 import com.rafalskrzypczyk.cem_mode.domain.use_cases.CemCategoriesUseCases
 import com.rafalskrzypczyk.cem_mode.domain.use_cases.GetCemCategoriesUseCase
+import com.rafalskrzypczyk.cem_mode.domain.use_cases.GetCemCategoryUseCase
 import com.rafalskrzypczyk.cem_mode.domain.use_cases.GetUpdatedCemCategoriesUseCase
 import dagger.Binds
 import dagger.Module
@@ -25,10 +26,12 @@ abstract class CemModule {
         @Singleton
         fun provideCemUseCases(
             getCemCategories: GetCemCategoriesUseCase,
-            getUpdatedCemCategories: GetUpdatedCemCategoriesUseCase
+            getUpdatedCemCategories: GetUpdatedCemCategoriesUseCase,
+            getCemCategory: GetCemCategoryUseCase
         ): CemCategoriesUseCases = CemCategoriesUseCases(
             getCemCategories = getCemCategories,
-            getUpdatedCemCategories = getUpdatedCemCategories
+            getUpdatedCemCategories = getUpdatedCemCategories,
+            getCemCategory = getCemCategory
         )
     }
 }
