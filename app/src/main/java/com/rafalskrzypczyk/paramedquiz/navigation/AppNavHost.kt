@@ -100,7 +100,8 @@ fun AppNavHost(
         )
 
         cemModeDestination(
-            onExit = { navController.popBackStack() }
+            onExit = { navController.popBackStack() },
+            onUserPanel = { navController.navigateToUserPage() }
         )
 
         onboardingDestination(

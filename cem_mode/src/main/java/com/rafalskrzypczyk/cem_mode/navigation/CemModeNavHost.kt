@@ -20,7 +20,8 @@ import com.rafalskrzypczyk.cem_mode.presentation.categories_screen.CemCategories
 
 @Composable
 fun CemModeNavHost(
-    onExit: () -> Unit
+    onExit: () -> Unit,
+    onUserPanel: () -> Unit
 ) {
     val cemNavController = rememberNavController()
 
@@ -54,6 +55,7 @@ fun CemModeNavHost(
         }
     ) {
         cemCategoriesDestination(
+            onUserPanel = onUserPanel,
             onCategoryClick = { category ->
                 if (category.subcategoriesCount > 0) {
                     cemNavController.navigate(CemCategoriesRoute(parentId = category.id, categoryTitle = category.title))
@@ -71,6 +73,7 @@ fun CemModeNavHost(
 }
 
 fun NavGraphBuilder.cemCategoriesDestination(
+    onUserPanel: () -> Unit,
     onCategoryClick: (CategoryUIM) -> Unit,
     onNavigateBack: () -> Unit
 ) {
@@ -82,6 +85,7 @@ fun NavGraphBuilder.cemCategoriesDestination(
             state = state.value,
             onEvent = viewModel::onEvent,
             onNavigateBack = onNavigateBack,
+            onUserPanel = onUserPanel,
             onCategoryClick = onCategoryClick
         )
     }

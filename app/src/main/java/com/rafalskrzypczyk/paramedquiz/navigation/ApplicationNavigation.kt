@@ -242,10 +242,14 @@ fun NavController.navigateToTranslationMode() {
 object CemMode
 
 fun NavGraphBuilder.cemModeDestination(
-    onExit: () -> Unit
+    onExit: () -> Unit,
+    onUserPanel: () -> Unit
 ) {
     composable<CemMode> {
-        CemModeNavHost(onExit = onExit)
+        CemModeNavHost(
+            onExit = onExit,
+            onUserPanel = onUserPanel
+        )
     }
 }
 
