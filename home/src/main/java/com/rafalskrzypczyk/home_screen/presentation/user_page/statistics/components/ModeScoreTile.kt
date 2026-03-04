@@ -89,7 +89,8 @@ fun ModeScoreTile(
                 StatisticsChart(
                     modifier = Modifier.size(60.dp),
                     progress = score,
-                    strokeWidth = 6.dp
+                    strokeWidth = 6.dp,
+                    color = color
                 ) {
                     TextHeadline(
                         text = stringResource(R.string.percentage, score),
