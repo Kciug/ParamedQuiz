@@ -34,6 +34,11 @@ import com.rafalskrzypczyk.core.ui.theme.MQRed
 import com.rafalskrzypczyk.translation_mode.R
 import com.rafalskrzypczyk.translation_mode.domain.TranslationQuestionUIM
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.ui.platform.LocalConfiguration
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TranslationFeedbackPanel(
@@ -53,8 +58,12 @@ fun TranslationFeedbackPanel(
         question.possibleTranslations
     }
 
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
+
     Column(modifier = Modifier
         .fillMaxWidth()
+        .heightIn(max = screenHeight * 0.9f)
         .clip(
             shape = RoundedCornerShape(
                 topStart = Dimens.RADIUS_SMALL,
@@ -62,6 +71,7 @@ fun TranslationFeedbackPanel(
             )
         )
         .background(backgroundColor)
+        .verticalScroll(rememberScrollState())
         .padding(top = Dimens.DEFAULT_PADDING)
         .padding(horizontal = Dimens.DEFAULT_PADDING)
         .padding(bottom = bottomPadding)
