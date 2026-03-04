@@ -54,5 +54,6 @@ val MQBlue = Color(0xFF2196F3)
 val ModeMain = Color(0xFF007AFF)
 val ModeSwipe = Color(0xFFAF52DE)
 val ModeTranslation = Color(0xFF34C759)
+val ModeCem = Color(0xFFFF9500)
 
 val Link = Color(0xFF2196F3)

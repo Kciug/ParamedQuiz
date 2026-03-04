@@ -66,6 +66,7 @@
     <string name="stats_result_main_mode">Quiz</string>
     <string name="stats_result_swipe_mode">Wiedza w akcji</string>
     <string name="stats_result_translation_mode">Tłumaczenia</string>
+    <string name="stats_result_cem_mode">Egzaminy</string>
     <string name="stats_best_questions">Najlepsze pytania</string>
     <string name="stats_worst_questions">Najgorsze pytania</string>
     <string name="stats_question_correct_answers">poprawnych odpowiedzi: %1$d</string>
@@ -155,4 +156,6 @@
     <string name="feature_combo_title">Buduj combo</string>
     <string name="feature_combo_desc">Zdobywaj punkty za serie poprawnych odpowiedzi.</string>
     <string name="title_rating_section">Oceń nas!</string>
+    <string name="title_cem_mode">Pytania egzaminacyjne</string>
+    <string name="mode_cem_desc">Baza oficjalnych pytań z egzaminów państwowych</string>
 </resources>

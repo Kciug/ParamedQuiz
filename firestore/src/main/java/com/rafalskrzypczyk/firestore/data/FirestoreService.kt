@@ -12,6 +12,7 @@ import com.rafalskrzypczyk.core.utils.FirebaseError
 import com.rafalskrzypczyk.core.utils.ResourceProvider
 import com.rafalskrzypczyk.firestore.domain.FirestoreApi
 import com.rafalskrzypczyk.firestore.domain.models.CategoryDTO
+import com.rafalskrzypczyk.firestore.domain.models.CemCategoryDTO
 import com.rafalskrzypczyk.firestore.domain.models.FeedbackDTO
 import com.rafalskrzypczyk.firestore.domain.models.IssueReportDTO
 import com.rafalskrzypczyk.firestore.domain.models.QuestionDTO
@@ -85,6 +86,24 @@ class FirestoreService @Inject constructor(
 
     override fun getUpdatedTranslationQuestions(): Flow<List<TranslationQuestionDTO>> = attachFirestoreListener(FirestoreCollections.TRANSLATION_QUESTIONS)
         .map { it.toObjects(TranslationQuestionDTO::class.java) }
+
+    override fun getCemCategories(): Flow<Response<List<CemCategoryDTO>>> = flow {
+        emit(Response.Loading)
+        val categories = getFirestoreData(FirestoreCollections.CEM_CATEGORIES)?.toObjects(CemCategoryDTO::class.java) ?: emptyList()
+        emit(Response.Success(categories))
+    }.catch { emit(Response.Error(handleError(it))) }
+
+    override fun getUpdatedCemCategories(): Flow<List<CemCategoryDTO>> = attachFirestoreListener(FirestoreCollections.CEM_CATEGORIES)
+        .map { it.toObjects(CemCategoryDTO::class.java) }
+
+    override fun getCemQuestions(): Flow<Response<List<QuestionDTO>>> = flow {
+        emit(Response.Loading)
+        val questions = getFirestoreData(FirestoreCollections.CEM_QUESTIONS)?.toObjects(QuestionDTO::class.java) ?: emptyList()
+        emit(Response.Success(questions))
+    }.catch { emit(Response.Error(handleError(it))) }
+
+    override fun getUpdatedCemQuestions(): Flow<List<QuestionDTO>> = attachFirestoreListener(FirestoreCollections.CEM_QUESTIONS)
+    .map { it.toObjects(QuestionDTO::class.java) }
 
     override fun getUserScore(userId: String): Flow<Response<ScoreDTO>> = flow {
         emit(Response.Loading)

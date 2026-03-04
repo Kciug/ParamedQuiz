@@ -2,6 +2,7 @@ package com.rafalskrzypczyk.main_mode.presentation.categories_screen
 
 import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
+import com.rafalskrzypczyk.core.quiz.models.CategoryUIM
 import com.rafalskrzypczyk.main_mode.domain.quiz_categories.MMCategoriesUseCases
 import io.mockk.coVerify
 import io.mockk.every
@@ -45,7 +46,14 @@ class MMCategoriesVMTest {
 
     @Test
     fun `OpenPurchaseDialog triggers queryProducts`() = runTest {
-        val category = CategoryUIM(1, "Title", "Desc", "10", false, 0f)
+        val category = CategoryUIM(
+            id = 1,
+            title = "Title",
+            description = "Desc",
+            questionCount = "10",
+            unlocked = false,
+            progress = 0f
+        )
         
         viewModel.onEvent(MMCategoriesUIEvents.OpenPurchaseDialog(category))
         

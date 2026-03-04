@@ -1,5 +1,6 @@
 package com.rafalskrzypczyk.main_mode.presentation.categories_screen
 
+import android.app.Activity
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
@@ -18,17 +19,17 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.ErrorDialog
 import com.rafalskrzypczyk.core.composables.Loading
+import com.rafalskrzypczyk.core.composables.quiz.CategoryCard
 import com.rafalskrzypczyk.core.composables.top_bars.MainTopBarWithNav
+import com.rafalskrzypczyk.core.quiz.models.CategoryUIM
 import com.rafalskrzypczyk.score.domain.StreakState
-
-import android.app.Activity
-import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun MMCategoriesScreen(
@@ -138,4 +139,3 @@ fun MMCategoriesScreenContent(
         }
     }
 }
-

@@ -17,6 +17,7 @@ import com.rafalskrzypczyk.home_screen.presentation.user_page.UserPageVM
 import com.rafalskrzypczyk.home_screen.presentation.user_settings.UserSettingsScreen
 import com.rafalskrzypczyk.home_screen.presentation.user_settings.UserSettingsVM
 import androidx.compose.runtime.remember
+import com.rafalskrzypczyk.cem_mode.navigation.CemModeNavHost
 import com.rafalskrzypczyk.main_mode.navigation.MainModeNavHost
 import com.rafalskrzypczyk.main_mode.presentation.MainModeEntryVM
 import com.rafalskrzypczyk.translation_mode.navigation.TranslationModeNavHost
@@ -85,6 +86,7 @@ fun NavGraphBuilder.mainMenuDestination(
     onNavigateToMainMode: () -> Unit,
     onNavigateToSwipeMode: (Boolean) -> Unit,
     onNavigateToTranslationMode: () -> Unit,
+    onNavigateToCemMode: () -> Unit,
     onNavigateToDev: () -> Unit
 ) {
     composable<MainMenu> {
@@ -100,8 +102,8 @@ fun NavGraphBuilder.mainMenuDestination(
             onNavigateToMainMode = onNavigateToMainMode,
             onNavigateToSwipeMode = onNavigateToSwipeMode,
             onNavigateToTranslationMode = onNavigateToTranslationMode,
+            onNavigateToCemMode = onNavigateToCemMode,
             onNavigateToDevOptions = onNavigateToDev
-
         )
     }
 }
@@ -234,6 +236,25 @@ fun NavGraphBuilder.translationModeDestination(
 
 fun NavController.navigateToTranslationMode() {
     navigate(route = TranslationMode)
+}
+
+@Serializable
+object CemMode
+
+fun NavGraphBuilder.cemModeDestination(
+    onExit: () -> Unit,
+    onUserPanel: () -> Unit
+) {
+    composable<CemMode> {
+        CemModeNavHost(
+            onExit = onExit,
+            onUserPanel = onUserPanel
+        )
+    }
+}
+
+fun NavController.navigateToCemMode() {
+    navigate(route = CemMode)
 }
 
 @Serializable
