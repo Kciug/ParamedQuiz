@@ -16,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.LockedOverlay
@@ -72,8 +73,14 @@ fun QuizModeButton(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.Center,
                 ) {
-                    TextHeadline(title)
-                    TextPrimary(description)
+                    TextHeadline(
+                        text = title,
+                        textAlign = TextAlign.Start
+                    )
+                    TextPrimary(
+                        text = description,
+                        textAlign = TextAlign.Start
+                    )
                 }
             }
 
