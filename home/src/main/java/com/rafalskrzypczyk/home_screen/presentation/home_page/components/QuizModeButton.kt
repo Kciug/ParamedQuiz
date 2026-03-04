@@ -19,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.rafalskrzypczyk.core.composables.Dimens
-import com.rafalskrzypczyk.core.composables.LockedOverlay
 import com.rafalskrzypczyk.core.composables.TextHeadline
 import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.utils.ModeInfoProvider
@@ -32,7 +31,6 @@ fun QuizModeButton(
     title: String,
     description: String,
     mode: QuizMode,
-    locked: Boolean = false,
     onClick: () -> Unit
 ) {
     val icon = ModeInfoProvider.getIcon(mode)
@@ -44,48 +42,42 @@ fun QuizModeButton(
         onClick = rememberDebouncedClick(onClick = onClick),
         shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT),
     ) {
-        Box {
-            Row(
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Dimens.DEFAULT_PADDING),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Dimens.DEFAULT_PADDING)
+        ) {
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(Dimens.DEFAULT_PADDING),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(Dimens.DEFAULT_PADDING)
+                    .size(64.dp)
+                    .background(
+                        color = iconBackgroundColor,
+                        shape = RoundedCornerShape(Dimens.RADIUS_INNER_DEFAULT)
+                    ),
+                contentAlignment = Alignment.Center
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(64.dp)
-                        .background(
-                            color = iconBackgroundColor,
-                            shape = RoundedCornerShape(Dimens.RADIUS_INNER_DEFAULT)
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        modifier = Modifier.size(32.dp),
-                        tint = MaterialTheme.colorScheme.onBackground
-                    )
-                }
-
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    TextHeadline(
-                        text = title,
-                        textAlign = TextAlign.Start
-                    )
-                    TextPrimary(
-                        text = description,
-                        textAlign = TextAlign.Start
-                    )
-                }
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(32.dp),
+                    tint = MaterialTheme.colorScheme.onBackground
+                )
             }
 
-            if (locked) {
-                LockedOverlay(modifier = Modifier.matchParentSize())
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.Center,
+            ) {
+                TextHeadline(
+                    text = title,
+                    textAlign = TextAlign.Start
+                )
+                TextPrimary(
+                    text = description,
+                    textAlign = TextAlign.Start
+                )
             }
         }
     }

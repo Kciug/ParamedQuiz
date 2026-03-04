@@ -50,8 +50,7 @@ fun HomeScreenQuizModesMenu(
         QuizModeButton(
             title = stringResource(com.rafalskrzypczyk.core.R.string.title_translation_mode),
             description = stringResource(R.string.mode_translation_desc),
-            mode = QuizMode.TranslationMode,
-            locked = !isTranslationModeUnlocked
+            mode = QuizMode.TranslationMode
         ) { onNavigateToTranslationMode() }
         Card (
             modifier = Modifier.padding(top = Dimens.ELEMENTS_SPACING_SMALL),
