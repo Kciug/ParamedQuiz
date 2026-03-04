@@ -9,7 +9,7 @@ import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.user_management.CheckIsUserLoggedInUC
 import com.rafalskrzypczyk.core.user_management.UserManager
-import com.rafalskrzypczyk.cem_mode.domain.use_cases.CemUseCases
+import com.rafalskrzypczyk.cem_mode.domain.use_cases.CemCategoriesUseCases
 import com.rafalskrzypczyk.cem_mode.navigation.CemCategoriesRoute
 import com.rafalskrzypczyk.score.domain.use_cases.GetStreakStateUC
 import com.rafalskrzypczyk.score.domain.use_cases.GetUserScoreUC
@@ -23,7 +23,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CemCategoriesVM @Inject constructor(
-    private val useCases: CemUseCases,
+    private val useCases: CemCategoriesUseCases,
     private val getUserScoreUC: GetUserScoreUC,
     private val getStreakStateUC: GetStreakStateUC,
     private val checkIsUserLoggedInUC: CheckIsUserLoggedInUC,

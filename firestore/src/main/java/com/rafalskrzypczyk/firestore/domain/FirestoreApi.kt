@@ -27,6 +27,8 @@ interface FirestoreApi {
     fun getUpdatedTranslationQuestions(): Flow<List<TranslationQuestionDTO>>
     fun getCemCategories(): Flow<Response<List<CemCategoryDTO>>>
     fun getUpdatedCemCategories(): Flow<List<CemCategoryDTO>>
+    fun getCemQuestions(): Flow<Response<List<QuestionDTO>>>
+    fun getUpdatedCemQuestions(): Flow<List<QuestionDTO>>
     fun getUserScore(userId: String): Flow<Response<ScoreDTO>>
     fun updateUserScore(userId: String, score: ScoreDTO) : Flow<Response<Unit>>
     fun deleteUserScore(userId: String) : Flow<Response<Unit>>

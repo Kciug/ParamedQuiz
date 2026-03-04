@@ -9,14 +9,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.rafalskrzypczyk.core.quiz.models.CategoryUIM
 import com.rafalskrzypczyk.cem_mode.presentation.categories_screen.CemCategoriesScreen
 import com.rafalskrzypczyk.cem_mode.presentation.categories_screen.CemCategoriesVM
+import com.rafalskrzypczyk.cem_mode.presentation.quiz_screen.CemQuizVM
+import com.rafalskrzypczyk.core.quiz.models.CategoryUIM
+import com.rafalskrzypczyk.main_mode.presentation.quiz_base.MMQuizScreen
 
 @Composable
 fun CemModeNavHost(
@@ -60,9 +61,16 @@ fun CemModeNavHost(
                 if (category.subcategoriesCount > 0) {
                     cemNavController.navigate(CemCategoriesRoute(parentId = category.id, categoryTitle = category.title))
                 } else {
-                    // Navigate to Quiz later
+                    cemNavController.navigate(CemQuizRoute(categoryId = category.id, categoryTitle = category.title))
                 }
             },
+            onNavigateBack = {
+                if (!cemNavController.popBackStack()) {
+                    onExit()
+                }
+            }
+        )
+        cemQuizDestination(
             onNavigateBack = {
                 if (!cemNavController.popBackStack()) {
                     onExit()
@@ -87,6 +95,21 @@ fun NavGraphBuilder.cemCategoriesDestination(
             onNavigateBack = onNavigateBack,
             onUserPanel = onUserPanel,
             onCategoryClick = onCategoryClick
+        )
+    }
+}
+
+fun NavGraphBuilder.cemQuizDestination(
+    onNavigateBack: () -> Unit
+) {
+    composable<CemQuizRoute> {
+        val viewModel = hiltViewModel<CemQuizVM>()
+        val state = viewModel.state.collectAsStateWithLifecycle()
+
+        MMQuizScreen(
+            state = state.value,
+            onEvent = viewModel::onEvent,
+            onNavigateBack = onNavigateBack
         )
     }
 }

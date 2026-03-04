@@ -2,7 +2,7 @@ package com.rafalskrzypczyk.cem_mode.di
 
 import com.rafalskrzypczyk.cem_mode.data.CemRepositoryImpl
 import com.rafalskrzypczyk.cem_mode.domain.CemRepository
-import com.rafalskrzypczyk.cem_mode.domain.use_cases.CemUseCases
+import com.rafalskrzypczyk.cem_mode.domain.use_cases.CemCategoriesUseCases
 import com.rafalskrzypczyk.cem_mode.domain.use_cases.GetCemCategoriesUseCase
 import com.rafalskrzypczyk.cem_mode.domain.use_cases.GetUpdatedCemCategoriesUseCase
 import dagger.Binds
@@ -26,7 +26,7 @@ abstract class CemModule {
         fun provideCemUseCases(
             getCemCategories: GetCemCategoriesUseCase,
             getUpdatedCemCategories: GetUpdatedCemCategoriesUseCase
-        ): CemUseCases = CemUseCases(
+        ): CemCategoriesUseCases = CemCategoriesUseCases(
             getCemCategories = getCemCategories,
             getUpdatedCemCategories = getUpdatedCemCategories
         )

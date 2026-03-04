@@ -12,6 +12,7 @@ dependencies {
     implementation(project(":auth"))
     implementation(project(":score"))
     implementation(project(":billing"))
+    implementation(project(":main_mode"))
     
     implementation(libs.billing.ktx)
     implementation(libs.androidx.compose.runtime)
