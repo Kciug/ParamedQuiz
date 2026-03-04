@@ -75,7 +75,7 @@ fun QuestionStatCard(
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
             ) {
                 StatisticsChart(
@@ -91,15 +91,19 @@ fun QuestionStatCard(
                 }
 
                 TextPrimary(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(top = 4.dp),
                     text = question.question,
-                    modifier = Modifier.weight(1f),
                     maxLines = if (isExpanded) Int.MAX_VALUE else collapsedMaxLines
                 )
 
                 Icon(
                     imageVector = Icons.Rounded.ExpandMore,
                     contentDescription = stringResource(R.string.desc_expand),
-                    modifier = Modifier.rotate(rotationState)
+                    modifier = Modifier
+                        .padding(top = 4.dp)
+                        .rotate(rotationState)
                 )
             }
 
