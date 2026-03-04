@@ -74,12 +74,21 @@ class UserPageVM @Inject constructor(
     private fun getScoreData() {
         viewModelScope.launch {
             useCases.getUserScore().collect { score ->
+                val totalCorrect = score.seenQuestions.sumOf { it.timesCorrect }.toInt()
+                val totalIncorrect = score.seenQuestions.sumOf { it.timesIncorrect }.toInt()
+                val totalUnique = score.seenQuestions.size
+                val totalIdeal = score.seenQuestions.count { it.timesCorrect > 0 && it.timesIncorrect == 0L }
+
                 _state.update {
                     it.copy(
                         userScore = score.score,
                         userStreak = score.streak,
                         userStreakState = useCases.getStreakState(score.lastStreakUpdateDate),
-                        weeklyStreak = calculateWeeklyStreak(score.streak, score.lastStreakUpdateDate)
+                        weeklyStreak = calculateWeeklyStreak(score.streak, score.lastStreakUpdateDate),
+                        totalCorrect = totalCorrect,
+                        totalIncorrect = totalIncorrect,
+                        totalUnique = totalUnique,
+                        totalIdeal = totalIdeal
                     )
                 }
                 getResultsData()

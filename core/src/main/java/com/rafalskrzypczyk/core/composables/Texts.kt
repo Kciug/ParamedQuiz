@@ -52,14 +52,16 @@ fun TextHeadline(
     text: String,
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.onBackground,
-    textAlign: TextAlign? = TextAlign.Unspecified
+    textAlign: TextAlign? = TextAlign.Unspecified,
+    fontSize: TextUnit = TextUnit.Unspecified
 ) {
     Text(
         modifier = modifier,
         text = text,
         style = MaterialTheme.typography.headlineSmall,
         color = color,
-        textAlign = textAlign
+        textAlign = textAlign,
+        fontSize = fontSize
     )
 }
 

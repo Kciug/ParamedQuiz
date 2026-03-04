@@ -26,7 +26,8 @@ fun StatisticsChart(
     progress: Int,
     numericalValueText: String? = null,
     numericalValueDescription: String? = null,
-    strokeWidth: Dp = Dimens.STAT_BAR_WIDTH
+    strokeWidth: Dp = Dimens.STAT_BAR_WIDTH,
+    content: (@Composable () -> Unit)? = null
 ) {
     Box(
         modifier = modifier,
@@ -41,7 +42,10 @@ fun StatisticsChart(
             strokeCap = StrokeCap.Round,
             gapSize = -SliderDefaults.TrackStopIndicatorSize * strokeWidth.value
         )
-        if (numericalValueText != null || numericalValueDescription != null) {
+        
+        if (content != null) {
+            content()
+        } else if (numericalValueText != null || numericalValueDescription != null) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center

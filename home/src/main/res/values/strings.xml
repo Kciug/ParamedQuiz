@@ -83,6 +83,11 @@
     <string name="stats_streak">Seria</string>
     <string name="stats_points">Punkty</string>
     <string name="stats_modes_results">Wyniki trybów</string>
+
+    <string name="stats_summary_correct">Poprawne</string>
+    <string name="stats_summary_incorrect">Błędne</string>
+    <string name="stats_summary_unique">Unikalne</string>
+    <string name="stats_summary_ideal">Idealne</string>
     
     <string name="day_mon">Pon</string>
     <string name="day_tue">Wt</string>

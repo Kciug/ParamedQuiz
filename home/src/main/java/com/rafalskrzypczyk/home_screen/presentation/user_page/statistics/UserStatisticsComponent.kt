@@ -31,6 +31,10 @@ fun UserStatisticsComponent(
     mainModeResult: Int,
     swipeModeResult: Int,
     translationModeResult: Int,
+    totalCorrect: Int,
+    totalIncorrect: Int,
+    totalUnique: Int,
+    totalIdeal: Int,
     bestWorstQuestions: BestWorstQuestionsUIM,
     onNextMode: () -> Unit,
     onPreviousMode: () -> Unit
@@ -41,7 +45,13 @@ fun UserStatisticsComponent(
         verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
     ) {
         if(overallResultAvailable) {
-            OverallScoreTile(score = overallResult)
+            OverallScoreTile(
+                score = overallResult,
+                totalCorrect = totalCorrect,
+                totalIncorrect = totalIncorrect,
+                totalUnique = totalUnique,
+                totalIdeal = totalIdeal
+            )
             
             HorizontalDivider()
             
@@ -92,6 +102,10 @@ private fun UserStatisticsComponentPreview() {
             mainModeResult = 73,
             swipeModeResult = 32,
             translationModeResult = 55,
+            totalCorrect = 120,
+            totalIncorrect = 20,
+            totalUnique = 100,
+            totalIdeal = 50,
             bestWorstQuestions = BestWorstQuestionsUIM(
                 bestQuestions = listOf(
                     QuestionWithStats(
