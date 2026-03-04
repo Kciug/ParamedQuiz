@@ -86,6 +86,8 @@ fun UserStatisticsComponent(
                 isAvailable = translationModeResultAvailable
             )
             
+            TextHeadline(text = stringResource(R.string.stats_best_worst_header))
+            
             BestWorstQuestionsComponent(
                 isLandscape = false,
                 questions = bestWorstQuestions,

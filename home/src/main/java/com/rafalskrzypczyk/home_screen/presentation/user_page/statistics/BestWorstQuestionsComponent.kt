@@ -46,6 +46,17 @@ import com.rafalskrzypczyk.home.R
 import com.rafalskrzypczyk.home_screen.domain.models.QuestionWithStats
 import com.rafalskrzypczyk.core.utils.QuizMode
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import com.rafalskrzypczyk.core.ui.theme.MQGreen
+import com.rafalskrzypczyk.core.ui.theme.MQRed
+
 @Composable
 fun BestWorstQuestionsComponent(
     modifier: Modifier = Modifier,
@@ -148,22 +159,33 @@ fun BestWorstQuestionsList(
         if (state is ResponseState.Success) {
             Column(
                 modifier = modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
+                horizontalAlignment = Alignment.Start,
                 verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
             ) {
-                TextPrimary(
-                    text = stringResource(R.string.stats_best_questions),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL)
+                ) {
+                    DotIndicator(color = MQGreen)
+                    TextPrimary(
+                        text = stringResource(R.string.stats_best_questions),
+                        textAlign = TextAlign.Start
+                    )
+                }
                 bestQuestions.forEach {
                     QuestionStatCard(question = it)
                 }
-                TextPrimary(
-                    text = stringResource(R.string.stats_worst_questions),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Row(
+                    modifier = Modifier.padding(top = Dimens.ELEMENTS_SPACING),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL)
+                ) {
+                    DotIndicator(color = MQRed)
+                    TextPrimary(
+                        text = stringResource(R.string.stats_worst_questions),
+                        textAlign = TextAlign.Start
+                    )
+                }
                 worstQuestions.forEach {
                     QuestionStatCard(question = it)
                 }
@@ -176,6 +198,16 @@ fun BestWorstQuestionsList(
             )
         }
     }
+}
+
+@Composable
+private fun DotIndicator(color: Color) {
+    Box(
+        modifier = Modifier
+            .size(8.dp)
+            .clip(CircleShape)
+            .background(color)
+    )
 }
 
 @Composable
