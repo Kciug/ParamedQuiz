@@ -44,7 +44,7 @@ import com.rafalskrzypczyk.core.composables.TextCaption
 import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.home.R
 import com.rafalskrzypczyk.home_screen.domain.models.QuestionWithStats
-import com.rafalskrzypczyk.home_screen.domain.models.QuizMode
+import com.rafalskrzypczyk.core.utils.QuizMode
 
 @Composable
 fun BestWorstQuestionsComponent(

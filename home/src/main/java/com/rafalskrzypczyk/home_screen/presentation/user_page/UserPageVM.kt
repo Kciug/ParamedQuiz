@@ -4,10 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
-import com.rafalskrzypczyk.home_screen.domain.models.QuizMode
+import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.home_screen.domain.models.SimpleQuestion
-import com.rafalskrzypczyk.home_screen.domain.models.next
-import com.rafalskrzypczyk.home_screen.domain.models.previous
+import com.rafalskrzypczyk.core.utils.next
+import com.rafalskrzypczyk.core.utils.previous
 import com.rafalskrzypczyk.home_screen.domain.user_page.UserPageUseCases
 import com.rafalskrzypczyk.home_screen.presentation.user_page.statistics.BestWorstQuestionsUIM
 import com.rafalskrzypczyk.billing.domain.BillingIds
@@ -148,7 +148,9 @@ class UserPageVM @Inject constructor(
                         _state.update { it.copy(
                             mainModeResultResponse = ResponseState.Success,
                             mainModeResultAvailable = data != null,
-                            mainModeResult = data ?: 0
+                            mainModeResult = data?.score ?: 0,
+                            mainModeCorrect = data?.correctAnswers ?: 0,
+                            mainModeTotal = data?.totalAnswers ?: 0
                         ) }
                     }
                 }
@@ -169,7 +171,9 @@ class UserPageVM @Inject constructor(
                         _state.update { it.copy(
                             swipeModeResultResponse = ResponseState.Success,
                             swipeModeResultAvailable = data != null,
-                            swipeModeResult = data ?: 0
+                            swipeModeResult = data?.score ?: 0,
+                            swipeModeCorrect = data?.correctAnswers ?: 0,
+                            swipeModeTotal = data?.totalAnswers ?: 0
                         ) }
                     }
                 }
@@ -190,7 +194,9 @@ class UserPageVM @Inject constructor(
                         _state.update { it.copy(
                             translationModeResultResponse = ResponseState.Success,
                             translationModeResultAvailable = data != null,
-                            translationModeResult = data ?: 0
+                            translationModeResult = data?.score ?: 0,
+                            translationModeCorrect = data?.correctAnswers ?: 0,
+                            translationModeTotal = data?.totalAnswers ?: 0
                         ) }
                     }
                 }

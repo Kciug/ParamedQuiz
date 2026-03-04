@@ -1,4 +1,4 @@
-package com.rafalskrzypczyk.home_screen.domain.models
+package com.rafalskrzypczyk.core.utils
 
 enum class QuizMode {
     MainMode,

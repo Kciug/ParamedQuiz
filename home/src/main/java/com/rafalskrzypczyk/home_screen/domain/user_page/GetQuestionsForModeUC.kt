@@ -1,7 +1,7 @@
 package com.rafalskrzypczyk.home_screen.domain.user_page
 
 import com.rafalskrzypczyk.core.api_response.Response
-import com.rafalskrzypczyk.home_screen.domain.models.QuizMode
+import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.home_screen.domain.models.SimpleQuestion
 import com.rafalskrzypczyk.home_screen.domain.models.toSimpleQuestion
 import com.rafalskrzypczyk.main_mode.domain.MainModeRepository

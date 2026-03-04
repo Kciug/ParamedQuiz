@@ -3,7 +3,7 @@ package com.rafalskrzypczyk.home_screen.presentation.user_page.statistics
 import androidx.compose.runtime.Immutable
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.home_screen.domain.models.QuestionWithStats
-import com.rafalskrzypczyk.home_screen.domain.models.QuizMode
+import com.rafalskrzypczyk.core.utils.QuizMode
 
 @Immutable
 data class BestWorstQuestionsUIM(

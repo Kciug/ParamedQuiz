@@ -10,6 +10,6 @@ class GetOverallResultUC @Inject constructor(
 ) {
     operator fun invoke(): Int? {
         val score = scoreManager.getScore()
-        return calculateResult(score.seenQuestions)
+        return calculateResult(score.seenQuestions)?.score
     }
 }

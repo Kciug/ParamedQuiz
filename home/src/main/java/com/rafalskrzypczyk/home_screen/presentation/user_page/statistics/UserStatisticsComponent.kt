@@ -3,9 +3,7 @@ package com.rafalskrzypczyk.home_screen.presentation.user_page.statistics
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -14,7 +12,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.PreviewContainer
 import com.rafalskrzypczyk.core.composables.TextHeadline
-import com.rafalskrzypczyk.core.composables.TextPrimary
+import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.home.R
 import com.rafalskrzypczyk.home_screen.domain.models.QuestionWithStats
 import com.rafalskrzypczyk.home_screen.presentation.user_page.statistics.components.ModeScoreTile
@@ -29,8 +27,14 @@ fun UserStatisticsComponent(
     translationModeResultAvailable: Boolean,
     overallResult: Int,
     mainModeResult: Int,
+    mainModeCorrect: Int = 0,
+    mainModeTotal: Int = 0,
     swipeModeResult: Int,
+    swipeModeCorrect: Int = 0,
+    swipeModeTotal: Int = 0,
     translationModeResult: Int,
+    translationModeCorrect: Int = 0,
+    translationModeTotal: Int = 0,
     totalCorrect: Int,
     totalIncorrect: Int,
     totalUnique: Int,
@@ -53,29 +57,34 @@ fun UserStatisticsComponent(
                 totalIdeal = totalIdeal
             )
             
-            HorizontalDivider()
-            
-            TextPrimary(text = stringResource(R.string.stats_modes_results))
+            TextHeadline(text = stringResource(R.string.stats_modes_results))
             
             ModeScoreTile(
+                mode = QuizMode.MainMode,
                 title = stringResource(com.rafalskrzypczyk.core.R.string.title_main_mode),
                 score = mainModeResult,
+                correctAnswers = mainModeCorrect,
+                totalAnswers = mainModeTotal,
                 isAvailable = mainModeResultAvailable
             )
             
             ModeScoreTile(
+                mode = QuizMode.SwipeMode,
                 title = stringResource(com.rafalskrzypczyk.core.R.string.title_swipe_mode),
                 score = swipeModeResult,
+                correctAnswers = swipeModeCorrect,
+                totalAnswers = swipeModeTotal,
                 isAvailable = swipeModeResultAvailable
             )
             
             ModeScoreTile(
+                mode = QuizMode.TranslationMode,
                 title = stringResource(R.string.stats_result_translation_mode),
                 score = translationModeResult,
+                correctAnswers = translationModeCorrect,
+                totalAnswers = translationModeTotal,
                 isAvailable = translationModeResultAvailable
             )
-            
-            HorizontalDivider()
             
             BestWorstQuestionsComponent(
                 isLandscape = false,
@@ -100,8 +109,14 @@ private fun UserStatisticsComponentPreview() {
             translationModeResultAvailable = true,
             overallResult = 85,
             mainModeResult = 73,
+            mainModeCorrect = 73,
+            mainModeTotal = 100,
             swipeModeResult = 32,
+            swipeModeCorrect = 32,
+            swipeModeTotal = 100,
             translationModeResult = 55,
+            translationModeCorrect = 55,
+            translationModeTotal = 100,
             totalCorrect = 120,
             totalIncorrect = 20,
             totalUnique = 100,

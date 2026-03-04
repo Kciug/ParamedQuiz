@@ -2,6 +2,7 @@ package com.rafalskrzypczyk.home_screen.domain.user_page
 
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.home_screen.domain.CalculateResultUC
+import com.rafalskrzypczyk.home_screen.domain.models.ModeResult
 import com.rafalskrzypczyk.main_mode.domain.MainModeRepository
 import com.rafalskrzypczyk.score.domain.ScoreManager
 import kotlinx.coroutines.flow.Flow
@@ -13,7 +14,7 @@ class GetMainModeResultUC @Inject constructor(
     private val mainModeRepository: MainModeRepository,
     private val calculateResult: CalculateResultUC
 ) {
-    operator fun invoke(): Flow<Response<Int?>> {
+    operator fun invoke(): Flow<Response<ModeResult?>> {
         val score = scoreManager.getScore()
 
         return mainModeRepository.getAllQuestions().map { response ->
