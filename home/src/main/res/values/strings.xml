@@ -70,6 +70,7 @@
     <string name="stats_worst_questions">Najgorsze pytania</string>
     <string name="stats_question_correct_answers">poprawnych odpowiedzi: %1$d</string>
     <string name="stats_question_incorrect_answers">błędnych odpowiedzi: %1$d</string>
+    <string name="stats_question_total_answers">wszystkich odpowiedzi: %1$d</string>
     <string name="desc_next_mode">Następny tryb</string>
     <string name="desc_previous_mode">Poprzedni tryb</string>
     <string name="stats_no_data_overall">Za mało danych, jeszcze!</string>
@@ -79,6 +80,25 @@
     <string name="stats_no_best_worst_data_msg">Odpowiedz na wiecej pytań w tym trybie aby wyświetlić dane.</string>
 
     <string name="percentage">%1$d%%</string>
+
+    <string name="stats_streak">Seria</string>
+    <string name="stats_points">Punkty</string>
+    <string name="stats_modes_results">Wyniki trybów</string>
+
+    <string name="stats_summary_correct">Poprawne</string>
+    <string name="stats_summary_incorrect">Błędne</string>
+    <string name="stats_summary_unique">Unikalne</string>
+    <string name="stats_summary_ideal">Idealne</string>
+    <string name="stats_answers_count">%1$d / %2$d poprawnych</string>
+    <string name="stats_best_worst_header">Twoje pytania</string>
+    
+    <string name="day_mon">Pon</string>
+    <string name="day_tue">Wt</string>
+    <string name="day_wed">Śr</string>
+    <string name="day_thu">Czw</string>
+    <string name="day_fri">Pt</string>
+    <string name="day_sat">Sob</string>
+    <string name="day_sun">Ndz</string>
 
     <string name="frontfolks_website">www.frontfolks.com</string>
     <string name="frontfolks_url">https://www.frontfolks.com/</string>

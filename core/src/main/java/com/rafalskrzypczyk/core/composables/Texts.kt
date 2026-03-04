@@ -52,14 +52,16 @@ fun TextHeadline(
     text: String,
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.onBackground,
-    textAlign: TextAlign? = TextAlign.Unspecified
+    textAlign: TextAlign? = TextAlign.Unspecified,
+    fontSize: TextUnit = TextUnit.Unspecified
 ) {
     Text(
         modifier = modifier,
         text = text,
         style = MaterialTheme.typography.headlineSmall,
         color = color,
-        textAlign = textAlign
+        textAlign = textAlign,
+        fontSize = fontSize
     )
 }
 
@@ -84,15 +86,17 @@ fun TextTitle(
 fun TextCaption(
     text: String,
     modifier: Modifier = Modifier,
-    color: Color = MaterialTheme.colorScheme.tertiary,
-    textAlign: TextAlign? = TextAlign.Unspecified
+    color: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    textAlign: TextAlign? = TextAlign.Unspecified,
+    fontWeight: FontWeight? = null
 ) {
     Text(
         modifier = modifier,
         text = text,
         style = MaterialTheme.typography.labelSmall,
         color = color,
-        textAlign = textAlign
+        textAlign = textAlign,
+        fontWeight = fontWeight
     )
 }
 

@@ -1,30 +1,24 @@
 package com.rafalskrzypczyk.home_screen.presentation.user_page.statistics
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowLeft
 import androidx.compose.material.icons.automirrored.filled.ArrowRight
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,19 +26,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.ActionButton
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.Loading
-import com.rafalskrzypczyk.core.composables.PreviewContainer
-import com.rafalskrzypczyk.core.composables.TextCaption
 import com.rafalskrzypczyk.core.composables.TextPrimary
+import com.rafalskrzypczyk.core.ui.theme.MQGreen
+import com.rafalskrzypczyk.core.ui.theme.MQRed
+import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.home.R
 import com.rafalskrzypczyk.home_screen.domain.models.QuestionWithStats
-import com.rafalskrzypczyk.home_screen.domain.models.QuizMode
+import com.rafalskrzypczyk.home_screen.presentation.user_page.statistics.components.QuestionStatCard
 
 @Composable
 fun BestWorstQuestionsComponent(
@@ -93,7 +90,7 @@ fun BestWorstQuestionsComponent(
             ) {
                 TextPrimary(
                     text = it,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center
                 )
             }
@@ -148,24 +145,38 @@ fun BestWorstQuestionsList(
         if (state is ResponseState.Success) {
             Column(
                 modifier = modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
+                horizontalAlignment = Alignment.Start,
                 verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
             ) {
-                TextPrimary(
-                    text = stringResource(R.string.stats_best_questions),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                bestQuestions.forEach {
-                    QuestionStatCard(question = it)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL)
+                ) {
+                    DotIndicator(color = MQGreen)
+                    TextPrimary(
+                        text = stringResource(R.string.stats_best_questions),
+                        textAlign = TextAlign.Start
+                    )
                 }
-                TextPrimary(
-                    text = stringResource(R.string.stats_worst_questions),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                worstQuestions.forEach {
-                    QuestionStatCard(question = it)
+                
+                bestQuestions.forEach { question ->
+                    QuestionStatCard(question = question)
+                }
+                
+                Row(
+                    modifier = Modifier.padding(top = Dimens.ELEMENTS_SPACING),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL)
+                ) {
+                    DotIndicator(color = MQRed)
+                    TextPrimary(
+                        text = stringResource(R.string.stats_worst_questions),
+                        textAlign = TextAlign.Start
+                    )
+                }
+                
+                worstQuestions.forEach { question ->
+                    QuestionStatCard(question = question)
                 }
             }
         } else {
@@ -179,83 +190,11 @@ fun BestWorstQuestionsList(
 }
 
 @Composable
-fun QuestionStatCard(
-    modifier: Modifier = Modifier,
-    question: QuestionWithStats,
-    collapsedMaxLines: Int = 3
-) {
-    var isExpanded by remember { mutableStateOf(false) }
-
-    Card (
-        modifier = modifier
-            .fillMaxWidth()
-            .wrapContentHeight(),
-        shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        onClick = {
-            @Suppress("AssignedValueIsNeverRead")
-            isExpanded = !isExpanded
-        },
-    ) {
-        Column(
-            modifier = Modifier.padding(Dimens.DEFAULT_PADDING)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
-            ) {
-                TextPrimary(
-                    text = question.question,
-                    modifier = Modifier.weight(1f),
-                    maxLines = if(isExpanded) Int.MAX_VALUE else collapsedMaxLines
-                )
-                TextPrimary( stringResource(R.string.percentage, question.correctPercentage) )
-                Icon(
-                    imageVector = Icons.Outlined.Info,
-                    contentDescription = stringResource(R.string.desc_expand)
-                )
-            }
-//            if(isExpanded){
-//                TextCaption(
-//                    text = stringResource(R.string.stats_question_correct_answers, question.correctAnswers)
-//                )
-//                TextCaption(
-//                    text = stringResource(R.string.stats_question_incorrect_answers, question.wrongAnswers)
-//                )
-//            }
-            AnimatedVisibility(
-                visible = isExpanded,
-                enter = expandVertically() + fadeIn(),
-                exit = shrinkVertically() + fadeOut(),
-            ) {
-                Column(
-                    modifier = Modifier.padding(top = Dimens.ELEMENTS_SPACING),
-                    verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
-                ) {
-                    TextCaption(
-                        text = stringResource(R.string.stats_question_correct_answers, question.correctAnswers)
-                    )
-                    TextCaption(
-                        text = stringResource(R.string.stats_question_incorrect_answers, question.wrongAnswers)
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-@Preview
-private fun QuestionStatCardPreview() {
-    PreviewContainer {
-        QuestionStatCard(
-            question = QuestionWithStats(
-                id = 1,
-                question = "Czy to wygląda dobrze?",
-                correctAnswers = 11,
-                wrongAnswers = 25,
-            )
-        )
-    }
+private fun DotIndicator(color: Color) {
+    Box(
+        modifier = Modifier
+            .size(8.dp)
+            .clip(CircleShape)
+            .background(color)
+    )
 }

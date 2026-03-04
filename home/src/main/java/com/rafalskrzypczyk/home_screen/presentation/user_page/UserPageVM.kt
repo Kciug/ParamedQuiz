@@ -4,14 +4,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
-import com.rafalskrzypczyk.home_screen.domain.models.QuizMode
+import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.home_screen.domain.models.SimpleQuestion
-import com.rafalskrzypczyk.home_screen.domain.models.next
-import com.rafalskrzypczyk.home_screen.domain.models.previous
+import com.rafalskrzypczyk.core.utils.next
+import com.rafalskrzypczyk.core.utils.previous
 import com.rafalskrzypczyk.home_screen.domain.user_page.UserPageUseCases
 import com.rafalskrzypczyk.home_screen.presentation.user_page.statistics.BestWorstQuestionsUIM
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
+import com.rafalskrzypczyk.core.utils.toDateOnly
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,6 +21,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.Calendar
+import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
@@ -71,17 +74,55 @@ class UserPageVM @Inject constructor(
     private fun getScoreData() {
         viewModelScope.launch {
             useCases.getUserScore().collect { score ->
+                val totalCorrect = score.seenQuestions.sumOf { it.timesCorrect }.toInt()
+                val totalIncorrect = score.seenQuestions.sumOf { it.timesIncorrect }.toInt()
+                val totalUnique = score.seenQuestions.size
+                val totalIdeal = score.seenQuestions.count { it.timesCorrect > 0 && it.timesIncorrect == 0L }
+
                 _state.update {
                     it.copy(
                         userScore = score.score,
                         userStreak = score.streak,
-                        userStreakState = useCases.getStreakState(score.lastStreakUpdateDate)
+                        userStreakState = useCases.getStreakState(score.lastStreakUpdateDate),
+                        weeklyStreak = calculateWeeklyStreak(score.streak, score.lastStreakUpdateDate),
+                        totalCorrect = totalCorrect,
+                        totalIncorrect = totalIncorrect,
+                        totalUnique = totalUnique,
+                        totalIdeal = totalIdeal
                     )
                 }
                 getResultsData()
                 getQuestionsData()
             }
         }
+    }
+
+    private fun calculateWeeklyStreak(streak: Int, lastUpdate: Date?): List<Boolean> {
+        if (lastUpdate == null || streak == 0) return List(7) { false }
+
+        val calendar = Calendar.getInstance()
+        calendar.firstDayOfWeek = Calendar.MONDAY
+        
+        val lastUpdateDate = lastUpdate.toDateOnly()
+
+        calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
+        val mondayThisWeek = calendar.time.toDateOnly()
+
+        if (lastUpdateDate < mondayThisWeek) return List(7) { false }
+
+        val weeklyStreak = MutableList(7) { false }
+        
+        calendar.time = lastUpdateDate
+        val lastUpdateDayOfWeek = (calendar.get(Calendar.DAY_OF_WEEK) + 5) % 7
+        
+        for (i in 0..6) {
+            val daysAgo = lastUpdateDayOfWeek - i
+            if (daysAgo >= 0 && streak > daysAgo) {
+                weeklyStreak[i] = true
+            }
+        }
+        
+        return weeklyStreak
     }
 
     private fun getResultsData() {
@@ -107,7 +148,9 @@ class UserPageVM @Inject constructor(
                         _state.update { it.copy(
                             mainModeResultResponse = ResponseState.Success,
                             mainModeResultAvailable = data != null,
-                            mainModeResult = data ?: 0
+                            mainModeResult = data?.score ?: 0,
+                            mainModeCorrect = data?.correctAnswers ?: 0,
+                            mainModeTotal = data?.totalAnswers ?: 0
                         ) }
                     }
                 }
@@ -128,7 +171,9 @@ class UserPageVM @Inject constructor(
                         _state.update { it.copy(
                             swipeModeResultResponse = ResponseState.Success,
                             swipeModeResultAvailable = data != null,
-                            swipeModeResult = data ?: 0
+                            swipeModeResult = data?.score ?: 0,
+                            swipeModeCorrect = data?.correctAnswers ?: 0,
+                            swipeModeTotal = data?.totalAnswers ?: 0
                         ) }
                     }
                 }
@@ -149,7 +194,9 @@ class UserPageVM @Inject constructor(
                         _state.update { it.copy(
                             translationModeResultResponse = ResponseState.Success,
                             translationModeResultAvailable = data != null,
-                            translationModeResult = data ?: 0
+                            translationModeResult = data?.score ?: 0,
+                            translationModeCorrect = data?.correctAnswers ?: 0,
+                            translationModeTotal = data?.totalAnswers ?: 0
                         ) }
                     }
                 }
