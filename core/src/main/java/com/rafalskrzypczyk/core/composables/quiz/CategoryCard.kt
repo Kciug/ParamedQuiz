@@ -1,6 +1,5 @@
-package com.rafalskrzypczyk.main_mode.presentation.categories_screen
+package com.rafalskrzypczyk.core.composables.quiz
 
-import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,26 +12,25 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material.icons.outlined.Style
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
+import com.rafalskrzypczyk.core.R
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.LockedOverlay
 import com.rafalskrzypczyk.core.composables.TextHeadline
 import com.rafalskrzypczyk.core.composables.TextPrimary
-import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
+import com.rafalskrzypczyk.core.quiz.models.CategoryUIM
 import com.rafalskrzypczyk.core.utils.rememberDebouncedClick
-import com.rafalskrzypczyk.main_mode.R
 
 @Composable
 fun CategoryCard(
@@ -65,7 +63,17 @@ fun CategoryCard(
                         text = category.title,
                         color = MaterialTheme.colorScheme.onPrimary
                     )
-                    Row {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (category.subcategoriesCount > 0) {
+                            TextPrimary(text = category.subcategoriesCount.toString())
+                            Spacer(modifier = Modifier.width(Dimens.ELEMENTS_SPACING_SMALL))
+                            Icon(
+                                imageVector = Icons.Outlined.Category,
+                                contentDescription = stringResource(R.string.desc_subcategories_number),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.width(Dimens.ELEMENTS_SPACING))
+                        }
                         TextPrimary(text = category.questionCount)
                         Spacer(modifier = Modifier.width(Dimens.ELEMENTS_SPACING_SMALL))
                         Icon(
@@ -75,8 +83,10 @@ fun CategoryCard(
                         )
                     }
                 }
-                TextPrimary(text = category.description)
-                if(category.progress > 0) {
+                if (category.description.isNotEmpty()) {
+                    TextPrimary(text = category.description)
+                }
+                if (category.progress > 0) {
                     LinearProgressIndicator(
                         modifier = Modifier.fillMaxWidth(),
                         progress = { category.progress },
@@ -87,47 +97,7 @@ fun CategoryCard(
                 }
             }
 
-            if(!category.unlocked) LockedOverlay(modifier = Modifier.matchParentSize())
-        }
-    }
-}
-
-@Composable
-@Preview
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
-private fun CategoryCardPreview() {
-    ParamedQuizTheme {
-        Surface(color = MaterialTheme.colorScheme.background) {
-            CategoryCard(
-                category = CategoryUIM(
-                    id = 1,
-                    title = "Kategoria",
-                    description = "Opis kategorii",
-                    questionCount = "10",
-                    unlocked = true,
-                    progress = 0.7f
-                )
-            )
-        }
-    }
-}
-
-@Composable
-@Preview
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
-private fun CategoryCardLockedPreview() {
-    ParamedQuizTheme {
-        Surface(color = MaterialTheme.colorScheme.background) {
-            CategoryCard(
-                category = CategoryUIM(
-                    id = 1,
-                    title = "Kategoria",
-                    description = "Opis kategorii",
-                    questionCount = "10",
-                    unlocked = false,
-                    progress = 0f
-                )
-            )
+            if (!category.unlocked) LockedOverlay(modifier = Modifier.matchParentSize())
         }
     }
 }

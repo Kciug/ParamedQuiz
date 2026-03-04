@@ -9,6 +9,7 @@ import com.rafalskrzypczyk.swipe_mode.domain.SwipeModeRepository
 import com.rafalskrzypczyk.translation_mode.domain.repository.TranslationRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -41,6 +42,7 @@ class GetQuestionsForModeUC @Inject constructor(
                     is Response.Success -> Response.Success(response.data.map { it.toSimpleQuestion() })
                 }
             }.flowOn(Dispatchers.Default)
+            QuizMode.CemMode -> flowOf(Response.Success(emptyList())) // Implement later
         }
     }
 }

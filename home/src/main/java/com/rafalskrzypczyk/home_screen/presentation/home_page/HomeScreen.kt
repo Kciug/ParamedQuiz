@@ -93,6 +93,7 @@ fun HomeScreen(
     onNavigateToMainMode: () -> Unit,
     onNavigateToSwipeMode: (Boolean) -> Unit,
     onNavigateToTranslationMode: () -> Unit,
+    onNavigateToCemMode: () -> Unit,
     onNavigateToDevOptions: () -> Unit
 ) {
     var showDailyExerciseAlreadyDoneAlert by remember { mutableStateOf(false) }
@@ -378,7 +379,8 @@ fun HomeScreen(
                 },
                 onNavigateToTranslationMode = {
                     onEvent(HomeUIEvents.OpenTranslationModePurchaseSheet)
-                }
+                },
+                onNavigateToCemMode = onNavigateToCemMode
             )
 
             Spacer(modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom)))
@@ -454,6 +456,7 @@ private fun HomeScreenPreview() {
                 onNavigateToMainMode = {},
                 onNavigateToSwipeMode = {},
                 onNavigateToTranslationMode = {},
+                onNavigateToCemMode = {},
                 onNavigateToDailyExercise = {},
                 onNavigateToDevOptions = {}
             )

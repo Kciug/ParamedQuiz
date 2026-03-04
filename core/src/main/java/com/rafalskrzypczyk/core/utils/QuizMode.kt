@@ -3,7 +3,8 @@ package com.rafalskrzypczyk.core.utils
 enum class QuizMode {
     MainMode,
     SwipeMode,
-    TranslationMode
+    TranslationMode,
+    CemMode
 }
 
 fun QuizMode.next(): QuizMode {

@@ -69,6 +69,7 @@ fun AppNavHost(
             onNavigateToMainMode = { navController.navigateToMainMode() },
             onNavigateToSwipeMode = { isTrial -> navController.navigateToSwipeMode(isTrial) },
             onNavigateToTranslationMode = { navController.navigateToTranslationMode() },
+            onNavigateToCemMode = { navController.navigateToCemMode() },
             onNavigateToDev = { navController.navigateToDevOptions()
             }
         )
@@ -96,6 +97,10 @@ fun AppNavHost(
 
         translationModeDestination(
             onNavigateBack = { navController.popBackStack() }
+        )
+
+        cemModeDestination(
+            onExit = { navController.popBackStack() }
         )
 
         onboardingDestination(

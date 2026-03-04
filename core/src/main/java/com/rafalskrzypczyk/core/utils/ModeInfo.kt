@@ -6,6 +6,7 @@ import androidx.compose.material.icons.rounded.SwipeVertical
 import androidx.compose.material.icons.rounded.Translate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.rafalskrzypczyk.core.ui.theme.ModeCem
 import com.rafalskrzypczyk.core.ui.theme.ModeMain
 import com.rafalskrzypczyk.core.ui.theme.ModeSwipe
 import com.rafalskrzypczyk.core.ui.theme.ModeTranslation
@@ -16,6 +17,7 @@ object ModeInfoProvider {
             QuizMode.MainMode -> Icons.Rounded.Quiz
             QuizMode.SwipeMode -> Icons.Rounded.SwipeVertical
             QuizMode.TranslationMode -> Icons.Rounded.Translate
+            QuizMode.CemMode -> Icons.Rounded.Quiz
         }
     }
 
@@ -24,6 +26,7 @@ object ModeInfoProvider {
             QuizMode.MainMode -> ModeMain
             QuizMode.SwipeMode -> ModeSwipe
             QuizMode.TranslationMode -> ModeTranslation
+            QuizMode.CemMode -> ModeCem
         }
     }
 }

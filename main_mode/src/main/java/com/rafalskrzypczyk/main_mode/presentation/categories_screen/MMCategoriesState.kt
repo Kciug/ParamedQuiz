@@ -2,6 +2,7 @@ package com.rafalskrzypczyk.main_mode.presentation.categories_screen
 
 import androidx.compose.runtime.Immutable
 import com.rafalskrzypczyk.core.api_response.ResponseState
+import com.rafalskrzypczyk.core.quiz.models.CategoryUIM
 import com.rafalskrzypczyk.score.domain.StreakState
 
 @Immutable

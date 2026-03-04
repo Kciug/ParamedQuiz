@@ -2,6 +2,7 @@ package com.rafalskrzypczyk.firestore.domain
 
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.firestore.domain.models.CategoryDTO
+import com.rafalskrzypczyk.firestore.domain.models.CemCategoryDTO
 import com.rafalskrzypczyk.firestore.domain.models.FeedbackDTO
 import com.rafalskrzypczyk.firestore.domain.models.IssueReportDTO
 import com.rafalskrzypczyk.firestore.domain.models.QuestionDTO
@@ -24,6 +25,8 @@ interface FirestoreApi {
     fun getUpdatedSwipeQuestions(): Flow<List<SwipeQuestionDTO>>
     fun getTranslationQuestions(): Flow<Response<List<TranslationQuestionDTO>>>
     fun getUpdatedTranslationQuestions(): Flow<List<TranslationQuestionDTO>>
+    fun getCemCategories(): Flow<Response<List<CemCategoryDTO>>>
+    fun getUpdatedCemCategories(): Flow<List<CemCategoryDTO>>
     fun getUserScore(userId: String): Flow<Response<ScoreDTO>>
     fun updateUserScore(userId: String, score: ScoreDTO) : Flow<Response<Unit>>
     fun deleteUserScore(userId: String) : Flow<Response<Unit>>
