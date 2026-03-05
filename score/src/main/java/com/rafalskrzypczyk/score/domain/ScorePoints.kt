@@ -2,7 +2,7 @@ package com.rafalskrzypczyk.score.domain
 
 object ScorePoints {
     const val CORRECT = 100
-    const val FIRST_CORRECT = 500
+    const val FIRST_CORRECT = 300
     const val ZERO = 0
 
     fun calculateForQuestion(isCorrect: Boolean, firstCorrect: Boolean) : Int {
