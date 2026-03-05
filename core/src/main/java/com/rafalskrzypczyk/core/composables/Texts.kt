@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.res.Configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -32,18 +33,20 @@ fun TextPrimary(
     maxLines: Int = Int.MAX_VALUE,
     fontWeight: FontWeight? = null,
     textDecoration: TextDecoration? = null,
-    fontSize: TextUnit = TextUnit.Unspecified
+    fontSize: TextUnit = TextUnit.Unspecified,
+    autoSize: TextAutoSize? = null
 ) {
     Text(
         modifier = modifier,
         text = text,
         color = color,
-        overflow = TextOverflow.Ellipsis,
+        overflow = if (autoSize != null) TextOverflow.Clip else TextOverflow.Ellipsis,
         maxLines = maxLines,
         textAlign = textAlign,
         fontWeight = fontWeight,
         textDecoration = textDecoration,
-        fontSize = fontSize
+        fontSize = fontSize,
+        autoSize = autoSize
     )
 }
 
@@ -53,7 +56,8 @@ fun TextHeadline(
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.onBackground,
     textAlign: TextAlign? = TextAlign.Unspecified,
-    fontSize: TextUnit = TextUnit.Unspecified
+    fontSize: TextUnit = TextUnit.Unspecified,
+    autoSize: TextAutoSize? = null
 ) {
     Text(
         modifier = modifier,
@@ -61,7 +65,8 @@ fun TextHeadline(
         style = MaterialTheme.typography.headlineSmall,
         color = color,
         textAlign = textAlign,
-        fontSize = fontSize
+        fontSize = fontSize,
+        autoSize = autoSize
     )
 }
 
@@ -70,7 +75,8 @@ fun TextTitle(
     text: String,
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.onBackground,
-    textAlign: TextAlign? = TextAlign.Unspecified
+    textAlign: TextAlign? = TextAlign.Unspecified,
+    autoSize: TextAutoSize? = null
 ) {
     Text(
         modifier = modifier,
@@ -78,7 +84,8 @@ fun TextTitle(
         style = MaterialTheme.typography.headlineLarge,
         fontWeight = FontWeight.Bold,
         color = color,
-        textAlign = textAlign
+        textAlign = textAlign,
+        autoSize = autoSize
     )
 }
 
@@ -88,7 +95,8 @@ fun TextCaption(
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     textAlign: TextAlign? = TextAlign.Unspecified,
-    fontWeight: FontWeight? = null
+    fontWeight: FontWeight? = null,
+    autoSize: TextAutoSize? = null
 ) {
     Text(
         modifier = modifier,
@@ -96,7 +104,8 @@ fun TextCaption(
         style = MaterialTheme.typography.labelSmall,
         color = color,
         textAlign = textAlign,
-        fontWeight = fontWeight
+        fontWeight = fontWeight,
+        autoSize = autoSize
     )
 }
 
@@ -132,14 +141,16 @@ fun TextCaptionLink(
 fun TextScore(
     text: String,
     modifier: Modifier = Modifier,
-    color: Color = MaterialTheme.colorScheme.onBackground
+    color: Color = MaterialTheme.colorScheme.onBackground,
+    autoSize: TextAutoSize? = null
 ) {
     Text(
         modifier = modifier,
         text = text,
         color = color,
         fontWeight = FontWeight.Bold,
-        fontSize = 18.sp
+        fontSize = 18.sp,
+        autoSize = autoSize
     )
 }
 
@@ -151,73 +162,6 @@ private fun TextPrimaryPreview() {
         Surface {
             TextPrimary(
                 text = "Placeholder",
-            )
-        }
-    }
-}
-
-@Composable
-@Preview
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
-private fun TextHeadlinePreview() {
-    ParamedQuizTheme {
-        Surface {
-            TextHeadline(
-                text = "Placeholder",
-            )
-        }
-    }
-}
-
-@Composable
-@Preview
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
-private fun TextTitlePreview() {
-    ParamedQuizTheme {
-        Surface {
-            TextTitle(
-                text = "Placeholder",
-            )
-        }
-    }
-}
-
-@Composable
-@Preview
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
-private fun TextCaptionPreview() {
-    ParamedQuizTheme {
-        Surface {
-            TextCaption(
-                text = "Placeholder",
-            )
-        }
-    }
-}
-
-@Composable
-@Preview
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
-private fun TextCaptionLinkPreview() {
-    ParamedQuizTheme {
-        Surface {
-            TextCaptionLink(
-                text = "Placeholder",
-                url = "https://google.com"
-            )
-        }
-    }
-}
-
-@Composable
-@Preview
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
-private fun TextScorePreview() {
-    ParamedQuizTheme {
-        Surface {
-            TextScore(
-                text = "2137",
-                color = MaterialTheme.colorScheme.primary
             )
         }
     }
