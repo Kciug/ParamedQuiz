@@ -76,6 +76,7 @@ fun TextTitle(
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.onBackground,
     textAlign: TextAlign? = TextAlign.Unspecified,
+    maxLines: Int = Int.MAX_VALUE,
     autoSize: TextAutoSize? = null
 ) {
     Text(
@@ -85,6 +86,8 @@ fun TextTitle(
         fontWeight = FontWeight.Bold,
         color = color,
         textAlign = textAlign,
+        maxLines = maxLines,
+        overflow = if (autoSize != null) TextOverflow.Clip else TextOverflow.Ellipsis,
         autoSize = autoSize
     )
 }
