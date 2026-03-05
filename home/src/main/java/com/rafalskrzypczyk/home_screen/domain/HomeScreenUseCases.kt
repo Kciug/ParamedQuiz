@@ -9,6 +9,8 @@ import com.rafalskrzypczyk.firestore.domain.use_cases.GetQuestionsCountUC
 import com.rafalskrzypczyk.firestore.domain.use_cases.SaveFeedbackUC
 import com.rafalskrzypczyk.home_screen.domain.use_cases.GetNewsBannersUC
 import com.rafalskrzypczyk.home_screen.domain.use_cases.GetUserDataUC
+import com.rafalskrzypczyk.home_screen.domain.use_cases.MarkNewsAsSeenUC
+import com.rafalskrzypczyk.home_screen.domain.use_cases.ResetSeenNewsUC
 import com.rafalskrzypczyk.score.domain.use_cases.GetStreakStateUC
 import com.rafalskrzypczyk.score.domain.use_cases.GetUserScoreUC
 import javax.inject.Inject
@@ -25,5 +27,7 @@ data class HomeScreenUseCases @Inject constructor(
     val dismissAppRating: DismissAppRatingUC,
     val disableRatingPrompt: DisableRatingPromptUC,
     val saveFeedback: SaveFeedbackUC,
-    val getNewsBanners: GetNewsBannersUC
+    val getNewsBanners: GetNewsBannersUC,
+    val markNewsAsSeen: MarkNewsAsSeenUC,
+    val resetSeenNews: ResetSeenNewsUC
 )

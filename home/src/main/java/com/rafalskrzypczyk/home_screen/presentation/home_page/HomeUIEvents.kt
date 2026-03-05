@@ -21,6 +21,7 @@ sealed interface HomeUIEvents {
     data object OnBackToRating : HomeUIEvents
     data object OnFeedbackSuccessConsumed : HomeUIEvents
     data object OnFeedbackErrorConsumed : HomeUIEvents
+    data class DismissNews(val id: String) : HomeUIEvents
 }
 
 sealed interface HomeSideEffect {

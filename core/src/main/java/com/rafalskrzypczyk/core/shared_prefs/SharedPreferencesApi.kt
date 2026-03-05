@@ -42,4 +42,8 @@ interface SharedPreferencesApi {
 
     fun getLastRatingPromptDate(): Long
     fun setLastRatingPromptDate(timestamp: Long)
+
+    fun getSeenNewsIds(): Set<String>
+    fun addSeenNewsId(id: String)
+    fun clearSeenNewsIds()
 }

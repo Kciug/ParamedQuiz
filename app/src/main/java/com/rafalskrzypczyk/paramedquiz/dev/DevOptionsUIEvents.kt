@@ -6,4 +6,5 @@ sealed interface DevOptionsUIEvents {
     object ClearTermsAcceptance: DevOptionsUIEvents
     object ResetRatingStats: DevOptionsUIEvents
     object TriggerRatingPrompt: DevOptionsUIEvents
+    object ResetNews: DevOptionsUIEvents
 }

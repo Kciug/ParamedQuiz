@@ -62,6 +62,9 @@ fun DevOptionsScreen(
             Button(onClick = { onEvent.invoke(DevOptionsUIEvents.TriggerRatingPrompt) }) {
                 Text("Trigger Rating Prompt")
             }
+            Button(onClick = { onEvent.invoke(DevOptionsUIEvents.ResetNews) }) {
+                Text("Reset News")
+            }
         }
     }
 }

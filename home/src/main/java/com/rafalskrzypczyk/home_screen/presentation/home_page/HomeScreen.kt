@@ -230,13 +230,22 @@ fun HomeScreen(
                     .padding(top = Dimens.DEFAULT_PADDING)
             )
 
-            state.newsBanners.forEach { banner ->
-                HomeNewsBanner(
-                    banner = banner,
+            state.newsBanners.firstOrNull()?.let { banner ->
+                Column(
                     modifier = Modifier
+                        .fillMaxWidth()
                         .padding(horizontal = Dimens.DEFAULT_PADDING)
                         .padding(top = Dimens.DEFAULT_PADDING)
-                )
+                ) {
+                    TextHeadline(
+                        text = stringResource(R.string.title_news_section),
+                        modifier = Modifier.padding(bottom = Dimens.ELEMENTS_SPACING_SMALL)
+                    )
+                    HomeNewsBanner(
+                        banner = banner,
+                        onDismiss = { onEvent(HomeUIEvents.DismissNews(banner.id)) }
+                    )
+                }
             }
 
             HomeScreenAddonsMenu(addons = addons)

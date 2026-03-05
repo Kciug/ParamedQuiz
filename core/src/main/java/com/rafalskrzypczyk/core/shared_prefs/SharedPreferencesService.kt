@@ -22,8 +22,27 @@ class SharedPreferencesService @Inject constructor(
         const val KEY_APP_RATED = "app_rated"
         const val KEY_RATING_PROMPT_DISABLED = "rating_prompt_disabled"
         const val KEY_LAST_RATING_PROMPT_DATE = "last_rating_prompt_date"
+        const val KEY_SEEN_NEWS_IDS = "seen_news_ids"
 
         const val DEFAULT_STRING_VALUE = ""
+    }
+
+    override fun getSeenNewsIds(): Set<String> {
+        return sharedPreferences.getStringSet(KEY_SEEN_NEWS_IDS, emptySet()) ?: emptySet()
+    }
+
+    override fun addSeenNewsId(id: String) {
+        val current = getSeenNewsIds().toMutableSet()
+        current.add(id)
+        sharedPreferences.edit {
+            putStringSet(KEY_SEEN_NEWS_IDS, current)
+        }
+    }
+
+    override fun clearSeenNewsIds() {
+        sharedPreferences.edit {
+            remove(KEY_SEEN_NEWS_IDS)
+        }
     }
 
     override fun setCurrentUser(userData: UserData) {

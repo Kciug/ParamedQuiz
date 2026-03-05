@@ -73,7 +73,13 @@ class HomeScreenVM @Inject constructor(
             HomeUIEvents.OnBackToRating -> backToRating()
             HomeUIEvents.OnFeedbackSuccessConsumed -> _state.update { it.copy(ratingPromptState = RatingPromptState.HIDDEN) }
             HomeUIEvents.OnFeedbackErrorConsumed -> _state.update { it.copy(feedbackErrorMessage = null) }
+            is HomeUIEvents.DismissNews -> dismissNews(event.id)
         }
+    }
+
+    private fun dismissNews(id: String) {
+        useCases.markNewsAsSeen(id)
+        _state.update { it.copy(newsBanners = it.newsBanners.filter { banner -> banner.id != id }) }
     }
 
     private fun getData() {

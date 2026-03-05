@@ -18,7 +18,12 @@ class DevVM @Inject constructor(
             DevOptionsUIEvents.ClearTermsAcceptance -> clearTerms()
             DevOptionsUIEvents.ResetRatingStats -> resetRatingStats()
             DevOptionsUIEvents.TriggerRatingPrompt -> triggerRatingPrompt()
+            DevOptionsUIEvents.ResetNews -> resetNews()
         }
+    }
+
+    private fun resetNews() {
+        sharedPreferences.clearSeenNewsIds()
     }
 
     private fun resetOnboarding() {
