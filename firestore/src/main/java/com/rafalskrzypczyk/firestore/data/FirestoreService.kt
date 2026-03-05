@@ -107,8 +107,11 @@ class FirestoreService @Inject constructor(
 
     override fun getUserScore(userId: String): Flow<Response<ScoreDTO>> = flow {
         emit(Response.Loading)
-        val result = getFirestoreDocumentData(FirestoreCollections.USER_SCORE, userId)?.toObject(ScoreDTO::class.java)
-        emit(result?.let { Response.Success(it) } ?: Response.Error(resourceProvider.getString(R.string.error_no_data)))
+        val result = firestore.collection(FirestoreCollections.USER_SCORE).document(userId)
+            .get()
+            .await()
+            .toObject(ScoreDTO::class.java)
+        emit(result?.let { Response.Success(it) } ?: Response.Success(ScoreDTO()))
     }.catch { emit(Response.Error(handleError(it))) }
 
     override fun updateUserScore(
