@@ -42,6 +42,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Swipe
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Whatshot
+import androidx.compose.material.icons.rounded.SwipeVertical
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -77,6 +78,8 @@ data class PurchaseModeDetails(
     val questionCount: Int,
     val price: String?,
     val features: List<PurchaseFeature>,
+    val icon: ImageVector,
+    val themeColor: Color,
     val estimatedTime: String = "~5"
 )
 
@@ -181,7 +184,7 @@ fun BasePurchaseBottomSheet(
                             isUnlocked = isUnlocked,
                             isPurchasing = isPurchasing,
                             purchaseError = purchaseError,
-                            isAlreadyUnlockedOnEntry = isUnlocked // Simplified for this implementation
+                            isAlreadyUnlockedOnEntry = isUnlocked
                         )
                     }
                 }
@@ -227,6 +230,23 @@ private fun PurchaseBottomSheetContent(
 
         Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
 
+        Box(
+            modifier = Modifier
+                .size(64.dp)
+                .clip(CircleShape)
+                .background(details.themeColor),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = details.icon,
+                contentDescription = null,
+                modifier = Modifier.size(32.dp),
+                tint = MaterialTheme.colorScheme.onSurface
+            )
+        }
+
+        Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
+
         PremiumBadge()
 
         Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
@@ -248,7 +268,7 @@ private fun PurchaseBottomSheetContent(
         Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
 
         details.features.forEach { feature ->
-            FeatureItem(feature)
+            FeatureItem(feature, details.themeColor)
             Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
         }
 
@@ -262,13 +282,15 @@ private fun PurchaseBottomSheetContent(
                 modifier = Modifier.weight(1f),
                 value = details.questionCount.toString(),
                 label = stringResource(R.string.stat_questions),
-                icon = Icons.AutoMirrored.Filled.LibraryBooks
+                icon = Icons.AutoMirrored.Filled.LibraryBooks,
+                themeColor = details.themeColor
             )
             StatCard(
                 modifier = Modifier.weight(1f),
                 value = details.estimatedTime,
                 label = stringResource(R.string.stat_time),
-                icon = Icons.Default.Timer
+                icon = Icons.Default.Timer,
+                themeColor = details.themeColor
             )
         }
 
@@ -296,7 +318,8 @@ private fun PurchaseBottomSheetContent(
                     purchaseError = purchaseError,
                     isPurchasing = isPurchasing,
                     onBuyClick = onBuyClick,
-                    onTryClick = onTryClick
+                    onTryClick = onTryClick,
+                    themeColor = details.themeColor
                 )
             }
         }
@@ -352,7 +375,8 @@ private fun PurchaseSection(
     purchaseError: String?,
     isPurchasing: Boolean,
     onBuyClick: () -> Unit,
-    onTryClick: (() -> Unit)?
+    onTryClick: (() -> Unit)?,
+    themeColor: Color
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -360,7 +384,7 @@ private fun PurchaseSection(
     ) {
         TextTitle(
             text = price ?: "---",
-            color = MaterialTheme.colorScheme.primary
+            color = themeColor
         )
         TextCaption(text = stringResource(R.string.one_time_purchase))
 
@@ -420,7 +444,7 @@ private fun PremiumBadge() {
 }
 
 @Composable
-private fun FeatureItem(feature: PurchaseFeature) {
+private fun FeatureItem(feature: PurchaseFeature, themeColor: Color) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -435,13 +459,13 @@ private fun FeatureItem(feature: PurchaseFeature) {
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                    .background(themeColor.copy(alpha = 0.1f)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = feature.icon,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = themeColor,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -458,7 +482,8 @@ private fun StatCard(
     modifier: Modifier = Modifier,
     value: String,
     label: String,
-    icon: ImageVector
+    icon: ImageVector,
+    themeColor: Color
 ) {
     Card(
         modifier = modifier,
@@ -475,10 +500,10 @@ private fun StatCard(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
+                tint = themeColor,
                 modifier = Modifier.size(24.dp)
             )
-            TextScore(text = value, color = MaterialTheme.colorScheme.primary)
+            TextScore(text = value, color = themeColor)
             TextCaption(text = label, textAlign = TextAlign.Center)
         }
     }
@@ -496,6 +521,8 @@ private fun PurchaseSheetContentPreview() {
                     description = "Wybierz prawdę lub fałsz w szybkim quizie dla powtórki.",
                     questionCount = 203,
                     price = "14.99 zł",
+                    icon = Icons.Rounded.SwipeVertical,
+                    themeColor = Color(0xFFFF6478),
                     features = listOf(
                         PurchaseFeature("Przesuń, aby odpowiedzieć", "Szybkie gesty dla dynamicznej nauki", Icons.Default.Swipe),
                         PurchaseFeature("Szybki quiz", "Odpowiadaj szybko na pytania prawda/fałsz", Icons.Default.Bolt),

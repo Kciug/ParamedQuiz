@@ -10,6 +10,8 @@ import androidx.compose.ui.res.stringResource
 import com.rafalskrzypczyk.core.composables.BasePurchaseBottomSheet
 import com.rafalskrzypczyk.core.composables.PurchaseFeature
 import com.rafalskrzypczyk.core.composables.PurchaseModeDetails
+import com.rafalskrzypczyk.core.utils.ModeInfoProvider
+import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.home.R
 
 @Composable
@@ -38,6 +40,8 @@ fun TranslationPurchaseBottomSheet(
             description = stringResource(R.string.mode_translation_desc),
             questionCount = questionCount,
             price = price,
+            icon = ModeInfoProvider.getIcon(QuizMode.TranslationMode),
+            themeColor = ModeInfoProvider.getColor(QuizMode.TranslationMode),
             features = listOf(
                 PurchaseFeature(
                     title = stringResource(R.string.feature_translation_title),
