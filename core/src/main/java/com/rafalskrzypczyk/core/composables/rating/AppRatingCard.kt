@@ -48,6 +48,12 @@ import com.rafalskrzypczyk.core.composables.TextFieldMultiLine
 import com.rafalskrzypczyk.core.ui.theme.MQRed
 import com.rafalskrzypczyk.core.ui.theme.MQYellow
 
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.focus.onFocusChanged
+import kotlinx.coroutines.launch
+
 @Composable
 fun AppRatingCard(
     modifier: Modifier = Modifier,
@@ -62,6 +68,9 @@ fun AppRatingCard(
     enabled: Boolean = true
 ) {
     if (state == RatingPromptState.HIDDEN) return
+
+    val bringIntoViewRequester = remember { BringIntoViewRequester() }
+    val coroutineScope = rememberCoroutineScope()
 
     Card(
         modifier = modifier
@@ -121,7 +130,16 @@ fun AppRatingCard(
                                 textValue = feedbackText,
                                 onValueChange = onFeedbackChange,
                                 hint = stringResource(R.string.report_issue_description_hint),
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .bringIntoViewRequester(bringIntoViewRequester)
+                                    .onFocusChanged {
+                                        if (it.isFocused) {
+                                            coroutineScope.launch {
+                                                bringIntoViewRequester.bringIntoView()
+                                            }
+                                        }
+                                    },
                                 minLines = 3,
                                 enabled = enabled
                             )

@@ -69,6 +69,8 @@ import com.rafalskrzypczyk.home_screen.presentation.home_page.components.Transla
 import com.rafalskrzypczyk.score.domain.StreakState
 import kotlinx.coroutines.flow.collectLatest
 
+import androidx.compose.foundation.layout.imePadding
+
 @Composable
 fun HomeScreen(
     state: HomeScreenState,
@@ -91,6 +93,7 @@ fun HomeScreen(
     val context = LocalContext.current
     val activity = remember(context) { context as? Activity }
     val reviewManager = remember(context) { InAppReviewManager(context) }
+    val scrollState = rememberScrollState()
 
     val addons = listOf(
         Addon(
@@ -116,6 +119,12 @@ fun HomeScreen(
 
     LaunchedEffect(Unit) {
         onEvent.invoke(HomeUIEvents.GetData)
+    }
+
+    LaunchedEffect(state.ratingPromptState) {
+        if (state.ratingPromptState == com.rafalskrzypczyk.core.composables.rating.RatingPromptState.NEGATIVE_FEEDBACK) {
+            scrollState.animateScrollTo(scrollState.maxValue)
+        }
     }
 
     LaunchedEffect(effect) {
@@ -209,7 +218,8 @@ fun HomeScreen(
         Column(
             modifier = modifier
                 .fillMaxSize()
-                .verticalScroll(state = rememberScrollState()),
+                .imePadding()
+                .verticalScroll(state = scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             WelcomeCard(
