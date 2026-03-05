@@ -47,9 +47,11 @@ fun CemCategoryQuizCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             TextHeadline(
+                modifier = Modifier.weight(1f, fill = false),
                 text = stringResource(R.string.title_cem_mode_quiz_card),
                 color = MaterialTheme.colorScheme.onPrimary
             )
+            Spacer(modifier = Modifier.width(Dimens.ELEMENTS_SPACING))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 TextPrimary(
                     text = category.questionCount,

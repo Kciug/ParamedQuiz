@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Category
@@ -56,6 +57,7 @@ fun CategoryCard(
                 ) {
                     TextHeadline(
                         modifier = Modifier
+                            .weight(1f, fill = false)
                             .clip(RoundedCornerShape(Dimens.RADIUS_INNER_DEFAULT))
                             .background(color = MaterialTheme.colorScheme.primary)
                             .padding(horizontal = Dimens.DEFAULT_PADDING, vertical = Dimens.SMALL_PADDING)
@@ -63,7 +65,11 @@ fun CategoryCard(
                         text = category.title,
                         color = MaterialTheme.colorScheme.onPrimary
                     )
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Spacer(modifier = Modifier.width(Dimens.ELEMENTS_SPACING))
+                    Row(
+                        modifier = Modifier.wrapContentWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         if (category.subcategoriesCount > 0) {
                             TextPrimary(text = category.subcategoriesCount.toString())
                             Spacer(modifier = Modifier.width(Dimens.ELEMENTS_SPACING_SMALL))
