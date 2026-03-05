@@ -9,7 +9,8 @@ sealed class MMQuizUIEvents {
     data class OnAnswerClicked(val answerId: Long) : MMQuizUIEvents()
     data class ToggleReviewDialog(val show: Boolean) : MMQuizUIEvents()
     data class ToggleReportDialog(val show: Boolean) : MMQuizUIEvents()
-    data class OnReportIssue(val description: String) : MMQuizUIEvents()
+    data class OnReportIssueDescriptionChanged(val description: String) : MMQuizUIEvents()
+    object OnReportIssue : MMQuizUIEvents()
     object OnAdDismissed : MMQuizUIEvents()
     object OnAdShown : MMQuizUIEvents()
 }

@@ -27,7 +27,7 @@ data class SwipeModeState(
     
     val showAd: Boolean = false,
     val showReportDialog: Boolean = false,
-    val showReportSuccessToast: Boolean = false,
+    val reportIssueDescription: String = "",
     val reportableQuestionContent: String = "",
     val isTrial: Boolean = false,
     val showTrialFinishedPanel: Boolean = false,

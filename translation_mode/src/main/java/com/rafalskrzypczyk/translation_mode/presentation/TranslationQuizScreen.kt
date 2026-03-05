@@ -60,9 +60,14 @@ import androidx.compose.ui.platform.LocalConfiguration
 import android.content.res.Configuration
 import com.rafalskrzypczyk.core.composables.RotateDevicePrompt
 
+import com.rafalskrzypczyk.core.utils.QuizSideEffect
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.collectLatest
+
 @Composable
 fun TranslationQuizScreen(
     state: TranslationQuizState,
+    effect: SharedFlow<QuizSideEffect>,
     onEvent: (TranslationQuizEvents) -> Unit,
     onNavigateBack: () -> Unit
 ) {
@@ -73,9 +78,13 @@ fun TranslationQuizScreen(
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    LaunchedEffect(state.showReportSuccessToast) {
-        if (state.showReportSuccessToast) {
-            Toast.makeText(context, successReportMsg, Toast.LENGTH_SHORT).show()
+    LaunchedEffect(effect) {
+        effect.collectLatest { sideEffect ->
+            when (sideEffect) {
+                QuizSideEffect.ShowReportSuccess -> {
+                    Toast.makeText(context, successReportMsg, Toast.LENGTH_SHORT).show()
+                }
+            }
         }
     }
 
@@ -146,8 +155,10 @@ fun TranslationQuizScreen(
     if (state.showReportDialog) {
         ReportIssueDialog(
             questionText = state.currentQuestion?.phrase ?: "",
+            description = state.reportIssueDescription,
+            onDescriptionChanged = { description -> onEvent(TranslationQuizEvents.OnReportIssueDescriptionChanged(description)) },
             onDismiss = { onEvent(TranslationQuizEvents.ToggleReportDialog(false)) },
-            onSend = { description -> onEvent(TranslationQuizEvents.OnReportIssue(description)) }
+            onSend = { onEvent(TranslationQuizEvents.OnReportIssue) }
         )
     }
 }

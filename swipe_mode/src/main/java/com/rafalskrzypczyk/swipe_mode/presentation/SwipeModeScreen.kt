@@ -33,6 +33,7 @@ import com.rafalskrzypczyk.core.composables.Loading
 import com.rafalskrzypczyk.core.composables.PreviewContainer
 import com.rafalskrzypczyk.core.composables.ReportIssueDialog
 import com.rafalskrzypczyk.core.composables.RotateDevicePrompt
+import com.rafalskrzypczyk.core.utils.QuizSideEffect
 import com.rafalskrzypczyk.swipe_mode.presentation.components.SwipeModeTrialFinishedPanel
 import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.flow.SharedFlow
@@ -42,6 +43,7 @@ import kotlinx.coroutines.flow.collectLatest
 fun SwipeModeScreen(
     state: SwipeModeState,
     effect: SharedFlow<SwipeModeSideEffect>,
+    quizEffect: SharedFlow<QuizSideEffect>,
     onEvent: (SwipeModeUIEvents) -> Unit,
     onNavigateBack: () -> Unit,
     onLaunchBilling: (Activity) -> Unit
@@ -65,6 +67,16 @@ fun SwipeModeScreen(
         EntryPointAccessors.fromApplication(context, AdManagerEntryPoint::class.java).adManager()
     }
 
+    LaunchedEffect(quizEffect) {
+        quizEffect.collectLatest { sideEffect ->
+            when (sideEffect) {
+                QuizSideEffect.ShowReportSuccess -> {
+                    Toast.makeText(context, successMsg, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
     LaunchedEffect(state.showAd) {
         if (state.showAd) {
             val activity = context as? Activity
@@ -82,12 +94,6 @@ fun SwipeModeScreen(
 
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-
-    LaunchedEffect(state.showReportSuccessToast) {
-        if(state.showReportSuccessToast) {
-            Toast.makeText(context, successMsg, Toast.LENGTH_SHORT).show()
-        }
-    }
 
     BaseQuizScreen(
         title = stringResource(com.rafalskrzypczyk.core.R.string.title_swipe_mode),
@@ -177,11 +183,13 @@ fun SwipeModeScreen(
         }
     }
 
-    if(state.showReportDialog) {
+    if (state.showReportDialog) {
         ReportIssueDialog(
             questionText = state.reportableQuestionContent,
+            description = state.reportIssueDescription,
+            onDescriptionChanged = { description -> onEvent(SwipeModeUIEvents.OnReportIssueDescriptionChanged(description)) },
             onDismiss = { onEvent(SwipeModeUIEvents.ToggleReportDialog(false)) },
-            onSend = { description -> onEvent(SwipeModeUIEvents.OnReportIssue(description)) }
+            onSend = { onEvent(SwipeModeUIEvents.OnReportIssue) }
         )
     }
 }
@@ -236,6 +244,7 @@ private fun SwipeModeScreenPreview() {
         SwipeModeScreen(
             state = SwipeModeState(),
             effect = kotlinx.coroutines.flow.MutableSharedFlow(),
+            quizEffect = kotlinx.coroutines.flow.MutableSharedFlow(),
             onEvent = {},
             onNavigateBack = {},
             onLaunchBilling = {}

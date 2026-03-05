@@ -37,11 +37,15 @@ import com.rafalskrzypczyk.main_mode.presentation.daily_exercise.DailyExerciseFi
 import kotlin.math.max
 import android.app.Activity
 import com.rafalskrzypczyk.core.ads.AdManagerEntryPoint
+import com.rafalskrzypczyk.core.utils.QuizSideEffect
 import dagger.hilt.android.EntryPointAccessors
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun MMQuizScreen(
     state: QuizState,
+    effect: SharedFlow<QuizSideEffect>,
     onEvent: (MMQuizUIEvents) -> Unit,
     onNavigateBack: () -> Unit,
 ) {
@@ -50,6 +54,16 @@ fun MMQuizScreen(
 
     val adManager = remember {
         EntryPointAccessors.fromApplication(context, AdManagerEntryPoint::class.java).adManager()
+    }
+
+    LaunchedEffect(effect) {
+        effect.collectLatest { sideEffect ->
+            when (sideEffect) {
+                QuizSideEffect.ShowReportSuccess -> {
+                    Toast.makeText(context, successMsg, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 
     LaunchedEffect(state.showAd) {
@@ -64,12 +78,6 @@ fun MMQuizScreen(
             } else {
                 onEvent(MMQuizUIEvents.OnAdDismissed)
             }
-        }
-    }
-
-    LaunchedEffect(state.showReportSuccessToast) {
-        if(state.showReportSuccessToast) {
-            Toast.makeText(context, successMsg, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -146,8 +154,10 @@ fun MMQuizScreen(
     if (state.showReportDialog) {
         ReportIssueDialog(
             questionText = state.question.questionText,
+            description = state.reportIssueDescription,
+            onDescriptionChanged = { description -> onEvent(MMQuizUIEvents.OnReportIssueDescriptionChanged(description)) },
             onDismiss = { onEvent(MMQuizUIEvents.ToggleReportDialog(false)) },
-            onSend = { description -> onEvent(MMQuizUIEvents.OnReportIssue(description)) }
+            onSend = { onEvent(MMQuizUIEvents.OnReportIssue) }
         )
     }
 }
@@ -236,6 +246,7 @@ private fun MMQuizScreenPreview() {
     PreviewContainer {
         MMQuizScreen(
             state = state.value,
+            effect = kotlinx.coroutines.flow.MutableSharedFlow(),
             onEvent = { event ->
                 when (event) {
                     is MMQuizUIEvents.OnAnswerClicked -> {
@@ -283,7 +294,10 @@ private fun MMQuizScreenPreview() {
                     is MMQuizUIEvents.ToggleReportDialog -> {
                         state.value = state.value.copy(showReportDialog = event.show)
                     }
-                    is MMQuizUIEvents.OnReportIssue -> {}
+                    is MMQuizUIEvents.OnReportIssueDescriptionChanged -> {
+                        state.value = state.value.copy(reportIssueDescription = event.description)
+                    }
+                    MMQuizUIEvents.OnReportIssue -> {}
                     MMQuizUIEvents.OnAdDismissed -> {}
                     MMQuizUIEvents.OnAdShown -> {}
                 }

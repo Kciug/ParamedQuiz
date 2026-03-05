@@ -10,12 +10,16 @@ import com.rafalskrzypczyk.firestore.domain.models.TranslationQuestionDTO
 import com.rafalskrzypczyk.translation_mode.domain.TranslationQuestionUIM
 import com.rafalskrzypczyk.translation_mode.domain.use_cases.TranslationUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
+
+import com.rafalskrzypczyk.core.utils.QuizSideEffect
 
 @HiltViewModel
 class TranslationQuizViewModel @Inject constructor(
@@ -24,6 +28,9 @@ class TranslationQuizViewModel @Inject constructor(
 
     private val _state = MutableStateFlow(TranslationQuizState())
     val state = _state.asStateFlow()
+
+    private val _effect = MutableSharedFlow<QuizSideEffect>()
+    val effect = _effect.asSharedFlow()
 
     private var earnedPointsSession: Int = 0
     private var isStreakUpdatedInSession: Boolean = false
@@ -101,8 +108,9 @@ class TranslationQuizViewModel @Inject constructor(
             TranslationQuizEvents.OnBackPressed -> _state.update { it.copy(showExitConfirmation = true) }
             is TranslationQuizEvents.OnBackConfirmed -> handleExitQuiz(event.navigateBack)
             is TranslationQuizEvents.ToggleReportDialog -> _state.update { it.copy(showReportDialog = event.show) }
+            is TranslationQuizEvents.OnReportIssueDescriptionChanged -> _state.update { it.copy(reportIssueDescription = event.description) }
+            TranslationQuizEvents.OnReportIssue -> reportIssue()
             is TranslationQuizEvents.ToggleReviewDialog -> _state.update { it.copy(showReviewDialog = event.show) }
-            is TranslationQuizEvents.OnReportIssue -> reportIssue(event.description)
         }
     }
 
@@ -181,18 +189,22 @@ class TranslationQuizViewModel @Inject constructor(
         }
     }
 
-    private fun reportIssue(description: String) {
+    private fun reportIssue() {
         val currentQ = _state.value.currentQuestion ?: return
         val report = IssueReportDTO(
             questionId = currentQ.id.toString(),
             questionContent = currentQ.phrase,
-            description = description,
+            description = _state.value.reportIssueDescription,
             gameMode = "Translation Mode"
         )
         
         useCases.sendTranslationReport(report).onEach { response ->
              if (response is Response.Success) {
-                 _state.update { it.copy(showReportDialog = false, showReportSuccessToast = true) }
+                 _state.update { it.copy(
+                     showReportDialog = false, 
+                     reportIssueDescription = ""
+                 ) }
+                 _effect.emit(QuizSideEffect.ShowReportSuccess)
              }
         }.launchIn(viewModelScope)
     }
