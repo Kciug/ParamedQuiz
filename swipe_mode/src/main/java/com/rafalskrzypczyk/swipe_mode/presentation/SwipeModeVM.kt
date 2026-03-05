@@ -236,7 +236,7 @@ class SwipeModeVM @Inject constructor(
         if(questions.indices.contains(indexToReport)) {
             val q = questions[indexToReport]
             val report = IssueReport(
-                questionId = q.id.toString(),
+                questionId = q.id,
                 questionContent = q.text,
                 description = state.value.reportIssueDescription,
                 gameMode = "Swipe Mode"

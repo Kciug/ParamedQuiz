@@ -192,7 +192,7 @@ class TranslationQuizViewModel @Inject constructor(
     private fun reportIssue() {
         val currentQ = _state.value.currentQuestion ?: return
         val report = IssueReportDTO(
-            questionId = currentQ.id.toString(),
+            questionId = currentQ.id,
             questionContent = currentQ.phrase,
             description = _state.value.reportIssueDescription,
             gameMode = "Translation Mode"

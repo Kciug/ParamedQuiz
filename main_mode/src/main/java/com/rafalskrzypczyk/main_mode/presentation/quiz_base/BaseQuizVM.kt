@@ -87,7 +87,7 @@ abstract class BaseQuizVM (
         val currentQ = state.value.question
         val description = state.value.reportIssueDescription
         val report = IssueReport(
-            questionId = currentQ.id.toString(),
+            questionId = currentQ.id,
             questionContent = currentQ.questionText,
             description = description,
             gameMode = "Main Mode"
