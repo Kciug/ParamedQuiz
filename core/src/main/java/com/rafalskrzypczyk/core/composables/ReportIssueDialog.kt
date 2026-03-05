@@ -23,11 +23,11 @@ import com.rafalskrzypczyk.core.utils.rememberDebouncedClick
 @Composable
 fun ReportIssueDialog(
     questionText: String,
+    description: String,
+    onDescriptionChanged: (String) -> Unit,
     onDismiss: () -> Unit,
-    onSend: (String) -> Unit
+    onSend: () -> Unit
 ) {
-    val description = remember { mutableStateOf("") }
-
     BaseCustomDialog(
         onDismissRequest = onDismiss,
         icon = Icons.Rounded.OutlinedFlag,
@@ -52,8 +52,8 @@ fun ReportIssueDialog(
                 Spacer(modifier = Modifier.height(Dimens.DEFAULT_PADDING))
 
                 TextFieldMultiLine(
-                    textValue = description.value,
-                    onValueChange = { description.value = it },
+                    textValue = description,
+                    onValueChange = onDescriptionChanged,
                     hint = stringResource(R.string.report_issue_description_hint),
                     minLines = 5,
                     maxLines = 8
@@ -68,13 +68,13 @@ fun ReportIssueDialog(
                 )
             }
             
-            val isEnabled = description.value.isNotBlank()
+            val isEnabled = description.isNotBlank()
             val sendColor = if (isEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
             
             TextButton(
                 onClick = rememberDebouncedClick {
                     if (isEnabled) {
-                        onSend(description.value)
+                        onSend()
                     }
                 },
                 enabled = isEnabled
@@ -95,6 +95,8 @@ private fun ReportIssueDialogPreview() {
     PreviewContainer {
         ReportIssueDialog(
             questionText = "Przykładowe pytanie z błędem?",
+            description = "",
+            onDescriptionChanged = {},
             onDismiss = {},
             onSend = {}
         )

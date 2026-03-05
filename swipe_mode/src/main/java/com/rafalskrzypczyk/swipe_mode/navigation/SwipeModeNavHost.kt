@@ -79,6 +79,7 @@ fun SwipeModeNavHost(
             SwipeModeScreen(
                 state = state,
                 effect = viewModel.effect,
+                quizEffect = viewModel.quizEffect,
                 onEvent = viewModel::onEvent,
                 onNavigateBack = onExit,
                 onLaunchBilling = { activity -> viewModel.launchBillingFlow(activity) }

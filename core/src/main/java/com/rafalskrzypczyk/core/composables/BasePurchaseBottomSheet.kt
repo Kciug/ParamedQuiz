@@ -1,25 +1,39 @@
 package com.rafalskrzypczyk.core.composables
 
 import android.content.res.Configuration
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -32,14 +46,12 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Swipe
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Whatshot
+import androidx.compose.material.icons.rounded.SwipeVertical
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -56,9 +68,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.rafalskrzypczyk.core.R
 import com.rafalskrzypczyk.core.ui.theme.MQGreen
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 data class PurchaseModeDetails(
@@ -67,6 +82,8 @@ data class PurchaseModeDetails(
     val questionCount: Int,
     val price: String?,
     val features: List<PurchaseFeature>,
+    val icon: ImageVector,
+    val themeColor: Color,
     val estimatedTime: String = "~5"
 )
 
@@ -76,7 +93,6 @@ data class PurchaseFeature(
     val icon: ImageVector
 )
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BasePurchaseBottomSheet(
     onDismiss: () -> Unit,
@@ -89,41 +105,100 @@ fun BasePurchaseBottomSheet(
     purchaseError: String? = null,
     shouldDismiss: Boolean = false
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val coroutineScope = rememberCoroutineScope()
-    val isAlreadyUnlockedOnEntry = remember { isUnlocked }
+    val isVisible = remember { androidx.compose.runtime.mutableStateOf(false) }
 
-    val dismiss = {
-        coroutineScope.launch {
-            sheetState.hide()
-            onDismiss()
-        }
+    LaunchedEffect(Unit) {
+        isVisible.value = true
     }
 
     LaunchedEffect(shouldDismiss) {
         if (shouldDismiss) {
-            dismiss()
+            isVisible.value = false
+            delay(300)
+            onDismiss()
         }
     }
 
-    ModalBottomSheet(
-        onDismissRequest = { onDismiss() },
-        sheetState = sheetState,
-        dragHandle = null,
-        containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        sheetGesturesEnabled = false,
-    ) {
-        PurchaseBottomSheetContent(
-            details = details,
-            onDismiss = { dismiss() },
-            onBuyClick = onBuyClick,
-            onStartClick = onStartClick,
-            onTryClick = onTryClick,
-            isUnlocked = isUnlocked,
-            isPurchasing = isPurchasing,
-            purchaseError = purchaseError,
-            isAlreadyUnlockedOnEntry = isAlreadyUnlockedOnEntry
-        )
+    val closeSheet = {
+        coroutineScope.launch {
+            isVisible.value = false
+            delay(300)
+            onDismiss()
+        }
+    }
+
+    if (isVisible.value || shouldDismiss) {
+        Dialog(
+            onDismissRequest = { closeSheet() },
+            properties = DialogProperties(
+                usePlatformDefaultWidth = false,
+                decorFitsSystemWindows = false
+            )
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) { closeSheet() },
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                // Scrim
+                AnimatedVisibility(
+                    visible = isVisible.value,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.4f))
+                    )
+                }
+
+                // Sheet Content
+                AnimatedVisibility(
+                    visible = isVisible.value,
+                    enter = slideInVertically(
+                        initialOffsetY = { it },
+                        animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy)
+                    ),
+                    exit = slideOutVertically(targetOffsetY = { it })
+                ) {
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(enabled = false) { } // Prevent clicks through to scrim
+                            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
+                            .clip(
+                                RoundedCornerShape(
+                                    topStart = Dimens.RADIUS_DEFAULT,
+                                    topEnd = Dimens.RADIUS_DEFAULT
+                                )
+                            ),
+                        color = MaterialTheme.colorScheme.surfaceContainer,
+                    ) {
+                        PurchaseBottomSheetContent(
+                            details = details,
+                            onDismiss = { closeSheet() },
+                            onBuyClick = onBuyClick,
+                            onStartClick = onStartClick,
+                            onTryClick = onTryClick,
+                            isUnlocked = isUnlocked,
+                            isPurchasing = isPurchasing,
+                            purchaseError = purchaseError,
+                            isAlreadyUnlockedOnEntry = isUnlocked
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    BackHandler(enabled = isVisible.value) {
+        closeSheet()
     }
 }
 
@@ -141,18 +216,36 @@ private fun PurchaseBottomSheetContent(
 ) {
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .statusBarsPadding()
-            .navigationBarsPadding()
+            .fillMaxWidth()
             .verticalScroll(rememberScrollState())
-            .padding(Dimens.DEFAULT_PADDING),
+            .padding(horizontal = Dimens.DEFAULT_PADDING),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Spacer(modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars))
+        Spacer(modifier = Modifier.height(Dimens.DEFAULT_PADDING))
+
         Box(modifier = Modifier.fillMaxWidth()) {
             ExitButton(onClose = onDismiss)
             TextTitle(
                 text = details.title,
                 modifier = Modifier.align(Alignment.Center)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
+
+        Box(
+            modifier = Modifier
+                .size(64.dp)
+                .clip(CircleShape)
+                .background(details.themeColor),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = details.icon,
+                contentDescription = null,
+                modifier = Modifier.size(32.dp),
+                tint = MaterialTheme.colorScheme.onSurface
             )
         }
 
@@ -179,7 +272,7 @@ private fun PurchaseBottomSheetContent(
         Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
 
         details.features.forEach { feature ->
-            FeatureItem(feature)
+            FeatureItem(feature, details.themeColor)
             Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
         }
 
@@ -193,13 +286,15 @@ private fun PurchaseBottomSheetContent(
                 modifier = Modifier.weight(1f),
                 value = details.questionCount.toString(),
                 label = stringResource(R.string.stat_questions),
-                icon = Icons.AutoMirrored.Filled.LibraryBooks
+                icon = Icons.AutoMirrored.Filled.LibraryBooks,
+                themeColor = details.themeColor
             )
             StatCard(
                 modifier = Modifier.weight(1f),
                 value = details.estimatedTime,
                 label = stringResource(R.string.stat_time),
-                icon = Icons.Default.Timer
+                icon = Icons.Default.Timer,
+                themeColor = details.themeColor
             )
         }
 
@@ -227,12 +322,15 @@ private fun PurchaseBottomSheetContent(
                     purchaseError = purchaseError,
                     isPurchasing = isPurchasing,
                     onBuyClick = onBuyClick,
-                    onTryClick = onTryClick
+                    onTryClick = onTryClick,
+                    themeColor = details.themeColor
                 )
             }
         }
 
         Spacer(modifier = Modifier.height(Dimens.LARGE_PADDING))
+        Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
+        Spacer(modifier = Modifier.height(Dimens.DEFAULT_PADDING))
     }
 }
 
@@ -281,7 +379,8 @@ private fun PurchaseSection(
     purchaseError: String?,
     isPurchasing: Boolean,
     onBuyClick: () -> Unit,
-    onTryClick: (() -> Unit)?
+    onTryClick: (() -> Unit)?,
+    themeColor: Color
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -289,7 +388,7 @@ private fun PurchaseSection(
     ) {
         TextTitle(
             text = price ?: "---",
-            color = MaterialTheme.colorScheme.primary
+            color = themeColor
         )
         TextCaption(text = stringResource(R.string.one_time_purchase))
 
@@ -349,7 +448,7 @@ private fun PremiumBadge() {
 }
 
 @Composable
-private fun FeatureItem(feature: PurchaseFeature) {
+private fun FeatureItem(feature: PurchaseFeature, themeColor: Color) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -364,13 +463,13 @@ private fun FeatureItem(feature: PurchaseFeature) {
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                    .background(themeColor.copy(alpha = 0.1f)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = feature.icon,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = themeColor,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -387,7 +486,8 @@ private fun StatCard(
     modifier: Modifier = Modifier,
     value: String,
     label: String,
-    icon: ImageVector
+    icon: ImageVector,
+    themeColor: Color
 ) {
     Card(
         modifier = modifier,
@@ -404,10 +504,10 @@ private fun StatCard(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
+                tint = themeColor,
                 modifier = Modifier.size(24.dp)
             )
-            TextScore(text = value, color = MaterialTheme.colorScheme.primary)
+            TextScore(text = value, color = themeColor)
             TextCaption(text = label, textAlign = TextAlign.Center)
         }
     }
@@ -425,6 +525,8 @@ private fun PurchaseSheetContentPreview() {
                     description = "Wybierz prawdę lub fałsz w szybkim quizie dla powtórki.",
                     questionCount = 203,
                     price = "14.99 zł",
+                    icon = Icons.Rounded.SwipeVertical,
+                    themeColor = Color(0xFFFF6478),
                     features = listOf(
                         PurchaseFeature("Przesuń, aby odpowiedzieć", "Szybkie gesty dla dynamicznej nauki", Icons.Default.Swipe),
                         PurchaseFeature("Szybki quiz", "Odpowiadaj szybko na pytania prawda/fałsz", Icons.Default.Bolt),
@@ -436,58 +538,6 @@ private fun PurchaseSheetContentPreview() {
                 onStartClick = {},
                 onTryClick = {},
                 isUnlocked = false,
-                isPurchasing = false,
-                purchaseError = null,
-                isAlreadyUnlockedOnEntry = false
-            )
-        }
-    }
-}
-
-@Preview(name = "Loading State")
-@Composable
-private fun PurchaseSheetLoadingPreview() {
-    ParamedQuizTheme {
-        Surface(color = MaterialTheme.colorScheme.surfaceContainer) {
-            PurchaseBottomSheetContent(
-                details = PurchaseModeDetails(
-                    title = "Wiedza w akcji",
-                    description = "Wybierz prawdę lub fałsz w szybkim quizie dla powtórki.",
-                    questionCount = 203,
-                    price = "14.99 zł",
-                    features = emptyList()
-                ),
-                onDismiss = {},
-                onBuyClick = {},
-                onStartClick = {},
-                onTryClick = {},
-                isUnlocked = false,
-                isPurchasing = true,
-                purchaseError = null,
-                isAlreadyUnlockedOnEntry = false
-            )
-        }
-    }
-}
-
-@Preview(name = "Success State")
-@Composable
-private fun PurchaseSheetSuccessPreview() {
-    ParamedQuizTheme {
-        Surface(color = MaterialTheme.colorScheme.surfaceContainer) {
-            PurchaseBottomSheetContent(
-                details = PurchaseModeDetails(
-                    title = "Wiedza w akcji",
-                    description = "Wybierz prawdę lub fałsz w szybkim quizie dla powtórki.",
-                    questionCount = 203,
-                    price = "14.99 zł",
-                    features = emptyList()
-                ),
-                onDismiss = {},
-                onBuyClick = {},
-                onStartClick = {},
-                onTryClick = {},
-                isUnlocked = true,
                 isPurchasing = false,
                 purchaseError = null,
                 isAlreadyUnlockedOnEntry = false

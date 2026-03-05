@@ -27,7 +27,7 @@ data class QuizState (
     // Dialogs
     val showReviewDialog: Boolean = false,
     val showReportDialog: Boolean = false,
-    val showReportSuccessToast: Boolean = false,
+    val reportIssueDescription: String = "",
     val showAd: Boolean = false,
     
     // Mode specific

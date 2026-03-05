@@ -2,10 +2,8 @@ package com.rafalskrzypczyk.home_screen.presentation.home_page
 
 import android.app.Activity
 import android.content.res.Configuration
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -15,29 +13,22 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
-import androidx.compose.material.icons.filled.AutoFixHigh
-import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.HistoryEdu
 import androidx.compose.material.icons.filled.PriorityHigh
-import androidx.compose.material.icons.filled.Swipe
-import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.Upcoming
-import androidx.compose.material.icons.filled.Whatshot
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material.icons.rounded.Bolt
+import androidx.compose.material.icons.rounded.History
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -51,37 +42,34 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.rafalskrzypczyk.core.composables.BasePurchaseBottomSheet
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.InfoDialog
-import com.rafalskrzypczyk.core.composables.PurchaseFeature
-import com.rafalskrzypczyk.core.composables.PurchaseModeDetails
 import com.rafalskrzypczyk.core.composables.TextHeadline
 import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.composables.rating.AppRatingCard
 import com.rafalskrzypczyk.core.composables.top_bars.MainTopBar
+import com.rafalskrzypczyk.core.ui.theme.MQBlue
 import com.rafalskrzypczyk.core.ui.theme.MQGreen
 import com.rafalskrzypczyk.core.ui.theme.MQRed
 import com.rafalskrzypczyk.core.ui.theme.MQYellow
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.core.utils.InAppReviewManager
 import com.rafalskrzypczyk.home.R
-import com.rafalskrzypczyk.score.domain.StreakState
-import kotlinx.coroutines.flow.collectLatest
-
-import androidx.compose.material.icons.rounded.Bolt
-import androidx.compose.material.icons.rounded.History
-import com.rafalskrzypczyk.core.ui.theme.MQBlue
 import com.rafalskrzypczyk.home_screen.presentation.home_page.components.Addon
 import com.rafalskrzypczyk.home_screen.presentation.home_page.components.HomeScreenAddonsMenu
 import com.rafalskrzypczyk.home_screen.presentation.home_page.components.HomeScreenQuizModesMenu
+import com.rafalskrzypczyk.home_screen.presentation.home_page.components.SwipePurchaseBottomSheet
+import com.rafalskrzypczyk.home_screen.presentation.home_page.components.TranslationPurchaseBottomSheet
+import com.rafalskrzypczyk.score.domain.StreakState
+import kotlinx.coroutines.flow.collectLatest
+
+import androidx.compose.foundation.layout.imePadding
 
 @Composable
 fun HomeScreen(
@@ -105,6 +93,7 @@ fun HomeScreen(
     val context = LocalContext.current
     val activity = remember(context) { context as? Activity }
     val reviewManager = remember(context) { InAppReviewManager(context) }
+    val scrollState = rememberScrollState()
 
     val addons = listOf(
         Addon(
@@ -132,9 +121,15 @@ fun HomeScreen(
         onEvent.invoke(HomeUIEvents.GetData)
     }
 
+    LaunchedEffect(state.ratingPromptState) {
+        if (state.ratingPromptState == com.rafalskrzypczyk.core.composables.rating.RatingPromptState.NEGATIVE_FEEDBACK) {
+            scrollState.animateScrollTo(scrollState.maxValue)
+        }
+    }
+
     LaunchedEffect(effect) {
-        effect.collectLatest { effect ->
-            when(effect) {
+        effect.collectLatest { sideEffect ->
+            when(sideEffect) {
                 is HomeSideEffect.PurchaseSuccess -> {
                 }
                 HomeSideEffect.LaunchReviewFlow -> {
@@ -148,7 +143,14 @@ fun HomeScreen(
     }
     
     if (state.showTranslationModePurchaseSheet) {
-        BasePurchaseBottomSheet(
+        TranslationPurchaseBottomSheet(
+            isUnlocked = state.isTranslationModeUnlocked,
+            isPurchasing = state.isPurchasing,
+            purchaseError = state.purchaseError,
+            questionCount = state.translationModeQuestionCount,
+            price = state.translationModePrice,
+            activity = activity,
+            shouldDismiss = isDismissingMode == com.rafalskrzypczyk.billing.domain.BillingIds.ID_TRANSLATION_MODE,
             onDismiss = { 
                 onEvent(HomeUIEvents.CloseTranslationModePurchaseSheet)
                 if (isDismissingMode == com.rafalskrzypczyk.billing.domain.BillingIds.ID_TRANSLATION_MODE) {
@@ -156,47 +158,23 @@ fun HomeScreen(
                     isDismissingMode = null
                 }
             },
-            onBuyClick = { 
-                if (activity != null) {
-                    onEvent(HomeUIEvents.BuyTranslationMode(activity))
-                }
-            },
+            onBuyClick = { act -> onEvent(HomeUIEvents.BuyTranslationMode(act)) },
             onStartClick = { 
                 isTrialMode = false
                 isDismissingMode = com.rafalskrzypczyk.billing.domain.BillingIds.ID_TRANSLATION_MODE 
-            },
-            isUnlocked = state.isTranslationModeUnlocked,
-            isPurchasing = state.isPurchasing,
-            purchaseError = state.purchaseError,
-            shouldDismiss = isDismissingMode == com.rafalskrzypczyk.billing.domain.BillingIds.ID_TRANSLATION_MODE,
-            details = PurchaseModeDetails(
-                title = stringResource(com.rafalskrzypczyk.core.R.string.title_translation_mode),
-                description = stringResource(R.string.mode_translation_desc),
-                questionCount = state.translationModeQuestionCount,
-                price = state.translationModePrice,
-                features = listOf(
-                    PurchaseFeature(
-                        title = stringResource(R.string.feature_translation_title),
-                        description = stringResource(R.string.feature_translation_desc),
-                        icon = Icons.Default.Translate
-                    ),
-                    PurchaseFeature(
-                        title = stringResource(R.string.feature_vocabulary_title),
-                        description = stringResource(R.string.feature_vocabulary_desc),
-                        icon = Icons.Default.HistoryEdu
-                    ),
-                    PurchaseFeature(
-                        title = stringResource(R.string.feature_auto_fix_title),
-                        description = stringResource(R.string.feature_auto_fix_desc),
-                        icon = Icons.Default.AutoFixHigh
-                    )
-                )
-            )
+            }
         )
     }
 
     if (state.showSwipeModePurchaseSheet) {
-        BasePurchaseBottomSheet(
+        SwipePurchaseBottomSheet(
+            isUnlocked = state.isSwipeModeUnlocked,
+            isPurchasing = state.isPurchasing,
+            purchaseError = state.purchaseError,
+            questionCount = state.swipeModeQuestionCount,
+            price = state.swipeModePrice,
+            activity = activity,
+            shouldDismiss = isDismissingMode == com.rafalskrzypczyk.billing.domain.BillingIds.ID_SWIPE_MODE,
             onDismiss = {
                 onEvent(HomeUIEvents.CloseSwipeModePurchaseSheet)
                 if (isDismissingMode == com.rafalskrzypczyk.billing.domain.BillingIds.ID_SWIPE_MODE) {
@@ -205,11 +183,7 @@ fun HomeScreen(
                     isTrialMode = false
                 }
             },
-            onBuyClick = {
-                if (activity != null) {
-                    onEvent(HomeUIEvents.BuySwipeMode(activity))
-                }
-            },
+            onBuyClick = { act -> onEvent(HomeUIEvents.BuySwipeMode(act)) },
             onStartClick = {
                 isTrialMode = false
                 isDismissingMode = com.rafalskrzypczyk.billing.domain.BillingIds.ID_SWIPE_MODE
@@ -217,34 +191,7 @@ fun HomeScreen(
             onTryClick = {
                 isTrialMode = true
                 isDismissingMode = com.rafalskrzypczyk.billing.domain.BillingIds.ID_SWIPE_MODE
-            },
-            isUnlocked = state.isSwipeModeUnlocked,
-            isPurchasing = state.isPurchasing,
-            purchaseError = state.purchaseError,
-            shouldDismiss = isDismissingMode == com.rafalskrzypczyk.billing.domain.BillingIds.ID_SWIPE_MODE,
-            details = PurchaseModeDetails(
-                title = stringResource(com.rafalskrzypczyk.core.R.string.title_swipe_mode),
-                description = stringResource(R.string.mode_swipe_desc),
-                questionCount = state.swipeModeQuestionCount,
-                price = state.swipeModePrice,
-                features = listOf(
-                    PurchaseFeature(
-                        title = stringResource(R.string.feature_swipe_title),
-                        description = stringResource(R.string.feature_swipe_desc),
-                        icon = Icons.Default.Swipe
-                    ),
-                    PurchaseFeature(
-                        title = stringResource(R.string.feature_speed_title),
-                        description = stringResource(R.string.feature_speed_desc),
-                        icon = Icons.Default.Bolt
-                    ),
-                    PurchaseFeature(
-                        title = stringResource(R.string.feature_combo_title),
-                        description = stringResource(R.string.feature_combo_desc),
-                        icon = Icons.Default.Whatshot
-                    )
-                )
-            )
+            }
         )
     }
 
@@ -271,7 +218,8 @@ fun HomeScreen(
         Column(
             modifier = modifier
                 .fillMaxSize()
-                .verticalScroll(state = rememberScrollState()),
+                .imePadding()
+                .verticalScroll(state = scrollState),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             WelcomeCard(

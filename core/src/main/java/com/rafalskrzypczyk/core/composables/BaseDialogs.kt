@@ -32,6 +32,14 @@ import com.rafalskrzypczyk.core.R
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.core.utils.rememberDebouncedClick
 
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
+
 @Composable
 fun BaseCustomDialog(
     onDismissRequest: () -> Unit,
@@ -42,15 +50,25 @@ fun BaseCustomDialog(
     content: @Composable () -> Unit,
     buttons: @Composable () -> Unit
 ) {
-    Dialog(onDismissRequest = onDismissRequest) {
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
+
+    Dialog(
+        onDismissRequest = onDismissRequest,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
         Box(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .imePadding(),
             contentAlignment = Alignment.TopCenter
         ) {
             Surface(
                 modifier = Modifier
-                    .padding(top = if (icon != null) Dimens.ICON_BACKGROUND_SIZE_LARGE / 2 else Dimens.DEFAULT_PADDING) // Leave space only if icon exists
-                    .fillMaxWidth(),
+                    .padding(top = if (icon != null) Dimens.ICON_BACKGROUND_SIZE_LARGE / 2 else Dimens.DEFAULT_PADDING)
+                    .padding(horizontal = Dimens.DEFAULT_PADDING)
+                    .fillMaxWidth()
+                    .heightIn(max = screenHeight * 0.9f),
                 shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT),
                 color = MaterialTheme.colorScheme.surface
             ) {
@@ -61,7 +79,7 @@ fun BaseCustomDialog(
                             .fillMaxWidth()
                             .background(headerColor)
                             .padding(
-                                top = if (icon != null) (Dimens.ICON_BACKGROUND_SIZE_LARGE / 2 + Dimens.DEFAULT_PADDING) else Dimens.DEFAULT_PADDING, // Adjust padding if icon exists
+                                top = if (icon != null) (Dimens.ICON_BACKGROUND_SIZE_LARGE / 2 + Dimens.DEFAULT_PADDING) else Dimens.DEFAULT_PADDING,
                                 bottom = Dimens.DEFAULT_PADDING
                             )
                             .padding(horizontal = Dimens.DEFAULT_PADDING),
@@ -74,22 +92,26 @@ fun BaseCustomDialog(
                         )
                     }
 
-                    // Content Area
+                    // Content Area - Scrollable
                     Column(
                         modifier = Modifier
+                            .weight(1f, fill = false)
+                            .verticalScroll(rememberScrollState())
                             .padding(Dimens.DEFAULT_PADDING)
                             .fillMaxWidth()
                     ) {
                         content()
-                        
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = Dimens.DEFAULT_PADDING),
-                            horizontalArrangement = Arrangement.End
-                        ) {
-                            buttons()
-                        }
+                    }
+
+                    // Buttons Area - Fixed at bottom
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = Dimens.DEFAULT_PADDING)
+                            .padding(bottom = Dimens.DEFAULT_PADDING),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        buttons()
                     }
                 }
             }

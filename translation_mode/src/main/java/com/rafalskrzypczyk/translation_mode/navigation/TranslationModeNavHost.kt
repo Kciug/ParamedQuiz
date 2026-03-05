@@ -76,6 +76,7 @@ fun TranslationModeNavHost(
 
             TranslationQuizScreen(
                 state = state.value,
+                effect = viewModel.effect,
                 onEvent = viewModel::onEvent,
                 onNavigateBack = onExit
             )

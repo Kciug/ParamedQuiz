@@ -26,6 +26,12 @@ import com.rafalskrzypczyk.core.ui.theme.MQGreen
 import com.rafalskrzypczyk.core.ui.theme.MQRed
 import com.rafalskrzypczyk.main_mode.R
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.unit.dp
+
 @Composable
 fun QuizSubmittedSection(
     bottomPadding: Dp,
@@ -37,8 +43,12 @@ fun QuizSubmittedSection(
     val verifiedText = stringResource(if(isAnswerCorrect) R.string.answer_correct else R.string.answer_incorrect)
     val verifiedColor = if(isAnswerCorrect) MQGreen else MQRed
 
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
+
     Column(modifier = Modifier
         .fillMaxWidth()
+        .heightIn(max = screenHeight * 0.9f)
         .clip(
             shape = RoundedCornerShape(
                 topStart = Dimens.RADIUS_SMALL,
@@ -46,6 +56,7 @@ fun QuizSubmittedSection(
             )
         )
         .background(MaterialTheme.colorScheme.surfaceContainer)
+        .verticalScroll(rememberScrollState())
         .padding(bottom = bottomPadding)
         .padding(top = Dimens.DEFAULT_PADDING)
         .padding(horizontal = Dimens.DEFAULT_PADDING)

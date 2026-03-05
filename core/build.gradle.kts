@@ -10,6 +10,8 @@ android {
 }
 
 dependencies {
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.material3)
     implementation(libs.androidx.compose.runtime)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.google.play.review)

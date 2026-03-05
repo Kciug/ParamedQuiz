@@ -16,6 +16,10 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+import com.rafalskrzypczyk.core.utils.QuizSideEffect
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+
 abstract class BaseQuizVM (
     private val useCases: BaseQuizUseCases,
     protected val adHandler: QuizAdHandler
@@ -23,6 +27,9 @@ abstract class BaseQuizVM (
     @Suppress("PropertyName")
     protected val _state = MutableStateFlow(QuizState())
     val state = _state.asStateFlow()
+
+    protected val _effect = MutableSharedFlow<QuizSideEffect>()
+    val effect = _effect.asSharedFlow()
 
     private val quizEngine = QuizEngine(useCases)
 
@@ -49,7 +56,8 @@ abstract class BaseQuizVM (
             is MMQuizUIEvents.OnBackConfirmed -> handleExitQuiz(event.navigateBack)
             is MMQuizUIEvents.ToggleReviewDialog -> toggleReviewDialog(event.show)
             is MMQuizUIEvents.ToggleReportDialog -> toggleReportDialog(event.show)
-            is MMQuizUIEvents.OnReportIssue -> reportIssue(event.description)
+            is MMQuizUIEvents.OnReportIssueDescriptionChanged -> _state.update { it.copy(reportIssueDescription = event.description) }
+            MMQuizUIEvents.OnReportIssue -> reportIssue()
             MMQuizUIEvents.OnAdDismissed -> handleAdDismissed()
             MMQuizUIEvents.OnAdShown -> onAdShown()
         }
@@ -75,10 +83,11 @@ abstract class BaseQuizVM (
         _state.update { it.copy(showReportDialog = show) }
     }
     
-    private fun reportIssue(description: String) {
+    private fun reportIssue() {
         val currentQ = state.value.question
+        val description = state.value.reportIssueDescription
         val report = IssueReport(
-            questionId = currentQ.id.toString(),
+            questionId = currentQ.id,
             questionContent = currentQ.questionText,
             description = description,
             gameMode = "Main Mode"
@@ -86,7 +95,11 @@ abstract class BaseQuizVM (
         viewModelScope.launch {
             useCases.reportIssue(report).collectLatest { response ->
                 if(response is Response.Success) {
-                    _state.update { it.copy(showReportDialog = false, showReportSuccessToast = true) }
+                    _state.update { it.copy(
+                        showReportDialog = false, 
+                        reportIssueDescription = ""
+                    ) }
+                    _effect.emit(QuizSideEffect.ShowReportSuccess)
                 }
             }
         }

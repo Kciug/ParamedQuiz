@@ -67,6 +67,7 @@ fun NavGraphBuilder.dailyExerciseDestination(
 
         MMQuizScreen(
             state = state.value,
+            effect = viewModel.effect,
             onEvent = viewModel::onEvent,
             onNavigateBack = onNavigateBack
         )

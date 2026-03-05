@@ -5,7 +5,7 @@ import androidx.annotation.Keep
 @Keep
 data class IssueReportDTO(
     val id: String = "",
-    val questionId: String = "",
+    val questionId: Long = -1,
     val questionContent: String = "",
     val description: String = "",
     val gameMode: String = "",

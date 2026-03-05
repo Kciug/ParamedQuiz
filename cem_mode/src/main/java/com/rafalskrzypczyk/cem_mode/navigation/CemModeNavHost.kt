@@ -146,6 +146,7 @@ fun NavGraphBuilder.cemQuizDestination(
 
         MMQuizScreen(
             state = state.value,
+            effect = viewModel.effect,
             onEvent = viewModel::onEvent,
             onNavigateBack = onNavigateBack
         )

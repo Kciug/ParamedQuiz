@@ -27,6 +27,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+import com.rafalskrzypczyk.core.utils.QuizSideEffect
+
 sealed interface SwipeModeSideEffect {
     object BuyMode : SwipeModeSideEffect
 }
@@ -44,6 +46,9 @@ class SwipeModeVM @Inject constructor(
 
     private val _effect = MutableSharedFlow<SwipeModeSideEffect>()
     val effect = _effect.asSharedFlow()
+
+    private val _quizEffect = MutableSharedFlow<QuizSideEffect>()
+    val quizEffect = _quizEffect.asSharedFlow()
 
     private var isTrialActive: Boolean = savedStateHandle.get<Boolean>("isTrial") ?: false
     private var swipeModeProductDetails: AppProduct? = null
@@ -183,7 +188,8 @@ class SwipeModeVM @Inject constructor(
             SwipeModeUIEvents.OnBackPressed -> _state.update { it.copy(showExitConfirmation = true) }
             SwipeModeUIEvents.OnBackDiscarded -> _state.update { it.copy(showExitConfirmation = false) }
             is SwipeModeUIEvents.ToggleReportDialog -> toggleReportDialog(event.show)
-            is SwipeModeUIEvents.OnReportIssue -> reportIssue(event.description)
+            is SwipeModeUIEvents.OnReportIssueDescriptionChanged -> _state.update { it.copy(reportIssueDescription = event.description) }
+            SwipeModeUIEvents.OnReportIssue -> reportIssue()
             SwipeModeUIEvents.OnAdDismissed -> handleAdDismissed()
             SwipeModeUIEvents.OnAdShown -> onAdShown()
             SwipeModeUIEvents.BuyMode -> buySwipeMode()
@@ -225,20 +231,24 @@ class SwipeModeVM @Inject constructor(
         _state.update { it.copy(showReportDialog = show, reportableQuestionContent = content) }
     }
 
-    private fun reportIssue(description: String) {
+    private fun reportIssue() {
         val indexToReport = if(currentQuestionIndex > 0) questions.size - currentQuestionIndex else questions.size - 1
         if(questions.indices.contains(indexToReport)) {
             val q = questions[indexToReport]
             val report = IssueReport(
-                questionId = q.id.toString(),
+                questionId = q.id,
                 questionContent = q.text,
-                description = description,
+                description = state.value.reportIssueDescription,
                 gameMode = "Swipe Mode"
             )
             viewModelScope.launch {
                 useCases.reportIssue(report).collectLatest { response ->
                     if(response is Response.Success) {
-                        _state.update { it.copy(showReportDialog = false, showReportSuccessToast = true) }
+                        _state.update { it.copy(
+                            showReportDialog = false, 
+                            reportIssueDescription = ""
+                        ) }
+                        _quizEffect.emit(QuizSideEffect.ShowReportSuccess)
                     }
                 }
             }

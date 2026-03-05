@@ -38,7 +38,7 @@
     <string name="stats_total_time">Całkowity czas</string>
     <string name="btn_review_answers">Przegląd odpowiedzi</string>
     <string name="review_answers_title">Przegląd odpowiedzi</string>
-    <string name="question_precision">Precyzja pytania</string>
+    <string name="question_precision">Precyzja pytania: %d%%</string>
 
     <plurals name="questions_count_plurals">
         <item quantity="one">%d pytanie</item>

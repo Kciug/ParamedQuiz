@@ -10,14 +10,17 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -33,6 +36,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.rafalskrzypczyk.core.composables.ButtonPrimary
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.PreviewContainer
@@ -71,30 +75,29 @@ fun QuizGameContent(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
-                        .verticalScroll(rememberScrollState()),
                 ) {
                     titlePanel.invoke()
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        TextPrimary(
-                            text = question.questionText,
-                            textAlign = TextAlign.Center
+                    QuizQuestionTextElement(
+                        modifier = Modifier.weight(1f),
+                        text = question.questionText,
+                        autoSize = TextAutoSize.StepBased(
+                            minFontSize = 11.sp,
+                            maxFontSize = 16.sp,
+                            stepSize = 1.sp
                         )
-                    }
+                    )
                 }
                 Column(
                     modifier = Modifier
                         .weight(1f)
-                        .fillMaxHeight()
-                        .verticalScroll(rememberScrollState()),
+                        .fillMaxHeight(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.SpaceBetween
                 ) {
                     AnswersListSection(
+                        modifier = Modifier
+                            .weight(1f)
+                            .verticalScroll(rememberScrollState()),
                         answers = question.answers,
                         onAnswerSelected = onAnswerSelected,
                         isSubmitted = question.isAnswerSubmitted
@@ -115,13 +118,17 @@ fun QuizGameContent(
                         bottom = scaffoldPadding.calculateBottomPadding(),
                         start = Dimens.DEFAULT_PADDING,
                         end = Dimens.DEFAULT_PADDING
-                    )
-                    .verticalScroll(rememberScrollState()),
+                    ),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 QuizQuestionTextElement(
                     modifier = Modifier.weight(1f),
-                    text = question.questionText
+                    text = question.questionText,
+                    autoSize = TextAutoSize.StepBased(
+                        minFontSize = 11.sp,
+                        maxFontSize = 16.sp,
+                        stepSize = 1.sp
+                    )
                 )
 
                 AnswersListSection(
@@ -158,15 +165,17 @@ fun QuizGameContent(
 @Composable
 fun QuizQuestionTextElement(
     modifier: Modifier = Modifier,
-    text: String
+    text: String,
+    autoSize: TextAutoSize? = null
 ) {
     Box(
-        modifier = modifier,
+        modifier = modifier.fillMaxWidth(),
         contentAlignment = Alignment.Center
     ) {
         TextPrimary(
             text = text,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            autoSize = autoSize
         )
     }
 }
@@ -215,13 +224,17 @@ fun AnswerButton(
         enabled = isSubmitted.not(),
         onClick = { onSelected(answer.id) },
     ) {
-        TextPrimary(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = Dimens.BUTTON_PADDING, horizontal = Dimens.DEFAULT_PADDING),
-            text = answer.answerText,
-            textAlign = TextAlign.Center
-        )
+            contentAlignment = Alignment.Center
+        ) {
+            TextPrimary(
+                text = answer.answerText,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
 

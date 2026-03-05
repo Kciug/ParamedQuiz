@@ -33,6 +33,7 @@ import com.rafalskrzypczyk.core.composables.Loading
 import com.rafalskrzypczyk.core.composables.PreviewContainer
 import com.rafalskrzypczyk.core.composables.ReportIssueDialog
 import com.rafalskrzypczyk.core.composables.RotateDevicePrompt
+import com.rafalskrzypczyk.core.utils.QuizSideEffect
 import com.rafalskrzypczyk.swipe_mode.presentation.components.SwipeModeTrialFinishedPanel
 import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.flow.SharedFlow
@@ -42,6 +43,7 @@ import kotlinx.coroutines.flow.collectLatest
 fun SwipeModeScreen(
     state: SwipeModeState,
     effect: SharedFlow<SwipeModeSideEffect>,
+    quizEffect: SharedFlow<QuizSideEffect>,
     onEvent: (SwipeModeUIEvents) -> Unit,
     onNavigateBack: () -> Unit,
     onLaunchBilling: (Activity) -> Unit
@@ -65,6 +67,16 @@ fun SwipeModeScreen(
         EntryPointAccessors.fromApplication(context, AdManagerEntryPoint::class.java).adManager()
     }
 
+    LaunchedEffect(quizEffect) {
+        quizEffect.collectLatest { sideEffect ->
+            when (sideEffect) {
+                QuizSideEffect.ShowReportSuccess -> {
+                    Toast.makeText(context, successMsg, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
     LaunchedEffect(state.showAd) {
         if (state.showAd) {
             val activity = context as? Activity
@@ -83,12 +95,6 @@ fun SwipeModeScreen(
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
-    LaunchedEffect(state.showReportSuccessToast) {
-        if(state.showReportSuccessToast) {
-            Toast.makeText(context, successMsg, Toast.LENGTH_SHORT).show()
-        }
-    }
-
     BaseQuizScreen(
         title = stringResource(com.rafalskrzypczyk.core.R.string.title_swipe_mode),
         quizTopPanel = { SwipeModeQuizPanel(score = state.userScore) },
@@ -96,6 +102,7 @@ fun SwipeModeScreen(
         quizFinished = state.isQuizFinished,
         waitingForAd = state.showAd,
         quizFinishedState = state.quizFinishedState,
+        showTopBar = !isLandscape,
         quizFinishedExtras = {
              SwipeModeFinishedExtras(
                  modifier = Modifier.padding(top = Dimens.DEFAULT_PADDING),
@@ -118,42 +125,42 @@ fun SwipeModeScreen(
         val modifier = Modifier.padding(paddingValues)
 
         Box(modifier = Modifier.fillMaxSize()) {
-            AnimatedContent(
-                targetState = state.showTrialFinishedPanel,
-                transitionSpec = {
-                    (fadeIn() + scaleIn(initialScale = 0.9f)) togetherWith (fadeOut() + scaleOut(targetScale = 0.9f))
-                },
-                label = "trialFinishedTransition"
-            ) { isTrialFinished ->
-                if (isTrialFinished) {
-                    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        SwipeModeTrialFinishedPanel(
-                            onBuyClick = { onEvent(SwipeModeUIEvents.BuyMode) },
-                            onExitClick = { onEvent(SwipeModeUIEvents.ExitTrial(onNavigateBack)) },
-                            totalQuestions = state.totalSwipeModeQuestions
-                        )
-                    }
-                } else {
-                    AnimatedContent(
-                        targetState = state.responseState,
-                        transitionSpec = {
-                            scaleIn() togetherWith scaleOut()
-                        },
-                        label = "responseTransition"
-                    ) { responseState ->
-                        when(responseState) {
-                            ResponseState.Idle -> {}
-                            ResponseState.Loading -> Loading()
-                            is ResponseState.Error -> ErrorDialog(responseState.message) { onNavigateBack() }
-                            ResponseState.Success -> {
-                                if(isLandscape) {
-                                    RotateDevicePrompt(modifier = modifier)
-                                } else {
+            if (isLandscape) {
+                RotateDevicePrompt(modifier = modifier)
+            } else {
+                AnimatedContent(
+                    targetState = state.showTrialFinishedPanel,
+                    transitionSpec = {
+                        (fadeIn() + scaleIn(initialScale = 0.9f)) togetherWith (fadeOut() + scaleOut(targetScale = 0.9f))
+                    },
+                    label = "trialFinishedTransition"
+                ) { isTrialFinished ->
+                    if (isTrialFinished) {
+                        Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            SwipeModeTrialFinishedPanel(
+                                onBuyClick = { onEvent(SwipeModeUIEvents.BuyMode) },
+                                onExitClick = { onEvent(SwipeModeUIEvents.ExitTrial(onNavigateBack)) },
+                                totalQuestions = state.totalSwipeModeQuestions
+                            )
+                        }
+                    } else {
+                        AnimatedContent(
+                            targetState = state.responseState,
+                            transitionSpec = {
+                                scaleIn() togetherWith scaleOut()
+                            },
+                            label = "responseTransition"
+                        ) { responseState ->
+                            when(responseState) {
+                                ResponseState.Idle -> {}
+                                ResponseState.Loading -> Loading()
+                                is ResponseState.Error -> ErrorDialog(responseState.message) { onNavigateBack() }
+                                ResponseState.Success -> {
                                     SwipeModeScreenContent(
                                         modifier = modifier,
                                         state = state,
                                         onEvent = onEvent
-                                   )
+                                    )
                                 }
                             }
                         }
@@ -176,11 +183,13 @@ fun SwipeModeScreen(
         }
     }
 
-    if(state.showReportDialog) {
+    if (state.showReportDialog) {
         ReportIssueDialog(
             questionText = state.reportableQuestionContent,
+            description = state.reportIssueDescription,
+            onDescriptionChanged = { description -> onEvent(SwipeModeUIEvents.OnReportIssueDescriptionChanged(description)) },
             onDismiss = { onEvent(SwipeModeUIEvents.ToggleReportDialog(false)) },
-            onSend = { description -> onEvent(SwipeModeUIEvents.OnReportIssue(description)) }
+            onSend = { onEvent(SwipeModeUIEvents.OnReportIssue) }
         )
     }
 }
@@ -235,6 +244,7 @@ private fun SwipeModeScreenPreview() {
         SwipeModeScreen(
             state = SwipeModeState(),
             effect = kotlinx.coroutines.flow.MutableSharedFlow(),
+            quizEffect = kotlinx.coroutines.flow.MutableSharedFlow(),
             onEvent = {},
             onNavigateBack = {},
             onLaunchBilling = {}

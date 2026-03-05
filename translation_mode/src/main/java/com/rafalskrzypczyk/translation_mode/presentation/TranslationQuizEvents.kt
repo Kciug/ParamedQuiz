@@ -8,6 +8,7 @@ sealed class TranslationQuizEvents {
     object OnBackDiscarded : TranslationQuizEvents()
     data class OnBackConfirmed(val navigateBack: () -> Unit) : TranslationQuizEvents()
     data class ToggleReportDialog(val show: Boolean) : TranslationQuizEvents()
+    data class OnReportIssueDescriptionChanged(val description: String) : TranslationQuizEvents()
+    object OnReportIssue : TranslationQuizEvents()
     data class ToggleReviewDialog(val show: Boolean) : TranslationQuizEvents()
-    data class OnReportIssue(val description: String) : TranslationQuizEvents()
 }
