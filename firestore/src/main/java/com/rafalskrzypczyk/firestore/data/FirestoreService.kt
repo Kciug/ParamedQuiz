@@ -175,6 +175,9 @@ class FirestoreService @Inject constructor(
         emit(Response.Success(banners))
     }.catch { emit(Response.Error(handleError(it))) }
 
+    override fun getNewsBannerUpdates(): Flow<List<NewsBannerDTO>> = attachFirestoreListener(FirestoreCollections.NEWS_BANNERS)
+        .map { it.toObjects(NewsBannerDTO::class.java).filter { banner -> banner.isActive } }
+
     private fun handleError(e: Throwable): String {
         return if (e is FirebaseFirestoreException) {
             firebaseError.localizedError(e.code.name)

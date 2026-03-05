@@ -39,4 +39,6 @@ interface FirestoreApi {
     fun getTermsOfServiceUpdates(): Flow<Response<TermsOfServiceDTO>>
     fun getQuestionsCountUpdates(collection: String): Flow<Int>
     fun getNewsBanners(): Flow<Response<List<NewsBannerDTO>>>
+
+    fun getNewsBannerUpdates(): Flow<List<NewsBannerDTO>>
 }
