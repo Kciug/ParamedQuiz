@@ -58,9 +58,9 @@ fun HomeNewsBanner(
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .padding(Dimens.SMALL_PADDING)
-                .size(32.dp)
+                .size(24.dp)
                 .background(
-                    color = Color.Black.copy(alpha = 0.3f),
+                    color = Color.Black.copy(alpha = 0.2f),
                     shape = CircleShape
                 )
         ) {
@@ -68,7 +68,7 @@ fun HomeNewsBanner(
                 imageVector = Icons.Default.Close,
                 contentDescription = null,
                 tint = Color.White,
-                modifier = Modifier.size(16.dp)
+                modifier = Modifier.size(12.dp)
             )
         }
     }
