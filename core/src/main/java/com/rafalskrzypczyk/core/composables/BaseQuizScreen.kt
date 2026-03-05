@@ -38,6 +38,7 @@ fun BaseQuizScreen(
     quizFinishedState: QuizFinishedState,
     quizFinishedExtras: @Composable () -> Unit = {},
     showBackConfirmation: Boolean,
+    showTopBar: Boolean = true,
     onBackAction: () -> Unit = {},
     onBackDiscarded: () -> Unit = {},
     onBackConfirmed: () -> Unit = {},
@@ -95,15 +96,17 @@ fun BaseQuizScreen(
                 Scaffold(
                     contentWindowInsets = WindowInsets.safeDrawing,
                     topBar = {
-                        QuizTopBar(
-                            titlePanel = {
-                                if (!titlePanelConsumed.value) {
-                                    defaultTitlePanel()
-                                }
-                            },
-                            quizPanel = { quizTopPanel() },
-                            actions = { ReportAction { onReportIssue() } }
-                        ) { onBackAction() }
+                        if (showTopBar) {
+                            QuizTopBar(
+                                titlePanel = {
+                                    if (!titlePanelConsumed.value) {
+                                        defaultTitlePanel()
+                                    }
+                                },
+                                quizPanel = { quizTopPanel() },
+                                actions = { ReportAction { onReportIssue() } }
+                            ) { onBackAction() }
+                        }
                     }
                 ) { innerPadding ->
                     quizContent(innerPadding, consumableTitlePanel)
