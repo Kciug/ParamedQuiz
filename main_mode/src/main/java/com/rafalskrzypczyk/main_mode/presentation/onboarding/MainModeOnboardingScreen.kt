@@ -1,11 +1,11 @@
 package com.rafalskrzypczyk.main_mode.presentation.onboarding
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
-import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.filled.School
-import androidx.compose.material.icons.filled.Style
+import androidx.compose.material.icons.outlined.BarChart
+import androidx.compose.material.icons.outlined.School
+import androidx.compose.material.icons.outlined.Style
+import androidx.compose.material.icons.rounded.QuestionMark
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
@@ -29,7 +29,7 @@ fun MainModeOnboardingScreen(
                 message = stringResource(R.string.MM_ob_page_1_message),
                 iconCompose = {
                     OnboardingIconComposition(
-                        mainIcon = Icons.Default.Style,
+                        mainIcon = Icons.Outlined.Style,
                         mainIconColor = MaterialTheme.colorScheme.primary
                     )
                 }
@@ -41,7 +41,7 @@ fun MainModeOnboardingScreen(
                 message = stringResource(R.string.MM_ob_page_2_message),
                 iconCompose = {
                     OnboardingIconComposition(
-                        mainIcon = Icons.AutoMirrored.Filled.Help,
+                        mainIcon = Icons.Rounded.QuestionMark,
                         mainIconColor = MQYellow
                     )
                 }
@@ -53,7 +53,7 @@ fun MainModeOnboardingScreen(
                 message = stringResource(R.string.MM_ob_page_3_message),
                 iconCompose = {
                     OnboardingIconComposition(
-                        mainIcon = Icons.Default.BarChart,
+                        mainIcon = Icons.Outlined.BarChart,
                         mainIconColor = MQGreen,
                         secondaryIcons = listOf(Icons.AutoMirrored.Filled.TrendingUp)
                     )
@@ -69,7 +69,7 @@ fun MainModeOnboardingScreen(
         header = {
             OnboardingHeader(
                 title = stringResource(com.rafalskrzypczyk.core.R.string.title_main_mode),
-                icon = Icons.Default.School
+                icon = Icons.Outlined.School
             )
         }
     )
