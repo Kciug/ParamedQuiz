@@ -1,6 +1,7 @@
 package com.rafalskrzypczyk.home_screen.presentation.home_page.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,7 +12,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -53,22 +53,24 @@ fun HomeNewsBanner(
             }
         }
 
-        IconButton(
-            onClick = onDismiss,
+        Box(
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .padding(Dimens.SMALL_PADDING)
-                .size(24.dp)
+                .padding(12.dp)
+                .size(28.dp)
                 .background(
-                    color = Color.Black.copy(alpha = 0.2f),
+                    color = Color.Black.copy(alpha = 0.4f),
                     shape = CircleShape
                 )
+                .clip(CircleShape)
+                .clickable { onDismiss() },
+            contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Default.Close,
                 contentDescription = null,
                 tint = Color.White,
-                modifier = Modifier.size(12.dp)
+                modifier = Modifier.size(16.dp)
             )
         }
     }
