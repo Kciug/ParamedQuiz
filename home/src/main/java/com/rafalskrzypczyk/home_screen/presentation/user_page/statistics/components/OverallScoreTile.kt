@@ -120,7 +120,7 @@ private fun ScoreDetailItem(
 ) {
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(Dimens.RADIUS_SMALL),
+        shape = RoundedCornerShape(Dimens.RADIUS_INNER_DEFAULT),
         color = color.copy(alpha = 0.1f)
     ) {
         Column(
