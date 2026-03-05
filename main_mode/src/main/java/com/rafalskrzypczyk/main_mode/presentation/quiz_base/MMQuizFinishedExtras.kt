@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -239,9 +240,10 @@ fun QuestionReviewItem(question: QuestionUIM) {
         ) {
             TextPrimary(text = question.questionText, maxLines = Int.MAX_VALUE)
             
-            TextCaption(
+            TextPrimary(
                 text = stringResource(R.string.question_precision, question.userPrecision),
-                color = if(question.userPrecision == 100) MQGreen else MaterialTheme.colorScheme.error
+                color = if(question.userPrecision == 100) MQGreen else MaterialTheme.colorScheme.error,
+                fontWeight = FontWeight.Bold
             )
 
             HorizontalDivider()
