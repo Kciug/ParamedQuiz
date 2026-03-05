@@ -21,15 +21,19 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -167,6 +171,7 @@ fun BasePurchaseBottomSheet(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable(enabled = false) { } // Prevent clicks through to scrim
+                            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
                             .clip(
                                 RoundedCornerShape(
                                     topStart = Dimens.RADIUS_DEFAULT,
@@ -209,8 +214,6 @@ private fun PurchaseBottomSheetContent(
     purchaseError: String?,
     isAlreadyUnlockedOnEntry: Boolean
 ) {
-    val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -218,7 +221,8 @@ private fun PurchaseBottomSheetContent(
             .padding(horizontal = Dimens.DEFAULT_PADDING),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(statusBarPadding + Dimens.DEFAULT_PADDING))
+        Spacer(modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars))
+        Spacer(modifier = Modifier.height(Dimens.DEFAULT_PADDING))
 
         Box(modifier = Modifier.fillMaxWidth()) {
             ExitButton(onClose = onDismiss)
