@@ -26,6 +26,7 @@ class TranslationQuizViewModel @Inject constructor(
     val state = _state.asStateFlow()
 
     private var earnedPointsSession: Int = 0
+    private var isStreakUpdatedInSession: Boolean = false
 
     init {
         loadData()
@@ -139,7 +140,9 @@ class TranslationQuizViewModel @Inject constructor(
         val newCorrectCount = if (isCorrect) currentState.correctAnswersCount + 1 else currentState.correctAnswersCount
 
         if (isCorrect) {
-            useCases.increaseStreakByQuestions()
+            if (useCases.increaseStreakByQuestions()) {
+                isStreakUpdatedInSession = true
+            }
         }
 
         _state.update {
@@ -170,7 +173,9 @@ class TranslationQuizViewModel @Inject constructor(
                     seenQuestions = it.questions.count { q -> q.isAnswered },
                     correctAnswers = it.correctAnswersCount,
                     points = it.userScore,
-                    earnedPoints = earnedPointsSession
+                    earnedPoints = earnedPointsSession,
+                    isStreakUpdated = isStreakUpdatedInSession,
+                    streak = useCases.getStreak()
                 )
             )
         }

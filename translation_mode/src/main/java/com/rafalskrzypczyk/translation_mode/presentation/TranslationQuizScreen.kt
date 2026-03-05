@@ -54,6 +54,7 @@ import androidx.compose.ui.text.input.ImeAction
 import com.rafalskrzypczyk.core.composables.ActionButton
 import com.rafalskrzypczyk.core.composables.CorrectAnswersLabel
 import com.rafalskrzypczyk.core.composables.UserPointsLabel
+import com.rafalskrzypczyk.core.composables.UserStreakLabel
 
 import androidx.compose.ui.platform.LocalConfiguration
 import android.content.res.Configuration
@@ -86,7 +87,12 @@ fun TranslationQuizScreen(
 
     BaseQuizScreen(
         title = stringResource(com.rafalskrzypczyk.core.R.string.title_translation_mode),
-        quizTopPanel = { TranslationQuizTopPanel(score = state.userScore, correctAnswers = state.correctAnswersCount) },
+        quizTopPanel = { 
+            TranslationQuizTopPanel(
+                score = state.userScore, 
+                correctAnswers = state.correctAnswersCount 
+            ) 
+        },
         currentQuestionIndex = state.currentQuestionIndex + 1,
         quizFinished = state.isQuizFinished,
         quizFinishedState = state.quizFinishedState,
