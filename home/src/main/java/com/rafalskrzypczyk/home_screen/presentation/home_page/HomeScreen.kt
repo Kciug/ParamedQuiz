@@ -62,6 +62,7 @@ import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.core.utils.InAppReviewManager
 import com.rafalskrzypczyk.home.R
 import com.rafalskrzypczyk.home_screen.presentation.home_page.components.Addon
+import com.rafalskrzypczyk.home_screen.presentation.home_page.components.HomeNewsBanner
 import com.rafalskrzypczyk.home_screen.presentation.home_page.components.HomeScreenAddonsMenu
 import com.rafalskrzypczyk.home_screen.presentation.home_page.components.HomeScreenQuizModesMenu
 import com.rafalskrzypczyk.home_screen.presentation.home_page.components.SwipePurchaseBottomSheet
@@ -228,6 +229,16 @@ fun HomeScreen(
                     .padding(horizontal = Dimens.DEFAULT_PADDING)
                     .padding(top = Dimens.DEFAULT_PADDING)
             )
+
+            state.newsBanners.forEach { banner ->
+                HomeNewsBanner(
+                    banner = banner,
+                    modifier = Modifier
+                        .padding(horizontal = Dimens.DEFAULT_PADDING)
+                        .padding(top = Dimens.DEFAULT_PADDING)
+                )
+            }
+
             HomeScreenAddonsMenu(addons = addons)
             
             androidx.compose.animation.AnimatedVisibility(

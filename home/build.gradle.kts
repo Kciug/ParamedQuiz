@@ -18,6 +18,7 @@ dependencies {
     
     implementation(libs.billing.ktx)
     implementation(libs.androidx.compose.runtime)
+    implementation(libs.coil.compose)
     
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)

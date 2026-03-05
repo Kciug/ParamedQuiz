@@ -5,6 +5,7 @@ import com.rafalskrzypczyk.firestore.domain.models.CategoryDTO
 import com.rafalskrzypczyk.firestore.domain.models.CemCategoryDTO
 import com.rafalskrzypczyk.firestore.domain.models.FeedbackDTO
 import com.rafalskrzypczyk.firestore.domain.models.IssueReportDTO
+import com.rafalskrzypczyk.firestore.domain.models.NewsBannerDTO
 import com.rafalskrzypczyk.firestore.domain.models.QuestionDTO
 import com.rafalskrzypczyk.firestore.domain.models.ScoreDTO
 import com.rafalskrzypczyk.firestore.domain.models.SwipeQuestionDTO
@@ -37,4 +38,5 @@ interface FirestoreApi {
     fun getTermsOfService(): Flow<Response<TermsOfServiceDTO>>
     fun getTermsOfServiceUpdates(): Flow<Response<TermsOfServiceDTO>>
     fun getQuestionsCountUpdates(collection: String): Flow<Int>
+    fun getNewsBanners(): Flow<Response<List<NewsBannerDTO>>>
 }

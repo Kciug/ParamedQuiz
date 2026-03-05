@@ -143,6 +143,14 @@ class HomeScreenVM @Inject constructor(
                     _state.update { it.copy(swipeModeQuestionCount = count) }
                 }
         }
+
+        viewModelScope.launch {
+            useCases.getNewsBanners().collectLatest { response ->
+                if (response is Response.Success) {
+                    _state.update { it.copy(newsBanners = response.data) }
+                }
+            }
+        }
     }
 
     private fun checkRatingEligibility() {
