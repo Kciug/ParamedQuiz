@@ -145,7 +145,7 @@ fun ResetPasswordInput(
     )
 
     ButtonPrimary(
-        title = stringResource(R.string.btn_register),
+        title = stringResource(R.string.btn_send_reset_password_email),
         onClick = { onEvent(ResetPasswordUIEvents.SendResetPasswordEmail(emailText)) },
         enabled = emailText.isNotBlank()
     )
