@@ -156,6 +156,7 @@
     <string name="feature_combo_title">Buduj combo</string>
     <string name="feature_combo_desc">Zdobywaj punkty za serie poprawnych odpowiedzi.</string>
     <string name="title_rating_section">Oceń nas!</string>
+    <string name="title_news_section">Co nowego?</string>
     <string name="title_cem_mode">Pytania egzaminacyjne</string>
     <string name="mode_cem_desc">Baza oficjalnych pytań z egzaminów państwowych</string>
 </resources>

@@ -15,6 +15,7 @@ import com.rafalskrzypczyk.firestore.domain.models.CategoryDTO
 import com.rafalskrzypczyk.firestore.domain.models.CemCategoryDTO
 import com.rafalskrzypczyk.firestore.domain.models.FeedbackDTO
 import com.rafalskrzypczyk.firestore.domain.models.IssueReportDTO
+import com.rafalskrzypczyk.firestore.domain.models.NewsBannerDTO
 import com.rafalskrzypczyk.firestore.domain.models.QuestionDTO
 import com.rafalskrzypczyk.firestore.domain.models.ScoreDTO
 import com.rafalskrzypczyk.firestore.domain.models.SwipeQuestionDTO
@@ -165,6 +166,14 @@ class FirestoreService @Inject constructor(
         val snapshot = countQuery.get(com.google.firebase.firestore.AggregateSource.SERVER).await()
         emit(snapshot.count.toInt())
     }.catch { emit(0) }
+
+    override fun getNewsBanners(): Flow<Response<List<NewsBannerDTO>>> = flow {
+        emit(Response.Loading)
+        val banners = getFirestoreData(FirestoreCollections.NEWS_BANNERS)
+            ?.toObjects(NewsBannerDTO::class.java)
+            ?.filter { it.isActive } ?: emptyList()
+        emit(Response.Success(banners))
+    }.catch { emit(Response.Error(handleError(it))) }
 
     private fun handleError(e: Throwable): String {
         return if (e is FirebaseFirestoreException) {

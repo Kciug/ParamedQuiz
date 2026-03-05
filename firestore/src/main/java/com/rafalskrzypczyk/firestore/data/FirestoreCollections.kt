@@ -15,4 +15,5 @@ object FirestoreCollections {
 
     const val APP_CONFIG = "app_config"
     const val TERMS_OF_SERVICE = "terms_of_service"
+    const val NEWS_BANNERS = "news_banners"
 }

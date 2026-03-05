@@ -3,33 +3,23 @@ package com.rafalskrzypczyk.core.composables
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
@@ -49,9 +39,12 @@ import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material.icons.rounded.SwipeVertical
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -68,12 +61,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import com.rafalskrzypczyk.core.R
 import com.rafalskrzypczyk.core.ui.theme.MQGreen
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 data class PurchaseModeDetails(
@@ -93,6 +83,7 @@ data class PurchaseFeature(
     val icon: ImageVector
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BasePurchaseBottomSheet(
     onDismiss: () -> Unit,
@@ -105,100 +96,52 @@ fun BasePurchaseBottomSheet(
     purchaseError: String? = null,
     shouldDismiss: Boolean = false
 ) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val coroutineScope = rememberCoroutineScope()
-    val isVisible = remember { androidx.compose.runtime.mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        isVisible.value = true
+    val closeSheet: () -> Unit = {
+        coroutineScope.launch {
+            sheetState.hide()
+            onDismiss()
+        }
     }
 
     LaunchedEffect(shouldDismiss) {
         if (shouldDismiss) {
-            isVisible.value = false
-            delay(300)
-            onDismiss()
+            closeSheet()
         }
     }
 
-    val closeSheet = {
-        coroutineScope.launch {
-            isVisible.value = false
-            delay(300)
-            onDismiss()
-        }
-    }
-
-    if (isVisible.value || shouldDismiss) {
-        Dialog(
-            onDismissRequest = { closeSheet() },
-            properties = DialogProperties(
-                usePlatformDefaultWidth = false,
-                decorFitsSystemWindows = false
-            )
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null
-                    ) { closeSheet() },
-                contentAlignment = Alignment.BottomCenter
-            ) {
-                // Scrim
-                AnimatedVisibility(
-                    visible = isVisible.value,
-                    enter = fadeIn(),
-                    exit = fadeOut()
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color.Black.copy(alpha = 0.4f))
-                    )
-                }
-
-                // Sheet Content
-                AnimatedVisibility(
-                    visible = isVisible.value,
-                    enter = slideInVertically(
-                        initialOffsetY = { it },
-                        animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy)
-                    ),
-                    exit = slideOutVertically(targetOffsetY = { it })
-                ) {
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable(enabled = false) { } // Prevent clicks through to scrim
-                            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
-                            .clip(
-                                RoundedCornerShape(
-                                    topStart = Dimens.RADIUS_DEFAULT,
-                                    topEnd = Dimens.RADIUS_DEFAULT
-                                )
-                            ),
-                        color = MaterialTheme.colorScheme.surfaceContainer,
-                    ) {
-                        PurchaseBottomSheetContent(
-                            details = details,
-                            onDismiss = { closeSheet() },
-                            onBuyClick = onBuyClick,
-                            onStartClick = onStartClick,
-                            onTryClick = onTryClick,
-                            isUnlocked = isUnlocked,
-                            isPurchasing = isPurchasing,
-                            purchaseError = purchaseError,
-                            isAlreadyUnlockedOnEntry = isUnlocked
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    BackHandler(enabled = isVisible.value) {
+    BackHandler(enabled = sheetState.isVisible) {
         closeSheet()
+    }
+
+    ModalBottomSheet(
+        onDismissRequest = closeSheet,
+        sheetState = sheetState,
+        contentWindowInsets = { WindowInsets(0, 0, 0, 0) },
+        shape = RoundedCornerShape(0.dp),
+        dragHandle = null,
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        modifier = Modifier.fillMaxSize(),
+        sheetGesturesEnabled = false
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.surfaceContainer
+        ) {
+            PurchaseBottomSheetContent(
+                details = details,
+                onDismiss = closeSheet,
+                onBuyClick = onBuyClick,
+                onStartClick = onStartClick,
+                onTryClick = onTryClick,
+                isUnlocked = isUnlocked,
+                isPurchasing = isPurchasing,
+                purchaseError = purchaseError,
+                isAlreadyUnlockedOnEntry = isUnlocked
+            )
+        }
     }
 }
 
@@ -216,7 +159,7 @@ private fun PurchaseBottomSheetContent(
 ) {
     Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = Dimens.DEFAULT_PADDING),
         horizontalAlignment = Alignment.CenterHorizontally

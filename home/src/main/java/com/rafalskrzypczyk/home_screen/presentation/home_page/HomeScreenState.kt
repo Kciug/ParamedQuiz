@@ -1,6 +1,7 @@
 package com.rafalskrzypczyk.home_screen.presentation.home_page
 
 import com.rafalskrzypczyk.core.composables.rating.RatingPromptState
+import com.rafalskrzypczyk.firestore.domain.models.NewsBannerDTO
 import com.rafalskrzypczyk.score.domain.StreakState
 
 data class HomeScreenState (
@@ -26,5 +27,6 @@ data class HomeScreenState (
     val ratingValue: Int = 0,
     val feedbackText: String = "",
     val isSendingFeedback: Boolean = false,
-    val feedbackErrorMessage: String? = null
+    val feedbackErrorMessage: String? = null,
+    val newsBanners: List<NewsBannerDTO> = emptyList()
 )

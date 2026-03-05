@@ -15,9 +15,7 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -62,6 +60,7 @@ import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.core.utils.InAppReviewManager
 import com.rafalskrzypczyk.home.R
 import com.rafalskrzypczyk.home_screen.presentation.home_page.components.Addon
+import com.rafalskrzypczyk.home_screen.presentation.home_page.components.HomeNewsBanner
 import com.rafalskrzypczyk.home_screen.presentation.home_page.components.HomeScreenAddonsMenu
 import com.rafalskrzypczyk.home_screen.presentation.home_page.components.HomeScreenQuizModesMenu
 import com.rafalskrzypczyk.home_screen.presentation.home_page.components.SwipePurchaseBottomSheet
@@ -69,6 +68,7 @@ import com.rafalskrzypczyk.home_screen.presentation.home_page.components.Transla
 import com.rafalskrzypczyk.score.domain.StreakState
 import kotlinx.coroutines.flow.collectLatest
 
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.imePadding
 
 @Composable
@@ -228,6 +228,41 @@ fun HomeScreen(
                     .padding(horizontal = Dimens.DEFAULT_PADDING)
                     .padding(top = Dimens.DEFAULT_PADDING)
             )
+
+            androidx.compose.animation.AnimatedVisibility(
+                visible = state.newsBanners.isNotEmpty(),
+                enter = androidx.compose.animation.expandVertically() + androidx.compose.animation.fadeIn(),
+                exit = androidx.compose.animation.shrinkVertically() + androidx.compose.animation.fadeOut()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = Dimens.DEFAULT_PADDING)
+                        .padding(top = Dimens.DEFAULT_PADDING)
+                ) {
+                    TextHeadline(
+                        text = stringResource(R.string.title_news_section),
+                        modifier = Modifier.padding(bottom = Dimens.ELEMENTS_SPACING_SMALL)
+                    )
+                    
+                    androidx.compose.animation.AnimatedContent(
+                        targetState = state.newsBanners.firstOrNull(),
+                        transitionSpec = {
+                            (androidx.compose.animation.fadeIn() + androidx.compose.animation.scaleIn(initialScale = 0.95f))
+                                .togetherWith(androidx.compose.animation.fadeOut() + androidx.compose.animation.scaleOut(targetScale = 0.95f))
+                        },
+                        label = "NewsBannerAnimation"
+                    ) { banner ->
+                        banner?.let {
+                            HomeNewsBanner(
+                                banner = it,
+                                onDismiss = { onEvent(HomeUIEvents.DismissNews(it.id)) }
+                            )
+                        }
+                    }
+                }
+            }
+
             HomeScreenAddonsMenu(addons = addons)
             
             androidx.compose.animation.AnimatedVisibility(
