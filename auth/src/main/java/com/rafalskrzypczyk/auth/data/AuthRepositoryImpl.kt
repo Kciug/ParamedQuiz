@@ -17,7 +17,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
-import com.rafalskrzypczyk.auth.R
+import com.rafalskrzypczyk.auth.BuildConfig
 import com.rafalskrzypczyk.auth.domain.AuthRepository
 import com.rafalskrzypczyk.auth.domain.toDTO
 import com.rafalskrzypczyk.auth.domain.toDomain
@@ -295,7 +295,7 @@ class AuthRepositoryImpl @Inject constructor(
 
     private suspend fun getGoogleCredentials(context: Context): GetCredentialResponse {
         val signInWithGoogleOption: GetSignInWithGoogleOption = GetSignInWithGoogleOption.Builder(
-            serverClientId = context.getString(R.string.web_client_id)
+            serverClientId = BuildConfig.GOOGLE_WEB_CLIENT_ID
         )
             .setNonce("")
             .build()
