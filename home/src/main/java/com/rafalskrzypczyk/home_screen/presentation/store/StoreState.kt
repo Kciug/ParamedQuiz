@@ -1,6 +1,7 @@
 package com.rafalskrzypczyk.home_screen.presentation.store
 
 import androidx.compose.runtime.Immutable
+import com.rafalskrzypczyk.billing.domain.AppProduct
 import com.rafalskrzypczyk.core.api_response.ResponseState
 
 @Immutable
@@ -17,11 +18,11 @@ data class StoreState(
     val isAdFreeUnlocked: Boolean = false,
     
     // Ceny
-    val fullPackagePrice: String? = null,
-    val translationModePrice: String? = null,
-    val swipeModePrice: String? = null,
-    val categoryPrice: String? = null,
-    val adFreePrice: String? = null,
+    val fullPackageProduct: AppProduct? = null,
+    val translationModeProduct: AppProduct? = null,
+    val swipeModeProduct: AppProduct? = null,
+    val categoryProduct: AppProduct? = null,
+    val adFreeProduct: AppProduct? = null,
     
     val pendingPurchaseModeId: String? = null
 )

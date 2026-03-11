@@ -34,7 +34,6 @@ class StoreVM @Inject constructor(
     private var availableProductsCache: List<AppProduct> = emptyList()
     private val specificCategoryId = 98226763913716L
     
-    // Lista identyfikatorów produktów które sklep obsługuje
     private val storeProductIds = listOf(
         BillingIds.ID_FULL_PACKAGE,
         BillingIds.ID_TRANSLATION_MODE,
@@ -55,14 +54,14 @@ class StoreVM @Inject constructor(
                 
                 _state.update { currentState ->
                     val nextState = currentState.copy(
-                        fullPackagePrice = fullPackage?.price,
-                        translationModePrice = translationMode?.price,
-                        swipeModePrice = swipeMode?.price,
-                        adFreePrice = adFree?.price,
-                        categoryPrice = category?.price
+                        fullPackageProduct = fullPackage,
+                        translationModeProduct = translationMode,
+                        swipeModeProduct = swipeMode,
+                        adFreeProduct = adFree,
+                        categoryProduct = category
                     )
                     
-                    if (nextState.responseState is ResponseState.Loading) {
+                    if (products.isNotEmpty() || nextState.responseState is ResponseState.Loading) {
                         nextState.copy(responseState = ResponseState.Success)
                     } else {
                         nextState
@@ -118,6 +117,11 @@ class StoreVM @Inject constructor(
         viewModelScope.launch {
             try {
                 billingRepository.queryProducts(storeProductIds)
+                _state.update { currentState ->
+                    if (currentState.responseState is ResponseState.Loading) {
+                        currentState.copy(responseState = ResponseState.Success)
+                    } else currentState
+                }
             } catch (e: Exception) {
                 _state.update { it.copy(responseState = ResponseState.Error(e.message ?: "Unknown error")) }
             }
@@ -131,7 +135,7 @@ class StoreVM @Inject constructor(
             billingRepository.launchBillingFlow(activity, details)
         } else {
             _state.update { it.copy(purchaseError = "Product details not found.") }
-            loadPrices() // Spróbujmy pobrać z powrotem jak nie było
+            loadPrices()
         }
     }
 }
