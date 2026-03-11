@@ -12,12 +12,8 @@ class GetNewsBannersUC @Inject constructor(
     private val firestoreApi: FirestoreApi,
     private val sharedPreferencesApi: SharedPreferencesApi
 ) {
-    operator fun invoke(): Flow<Response<List<NewsBannerDTO>>> = firestoreApi.getNewsBanners().map { response ->
-        if (response is Response.Success) {
-            val seenIds = sharedPreferencesApi.getSeenNewsIds()
-            Response.Success(response.data.filter { it.id !in seenIds })
-        } else {
-            response
-        }
+    operator fun invoke(): Flow<Response<List<NewsBannerDTO>>> = firestoreApi.getNewsBannerUpdates().map { banners ->
+        val seenIds = sharedPreferencesApi.getSeenNewsIds()
+        Response.Success(banners.filter { it.id !in seenIds })
     }
 }

@@ -209,6 +209,7 @@ private fun UserSettingsContent(
                 }
             }
             
+            /*
             item {
                 SettingsCategoryHeader(stringResource(R.string.settings_category_app))
             }
@@ -222,6 +223,7 @@ private fun UserSettingsContent(
                     onCheckedChange = { notificationsEnabled.value = it }
                 )
             }
+            */
 
             item {
                 SettingsCategoryHeader(stringResource(R.string.settings_category_data))
