@@ -1,9 +1,19 @@
 plugins {
     id("paramedquiz.android.feature")
+    alias(libs.plugins.secrets)
 }
 
 android {
     namespace = "com.rafalskrzypczyk.auth"
+
+    buildFeatures {
+        buildConfig = true
+    }
+}
+
+secrets {
+    propertiesFileName = "local.properties"
+    defaultPropertiesFileName = "local.defaults.properties"
 }
 
 dependencies {

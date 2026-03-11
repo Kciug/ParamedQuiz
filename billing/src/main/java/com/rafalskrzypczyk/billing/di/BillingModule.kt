@@ -15,7 +15,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object BillingModule {
 
-    private const val USE_MOCK_BILLING = true
+    private const val USE_MOCK_BILLING = false
 
     @Provides
     @Singleton

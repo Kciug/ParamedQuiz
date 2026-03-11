@@ -27,8 +27,7 @@ class AdManagerImpl @Inject constructor(
     private val consentManager = GoogleMobileAdsConsentManager(context)
     private var interstitialAd: InterstitialAd? = null
     
-    // Test ID for Interstitial
-    private val adUnitId = "ca-app-pub-3940256099942544/1033173712"
+    private val adUnitId = BuildConfig.ADMOB_INTERSTITIAL_UNIT_ID
     
     private var isAdsFree = false
 
