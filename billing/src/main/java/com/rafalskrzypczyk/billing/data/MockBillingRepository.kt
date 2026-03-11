@@ -49,7 +49,7 @@ class MockBillingRepository @Inject constructor() : BillingRepository {
                 BillingIds.ID_FULL_PACKAGE -> "Full Package" to "29.99 zł"
                 BillingIds.ID_TRANSLATION_MODE -> "Translation Mode" to "9.99 zł"
                 BillingIds.ID_SWIPE_MODE -> "Swipe Mode" to "14.99 zł"
-                else -> "Product $id" to "0.00 zł"
+                else -> "Product $id" to "9.99 zł"
             }
             AppProduct(
                 id = id,

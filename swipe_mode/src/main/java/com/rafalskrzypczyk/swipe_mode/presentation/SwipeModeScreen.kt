@@ -140,7 +140,8 @@ fun SwipeModeScreen(
                             SwipeModeTrialFinishedPanel(
                                 onBuyClick = { onEvent(SwipeModeUIEvents.BuyMode) },
                                 onExitClick = { onEvent(SwipeModeUIEvents.ExitTrial(onNavigateBack)) },
-                                totalQuestions = state.totalSwipeModeQuestions
+                                totalQuestions = state.totalSwipeModeQuestions,
+                                price = state.swipeModePrice
                             )
                         }
                     } else {

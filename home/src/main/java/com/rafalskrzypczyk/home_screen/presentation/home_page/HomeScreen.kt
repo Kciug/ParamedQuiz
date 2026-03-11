@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Diamond
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.PriorityHigh
 import androidx.compose.material.icons.filled.Upcoming
@@ -82,6 +83,7 @@ fun HomeScreen(
     onNavigateToSwipeMode: (Boolean) -> Unit,
     onNavigateToTranslationMode: () -> Unit,
     onNavigateToCemMode: () -> Unit,
+    onNavigateToStore: () -> Unit,
     onNavigateToDevOptions: () -> Unit
 ) {
     var showDailyExerciseAlreadyDoneAlert by remember { mutableStateOf(false) }
@@ -115,6 +117,13 @@ fun HomeScreen(
             iconBackgroundColor = MQBlue,
             isAvailable = false,
         ) { showRevisionsUnavailableAlert = true },
+        Addon(
+            title = stringResource(R.string.title_store),
+            icon = Icons.Default.Diamond,
+            iconBackgroundColor = MQYellow,
+            highlighted = !state.isPremium,
+            isAvailable = true
+        ) { onNavigateToStore() },
     )
 
     LaunchedEffect(Unit) {
@@ -440,6 +449,7 @@ private fun HomeScreenPreview() {
                 onNavigateToSwipeMode = {},
                 onNavigateToTranslationMode = {},
                 onNavigateToCemMode = {},
+                onNavigateToStore = {},
                 onNavigateToDailyExercise = {},
                 onNavigateToDevOptions = {}
             )

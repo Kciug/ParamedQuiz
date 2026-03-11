@@ -1,6 +1,7 @@
 package com.rafalskrzypczyk.main_mode.presentation.categories_screen
 
 import com.rafalskrzypczyk.billing.domain.BillingRepository
+import com.rafalskrzypczyk.billing.domain.getCategoryBillingId
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.quiz.models.CategoryUIM
 import com.rafalskrzypczyk.main_mode.domain.quiz_categories.MMCategoriesUseCases
@@ -57,6 +58,6 @@ class MMCategoriesVMTest {
         
         viewModel.onEvent(MMCategoriesUIEvents.OpenPurchaseDialog(category))
         
-        coVerify { billingRepository.queryProducts(listOf("1")) }
+        coVerify { billingRepository.queryProducts(listOf(getCategoryBillingId(1))) }
     }
 }

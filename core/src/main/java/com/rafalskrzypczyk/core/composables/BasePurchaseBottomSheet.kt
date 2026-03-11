@@ -349,7 +349,8 @@ private fun PurchaseSection(
         ButtonPrimary(
             title = stringResource(R.string.btn_buy_for, price ?: "---"),
             onClick = onBuyClick,
-            loading = isPurchasing
+            loading = isPurchasing,
+            enabled = price != null
         )
 
         Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))

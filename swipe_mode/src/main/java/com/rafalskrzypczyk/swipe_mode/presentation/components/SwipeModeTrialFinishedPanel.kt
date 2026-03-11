@@ -37,6 +37,7 @@ fun SwipeModeTrialFinishedPanel(
     onBuyClick: () -> Unit,
     onExitClick: () -> Unit,
     totalQuestions: Int,
+    price: String?,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -98,8 +99,9 @@ fun SwipeModeTrialFinishedPanel(
             Spacer(modifier = Modifier.height(Dimens.LARGE_PADDING))
 
             ButtonPrimary(
-                title = stringResource(R.string.btn_buy_mode),
-                onClick = onBuyClick
+                title = stringResource(R.string.btn_buy_for, price ?: "---"),
+                onClick = onBuyClick,
+                enabled = price != null
             )
 
             Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
