@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.billing.domain.AppProduct
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.billing.domain.BillingRepository
+import com.rafalskrzypczyk.billing.domain.getCategoryBillingId
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
@@ -48,8 +49,6 @@ class MMCategoriesVM @Inject constructor(
     fun onEvent(event: MMCategoriesUIEvents) {
         when(event) {
             MMCategoriesUIEvents.GetData -> loadData()
-            is MMCategoriesUIEvents.OnUnlockCategory -> onUnlockCategory(event.categoryId)
-            MMCategoriesUIEvents.DiscardUnlockCategory -> discardUnlockCategory()
             is MMCategoriesUIEvents.OpenPurchaseDialog -> openPurchaseDialog(event.category)
             MMCategoriesUIEvents.ClosePurchaseDialog -> closePurchaseDialog()
             is MMCategoriesUIEvents.BuyCategory -> buyCategory(event.activity)
@@ -60,7 +59,6 @@ class MMCategoriesVM @Inject constructor(
     private fun loadData() {
         viewModelScope.launch {
             useCases.getUserScore().collectLatest { userScore ->
-                val user = useCases.getUser()
                 _state.update {
                     it.copy(
                         userScore = userScore.score,
@@ -85,7 +83,7 @@ class MMCategoriesVM @Inject constructor(
                     premiumStatusProvider.ownedProductIds.map { ownedIds ->
                         val updatedCategories = response.data.map { category ->
                             val hasAccess = ownedIds.contains(BillingIds.ID_FULL_PACKAGE) || 
-                                            ownedIds.contains(category.id.toString())
+                                            ownedIds.contains(getCategoryBillingId(category.id))
                             category.copy(unlocked = category.unlocked || hasAccess)
                         }
                         Response.Success(updatedCategories)
@@ -120,7 +118,7 @@ class MMCategoriesVM @Inject constructor(
                 premiumStatusProvider.ownedProductIds.map { ownedIds ->
                     categories.map { category ->
                         val hasAccess = ownedIds.contains(BillingIds.ID_FULL_PACKAGE) || 
-                                        ownedIds.contains(category.id.toString())
+                                        ownedIds.contains(getCategoryBillingId(category.id))
                         category.copy(unlocked = category.unlocked || hasAccess)
                     }
                 }
@@ -131,18 +129,13 @@ class MMCategoriesVM @Inject constructor(
             }
         }
     }
-
-    private fun onUnlockCategory(categoryId: Long) {
-        _state.update { it.copy(unlockCategory = true) }
-    }
-
-    private fun discardUnlockCategory() {
-        _state.update { it.copy(unlockCategory = false) }
-    }
     
     private fun openPurchaseDialog(category: CategoryUIM) {
-        _state.update { it.copy(selectedCategoryForPurchase = category, productPrice = null) }
-        val productId = category.id.toString()
+        val productId = getCategoryBillingId(category.id)
+        val details = availableProducts.find { it.id == productId }
+        
+        _state.update { it.copy(selectedCategoryForPurchase = category, productPrice = details?.price) }
+        
         viewModelScope.launch {
             billingRepository.queryProducts(listOf(productId))
         }
@@ -154,7 +147,7 @@ class MMCategoriesVM @Inject constructor(
     
     private fun buyCategory(activity: Activity) {
         val category = state.value.selectedCategoryForPurchase ?: return
-        val productId = category.id.toString()
+        val productId = getCategoryBillingId(category.id)
         val productDetails = availableProducts.find { it.id == productId }
         
         if (productDetails != null) {
@@ -165,7 +158,7 @@ class MMCategoriesVM @Inject constructor(
     
     private fun updatePriceInState() {
         val category = state.value.selectedCategoryForPurchase ?: return
-        val productId = category.id.toString()
+        val productId = getCategoryBillingId(category.id)
         val details = availableProducts.find { it.id == productId }
         
         val price = details?.price
