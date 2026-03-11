@@ -20,6 +20,8 @@ import androidx.compose.runtime.remember
 import com.rafalskrzypczyk.cem_mode.navigation.CemModeNavHost
 import com.rafalskrzypczyk.main_mode.navigation.MainModeNavHost
 import com.rafalskrzypczyk.main_mode.presentation.MainModeEntryVM
+import com.rafalskrzypczyk.home_screen.presentation.store.StoreScreen
+import com.rafalskrzypczyk.home_screen.presentation.store.StoreVM
 import com.rafalskrzypczyk.translation_mode.navigation.TranslationModeNavHost
 import com.rafalskrzypczyk.translation_mode.presentation.TranslationModeEntryVM
 import com.rafalskrzypczyk.main_mode.presentation.daily_exercise.DailyExerciseVM
@@ -88,6 +90,7 @@ fun NavGraphBuilder.mainMenuDestination(
     onNavigateToSwipeMode: (Boolean) -> Unit,
     onNavigateToTranslationMode: () -> Unit,
     onNavigateToCemMode: () -> Unit,
+    onNavigateToStore: () -> Unit,
     onNavigateToDev: () -> Unit
 ) {
     composable<MainMenu> {
@@ -104,6 +107,7 @@ fun NavGraphBuilder.mainMenuDestination(
             onNavigateToSwipeMode = onNavigateToSwipeMode,
             onNavigateToTranslationMode = onNavigateToTranslationMode,
             onNavigateToCemMode = onNavigateToCemMode,
+            onNavigateToStore = onNavigateToStore,
             onNavigateToDevOptions = onNavigateToDev
         )
     }
@@ -276,6 +280,28 @@ fun NavGraphBuilder.onboardingDestination(
             onFinishOnboarding = onFinishOnboarding
         )
     }
+}
+
+@Serializable
+object Store
+
+fun NavGraphBuilder.storeDestination(
+    onNavigateBack: () -> Unit
+) {
+    composable<Store> {
+        val viewModel = hiltViewModel<StoreVM>()
+        val state = viewModel.state.collectAsStateWithLifecycle()
+
+        StoreScreen(
+            state = state.value,
+            onEvent = viewModel::onEvent,
+            onNavigateBack = onNavigateBack
+        )
+    }
+}
+
+fun NavController.navigateToStore() {
+    navigate(route = Store)
 }
 
 @Serializable

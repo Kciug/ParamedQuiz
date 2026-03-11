@@ -159,4 +159,18 @@
     <string name="title_news_section">Co nowego?</string>
     <string name="title_cem_mode">Pytania egzaminacyjne</string>
     <string name="mode_cem_desc">Baza oficjalnych pytań z egzaminów państwowych</string>
+
+    <!-- Sklep -->
+    <string name="title_store">Sklep premium</string>
+    <string name="premium_package_title">Pełny Pakiet Premium</string>
+    <string name="premium_package_desc">Zdobądź dostęp do absolutnie wszystkich funkcji aplikacji na stałe, łącznie z nowymi trybami w przyszłości.</string>
+    <string name="premium_feature_all_modes">Wszystkie tryby nauki</string>
+    <string name="premium_feature_all_categories">Wszystkie kategorie pytań</string>
+    <string name="premium_feature_no_ads">Brak uciążliwych reklam</string>
+    <string name="ad_free_title">Brak Reklam</string>
+    <string name="ad_free_desc">Ucz się bez zakłóceń i wyłącz reklamy w aplikacji na zawsze.</string>
+    <string name="store_category_title">Dodatkowa Kategoria</string>
+    <string name="store_category_desc">Zyskaj natychmiastowy dostęp do dodatkowej, obszernej bazy pytań.</string>
+    <string name="store_btn_purchased">Odblokowano</string>
+    <string name="store_btn_loading">Pobieranie...</string>
 </resources>
