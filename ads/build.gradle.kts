@@ -1,30 +1,20 @@
-import java.util.Properties
-
 plugins {
     id("paramedquiz.android.library")
     id("paramedquiz.android.hilt")
+    alias(libs.plugins.secrets)
 }
 
 android {
     namespace = "com.rafalskrzypczyk.ads"
 
-    val localProperties = Properties()
-    val localPropertiesFile = rootProject.file("local.properties")
-    if (localPropertiesFile.exists()) {
-        localProperties.load(localPropertiesFile.inputStream())
-    }
-
-    val admobAppId = localProperties.getProperty("ADMOB_APP_ID") ?: "\"\""
-    val interstitialUnitId = localProperties.getProperty("ADMOB_INTERSTITIAL_UNIT_ID") ?: "\"\""
-
-    defaultConfig {
-        manifestPlaceholders["admobAppId"] = admobAppId
-        buildConfigField("String", "ADMOB_INTERSTITIAL_UNIT_ID", "\"$interstitialUnitId\"")
-    }
-
     buildFeatures {
         buildConfig = true
     }
+}
+
+secrets {
+    propertiesFileName = "local.properties"
+    defaultPropertiesFileName = "local.defaults.properties"
 }
 
 dependencies {
