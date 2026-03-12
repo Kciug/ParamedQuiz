@@ -48,6 +48,7 @@ import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.composables.TextTitle
 import com.rafalskrzypczyk.core.ui.theme.MQGreen
 import com.rafalskrzypczyk.core.ui.theme.MQYellow
+import com.rafalskrzypczyk.core.ui.theme.adaptiveContentColor
 
 @Composable
 fun StorePremiumCard(
@@ -119,7 +120,7 @@ fun StorePremiumCard(
                         imageVector = Icons.Default.Diamond,
                         contentDescription = null,
                         modifier = Modifier.size(32.dp),
-                        tint = MaterialTheme.colorScheme.onBackground
+                        tint = MQYellow.adaptiveContentColor()
                     )
                 }
                 

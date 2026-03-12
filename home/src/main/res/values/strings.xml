@@ -161,7 +161,7 @@
     <string name="mode_cem_desc">Baza oficjalnych pytań z egzaminów państwowych</string>
 
     <!-- Sklep -->
-    <string name="title_store">Sklep premium</string>
+    <string name="title_store">Sklep</string>
     <string name="premium_package_title">Pełny Pakiet Premium</string>
     <string name="premium_package_desc">Zdobądź dostęp do absolutnie wszystkich funkcji aplikacji na stałe, łącznie z nowymi trybami w przyszłości.</string>
     <string name="premium_feature_all_modes">Wszystkie tryby nauki</string>

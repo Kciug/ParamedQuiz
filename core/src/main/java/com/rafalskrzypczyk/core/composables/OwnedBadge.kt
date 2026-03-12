@@ -17,13 +17,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.rafalskrzypczyk.core.ui.theme.adaptiveContentColor
 
 @Composable
 fun OwnedBadge(
     text: String,
     modifier: Modifier = Modifier,
     backgroundColor: Color = MaterialTheme.colorScheme.primaryContainer,
-    contentColor: Color = MaterialTheme.colorScheme.onPrimaryContainer
+    contentColor: Color = backgroundColor.adaptiveContentColor()
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,

@@ -30,6 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.Dialog
 import com.rafalskrzypczyk.core.R
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
+import com.rafalskrzypczyk.core.ui.theme.adaptiveContentColor
 import com.rafalskrzypczyk.core.utils.rememberDebouncedClick
 
 import androidx.compose.foundation.layout.heightIn
@@ -222,7 +223,7 @@ fun InfoDialog(
     message: String,
     icon: ImageVector = Icons.Default.Info,
     headerColor: Color = MaterialTheme.colorScheme.primary,
-    headerContentColor: Color = MaterialTheme.colorScheme.onPrimary,
+    headerContentColor: Color = headerColor.adaptiveContentColor(),
     onDismiss: () -> Unit
 ) {
     BaseCustomDialog(

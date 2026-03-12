@@ -36,6 +36,7 @@ import com.rafalskrzypczyk.core.composables.TextCaption
 import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.composables.TextTitle
 import com.rafalskrzypczyk.core.ui.theme.MQGreen
+import com.rafalskrzypczyk.core.ui.theme.adaptiveContentColor
 
 @Composable
 fun StoreModeCard(
@@ -75,7 +76,7 @@ fun StoreModeCard(
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onBackground,
+                    tint = iconTint.adaptiveContentColor(),
                     modifier = Modifier.size(32.dp)
                 )
             }

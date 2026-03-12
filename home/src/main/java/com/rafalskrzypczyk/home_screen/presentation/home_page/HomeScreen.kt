@@ -41,7 +41,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -121,7 +120,7 @@ fun HomeScreen(
             title = stringResource(R.string.title_store),
             icon = Icons.Default.Diamond,
             iconBackgroundColor = MQYellow,
-            highlighted = !state.isPremium,
+            highlighted = false,
             isAvailable = true
         ) { onNavigateToStore() },
     )
@@ -395,7 +394,6 @@ fun HomeScreen(
             message = stringResource(id = R.string.text_revisions_unavailable),
             icon = Icons.Default.Upcoming,
             headerColor = MQYellow,
-            headerContentColor = Color.Black,
             onDismiss = { showRevisionsUnavailableAlert = false }
         )
     }
