@@ -34,13 +34,14 @@ fun TextPrimary(
     fontWeight: FontWeight? = null,
     textDecoration: TextDecoration? = null,
     fontSize: TextUnit = TextUnit.Unspecified,
-    autoSize: TextAutoSize? = null
+    autoSize: TextAutoSize? = null,
+    overflow: TextOverflow = if (autoSize != null) TextOverflow.Clip else TextOverflow.Ellipsis,
 ) {
     Text(
         modifier = modifier,
         text = text,
         color = color,
-        overflow = if (autoSize != null) TextOverflow.Clip else TextOverflow.Ellipsis,
+        overflow = overflow,
         maxLines = maxLines,
         textAlign = textAlign,
         fontWeight = fontWeight,

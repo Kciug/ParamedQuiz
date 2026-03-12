@@ -7,6 +7,7 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -15,14 +16,15 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -34,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -80,11 +83,7 @@ fun QuizGameContent(
                     QuizQuestionTextElement(
                         modifier = Modifier.weight(1f),
                         text = question.questionText,
-                        autoSize = TextAutoSize.StepBased(
-                            minFontSize = 11.sp,
-                            maxFontSize = 16.sp,
-                            stepSize = 1.sp
-                        )
+                        overflow = TextOverflow.Visible
                     )
                 }
                 Column(
@@ -110,38 +109,66 @@ fun QuizGameContent(
                 }
             }
         } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(
-                        top = Dimens.DEFAULT_PADDING,
-                        bottom = scaffoldPadding.calculateBottomPadding(),
-                        start = Dimens.DEFAULT_PADDING,
-                        end = Dimens.DEFAULT_PADDING
-                    ),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                QuizQuestionTextElement(
-                    modifier = Modifier.weight(1f),
-                    text = question.questionText,
-                    autoSize = TextAutoSize.StepBased(
-                        minFontSize = 11.sp,
-                        maxFontSize = 16.sp,
-                        stepSize = 1.sp
-                    )
-                )
+            val scrollState = rememberScrollState()
+            val isScrolled = scrollState.value > 0
 
-                AnswersListSection(
-                    answers = question.answers,
-                    onAnswerSelected = onAnswerSelected,
-                    isSubmitted = question.isAnswerSubmitted
-                )
+            Column(modifier = Modifier.fillMaxSize()) {
+                if (isScrolled) {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                }
 
-                ButtonPrimary(
-                    modifier = Modifier.padding(vertical = Dimens.DEFAULT_PADDING),
-                    title = stringResource(R.string.btn_submit),
-                    onClick = onSubmitAnswer
-                )
+                BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+                    val maxHeight = this.maxHeight
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(scrollState),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = maxHeight - scaffoldPadding.calculateBottomPadding())
+                                .padding(horizontal = Dimens.DEFAULT_PADDING),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Spacer(modifier = Modifier.weight(1f))
+
+                            QuizQuestionTextElement(
+                                text = question.questionText,
+                                overflow = TextOverflow.Visible
+                            )
+
+                            Spacer(modifier = Modifier.weight(1f))
+
+                            Spacer(modifier = Modifier.height(Dimens.DEFAULT_PADDING))
+
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                AnswersListSection(
+                                    answers = question.answers,
+                                    onAnswerSelected = onAnswerSelected,
+                                    isSubmitted = question.isAnswerSubmitted
+                                )
+
+                                ButtonPrimary(
+                                    modifier = Modifier.padding(
+                                        top = Dimens.DEFAULT_PADDING,
+                                        bottom = Dimens.DEFAULT_PADDING
+                                    ),
+                                    title = stringResource(R.string.btn_submit),
+                                    onClick = onSubmitAnswer
+                                )
+                            }
+                        }
+
+                        if (scrollState.maxValue > 0) {
+                            Spacer(modifier = Modifier.height(Dimens.LARGE_PADDING))
+                        }
+                    }
+                }
             }
         }
 
@@ -166,7 +193,7 @@ fun QuizGameContent(
 fun QuizQuestionTextElement(
     modifier: Modifier = Modifier,
     text: String,
-    autoSize: TextAutoSize? = null
+    overflow: TextOverflow = TextOverflow.Clip
 ) {
     Box(
         modifier = modifier.fillMaxWidth(),
@@ -175,7 +202,7 @@ fun QuizQuestionTextElement(
         TextPrimary(
             text = text,
             textAlign = TextAlign.Center,
-            autoSize = autoSize
+            overflow = overflow
         )
     }
 }
