@@ -23,6 +23,7 @@ import com.rafalskrzypczyk.core.ui.theme.adaptiveContentColor
 fun OwnedBadge(
     text: String,
     modifier: Modifier = Modifier,
+    icon: androidx.compose.ui.graphics.vector.ImageVector? = Icons.Default.CheckCircle,
     backgroundColor: Color = MaterialTheme.colorScheme.primaryContainer,
     contentColor: Color = backgroundColor.adaptiveContentColor()
 ) {
@@ -34,12 +35,14 @@ fun OwnedBadge(
             .background(backgroundColor)
             .padding(horizontal = Dimens.DEFAULT_PADDING, vertical = Dimens.SMALL_PADDING)
     ) {
+        if (icon != null) {
             Icon(
-                imageVector = Icons.Default.CheckCircle,
+                imageVector = icon,
                 contentDescription = null,
                 tint = contentColor,
                 modifier = Modifier.size(20.dp)
             )
+        }
         TextPrimary(
             text = text,
             color = contentColor,

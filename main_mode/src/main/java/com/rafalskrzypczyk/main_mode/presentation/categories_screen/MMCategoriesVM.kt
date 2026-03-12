@@ -82,9 +82,10 @@ class MMCategoriesVM @Inject constructor(
                 if (response is Response.Success) {
                     premiumStatusProvider.ownedProductIds.map { ownedIds ->
                         val updatedCategories = response.data.map { category ->
-                            val hasAccess = ownedIds.contains(BillingIds.ID_FULL_PACKAGE) || 
+                            val hasAccess = category.unlocked || 
+                                            ownedIds.contains(BillingIds.ID_FULL_PACKAGE) || 
                                             ownedIds.contains(getCategoryBillingId(category.id))
-                            category.copy(unlocked = category.unlocked || hasAccess)
+                            category.toUIM(hasAccess = hasAccess)
                         }
                         Response.Success(updatedCategories)
                     }
@@ -100,9 +101,7 @@ class MMCategoriesVM @Inject constructor(
                         _state.update { state ->
                             state.copy(
                                 responseState = ResponseState.Success,
-                                categories = response.data.map { category ->
-                                    category.toUIM() 
-                                }
+                                categories = response.data.filterIsInstance<CategoryUIM>()
                             )
                         }
                     }
@@ -117,14 +116,15 @@ class MMCategoriesVM @Inject constructor(
             useCases.getUpdatedCategories().flatMapLatest { categories ->
                 premiumStatusProvider.ownedProductIds.map { ownedIds ->
                     categories.map { category ->
-                        val hasAccess = ownedIds.contains(BillingIds.ID_FULL_PACKAGE) || 
+                        val hasAccess = category.unlocked || 
+                                        ownedIds.contains(BillingIds.ID_FULL_PACKAGE) || 
                                         ownedIds.contains(getCategoryBillingId(category.id))
-                        category.copy(unlocked = category.unlocked || hasAccess)
+                        category.toUIM(hasAccess = hasAccess)
                     }
                 }
             }.collectLatest { data ->
                 _state.update { state ->
-                    state.copy(categories = data.map { it.toUIM() } )
+                    state.copy(categories = data)
                 }
             }
         }

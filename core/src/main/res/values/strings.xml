@@ -121,4 +121,6 @@
     <string name="rating_feedback_error">Wystąpił błąd podczas wysyłania opinii. Spróbuj ponownie później.</string>
     <string name="desc_questions_number">Liczba pytań</string>
     <string name="desc_subcategories_number">Liczba podkategorii</string>
+    <string name="badge_owned">Posiadane</string>
+    <string name="badge_to_buy">Do kupienia</string>
 </resources>
