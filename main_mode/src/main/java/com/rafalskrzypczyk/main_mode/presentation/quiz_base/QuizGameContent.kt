@@ -27,6 +27,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,7 +40,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.rafalskrzypczyk.core.composables.ButtonPrimary
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.PreviewContainer
@@ -110,10 +110,11 @@ fun QuizGameContent(
             }
         } else {
             val scrollState = rememberScrollState()
-            val isScrolled = scrollState.value > 0
+            val isScrolled by remember { derivedStateOf { scrollState.value > 0 } }
+            val canScroll by remember { derivedStateOf { scrollState.maxValue > 0 } }
 
             Column(modifier = Modifier.fillMaxSize()) {
-                if (isScrolled) {
+                if (isScrolled && canScroll) {
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 }
 
@@ -122,7 +123,10 @@ fun QuizGameContent(
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .verticalScroll(scrollState),
+                            .verticalScroll(
+                                state = scrollState,
+                                enabled = canScroll
+                            ),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Column(
@@ -164,9 +168,7 @@ fun QuizGameContent(
                             }
                         }
 
-                        if (scrollState.maxValue > 0) {
-                            Spacer(modifier = Modifier.height(Dimens.LARGE_PADDING))
-                        }
+                        Spacer(modifier = Modifier.height(scaffoldPadding.calculateBottomPadding()))
                     }
                 }
             }
@@ -292,7 +294,6 @@ private fun QuizGameContentPreview() {
                 correctAnswers = listOf("A", "B")
             ),
             onAnswerSelected = { id ->
-                @Suppress("AssignedValueIsNeverRead")
                 answers = answers.map { answer ->
                     if (answer.id == id) {
                         answer.copy(isSelected = !answer.isSelected) // toggle boola
@@ -302,7 +303,6 @@ private fun QuizGameContentPreview() {
                 }
             },
             onSubmitAnswer = {
-                @Suppress("AssignedValueIsNeverRead")
                 submitted = true
             },
             onNextQuestion = {},
