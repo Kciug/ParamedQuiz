@@ -26,16 +26,13 @@ jobs:
         run: |
           echo "$GOOGLE_SERVICES_JSON" > app/google-services.json
 
-      # 2. Generujemy brakujący web_client_id w nowym pliku secrets.xml
-      - name: Generate Auth Secrets
-        env:
-          WEB_CLIENT_ID: ${{ secrets.WEB_CLIENT_ID }}
+      # 2. Tworzymy local.properties dla Secrets Gradle Plugin
+      - name: Create local.properties
         run: |
-          mkdir -p auth/src/main/res/values
-          echo "<?xml version=\"1.0\" encoding=\"utf-8\"?>" > auth/src/main/res/values/secrets.xml
-          echo "<resources>" >> auth/src/main/res/values/secrets.xml
-          echo "    <string name=\"web_client_id\">$WEB_CLIENT_ID</string>" >> auth/src/main/res/values/secrets.xml
-          echo "</resources>" >> auth/src/main/res/values/secrets.xml
+          touch local.properties
+          echo "ADMOB_APP_ID=${{ secrets.ADMOB_APP_ID }}" >> local.properties
+          echo "ADMOB_INTERSTITIAL_UNIT_ID=${{ secrets.ADMOB_INTERSTITIAL_UNIT_ID }}" >> local.properties
+          echo "GOOGLE_WEB_CLIENT_ID=${{ secrets.GOOGLE_WEB_CLIENT_ID }}" >> local.properties
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
