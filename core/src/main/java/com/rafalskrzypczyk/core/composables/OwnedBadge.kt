@@ -17,13 +17,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.rafalskrzypczyk.core.ui.theme.adaptiveContentColor
 
 @Composable
 fun OwnedBadge(
     text: String,
     modifier: Modifier = Modifier,
+    icon: androidx.compose.ui.graphics.vector.ImageVector? = Icons.Default.CheckCircle,
     backgroundColor: Color = MaterialTheme.colorScheme.primaryContainer,
-    contentColor: Color = MaterialTheme.colorScheme.onPrimaryContainer
+    contentColor: Color = backgroundColor.adaptiveContentColor()
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -33,12 +35,14 @@ fun OwnedBadge(
             .background(backgroundColor)
             .padding(horizontal = Dimens.DEFAULT_PADDING, vertical = Dimens.SMALL_PADDING)
     ) {
+        if (icon != null) {
             Icon(
-                imageVector = Icons.Default.CheckCircle,
+                imageVector = icon,
                 contentDescription = null,
                 tint = contentColor,
                 modifier = Modifier.size(20.dp)
             )
+        }
         TextPrimary(
             text = text,
             color = contentColor,

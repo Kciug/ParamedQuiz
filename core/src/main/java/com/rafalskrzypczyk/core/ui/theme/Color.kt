@@ -1,6 +1,7 @@
 package com.rafalskrzypczyk.core.ui.theme
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 
 // === LIGHT MODE ===
 val Primary = Color(0xFF6464FF)
@@ -57,3 +58,5 @@ val ModeTranslation = Color(0xFF34C759)
 val ModeCem = Color(0xFFFF9500)
 
 val Link = Color(0xFF2196F3)
+
+fun Color.adaptiveContentColor(): Color = if (luminance() > 0.5f) Color(0xFF1C1C28) else Color.White

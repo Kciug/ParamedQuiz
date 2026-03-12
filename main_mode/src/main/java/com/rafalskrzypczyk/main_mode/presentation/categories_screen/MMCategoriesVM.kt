@@ -73,6 +73,15 @@ class MMCategoriesVM @Inject constructor(
         viewModelScope.launch {
             premiumStatusProvider.ownedProductIds.collectLatest { ownedIds ->
                 val hasFull = ownedIds.contains(BillingIds.ID_FULL_PACKAGE)
+                
+                val pendingId = _state.value.pendingPurchaseCategoryId
+                if (pendingId != null) {
+                    val billingId = getCategoryBillingId(pendingId)
+                    if (ownedIds.contains(billingId) || hasFull) {
+                        _state.update { it.copy(pendingPurchaseCategoryId = null, isPurchasing = false, purchaseError = null) }
+                    }
+                }
+                
                 _state.update { it.copy(isPremium = hasFull) }
             }
         }
@@ -82,9 +91,10 @@ class MMCategoriesVM @Inject constructor(
                 if (response is Response.Success) {
                     premiumStatusProvider.ownedProductIds.map { ownedIds ->
                         val updatedCategories = response.data.map { category ->
-                            val hasAccess = ownedIds.contains(BillingIds.ID_FULL_PACKAGE) || 
+                            val hasAccess = category.unlocked || 
+                                            ownedIds.contains(BillingIds.ID_FULL_PACKAGE) || 
                                             ownedIds.contains(getCategoryBillingId(category.id))
-                            category.copy(unlocked = category.unlocked || hasAccess)
+                            category.toUIM(hasAccess = hasAccess)
                         }
                         Response.Success(updatedCategories)
                     }
@@ -100,9 +110,7 @@ class MMCategoriesVM @Inject constructor(
                         _state.update { state ->
                             state.copy(
                                 responseState = ResponseState.Success,
-                                categories = response.data.map { category ->
-                                    category.toUIM() 
-                                }
+                                categories = response.data.filterIsInstance<CategoryUIM>()
                             )
                         }
                     }
@@ -117,14 +125,15 @@ class MMCategoriesVM @Inject constructor(
             useCases.getUpdatedCategories().flatMapLatest { categories ->
                 premiumStatusProvider.ownedProductIds.map { ownedIds ->
                     categories.map { category ->
-                        val hasAccess = ownedIds.contains(BillingIds.ID_FULL_PACKAGE) || 
+                        val hasAccess = category.unlocked || 
+                                        ownedIds.contains(BillingIds.ID_FULL_PACKAGE) || 
                                         ownedIds.contains(getCategoryBillingId(category.id))
-                        category.copy(unlocked = category.unlocked || hasAccess)
+                        category.toUIM(hasAccess = hasAccess)
                     }
                 }
             }.collectLatest { data ->
                 _state.update { state ->
-                    state.copy(categories = data.map { it.toUIM() } )
+                    state.copy(categories = data)
                 }
             }
         }
@@ -142,7 +151,13 @@ class MMCategoriesVM @Inject constructor(
     }
 
     private fun closePurchaseDialog() {
-        _state.update { it.copy(selectedCategoryForPurchase = null, productPrice = null) }
+        _state.update { it.copy(
+            selectedCategoryForPurchase = null, 
+            productPrice = null,
+            isPurchasing = false,
+            purchaseError = null,
+            pendingPurchaseCategoryId = null
+        ) }
     }
     
     private fun buyCategory(activity: Activity) {
@@ -151,9 +166,11 @@ class MMCategoriesVM @Inject constructor(
         val productDetails = availableProducts.find { it.id == productId }
         
         if (productDetails != null) {
+            _state.update { it.copy(isPurchasing = true, purchaseError = null, pendingPurchaseCategoryId = category.id) }
             billingRepository.launchBillingFlow(activity, productDetails)
+        } else {
+            _state.update { it.copy(purchaseError = "Product details not found.") }
         }
-        closePurchaseDialog()
     }
     
     private fun updatePriceInState() {

@@ -31,6 +31,7 @@ import com.rafalskrzypczyk.core.composables.NotificationDot
 import com.rafalskrzypczyk.core.composables.TextHeadline
 import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.utils.rememberDebouncedClick
+import com.rafalskrzypczyk.core.ui.theme.adaptiveContentColor
 
 data class Addon(
     val title: String,
@@ -78,7 +79,7 @@ fun AddonButton(
                         imageVector = addon.icon,
                         contentDescription = null,
                         modifier = Modifier.size(32.dp),
-                        tint = MaterialTheme.colorScheme.onBackground
+                        tint = addon.iconBackgroundColor.adaptiveContentColor()
                     )
                 }
 

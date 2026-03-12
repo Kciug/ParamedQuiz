@@ -11,5 +11,6 @@ data class CategoryUIM(
     val subcategoriesCount: Long = 0,
     val unlocked: Boolean = true,
     val progress: Float = 0f,
+    val isPremium: Boolean = false,
     val questionIDs: List<Long> = emptyList(),
 )

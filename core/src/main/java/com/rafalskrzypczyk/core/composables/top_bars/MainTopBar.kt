@@ -30,6 +30,8 @@ import com.rafalskrzypczyk.core.composables.UserPointsLabel
 import com.rafalskrzypczyk.core.composables.UserStreakLabel
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 
+private const val IS_DEV_MENU_ENABLED = false
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MainTopBar(
@@ -43,6 +45,15 @@ fun MainTopBar(
     onClick: () -> Unit = {},
     onNavigateToUserPanel: () -> Unit,
 ) {
+    val clickableModifier = if (IS_DEV_MENU_ENABLED) {
+        Modifier.combinedClickable(
+            onLongClick = onClick,
+            onClick = {}
+        )
+    } else {
+        Modifier
+    }
+
     Row (
         modifier = modifier
             .fillMaxWidth()
@@ -58,10 +69,7 @@ fun MainTopBar(
                     )
                 ),
             )
-            .combinedClickable(
-                onLongClick = onClick,
-                onClick = {}
-            )
+            .then(clickableModifier)
             .padding(Dimens.DEFAULT_PADDING),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween

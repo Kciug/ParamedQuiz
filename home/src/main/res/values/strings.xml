@@ -45,7 +45,7 @@
     <string name="text_revisions_unavailable">Nie martw się, powtórki quizu medycznego pojawią się już niedługo.👀</string>
 
     <string name="title_quiz_modes">Czas na quiz!</string>
-    <string name="title_addons">Praktyka na dziś?</string>
+    <string name="title_addons">Centrum aktywności </string>
 
     <string name="mode_quiz_desc">Zdobywaj wiedzę grając w quiz!</string>
     <string name="mode_swipe_desc">Szybkie pytania, szybkie decyzje!</string>
@@ -161,7 +161,7 @@
     <string name="mode_cem_desc">Baza oficjalnych pytań z egzaminów państwowych</string>
 
     <!-- Sklep -->
-    <string name="title_store">Sklep premium</string>
+    <string name="title_store">Sklep</string>
     <string name="premium_package_title">Pełny Pakiet Premium</string>
     <string name="premium_package_desc">Zdobądź dostęp do absolutnie wszystkich funkcji aplikacji na stałe, łącznie z nowymi trybami w przyszłości.</string>
     <string name="premium_feature_all_modes">Wszystkie tryby nauki</string>
