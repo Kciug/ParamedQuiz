@@ -18,5 +18,8 @@ data class MMCategoriesState (
     val categories: List<CategoryUIM> = emptyList(),
     val unlockCategory: Boolean = false,
     val selectedCategoryForPurchase: CategoryUIM? = null,
-    val productPrice: String? = null
+    val productPrice: String? = null,
+    val isPurchasing: Boolean = false,
+    val purchaseError: String? = null,
+    val pendingPurchaseCategoryId: Long? = null
 )

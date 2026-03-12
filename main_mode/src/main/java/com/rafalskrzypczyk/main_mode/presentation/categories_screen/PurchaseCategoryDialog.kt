@@ -30,11 +30,19 @@ import com.rafalskrzypczyk.main_mode.R
 fun PurchaseCategoryDialog(
     category: CategoryUIM,
     price: String?,
+    loading: Boolean = false,
+    error: String? = null,
+    isSuccess: Boolean = false,
     onDismiss: () -> Unit,
-    onConfirm: () -> Unit
+    onConfirm: () -> Unit,
+    onSuccessConfirm: () -> Unit
 ) {
     BasePurchaseDialog(
         price = price,
+        loading = loading,
+        error = error,
+        isSuccess = isSuccess,
+        onSuccessConfirm = onSuccessConfirm,
         onDismiss = onDismiss,
         onConfirm = onConfirm
     ) {

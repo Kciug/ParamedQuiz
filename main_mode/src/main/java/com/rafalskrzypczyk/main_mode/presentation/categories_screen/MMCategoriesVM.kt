@@ -73,6 +73,15 @@ class MMCategoriesVM @Inject constructor(
         viewModelScope.launch {
             premiumStatusProvider.ownedProductIds.collectLatest { ownedIds ->
                 val hasFull = ownedIds.contains(BillingIds.ID_FULL_PACKAGE)
+                
+                val pendingId = _state.value.pendingPurchaseCategoryId
+                if (pendingId != null) {
+                    val billingId = getCategoryBillingId(pendingId)
+                    if (ownedIds.contains(billingId) || hasFull) {
+                        _state.update { it.copy(pendingPurchaseCategoryId = null, isPurchasing = false, purchaseError = null) }
+                    }
+                }
+                
                 _state.update { it.copy(isPremium = hasFull) }
             }
         }
@@ -142,7 +151,13 @@ class MMCategoriesVM @Inject constructor(
     }
 
     private fun closePurchaseDialog() {
-        _state.update { it.copy(selectedCategoryForPurchase = null, productPrice = null) }
+        _state.update { it.copy(
+            selectedCategoryForPurchase = null, 
+            productPrice = null,
+            isPurchasing = false,
+            purchaseError = null,
+            pendingPurchaseCategoryId = null
+        ) }
     }
     
     private fun buyCategory(activity: Activity) {
@@ -151,9 +166,11 @@ class MMCategoriesVM @Inject constructor(
         val productDetails = availableProducts.find { it.id == productId }
         
         if (productDetails != null) {
+            _state.update { it.copy(isPurchasing = true, purchaseError = null, pendingPurchaseCategoryId = category.id) }
             billingRepository.launchBillingFlow(activity, productDetails)
+        } else {
+            _state.update { it.copy(purchaseError = "Product details not found.") }
         }
-        closePurchaseDialog()
     }
     
     private fun updatePriceInState() {

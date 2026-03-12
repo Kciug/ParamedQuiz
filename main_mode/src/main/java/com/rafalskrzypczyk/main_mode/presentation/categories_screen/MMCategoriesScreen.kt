@@ -47,14 +47,23 @@ fun MMCategoriesScreen(
     }
     
     if (state.selectedCategoryForPurchase != null) {
+        val isCategoryUnlocked = state.categories.find { it.id == state.selectedCategoryForPurchase.id }?.unlocked ?: false
+        
         PurchaseCategoryDialog(
             category = state.selectedCategoryForPurchase,
             price = state.productPrice,
+            loading = state.isPurchasing,
+            error = state.purchaseError,
+            isSuccess = isCategoryUnlocked,
             onDismiss = { onEvent(MMCategoriesUIEvents.ClosePurchaseDialog) },
             onConfirm = { 
                 if (activity != null) {
                     onEvent(MMCategoriesUIEvents.BuyCategory(activity)) 
                 }
+            },
+            onSuccessConfirm = {
+                onEvent(MMCategoriesUIEvents.ClosePurchaseDialog)
+                onStartCategory(state.selectedCategoryForPurchase.id, state.selectedCategoryForPurchase.title)
             }
         )
     }
