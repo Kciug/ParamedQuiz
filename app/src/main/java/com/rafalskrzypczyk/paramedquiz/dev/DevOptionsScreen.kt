@@ -65,6 +65,9 @@ fun DevOptionsScreen(
             Button(onClick = { onEvent.invoke(DevOptionsUIEvents.ResetNews) }) {
                 Text("Reset News")
             }
+            Button(onClick = { onEvent.invoke(DevOptionsUIEvents.ResetPurchases) }) {
+                Text("Reset Purchases")
+            }
         }
     }
 }

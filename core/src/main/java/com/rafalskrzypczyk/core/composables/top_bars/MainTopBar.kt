@@ -30,7 +30,7 @@ import com.rafalskrzypczyk.core.composables.UserPointsLabel
 import com.rafalskrzypczyk.core.composables.UserStreakLabel
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 
-private const val IS_DEV_MENU_ENABLED = false
+private const val IS_DEV_MENU_ENABLED = true
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

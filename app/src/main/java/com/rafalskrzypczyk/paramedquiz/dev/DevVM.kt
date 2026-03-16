@@ -1,14 +1,19 @@
 package com.rafalskrzypczyk.paramedquiz.dev
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @HiltViewModel
 class DevVM @Inject constructor(
-    private val sharedPreferences: SharedPreferencesApi
+    private val sharedPreferences: SharedPreferencesApi,
+    private val billingRepository: BillingRepository
 ): ViewModel() {
 
     fun onEvent(event: DevOptionsUIEvents) {
@@ -19,6 +24,16 @@ class DevVM @Inject constructor(
             DevOptionsUIEvents.ResetRatingStats -> resetRatingStats()
             DevOptionsUIEvents.TriggerRatingPrompt -> triggerRatingPrompt()
             DevOptionsUIEvents.ResetNews -> resetNews()
+            DevOptionsUIEvents.ResetPurchases -> resetPurchases()
+        }
+    }
+
+    private fun resetPurchases() {
+        viewModelScope.launch {
+            val purchases = billingRepository.purchases.first()
+            purchases.forEach { purchase ->
+                billingRepository.consumePurchase(purchase.purchaseToken)
+            }
         }
     }
 
