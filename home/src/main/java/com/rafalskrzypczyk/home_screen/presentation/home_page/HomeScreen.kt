@@ -153,6 +153,7 @@ fun HomeScreen(
     if (state.showTranslationModePurchaseSheet) {
         TranslationPurchaseBottomSheet(
             isUnlocked = state.isTranslationModeUnlocked,
+            isPending = state.isTranslationModePending,
             isPurchasing = state.isPurchasing,
             purchaseError = state.purchaseError,
             questionCount = state.translationModeQuestionCount,
@@ -177,6 +178,7 @@ fun HomeScreen(
     if (state.showSwipeModePurchaseSheet) {
         SwipePurchaseBottomSheet(
             isUnlocked = state.isSwipeModeUnlocked,
+            isPending = state.isSwipeModePending,
             isPurchasing = state.isPurchasing,
             purchaseError = state.purchaseError,
             questionCount = state.swipeModeQuestionCount,

@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Diamond
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material.icons.outlined.Style
 import androidx.compose.material3.Card
@@ -108,17 +109,30 @@ fun CategoryCard(
                     )
                     Spacer(modifier = Modifier.width(Dimens.ELEMENTS_SPACING_SMALL))
                     
-                    val badgeText = if (category.unlocked) {
-                        stringResource(R.string.badge_owned)
-                    } else {
-                        stringResource(R.string.badge_to_buy)
+                    val badgeText = when {
+                        category.unlocked -> stringResource(R.string.badge_owned)
+                        category.isPending -> stringResource(R.string.badge_pending)
+                        else -> stringResource(R.string.badge_to_buy)
                     }
                     
                     OwnedBadge(
                         text = badgeText,
-                        icon = if (category.unlocked) Icons.Default.CheckCircle else Icons.Default.ShoppingCart,
-                        backgroundColor = (if (category.unlocked) MQGreen else MaterialTheme.colorScheme.secondary).copy(alpha = 0.2f),
-                        contentColor = if (category.unlocked) MQGreen else MaterialTheme.colorScheme.secondary
+                        icon = when {
+                            category.unlocked -> Icons.Default.CheckCircle
+                            category.isPending -> Icons.Default.Timer
+                            else -> Icons.Default.ShoppingCart
+                        },
+                        backgroundColor = when {
+                            category.unlocked -> MQGreen
+                            category.isPending -> MaterialTheme.colorScheme.secondaryContainer
+                            else -> MaterialTheme.colorScheme.secondary
+                        }.copy(alpha = 0.2f),
+                        contentColor = when {
+                            category.unlocked -> MQGreen
+                            category.isPending -> MaterialTheme.colorScheme.secondary
+                            else -> MaterialTheme.colorScheme.secondary
+                        },
+                        isPending = category.isPending
                     )
                 }
             }

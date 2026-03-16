@@ -53,6 +53,7 @@ fun MMCategoriesScreen(
             category = state.selectedCategoryForPurchase,
             price = state.productPrice,
             loading = state.isPurchasing,
+            isPending = state.isPending,
             error = state.purchaseError,
             isSuccess = isCategoryUnlocked,
             onDismiss = { onEvent(MMCategoriesUIEvents.ClosePurchaseDialog) },

@@ -17,6 +17,7 @@ import com.rafalskrzypczyk.home.R
 @Composable
 fun TranslationPurchaseBottomSheet(
     isUnlocked: Boolean,
+    isPending: Boolean = false,
     isPurchasing: Boolean,
     purchaseError: String?,
     questionCount: Int,
@@ -32,6 +33,7 @@ fun TranslationPurchaseBottomSheet(
         onBuyClick = { activity?.let { onBuyClick(it) } },
         onStartClick = onStartClick,
         isUnlocked = isUnlocked,
+        isPending = isPending,
         isPurchasing = isPurchasing,
         purchaseError = purchaseError,
         shouldDismiss = shouldDismiss,

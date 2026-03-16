@@ -31,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -44,16 +45,17 @@ fun BasePurchaseDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
     loading: Boolean = false,
+    isPending: Boolean = false,
     error: String? = null,
     isSuccess: Boolean = false,
     onSuccessConfirm: () -> Unit = {},
     content: @Composable () -> Unit
 ) {
     Dialog(
-        onDismissRequest = if (!loading) onDismiss else { {} },
+        onDismissRequest = if (!loading && !isPending) onDismiss else { {} },
         properties = DialogProperties(
-            dismissOnBackPress = !loading,
-            dismissOnClickOutside = !loading
+            dismissOnBackPress = !loading && !isPending,
+            dismissOnClickOutside = !loading && !isPending
         )
     ) {
         Card(
@@ -62,117 +64,161 @@ fun BasePurchaseDialog(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             AnimatedContent(
-                targetState = isSuccess,
+                targetState = Triple(isSuccess, isPending, loading),
                 transitionSpec = {
                     fadeIn() togetherWith fadeOut()
                 },
                 label = "purchaseDialogTransition"
-            ) { success ->
-                if (success) {
-                    SuccessContent(onStartClick = onSuccessConfirm)
-                } else {
-                    Column(
-                        modifier = Modifier
-                            .padding(Dimens.LARGE_PADDING)
-                            .fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(Dimens.ICON_BACKGROUND_SIZE_LARGE)
-                                .background(
-                                    color = MaterialTheme.colorScheme.primaryContainer,
-                                    shape = CircleShape
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.LockOpen,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(32.dp)
-                            )
-                        }
-
-                        content()
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(Dimens.RADIUS_SMALL))
-                                .background(MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.3f))
-                                .border(
-                                    1.dp,
-                                    MaterialTheme.colorScheme.tertiary.copy(alpha = 0.2f),
-                                    RoundedCornerShape(Dimens.RADIUS_SMALL)
-                                )
-                                .padding(Dimens.DEFAULT_PADDING),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Star,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.tertiary,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(Dimens.ELEMENTS_SPACING))
-                            TextCaption(
-                                text = stringResource(R.string.purchase_includes_ad_free),
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
-
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            if (price != null) {
-                                TextHeadline(
-                                    text = price,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    textAlign = TextAlign.Center
-                                )
-                            } else {
-                                TextPrimary(
-                                    text = stringResource(R.string.price_loading),
-                                    color = MaterialTheme.colorScheme.secondary
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(4.dp))
-                            TextCaption(
-                                text = stringResource(R.string.purchase_one_time_label),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-
-                            if (error != null) {
-                                TextPrimary(
-                                    text = error,
-                                    color = MaterialTheme.colorScheme.error,
-                                    modifier = Modifier.padding(top = Dimens.ELEMENTS_SPACING_SMALL),
-                                    textAlign = TextAlign.Center
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
-
-                        ButtonPrimary(
-                            title = stringResource(R.string.btn_buy),
-                            onClick = onConfirm,
-                            enabled = price != null,
-                            loading = loading
-                        )
-
-                        if (!loading) {
-                            ButtonTertiary(
-                                title = stringResource(R.string.btn_cancel),
-                                onClick = onDismiss
-                            )
-                        }
-                    }
+            ) { (success, pending, isLoading) ->
+                when {
+                    success -> SuccessContent(onStartClick = onSuccessConfirm)
+                    pending -> PendingContent()
+                    else -> PurchaseContent(
+                        price = price,
+                        onDismiss = onDismiss,
+                        onConfirm = onConfirm,
+                        loading = isLoading,
+                        error = error,
+                        content = content
+                    )
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun PurchaseContent(
+    price: String?,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+    loading: Boolean,
+    error: String?,
+    content: @Composable () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .padding(Dimens.LARGE_PADDING)
+            .fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(Dimens.ICON_BACKGROUND_SIZE_LARGE)
+                .background(
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    shape = CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.LockOpen,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(32.dp)
+            )
+        }
+
+        content()
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(Dimens.RADIUS_SMALL))
+                .background(MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.3f))
+                .border(
+                    1.dp,
+                    MaterialTheme.colorScheme.tertiary.copy(alpha = 0.2f),
+                    RoundedCornerShape(Dimens.RADIUS_SMALL)
+                )
+                .padding(Dimens.DEFAULT_PADDING),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.Star,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.tertiary,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(Dimens.ELEMENTS_SPACING))
+            TextCaption(
+                text = stringResource(R.string.purchase_includes_ad_free),
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+
+        Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
+
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            if (price != null) {
+                TextHeadline(
+                    text = price,
+                    color = MaterialTheme.colorScheme.primary,
+                    textAlign = TextAlign.Center
+                )
+            } else {
+                TextPrimary(
+                    text = stringResource(R.string.price_loading),
+                    color = MaterialTheme.colorScheme.secondary
+                )
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            TextCaption(
+                text = stringResource(R.string.purchase_one_time_label),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            if (error != null) {
+                TextPrimary(
+                    text = error,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(top = Dimens.ELEMENTS_SPACING_SMALL),
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
+
+        ButtonPrimary(
+            title = stringResource(R.string.btn_buy),
+            onClick = onConfirm,
+            enabled = price != null,
+            loading = loading
+        )
+
+        if (!loading) {
+            ButtonTertiary(
+                title = stringResource(R.string.btn_cancel),
+                onClick = onDismiss
+            )
+        }
+    }
+}
+
+@Composable
+private fun PendingContent() {
+    Column(
+        modifier = Modifier
+            .padding(Dimens.LARGE_PADDING)
+            .fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
+    ) {
+        Loading(modifier = Modifier.padding(bottom = Dimens.ELEMENTS_SPACING))
+
+        TextPrimary(
+            text = stringResource(R.string.purchase_pending_title),
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
+        )
+
+        TextPrimary(
+            text = stringResource(R.string.purchase_pending_msg),
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(bottom = Dimens.LARGE_PADDING)
+        )
     }
 }
 

@@ -27,6 +27,7 @@ class BillingDataSourceTest {
     private lateinit var billingDataSource: BillingDataSource
     private val context: Context = mockk(relaxed = true)
     private val billingClient: BillingClient = mockk(relaxed = true)
+    private val billingError: BillingError = mockk(relaxed = true)
     private val testDispatcher = UnconfinedTestDispatcher()
     private val testScope = TestScope(testDispatcher)
 
@@ -39,7 +40,7 @@ class BillingDataSourceTest {
 
         val provider = mockk<BillingClientProvider>()
         every { provider.create(any(), any()) } returns billingClient
-        billingDataSource = BillingDataSource(context, testScope, provider)
+        billingDataSource = BillingDataSource(context, testScope, provider, billingError)
     }
 
     @After

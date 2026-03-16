@@ -6,6 +6,7 @@ import com.android.billingclient.api.Purchase
 import com.rafalskrzypczyk.billing.domain.AppProduct
 import com.rafalskrzypczyk.billing.domain.AppPurchase
 import com.rafalskrzypczyk.billing.domain.BillingRepository
+import com.rafalskrzypczyk.billing.domain.PurchaseResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -23,6 +24,7 @@ class BillingRepositoryImpl @Inject constructor(
             AppPurchase(
                 products = purchase.products,
                 isPurchased = purchase.purchaseState == Purchase.PurchaseState.PURCHASED,
+                isPending = purchase.purchaseState == Purchase.PurchaseState.PENDING,
                 purchaseToken = purchase.purchaseToken
             )
         }
@@ -42,8 +44,14 @@ class BillingRepositoryImpl @Inject constructor(
 
     override val isBillingSetupFinished: Flow<Boolean> = billingDataSource.isBillingSetupFinished
 
+    override val purchaseResult: Flow<PurchaseResult> = billingDataSource.purchaseResult
+
     override fun startBillingConnection() {
         billingDataSource.startConnection()
+    }
+
+    override fun refreshPurchases() {
+        billingDataSource.refreshPurchases()
     }
 
     override fun launchBillingFlow(activity: Activity, product: AppProduct) {

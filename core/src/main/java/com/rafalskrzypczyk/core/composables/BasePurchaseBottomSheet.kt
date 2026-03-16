@@ -92,6 +92,7 @@ fun BasePurchaseBottomSheet(
     onStartClick: () -> Unit,
     onTryClick: (() -> Unit)? = null,
     isUnlocked: Boolean = false,
+    isPending: Boolean = false,
     isPurchasing: Boolean = false,
     purchaseError: String? = null,
     shouldDismiss: Boolean = false
@@ -137,6 +138,7 @@ fun BasePurchaseBottomSheet(
                 onStartClick = onStartClick,
                 onTryClick = onTryClick,
                 isUnlocked = isUnlocked,
+                isPending = isPending,
                 isPurchasing = isPurchasing,
                 purchaseError = purchaseError,
                 isAlreadyUnlockedOnEntry = isUnlocked
@@ -153,6 +155,7 @@ private fun PurchaseBottomSheetContent(
     onStartClick: () -> Unit,
     onTryClick: (() -> Unit)?,
     isUnlocked: Boolean,
+    isPending: Boolean,
     isPurchasing: Boolean,
     purchaseError: String?,
     isAlreadyUnlockedOnEntry: Boolean
@@ -244,36 +247,68 @@ private fun PurchaseBottomSheetContent(
         Spacer(modifier = Modifier.height(Dimens.LARGE_PADDING))
 
         AnimatedContent(
-            targetState = isUnlocked,
+            targetState = isUnlocked to isPending,
             transitionSpec = {
                 fadeIn() togetherWith fadeOut()
             },
             label = "purchaseSectionTransition"
-        ) { unlocked ->
-            if (unlocked) {
-                if (isAlreadyUnlockedOnEntry) {
-                    ButtonPrimary(
-                        title = stringResource(R.string.btn_start),
-                        onClick = onStartClick
-                    )
-                } else {
-                    SuccessSection(onStartClick = onStartClick)
+        ) { (unlocked, pending) ->
+            when {
+                unlocked -> {
+                    if (isAlreadyUnlockedOnEntry) {
+                        ButtonPrimary(
+                            title = stringResource(R.string.btn_start),
+                            onClick = onStartClick
+                        )
+                    } else {
+                        SuccessSection(onStartClick = onStartClick)
+                    }
                 }
-            } else {
-                PurchaseSection(
-                    price = details.price,
-                    purchaseError = purchaseError,
-                    isPurchasing = isPurchasing,
-                    onBuyClick = onBuyClick,
-                    onTryClick = onTryClick,
-                    themeColor = details.themeColor
-                )
+
+                pending -> {
+                    PendingSection()
+                }
+
+                else -> {
+                    PurchaseSection(
+                        price = details.price,
+                        purchaseError = purchaseError,
+                        isPurchasing = isPurchasing,
+                        onBuyClick = onBuyClick,
+                        onTryClick = onTryClick,
+                        themeColor = details.themeColor
+                    )
+                }
             }
         }
 
         Spacer(modifier = Modifier.height(Dimens.LARGE_PADDING))
         Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
         Spacer(modifier = Modifier.height(Dimens.DEFAULT_PADDING))
+    }
+}
+
+@Composable
+private fun PendingSection() {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Loading(modifier = Modifier.padding(bottom = Dimens.ELEMENTS_SPACING))
+        
+        TextPrimary(
+            text = stringResource(R.string.purchase_pending_title),
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
+        )
+        
+        Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
+        
+        TextPrimary(
+            text = stringResource(R.string.purchase_pending_msg),
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(bottom = Dimens.LARGE_PADDING)
+        )
     }
 }
 
@@ -482,6 +517,7 @@ private fun PurchaseSheetContentPreview() {
                 onStartClick = {},
                 onTryClick = {},
                 isUnlocked = false,
+                isPending = false,
                 isPurchasing = false,
                 purchaseError = null,
                 isAlreadyUnlockedOnEntry = false

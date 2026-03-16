@@ -4,12 +4,17 @@ import android.app.Activity
 import android.content.Context
 import android.util.Log
 import com.android.billingclient.api.*
+import com.rafalskrzypczyk.billing.domain.PurchaseResult
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -21,7 +26,8 @@ private const val TAG = "BillingDataSource"
 class BillingDataSource @Inject constructor(
     @ApplicationContext context: Context,
     private val externalScope: CoroutineScope,
-    private val billingClientProvider: BillingClientProvider
+    private val billingClientProvider: BillingClientProvider,
+    private val billingError: BillingError
 ) : PurchasesUpdatedListener, BillingClientStateListener {
 
     private val _isBillingSetupFinished = MutableStateFlow(false)
@@ -32,6 +38,9 @@ class BillingDataSource @Inject constructor(
 
     private val _purchases = MutableStateFlow<List<Purchase>>(emptyList())
     val purchases: StateFlow<List<Purchase>> = _purchases.asStateFlow()
+
+    private val _purchaseResult = MutableSharedFlow<PurchaseResult>()
+    val purchaseResult: SharedFlow<PurchaseResult> = _purchaseResult.asSharedFlow()
 
     private val billingClient: BillingClient by lazy {
         billingClientProvider.create(context, this)
@@ -63,11 +72,36 @@ class BillingDataSource @Inject constructor(
 
     override fun onPurchasesUpdated(billingResult: BillingResult, purchases: List<Purchase>?) {
         if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && purchases != null) {
-            processPurchases(purchases)
+            processPurchases(purchases, isFullRefresh = false)
+            externalScope.launch {
+                purchases.forEach { purchase ->
+                    purchase.products.forEach { productId ->
+                        when (purchase.purchaseState) {
+                            Purchase.PurchaseState.PURCHASED -> {
+                                _purchaseResult.emit(PurchaseResult.Success(productId))
+                            }
+                            Purchase.PurchaseState.PENDING -> {
+                                _purchaseResult.emit(PurchaseResult.Pending(productId))
+                            }
+                        }
+                    }
+                }
+            }
         } else if (billingResult.responseCode == BillingClient.BillingResponseCode.USER_CANCELED) {
             Log.i(TAG, "User canceled purchase")
+            externalScope.launch {
+                _purchaseResult.emit(PurchaseResult.Cancelled)
+            }
+        } else if (billingResult.responseCode == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED) {
+            refreshPurchases()
+            externalScope.launch {
+                _purchaseResult.emit(PurchaseResult.Error(billingError.localizedError(billingResult.responseCode)))
+            }
         } else {
-            Log.e(TAG, "Purchase update failed: ${billingResult.debugMessage}")
+            Log.e(TAG, "Purchase update failed: ${billingResult.debugMessage} (code: ${billingResult.responseCode})")
+            externalScope.launch {
+                _purchaseResult.emit(PurchaseResult.Error(billingError.localizedError(billingResult.responseCode)))
+            }
         }
     }
 
@@ -81,7 +115,14 @@ class BillingDataSource @Inject constructor(
                 )
             )
             .build()
-        billingClient.launchBillingFlow(activity, flowParams)
+        val result = billingClient.launchBillingFlow(activity, flowParams)
+        if (result.responseCode == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED) {
+            refreshPurchases()
+        } else if (result.responseCode != BillingClient.BillingResponseCode.OK) {
+            externalScope.launch {
+                _purchaseResult.emit(PurchaseResult.Error(billingError.localizedError(result.responseCode)))
+            }
+        }
     }
 
     suspend fun queryProductDetails(productIds: List<String>) {
@@ -116,27 +157,35 @@ class BillingDataSource @Inject constructor(
 
         billingClient.queryPurchasesAsync(params) { billingResult, purchasesList ->
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                processPurchases(purchasesList)
+                processPurchases(purchasesList, isFullRefresh = true)
             } else {
                 Log.e(TAG, "Query purchases failed: ${billingResult.debugMessage}")
             }
         }
     }
 
-    private fun processPurchases(purchases: List<Purchase>) {
+    private fun processPurchases(purchases: List<Purchase>, isFullRefresh: Boolean) {
         externalScope.launch {
             val validPurchases = purchases.filter { purchase ->
-                purchase.purchaseState == Purchase.PurchaseState.PURCHASED
+                purchase.purchaseState == Purchase.PurchaseState.PURCHASED ||
+                        purchase.purchaseState == Purchase.PurchaseState.PENDING
             }
 
-            // Acknowledge purchases
             validPurchases.forEach { purchase ->
-                if (!purchase.isAcknowledged) {
+                if (purchase.purchaseState == Purchase.PurchaseState.PURCHASED && !purchase.isAcknowledged) {
                     acknowledgePurchase(purchase)
                 }
             }
 
-            _purchases.emit(validPurchases)
+            if (isFullRefresh) {
+                _purchases.value = validPurchases
+            } else {
+                _purchases.update { currentPurchases ->
+                    // distinctBy keeps the first element it encounters. 
+                    // Putting validPurchases first ensures that updated states (like PURCHASED) overwrite old ones (like PENDING).
+                    (validPurchases + currentPurchases).distinctBy { it.purchaseToken }
+                }
+            }
         }
     }
 

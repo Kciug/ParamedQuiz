@@ -33,5 +33,8 @@ data class SwipeModeState(
     val showTrialFinishedPanel: Boolean = false,
     val isLastAnswerFeedbackVisible: Boolean = false,
     val swipeModePrice: String? = null,
-    val totalSwipeModeQuestions: Int = 0
+    val totalSwipeModeQuestions: Int = 0,
+    val isPurchasing: Boolean = false,
+    val isPending: Boolean = false,
+    val purchaseError: String? = null
 )

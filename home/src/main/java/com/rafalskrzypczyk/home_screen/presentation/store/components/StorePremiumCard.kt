@@ -57,7 +57,8 @@ fun StorePremiumCard(
     description: String,
     price: String?,
     isUnlocked: Boolean,
-    isPurchasing: Boolean,
+    isPending: Boolean = false,
+    isPurchasing: Boolean = false,
     onBuyClick: () -> Unit
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "GoldenPulse")
@@ -147,7 +148,7 @@ fun StorePremiumCard(
             Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
 
             AnimatedContent(
-                targetState = isUnlocked,
+                targetState = isUnlocked to isPending,
                 label = "PremiumPurchaseAnimatedContent",
                 modifier = Modifier.fillMaxWidth(),
                 transitionSpec = {
@@ -157,7 +158,7 @@ fun StorePremiumCard(
                                 tween(durationMillis = 300)
                             }
                 }
-            ) { unlocked ->
+            ) { (unlocked, pending) ->
                 if (unlocked) {
                     Box(
                         modifier = Modifier.fillMaxWidth(),
@@ -167,6 +168,16 @@ fun StorePremiumCard(
                             text = stringResource(com.rafalskrzypczyk.home.R.string.store_btn_purchased),
                             backgroundColor = MQGreen.copy(alpha = 0.2f),
                             contentColor = MQGreen
+                        )
+                    }
+                } else if (pending) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        OwnedBadge(
+                            text = stringResource(com.rafalskrzypczyk.core.R.string.badge_pending),
+                            isPending = true
                         )
                     }
                 } else {

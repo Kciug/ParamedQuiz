@@ -17,6 +17,13 @@ data class StoreState(
     val isCategoryUnlocked: Boolean = false,
     val isAdFreeUnlocked: Boolean = false,
     
+    // Statusy przetwarzania
+    val isPremiumPending: Boolean = false,
+    val isTranslationModePending: Boolean = false,
+    val isSwipeModePending: Boolean = false,
+    val isCategoryPending: Boolean = false,
+    val isAdFreePending: Boolean = false,
+    
     // Ceny
     val fullPackageProduct: AppProduct? = null,
     val translationModeProduct: AppProduct? = null,

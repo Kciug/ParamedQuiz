@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.billing.domain.AppProduct
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.billing.domain.BillingRepository
+import com.rafalskrzypczyk.billing.domain.PurchaseResult
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.composables.rating.RatingPromptState
@@ -50,13 +51,41 @@ class HomeScreenVM @Inject constructor(
                 }
             }
         }
+
+        viewModelScope.launch {
+            billingRepository.purchaseResult.collectLatest { result ->
+                when (result) {
+                    is PurchaseResult.Success -> {
+                        _state.update { it.copy(isPurchasing = false) }
+                    }
+
+                    is PurchaseResult.Pending -> {
+                        _state.update { it.copy(isPurchasing = false) }
+                    }
+
+                    PurchaseResult.Cancelled -> {
+                        _state.update { it.copy(isPurchasing = false) }
+                        pendingPurchaseModeId = null
+                    }
+
+                    is PurchaseResult.Error -> {
+                        _state.update { it.copy(isPurchasing = false, purchaseError = result.message) }
+                        pendingPurchaseModeId = null
+                    }
+                }
+            }
+        }
         
         billingRepository.startBillingConnection()
+        billingRepository.refreshPurchases()
     }
 
     fun onEvent(event: HomeUIEvents) {
         when(event) {
-            HomeUIEvents.GetData -> getData()
+            HomeUIEvents.GetData -> {
+                billingRepository.refreshPurchases()
+                getData()
+            }
             HomeUIEvents.OpenTranslationModePurchaseSheet -> openPurchaseSheet(BillingIds.ID_TRANSLATION_MODE)
             HomeUIEvents.CloseTranslationModePurchaseSheet -> closePurchaseSheet(BillingIds.ID_TRANSLATION_MODE)
             HomeUIEvents.OpenSwipeModePurchaseSheet -> openPurchaseSheet(BillingIds.ID_SWIPE_MODE)
@@ -112,10 +141,18 @@ class HomeScreenVM @Inject constructor(
         }
         
         viewModelScope.launch {
-            premiumStatusProvider.ownedProductIds.collectLatest { ownedIds ->
+            kotlinx.coroutines.flow.combine(
+                premiumStatusProvider.ownedProductIds,
+                premiumStatusProvider.pendingProductIds
+            ) { ownedIds, pendingIds ->
+                ownedIds to pendingIds
+            }.collectLatest { (ownedIds, pendingIds) ->
                 val hasFull = ownedIds.contains(BillingIds.ID_FULL_PACKAGE)
                 val translationUnlocked = hasFull || ownedIds.contains(BillingIds.ID_TRANSLATION_MODE)
                 val swipeUnlocked = hasFull || ownedIds.contains(BillingIds.ID_SWIPE_MODE)
+
+                val isTranslationPending = pendingIds.contains(BillingIds.ID_TRANSLATION_MODE)
+                val isSwipePending = pendingIds.contains(BillingIds.ID_SWIPE_MODE)
 
                 if (translationUnlocked && pendingPurchaseModeId == BillingIds.ID_TRANSLATION_MODE) {
                     pendingPurchaseModeId = null
@@ -130,6 +167,8 @@ class HomeScreenVM @Inject constructor(
                         isPremium = hasFull,
                         isTranslationModeUnlocked = translationUnlocked,
                         isSwipeModeUnlocked = swipeUnlocked,
+                        isTranslationModePending = isTranslationPending,
+                        isSwipeModePending = isSwipePending,
                         isPurchasing = false
                     ) 
                 }

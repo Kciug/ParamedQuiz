@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.billing.domain.AppProduct
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.billing.domain.BillingRepository
+import com.rafalskrzypczyk.billing.domain.PurchaseResult
 import com.rafalskrzypczyk.billing.domain.getCategoryBillingId
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
@@ -71,12 +72,45 @@ class StoreVM @Inject constructor(
         }
 
         viewModelScope.launch {
-            premiumStatusProvider.ownedProductIds.collectLatest { ownedIds ->
+            billingRepository.purchaseResult.collectLatest { result ->
+                when (result) {
+                    is PurchaseResult.Success -> {
+                        _state.update { it.copy(isPurchasing = false) }
+                    }
+
+                    is PurchaseResult.Pending -> {
+                        _state.update { it.copy(isPurchasing = false) }
+                    }
+
+                    PurchaseResult.Cancelled -> {
+                        _state.update { it.copy(isPurchasing = false, pendingPurchaseModeId = null) }
+                    }
+
+                    is PurchaseResult.Error -> {
+                        _state.update { it.copy(isPurchasing = false, purchaseError = result.message, pendingPurchaseModeId = null) }
+                    }
+                }
+            }
+        }
+
+        viewModelScope.launch {
+            kotlinx.coroutines.flow.combine(
+                premiumStatusProvider.ownedProductIds,
+                premiumStatusProvider.pendingProductIds
+            ) { ownedIds, pendingIds ->
+                ownedIds to pendingIds
+            }.collectLatest { (ownedIds, pendingIds) ->
                 val hasFull = ownedIds.contains(BillingIds.ID_FULL_PACKAGE)
                 val translationUnlocked = hasFull || ownedIds.contains(BillingIds.ID_TRANSLATION_MODE)
                 val swipeUnlocked = hasFull || ownedIds.contains(BillingIds.ID_SWIPE_MODE)
                 val categoryUnlocked = hasFull || ownedIds.contains(getCategoryBillingId(specificCategoryId))
                 val adFreeUnlocked = hasFull || ownedIds.contains(BillingIds.ID_AD_FREE)
+
+                val isPremiumPending = pendingIds.contains(BillingIds.ID_FULL_PACKAGE)
+                val isTranslationPending = pendingIds.contains(BillingIds.ID_TRANSLATION_MODE)
+                val isSwipePending = pendingIds.contains(BillingIds.ID_SWIPE_MODE)
+                val isCategoryPending = pendingIds.contains(getCategoryBillingId(specificCategoryId))
+                val isAdFreePending = pendingIds.contains(BillingIds.ID_AD_FREE)
 
                 val pendingId = _state.value.pendingPurchaseModeId
                 if (pendingId != null && ownedIds.contains(pendingId)) {
@@ -94,6 +128,11 @@ class StoreVM @Inject constructor(
                         isSwipeModeUnlocked = swipeUnlocked,
                         isCategoryUnlocked = categoryUnlocked,
                         isAdFreeUnlocked = adFreeUnlocked,
+                        isPremiumPending = isPremiumPending,
+                        isTranslationModePending = isTranslationPending,
+                        isSwipeModePending = isSwipePending,
+                        isCategoryPending = isCategoryPending,
+                        isAdFreePending = isAdFreePending,
                         isPurchasing = false,
                         purchaseError = null
                     ) 
@@ -102,6 +141,7 @@ class StoreVM @Inject constructor(
         }
 
         billingRepository.startBillingConnection()
+        billingRepository.refreshPurchases()
     }
 
     fun onEvent(event: StoreUIEvents) {
