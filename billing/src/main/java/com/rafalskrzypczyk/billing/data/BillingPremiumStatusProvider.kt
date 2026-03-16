@@ -27,6 +27,14 @@ class BillingPremiumStatusProvider @Inject constructor(
                 .toSet()
         }
 
+    override val pendingProductIds: Flow<Set<String>> = billingRepository.purchases
+        .map { purchaseList ->
+            purchaseList
+                .filter { it.isPending }
+                .flatMap { it.products }
+                .toSet()
+        }
+
     override fun hasAccessTo(contentId: String): Flow<Boolean> = ownedProductIds
         .map { ownedIds ->
             ownedIds.contains(BillingIds.ID_FULL_PACKAGE) || ownedIds.contains(contentId)

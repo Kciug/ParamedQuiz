@@ -17,6 +17,7 @@ import com.rafalskrzypczyk.home.R
 @Composable
 fun SwipePurchaseBottomSheet(
     isUnlocked: Boolean,
+    isPending: Boolean = false,
     isPurchasing: Boolean,
     purchaseError: String?,
     questionCount: Int,
@@ -34,6 +35,7 @@ fun SwipePurchaseBottomSheet(
         onStartClick = onStartClick,
         onTryClick = onTryClick,
         isUnlocked = isUnlocked,
+        isPending = isPending,
         isPurchasing = isPurchasing,
         purchaseError = purchaseError,
         shouldDismiss = shouldDismiss,

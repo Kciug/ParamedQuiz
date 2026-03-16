@@ -10,6 +10,7 @@ data class CemCategoriesState(
     val userStreakState: StreakState = StreakState.MISSED,
     val isUserLoggedIn: Boolean = false,
     val isPremium: Boolean = false,
+    val isPending: Boolean = false,
     val userAvatar: String? = null,
     val categories: Response<List<CategoryUIM>> = Response.Loading,
     val title: String = "",

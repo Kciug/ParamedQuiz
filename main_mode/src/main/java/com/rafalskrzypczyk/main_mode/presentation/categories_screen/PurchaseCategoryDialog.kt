@@ -31,6 +31,7 @@ fun PurchaseCategoryDialog(
     category: CategoryUIM,
     price: String?,
     loading: Boolean = false,
+    isPending: Boolean = false,
     error: String? = null,
     isSuccess: Boolean = false,
     onDismiss: () -> Unit,
@@ -40,6 +41,7 @@ fun PurchaseCategoryDialog(
     BasePurchaseDialog(
         price = price,
         loading = loading,
+        isPending = isPending,
         error = error,
         isSuccess = isSuccess,
         onSuccessConfirm = onSuccessConfirm,

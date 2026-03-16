@@ -24,6 +24,7 @@ class BillingRepositoryImpl @Inject constructor(
             AppPurchase(
                 products = purchase.products,
                 isPurchased = purchase.purchaseState == Purchase.PurchaseState.PURCHASED,
+                isPending = purchase.purchaseState == Purchase.PurchaseState.PENDING,
                 purchaseToken = purchase.purchaseToken
             )
         }
@@ -47,6 +48,10 @@ class BillingRepositoryImpl @Inject constructor(
 
     override fun startBillingConnection() {
         billingDataSource.startConnection()
+    }
+
+    override fun refreshPurchases() {
+        billingDataSource.refreshPurchases()
     }
 
     override fun launchBillingFlow(activity: Activity, product: AppProduct) {

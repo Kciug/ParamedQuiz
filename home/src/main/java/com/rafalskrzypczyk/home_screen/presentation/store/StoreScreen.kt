@@ -117,6 +117,7 @@ fun StoreScreen(
                                 description = state.fullPackageProduct?.description ?: stringResource(R.string.premium_package_desc),
                                 price = state.fullPackageProduct?.price,
                                 isUnlocked = state.isPremium,
+                                isPending = state.isPremiumPending,
                                 isPurchasing = state.isPurchasing && state.pendingPurchaseModeId == BillingIds.ID_FULL_PACKAGE,
                                 onBuyClick = {
                                     activity?.let { onEvent(StoreUIEvents.BuyProduct(it, BillingIds.ID_FULL_PACKAGE)) }
@@ -131,6 +132,7 @@ fun StoreScreen(
                                 iconTint = ModeInfoProvider.getColor(QuizMode.TranslationMode),
                                 price = state.translationModeProduct?.price,
                                 isUnlocked = state.isTranslationModeUnlocked,
+                                isPending = state.isTranslationModePending,
                                 isPurchasing = state.isPurchasing && state.pendingPurchaseModeId == BillingIds.ID_TRANSLATION_MODE,
                                 onBuyClick = {
                                     activity?.let { onEvent(StoreUIEvents.BuyProduct(it, BillingIds.ID_TRANSLATION_MODE)) }
@@ -145,6 +147,7 @@ fun StoreScreen(
                                 iconTint = ModeInfoProvider.getColor(QuizMode.SwipeMode),
                                 price = state.swipeModeProduct?.price,
                                 isUnlocked = state.isSwipeModeUnlocked,
+                                isPending = state.isSwipeModePending,
                                 isPurchasing = state.isPurchasing && state.pendingPurchaseModeId == BillingIds.ID_SWIPE_MODE,
                                 onBuyClick = {
                                     activity?.let { onEvent(StoreUIEvents.BuyProduct(it, BillingIds.ID_SWIPE_MODE)) }
@@ -160,6 +163,7 @@ fun StoreScreen(
                                 iconTint = MQYellow,
                                 price = state.categoryProduct?.price,
                                 isUnlocked = state.isCategoryUnlocked,
+                                isPending = state.isCategoryPending,
                                 isPurchasing = state.isPurchasing && state.pendingPurchaseModeId == categoryIdStr,
                                 onBuyClick = {
                                     activity?.let { onEvent(StoreUIEvents.BuyProduct(it, categoryIdStr)) }
@@ -174,6 +178,7 @@ fun StoreScreen(
                                 iconTint = MQRed,
                                 price = state.adFreeProduct?.price,
                                 isUnlocked = state.isAdFreeUnlocked,
+                                isPending = state.isAdFreePending,
                                 isPurchasing = state.isPurchasing && state.pendingPurchaseModeId == BillingIds.ID_AD_FREE,
                                 onBuyClick = {
                                     activity?.let { onEvent(StoreUIEvents.BuyProduct(it, BillingIds.ID_AD_FREE)) }

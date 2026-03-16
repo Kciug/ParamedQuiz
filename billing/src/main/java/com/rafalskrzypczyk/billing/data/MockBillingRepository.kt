@@ -35,6 +35,9 @@ class MockBillingRepository @Inject constructor() : BillingRepository {
         _isBillingSetupFinished.value = true
     }
 
+    override fun refreshPurchases() {
+    }
+
     override fun launchBillingFlow(activity: Activity, product: AppProduct) {
         // Simulate immediate successful purchase with delay
         val scope = kotlinx.coroutines.MainScope()

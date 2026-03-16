@@ -90,9 +90,15 @@ class SwipeModeVM @Inject constructor(
                     is PurchaseResult.Success -> {
                         _state.update { it.copy(isPurchasing = false) }
                     }
+
+                    is PurchaseResult.Pending -> {
+                        _state.update { it.copy(isPurchasing = false) }
+                    }
+
                     PurchaseResult.Cancelled -> {
                         _state.update { it.copy(isPurchasing = false) }
                     }
+
                     is PurchaseResult.Error -> {
                         _state.update { it.copy(isPurchasing = false, purchaseError = result.message) }
                     }
@@ -124,12 +130,22 @@ class SwipeModeVM @Inject constructor(
             }
         }
         viewModelScope.launch {
-            premiumStatusProvider.ownedProductIds.collectLatest { ownedIds ->
+            kotlinx.coroutines.flow.combine(
+                premiumStatusProvider.ownedProductIds,
+                premiumStatusProvider.pendingProductIds
+            ) { ownedIds, pendingIds ->
+                ownedIds to pendingIds
+            }.collectLatest { (ownedIds, pendingIds) ->
                 val hasFull = ownedIds.contains(BillingIds.ID_FULL_PACKAGE)
                 val swipeUnlocked = hasFull || ownedIds.contains(BillingIds.ID_SWIPE_MODE)
+                val isPending = pendingIds.contains(BillingIds.ID_FULL_PACKAGE) || 
+                                pendingIds.contains(BillingIds.ID_SWIPE_MODE)
+                
                 if (swipeUnlocked && isTrialActive) {
                     unlockFullMode()
                 }
+
+                _state.update { it.copy(isPending = isPending) }
             }
         }
     }

@@ -40,6 +40,7 @@ fun SwipeModeTrialFinishedPanel(
     price: String?,
     modifier: Modifier = Modifier,
     loading: Boolean = false,
+    isPending: Boolean = false,
     error: String? = null
 ) {
     Surface(
@@ -109,20 +110,43 @@ fun SwipeModeTrialFinishedPanel(
 
             Spacer(modifier = Modifier.height(Dimens.LARGE_PADDING))
 
-            ButtonPrimary(
-                title = stringResource(R.string.btn_buy_for, price ?: "---"),
-                onClick = onBuyClick,
-                enabled = price != null,
-                loading = loading
-            )
+            androidx.compose.animation.AnimatedContent(
+                targetState = isPending,
+                label = "SwipeModeTrialPendingTransition"
+            ) { pending ->
+                if (pending) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        com.rafalskrzypczyk.core.composables.Loading(modifier = Modifier.padding(bottom = Dimens.ELEMENTS_SPACING))
+                        TextPrimary(
+                            text = stringResource(R.string.purchase_pending_title),
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        )
+                        TextPrimary(
+                            text = stringResource(R.string.purchase_pending_msg),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(top = Dimens.ELEMENTS_SPACING_SMALL)
+                        )
+                    }
+                } else {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        ButtonPrimary(
+                            title = stringResource(R.string.btn_buy_for, price ?: "---"),
+                            onClick = onBuyClick,
+                            enabled = price != null && !loading,
+                            loading = loading
+                        )
 
-            Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
+                        Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
 
-            if (!loading) {
-                ButtonSecondary(
-                    title = stringResource(R.string.btn_exit_quiz),
-                    onClick = onExitClick
-                )
+                        if (!loading) {
+                            ButtonSecondary(
+                                title = stringResource(R.string.btn_exit_quiz),
+                                onClick = onExitClick
+                            )
+                        }
+                    }
+                }
             }
         }
     }

@@ -76,7 +76,14 @@ class BillingDataSource @Inject constructor(
             externalScope.launch {
                 purchases.forEach { purchase ->
                     purchase.products.forEach { productId ->
-                        _purchaseResult.emit(PurchaseResult.Success(productId))
+                        when (purchase.purchaseState) {
+                            Purchase.PurchaseState.PURCHASED -> {
+                                _purchaseResult.emit(PurchaseResult.Success(productId))
+                            }
+                            Purchase.PurchaseState.PENDING -> {
+                                _purchaseResult.emit(PurchaseResult.Pending(productId))
+                            }
+                        }
                     }
                 }
             }
@@ -91,7 +98,7 @@ class BillingDataSource @Inject constructor(
                 _purchaseResult.emit(PurchaseResult.Error(billingError.localizedError(billingResult.responseCode)))
             }
         } else {
-            Log.e(TAG, "Purchase update failed: ${billingResult.debugMessage}")
+            Log.e(TAG, "Purchase update failed: ${billingResult.debugMessage} (code: ${billingResult.responseCode})")
             externalScope.launch {
                 _purchaseResult.emit(PurchaseResult.Error(billingError.localizedError(billingResult.responseCode)))
             }
@@ -160,11 +167,12 @@ class BillingDataSource @Inject constructor(
     private fun processPurchases(purchases: List<Purchase>, isFullRefresh: Boolean) {
         externalScope.launch {
             val validPurchases = purchases.filter { purchase ->
-                purchase.purchaseState == Purchase.PurchaseState.PURCHASED
+                purchase.purchaseState == Purchase.PurchaseState.PURCHASED ||
+                        purchase.purchaseState == Purchase.PurchaseState.PENDING
             }
 
             validPurchases.forEach { purchase ->
-                if (!purchase.isAcknowledged) {
+                if (purchase.purchaseState == Purchase.PurchaseState.PURCHASED && !purchase.isAcknowledged) {
                     acknowledgePurchase(purchase)
                 }
             }
@@ -173,7 +181,9 @@ class BillingDataSource @Inject constructor(
                 _purchases.value = validPurchases
             } else {
                 _purchases.update { currentPurchases ->
-                    (currentPurchases + validPurchases).distinctBy { it.purchaseToken }
+                    // distinctBy keeps the first element it encounters. 
+                    // Putting validPurchases first ensures that updated states (like PURCHASED) overwrite old ones (like PENDING).
+                    (validPurchases + currentPurchases).distinctBy { it.purchaseToken }
                 }
             }
         }

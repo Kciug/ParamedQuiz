@@ -47,7 +47,8 @@ fun StoreModeCard(
     iconTint: Color,
     price: String?,
     isUnlocked: Boolean,
-    isPurchasing: Boolean,
+    isPending: Boolean = false,
+    isPurchasing: Boolean = false,
     onBuyClick: () -> Unit
 ) {
     Column(
@@ -96,7 +97,7 @@ fun StoreModeCard(
         Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
 
         AnimatedContent(
-            targetState = isUnlocked,
+            targetState = isUnlocked to isPending,
             label = "StoreModePurchaseAnimatedContent",
             modifier = Modifier.fillMaxWidth(),
             transitionSpec = {
@@ -106,7 +107,7 @@ fun StoreModeCard(
                             tween(durationMillis = 300)
                         }
             }
-        ) { unlocked ->
+        ) { (unlocked, pending) ->
             if (unlocked) {
                 Box(
                     modifier = Modifier.fillMaxWidth(),
@@ -116,6 +117,16 @@ fun StoreModeCard(
                         text = stringResource(com.rafalskrzypczyk.home.R.string.store_btn_purchased),
                         backgroundColor = MQGreen.copy(alpha = 0.2f),
                         contentColor = MQGreen
+                    )
+                }
+            } else if (pending) {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    OwnedBadge(
+                        text = stringResource(com.rafalskrzypczyk.core.R.string.badge_pending),
+                        isPending = true
                     )
                 }
             } else {

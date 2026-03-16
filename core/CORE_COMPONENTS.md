@@ -35,7 +35,7 @@ Ten dokument jest listą dostępnych komponentów UI w module `core`. Używaj ic
 ## Inne
 - `QuizLinearProgressBar` - Pasek postępu w quizie.
 - `NotificationDot` - Czerwona kropka powiadomienia.
-- `OwnedBadge` - Plakietka "posiadane".
+- `OwnedBadge` - Plakietka "posiadane" lub "przetwarzanie" (obsługuje stan `isPending`).
 - `ReportIssueDialog` - Gotowy dialog do zgłaszania błędów.
 
 **PAMIĘTAJ:** Jeśli modyfikujesz komponenty w `core`, zaktualizuj ten plik!

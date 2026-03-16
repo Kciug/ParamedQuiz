@@ -20,7 +20,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -50,9 +49,15 @@ class MMCategoriesVM @Inject constructor(
                     is PurchaseResult.Success -> {
                         _state.update { it.copy(isPurchasing = false) }
                     }
+
+                    is PurchaseResult.Pending -> {
+                        _state.update { it.copy(isPurchasing = false) }
+                    }
+
                     PurchaseResult.Cancelled -> {
                         _state.update { it.copy(isPurchasing = false, pendingPurchaseCategoryId = null) }
                     }
+
                     is PurchaseResult.Error -> {
                         _state.update { it.copy(isPurchasing = false, purchaseError = result.message, pendingPurchaseCategoryId = null) }
                     }
@@ -61,11 +66,15 @@ class MMCategoriesVM @Inject constructor(
         }
         
         billingRepository.startBillingConnection()
+        billingRepository.refreshPurchases()
     }
 
     fun onEvent(event: MMCategoriesUIEvents) {
         when(event) {
-            MMCategoriesUIEvents.GetData -> loadData()
+            MMCategoriesUIEvents.GetData -> {
+                billingRepository.refreshPurchases()
+                loadData()
+            }
             is MMCategoriesUIEvents.OpenPurchaseDialog -> openPurchaseDialog(event.category)
             MMCategoriesUIEvents.ClosePurchaseDialog -> closePurchaseDialog()
             is MMCategoriesUIEvents.BuyCategory -> buyCategory(event.activity)
@@ -88,9 +97,18 @@ class MMCategoriesVM @Inject constructor(
         }
 
         viewModelScope.launch {
-            premiumStatusProvider.ownedProductIds.collectLatest { ownedIds ->
+            kotlinx.coroutines.flow.combine(
+                premiumStatusProvider.ownedProductIds,
+                premiumStatusProvider.pendingProductIds
+            ) { ownedIds, pendingIds ->
+                ownedIds to pendingIds
+            }.collectLatest { (ownedIds, pendingIds) ->
                 val hasFull = ownedIds.contains(BillingIds.ID_FULL_PACKAGE)
                 
+                val selectedCategory = _state.value.selectedCategoryForPurchase
+                val isSelectedPending = selectedCategory != null && 
+                                        pendingIds.contains(getCategoryBillingId(selectedCategory.id))
+
                 val pendingId = _state.value.pendingPurchaseCategoryId
                 if (pendingId != null) {
                     val billingId = getCategoryBillingId(pendingId)
@@ -99,19 +117,24 @@ class MMCategoriesVM @Inject constructor(
                     }
                 }
                 
-                _state.update { it.copy(isPremium = hasFull) }
+                _state.update { it.copy(isPremium = hasFull, isPending = isSelectedPending) }
             }
         }
 
         viewModelScope.launch {
             useCases.getAllCategories().flatMapLatest { response ->
                 if (response is Response.Success) {
-                    premiumStatusProvider.ownedProductIds.map { ownedIds ->
+                    kotlinx.coroutines.flow.combine(
+                        premiumStatusProvider.ownedProductIds,
+                        premiumStatusProvider.pendingProductIds
+                    ) { ownedIds, pendingIds ->
                         val updatedCategories = response.data.map { category ->
+                            val billingId = getCategoryBillingId(category.id)
                             val hasAccess = category.unlocked || 
                                             ownedIds.contains(BillingIds.ID_FULL_PACKAGE) || 
-                                            ownedIds.contains(getCategoryBillingId(category.id))
-                            category.toUIM(hasAccess = hasAccess)
+                                            ownedIds.contains(billingId)
+                            val isPending = pendingIds.contains(billingId)
+                            category.toUIM(hasAccess = hasAccess, isPending = isPending)
                         }
                         Response.Success(updatedCategories)
                     }
@@ -140,12 +163,17 @@ class MMCategoriesVM @Inject constructor(
     private fun attachCategoriesListener() {
         viewModelScope.launch {
             useCases.getUpdatedCategories().flatMapLatest { categories ->
-                premiumStatusProvider.ownedProductIds.map { ownedIds ->
+                kotlinx.coroutines.flow.combine(
+                    premiumStatusProvider.ownedProductIds,
+                    premiumStatusProvider.pendingProductIds
+                ) { ownedIds, pendingIds ->
                     categories.map { category ->
+                        val billingId = getCategoryBillingId(category.id)
                         val hasAccess = category.unlocked || 
                                         ownedIds.contains(BillingIds.ID_FULL_PACKAGE) || 
-                                        ownedIds.contains(getCategoryBillingId(category.id))
-                        category.toUIM(hasAccess = hasAccess)
+                                        ownedIds.contains(billingId)
+                        val isPending = pendingIds.contains(billingId)
+                        category.toUIM(hasAccess = hasAccess, isPending = isPending)
                     }
                 }
             }.collectLatest { data ->

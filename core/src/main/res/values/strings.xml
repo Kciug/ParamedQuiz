@@ -123,6 +123,9 @@
     <string name="desc_subcategories_number">Liczba podkategorii</string>
     <string name="badge_owned">Posiadane</string>
     <string name="badge_to_buy">Do kupienia</string>
+    <string name="badge_pending">Przetwarzanie…</string>
+    <string name="purchase_pending_title">Przetwarzanie płatności</string>
+    <string name="purchase_pending_msg">Twoja płatność jest przetwarzana przez Google Play. Może to potrwać od kilku sekund do kilku minut. Gdy transakcja zostanie ukończona, produkt zostanie odblokowany automatycznie.</string>
     <string name="billing_error_service_unavailable">Problem z połączeniem ze Sklepem Play. Spróbuj ponownie za chwilę.</string>
     <string name="billing_error_billing_unavailable">Twoje konto nie może obecnie realizować zakupów. Sprawdź swoje ustawienia płatności w Sklepie Play.</string>
     <string name="billing_error_service_disconnected">Utracono połączenie z usługami płatności. Spróbuj ponownie.</string>

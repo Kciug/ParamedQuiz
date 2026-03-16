@@ -20,6 +20,7 @@ data class MMCategoriesState (
     val selectedCategoryForPurchase: CategoryUIM? = null,
     val productPrice: String? = null,
     val isPurchasing: Boolean = false,
+    val isPending: Boolean = false,
     val purchaseError: String? = null,
     val pendingPurchaseCategoryId: Long? = null
 )

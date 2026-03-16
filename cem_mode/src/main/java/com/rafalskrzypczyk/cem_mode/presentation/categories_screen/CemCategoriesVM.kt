@@ -71,12 +71,29 @@ class CemCategoriesVM @Inject constructor(
     private fun loadCategories() {
         viewModelScope.launch {
             useCases.getCemCategories(parentId).collectLatest { response ->
-                val result = when (response) {
-                    is Response.Success -> Response.Success(response.data.map { it.toUIM() })
-                    is Response.Error -> Response.Error(response.error)
-                    Response.Loading -> Response.Loading
+                when (response) {
+                    is Response.Success -> {
+                        kotlinx.coroutines.flow.combine(
+                            premiumStatusProvider.ownedProductIds,
+                            premiumStatusProvider.pendingProductIds
+                        ) { ownedIds, pendingIds ->
+                            val hasFull = ownedIds.contains(BillingIds.ID_FULL_PACKAGE)
+                            val isPending = pendingIds.contains(BillingIds.ID_FULL_PACKAGE)
+                            
+                            val mapped = response.data.map { category ->
+                                category.toUIM(
+                                    hasAccess = category.unlocked || hasFull,
+                                    isPending = isPending
+                                )
+                            }
+                            Response.Success(mapped) to isPending
+                        }.collectLatest { (result, isPending) ->
+                            _state.update { it.copy(categories = result, isPending = isPending) }
+                        }
+                    }
+                    is Response.Error -> _state.update { it.copy(categories = Response.Error(response.error)) }
+                    Response.Loading -> _state.update { it.copy(categories = Response.Loading) }
                 }
-                _state.update { it.copy(categories = result) }
             }
         }
     }
@@ -84,7 +101,22 @@ class CemCategoriesVM @Inject constructor(
     private fun observeCategoriesUpdate() {
         viewModelScope.launch {
             useCases.getUpdatedCemCategories(parentId).collectLatest { list ->
-                _state.update { it.copy(categories = Response.Success(list.map { it.toUIM() })) }
+                kotlinx.coroutines.flow.combine(
+                    premiumStatusProvider.ownedProductIds,
+                    premiumStatusProvider.pendingProductIds
+                ) { ownedIds, pendingIds ->
+                    val hasFull = ownedIds.contains(BillingIds.ID_FULL_PACKAGE)
+                    val isPending = pendingIds.contains(BillingIds.ID_FULL_PACKAGE)
+                    
+                    list.map { category ->
+                        category.toUIM(
+                            hasAccess = category.unlocked || hasFull,
+                            isPending = isPending
+                        )
+                    }
+                }.collectLatest { mapped ->
+                    _state.update { it.copy(categories = Response.Success(mapped)) }
+                }
             }
         }
     }

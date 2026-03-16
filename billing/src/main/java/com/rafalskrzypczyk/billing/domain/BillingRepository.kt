@@ -10,6 +10,7 @@ interface BillingRepository {
     val purchaseResult: Flow<PurchaseResult>
 
     fun startBillingConnection()
+    fun refreshPurchases()
     fun launchBillingFlow(activity: Activity, product: AppProduct)
     suspend fun queryProducts(productIds: List<String>)
     suspend fun consumePurchase(purchaseToken: String)
