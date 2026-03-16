@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -63,9 +64,11 @@ class BillingDataSource @Inject constructor(
 
     override fun onPurchasesUpdated(billingResult: BillingResult, purchases: List<Purchase>?) {
         if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && purchases != null) {
-            processPurchases(purchases)
+            processPurchases(purchases, isFullRefresh = false)
         } else if (billingResult.responseCode == BillingClient.BillingResponseCode.USER_CANCELED) {
             Log.i(TAG, "User canceled purchase")
+        } else if (billingResult.responseCode == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED) {
+            refreshPurchases()
         } else {
             Log.e(TAG, "Purchase update failed: ${billingResult.debugMessage}")
         }
@@ -81,7 +84,10 @@ class BillingDataSource @Inject constructor(
                 )
             )
             .build()
-        billingClient.launchBillingFlow(activity, flowParams)
+        val result = billingClient.launchBillingFlow(activity, flowParams)
+        if (result.responseCode == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED) {
+            refreshPurchases()
+        }
     }
 
     suspend fun queryProductDetails(productIds: List<String>) {
@@ -116,27 +122,32 @@ class BillingDataSource @Inject constructor(
 
         billingClient.queryPurchasesAsync(params) { billingResult, purchasesList ->
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                processPurchases(purchasesList)
+                processPurchases(purchasesList, isFullRefresh = true)
             } else {
                 Log.e(TAG, "Query purchases failed: ${billingResult.debugMessage}")
             }
         }
     }
 
-    private fun processPurchases(purchases: List<Purchase>) {
+    private fun processPurchases(purchases: List<Purchase>, isFullRefresh: Boolean) {
         externalScope.launch {
             val validPurchases = purchases.filter { purchase ->
                 purchase.purchaseState == Purchase.PurchaseState.PURCHASED
             }
 
-            // Acknowledge purchases
             validPurchases.forEach { purchase ->
                 if (!purchase.isAcknowledged) {
                     acknowledgePurchase(purchase)
                 }
             }
 
-            _purchases.emit(validPurchases)
+            if (isFullRefresh) {
+                _purchases.value = validPurchases
+            } else {
+                _purchases.update { currentPurchases ->
+                    (currentPurchases + validPurchases).distinctBy { it.purchaseToken }
+                }
+            }
         }
     }
 
