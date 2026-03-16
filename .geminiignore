@@ -1,0 +1,48 @@
+# .geminiignore
+
+# Ignore IDE specific files
+.idea/
+*.iml
+.idea/caches
+.idea/libraries
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+
+# Ignore Gradle specific files
+.gradle/
+gradle/wrapper/
+gradlew
+gradlew.bat
+
+# Ignore build artifacts and generated code
+build/
+**/build/
+**/build/generated/
+
+# Ignore local configuration files
+local.properties
+local.defaults.properties
+
+# Ignore version control and other system files
+.git/
+.github/
+.DS_Store
+Thumbs.db
+
+# Ignore any specific Android captures
+/captures
+.externalNativeBuild
+.cxx
+
+# Ignore binary assets that Gemini CLI shouldn't read
+**/*.png
+**/*.jpg
+**/*.jpeg
+**/*.gif
+**/*.webp
+**/*.svg
+**/*.pdf
+**/*.jar
+**/*.aar
