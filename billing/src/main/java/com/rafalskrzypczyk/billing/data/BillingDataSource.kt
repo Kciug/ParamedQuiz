@@ -4,11 +4,15 @@ import android.app.Activity
 import android.content.Context
 import android.util.Log
 import com.android.billingclient.api.*
+import com.rafalskrzypczyk.billing.domain.PurchaseResult
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -22,7 +26,8 @@ private const val TAG = "BillingDataSource"
 class BillingDataSource @Inject constructor(
     @ApplicationContext context: Context,
     private val externalScope: CoroutineScope,
-    private val billingClientProvider: BillingClientProvider
+    private val billingClientProvider: BillingClientProvider,
+    private val billingError: BillingError
 ) : PurchasesUpdatedListener, BillingClientStateListener {
 
     private val _isBillingSetupFinished = MutableStateFlow(false)
@@ -33,6 +38,9 @@ class BillingDataSource @Inject constructor(
 
     private val _purchases = MutableStateFlow<List<Purchase>>(emptyList())
     val purchases: StateFlow<List<Purchase>> = _purchases.asStateFlow()
+
+    private val _purchaseResult = MutableSharedFlow<PurchaseResult>()
+    val purchaseResult: SharedFlow<PurchaseResult> = _purchaseResult.asSharedFlow()
 
     private val billingClient: BillingClient by lazy {
         billingClientProvider.create(context, this)
@@ -65,12 +73,28 @@ class BillingDataSource @Inject constructor(
     override fun onPurchasesUpdated(billingResult: BillingResult, purchases: List<Purchase>?) {
         if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && purchases != null) {
             processPurchases(purchases, isFullRefresh = false)
+            externalScope.launch {
+                purchases.forEach { purchase ->
+                    purchase.products.forEach { productId ->
+                        _purchaseResult.emit(PurchaseResult.Success(productId))
+                    }
+                }
+            }
         } else if (billingResult.responseCode == BillingClient.BillingResponseCode.USER_CANCELED) {
             Log.i(TAG, "User canceled purchase")
+            externalScope.launch {
+                _purchaseResult.emit(PurchaseResult.Cancelled)
+            }
         } else if (billingResult.responseCode == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED) {
             refreshPurchases()
+            externalScope.launch {
+                _purchaseResult.emit(PurchaseResult.Error(billingError.localizedError(billingResult.responseCode)))
+            }
         } else {
             Log.e(TAG, "Purchase update failed: ${billingResult.debugMessage}")
+            externalScope.launch {
+                _purchaseResult.emit(PurchaseResult.Error(billingError.localizedError(billingResult.responseCode)))
+            }
         }
     }
 
@@ -87,6 +111,10 @@ class BillingDataSource @Inject constructor(
         val result = billingClient.launchBillingFlow(activity, flowParams)
         if (result.responseCode == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED) {
             refreshPurchases()
+        } else if (result.responseCode != BillingClient.BillingResponseCode.OK) {
+            externalScope.launch {
+                _purchaseResult.emit(PurchaseResult.Error(billingError.localizedError(result.responseCode)))
+            }
         }
     }
 

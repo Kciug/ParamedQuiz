@@ -38,7 +38,9 @@ fun SwipeModeTrialFinishedPanel(
     onExitClick: () -> Unit,
     totalQuestions: Int,
     price: String?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    loading: Boolean = false,
+    error: String? = null
 ) {
     Surface(
         modifier = modifier
@@ -76,6 +78,15 @@ fun SwipeModeTrialFinishedPanel(
                 textAlign = TextAlign.Center
             )
 
+            if (error != null) {
+                Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
+                TextPrimary(
+                    text = error,
+                    color = MaterialTheme.colorScheme.error,
+                    textAlign = TextAlign.Center
+                )
+            }
+
             Spacer(modifier = Modifier.height(Dimens.LARGE_PADDING))
 
             Row(
@@ -101,15 +112,18 @@ fun SwipeModeTrialFinishedPanel(
             ButtonPrimary(
                 title = stringResource(R.string.btn_buy_for, price ?: "---"),
                 onClick = onBuyClick,
-                enabled = price != null
+                enabled = price != null,
+                loading = loading
             )
 
             Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
 
-            ButtonSecondary(
-                title = stringResource(R.string.btn_exit_quiz),
-                onClick = onExitClick
-            )
+            if (!loading) {
+                ButtonSecondary(
+                    title = stringResource(R.string.btn_exit_quiz),
+                    onClick = onExitClick
+                )
+            }
         }
     }
 }

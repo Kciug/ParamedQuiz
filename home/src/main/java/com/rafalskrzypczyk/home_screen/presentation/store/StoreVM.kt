@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.billing.domain.AppProduct
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.billing.domain.BillingRepository
+import com.rafalskrzypczyk.billing.domain.PurchaseResult
 import com.rafalskrzypczyk.billing.domain.getCategoryBillingId
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
@@ -65,6 +66,22 @@ class StoreVM @Inject constructor(
                         nextState.copy(responseState = ResponseState.Success)
                     } else {
                         nextState
+                    }
+                }
+            }
+        }
+
+        viewModelScope.launch {
+            billingRepository.purchaseResult.collectLatest { result ->
+                when (result) {
+                    is PurchaseResult.Success -> {
+                        _state.update { it.copy(isPurchasing = false) }
+                    }
+                    PurchaseResult.Cancelled -> {
+                        _state.update { it.copy(isPurchasing = false, pendingPurchaseModeId = null) }
+                    }
+                    is PurchaseResult.Error -> {
+                        _state.update { it.copy(isPurchasing = false, purchaseError = result.message, pendingPurchaseModeId = null) }
                     }
                 }
             }

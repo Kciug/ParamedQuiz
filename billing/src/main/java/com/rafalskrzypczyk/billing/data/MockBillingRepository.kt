@@ -5,8 +5,11 @@ import com.rafalskrzypczyk.billing.domain.AppProduct
 import com.rafalskrzypczyk.billing.domain.AppPurchase
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.billing.domain.BillingRepository
+import com.rafalskrzypczyk.billing.domain.PurchaseResult
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -25,6 +28,9 @@ class MockBillingRepository @Inject constructor() : BillingRepository {
     private val _isBillingSetupFinished = MutableStateFlow(true)
     override val isBillingSetupFinished: Flow<Boolean> = _isBillingSetupFinished.asStateFlow()
 
+    private val _purchaseResult = MutableSharedFlow<PurchaseResult>()
+    override val purchaseResult: Flow<PurchaseResult> = _purchaseResult.asSharedFlow()
+
     override fun startBillingConnection() {
         _isBillingSetupFinished.value = true
     }
@@ -40,6 +46,7 @@ class MockBillingRepository @Inject constructor() : BillingRepository {
                 purchaseToken = "mock_token_${System.currentTimeMillis()}"
             )
             _purchases.update { it + newPurchase }
+            _purchaseResult.emit(PurchaseResult.Success(product.id))
         }
     }
 

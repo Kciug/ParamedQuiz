@@ -7,6 +7,7 @@ interface BillingRepository {
     val purchases: Flow<List<AppPurchase>>
     val availableProducts: Flow<List<AppProduct>>
     val isBillingSetupFinished: Flow<Boolean>
+    val purchaseResult: Flow<PurchaseResult>
 
     fun startBillingConnection()
     fun launchBillingFlow(activity: Activity, product: AppProduct)

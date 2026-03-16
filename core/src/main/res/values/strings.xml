@@ -123,4 +123,12 @@
     <string name="desc_subcategories_number">Liczba podkategorii</string>
     <string name="badge_owned">Posiadane</string>
     <string name="badge_to_buy">Do kupienia</string>
+    <string name="billing_error_service_unavailable">Problem z połączeniem ze Sklepem Play. Spróbuj ponownie za chwilę.</string>
+    <string name="billing_error_billing_unavailable">Twoje konto nie może obecnie realizować zakupów. Sprawdź swoje ustawienia płatności w Sklepie Play.</string>
+    <string name="billing_error_service_disconnected">Utracono połączenie z usługami płatności. Spróbuj ponownie.</string>
+    <string name="billing_error_item_unavailable">Ten produkt nie jest obecnie dostępny.</string>
+    <string name="billing_error_item_already_owned">Posiadasz już ten produkt.</string>
+    <string name="billing_error_developer_error">Wystąpił problem techniczny podczas zakupu. Spróbuj ponownie później.</string>
+    <string name="billing_error_generic">Transakcja nie mogła zostać ukończona. Sprawdź środki na koncie lub metodę płatności i spróbuj ponownie.</string>
+    <string name="billing_error_user_cancelled">Płatność została anulowana.</string>
 </resources>

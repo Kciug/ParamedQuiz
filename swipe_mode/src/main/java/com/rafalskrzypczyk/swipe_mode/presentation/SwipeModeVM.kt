@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.billing.domain.AppProduct
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.billing.domain.BillingRepository
+import com.rafalskrzypczyk.billing.domain.PurchaseResult
 import com.rafalskrzypczyk.core.ads.QuizAdHandler
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
@@ -80,6 +81,22 @@ class SwipeModeVM @Inject constructor(
         viewModelScope.launch {
             useCases.getUserScore().collectLatest { score ->
                 _state.update { it.copy(userScore = score.score) }
+            }
+        }
+
+        viewModelScope.launch {
+            billingRepository.purchaseResult.collectLatest { result ->
+                when (result) {
+                    is PurchaseResult.Success -> {
+                        _state.update { it.copy(isPurchasing = false) }
+                    }
+                    PurchaseResult.Cancelled -> {
+                        _state.update { it.copy(isPurchasing = false) }
+                    }
+                    is PurchaseResult.Error -> {
+                        _state.update { it.copy(isPurchasing = false, purchaseError = result.message) }
+                    }
+                }
             }
         }
         
@@ -200,6 +217,7 @@ class SwipeModeVM @Inject constructor(
 
     private fun buySwipeMode() {
         if (swipeModeProductDetails != null) {
+            _state.update { it.copy(isPurchasing = true, purchaseError = null) }
             viewModelScope.launch {
                 _effect.emit(SwipeModeSideEffect.BuyMode)
             }
