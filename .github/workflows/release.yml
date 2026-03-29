@@ -101,7 +101,7 @@ jobs:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_CONSOLE_JSON }}
           packageName: com.frontfolks.mediquiz
           releaseFiles: app/build/outputs/bundle/release/app-release.aab
-          track: internal # Testy zamkniete
+          track: alpha # Testy zamkniete
           status: completed # Od razu puszczone do testow
           whatsNewDirectory: whatsnew
 
