@@ -12,6 +12,12 @@ on:
           - patch
           - minor
           - major
+          - none
+      release_notes:
+        description: 'Release Notes (optional)'
+        required: false
+        default: ''
+        type: string
 
 jobs:
   build-and-deploy:
@@ -80,12 +86,21 @@ jobs:
           SIGNING_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
         run: ./gradlew bundleRelease
 
-      # 6. Wysylanie do Sklepu
+      # 6. Przygotowanie changeloga
+      - name: Prepare Release Notes
+        if: github.event.inputs.release_notes != ''
+        run: |
+          mkdir -p whatsnew/pl-PL
+          echo "${{ github.event.inputs.release_notes }}" > whatsnew/pl-PL/default.txt
+
+      # 7. Wysylanie do Sklepu
       - name: Upload to Play Store
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_CONSOLE_JSON }}
           packageName: com.frontfolks.mediquiz
           releaseFiles: app/build/outputs/bundle/release/app-release.aab
-          track: internal # lub alpha/production
-          status: draft # Bezpiecznie: wrzuca jako szkic
+          track: alpha # Testy zamkniete
+          status: completed # Od razu puszczone do testow
+          whatsNewDirectory: whatsnew
+
