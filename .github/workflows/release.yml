@@ -88,10 +88,11 @@ jobs:
 
       # 6. Przygotowanie changeloga
       - name: Prepare Release Notes
-        if: github.event.inputs.release_notes != ''
         run: |
           mkdir -p whatsnew/pl-PL
-          echo "${{ github.event.inputs.release_notes }}" > whatsnew/pl-PL/default.txt
+          if [ "${{ github.event.inputs.release_notes }}" != "" ]; then
+            echo "${{ github.event.inputs.release_notes }}" > whatsnew/pl-PL/default.txt
+          fi
 
       # 7. Wysylanie do Sklepu
       - name: Upload to Play Store
