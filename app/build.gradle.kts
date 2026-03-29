@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "com.rafalskrzypczyk.paramedquiz"
+    namespace = "com.frontfolks.mediquiz"
 
     defaultConfig {
         androidResources {

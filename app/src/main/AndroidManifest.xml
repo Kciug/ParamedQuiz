@@ -6,7 +6,7 @@
     <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove"/>
 
     <application
-        android:name=".ParamedQuizApplication"
+        android:name="com.rafalskrzypczyk.paramedquiz.ParamedQuizApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -17,7 +17,7 @@
         android:theme="@style/Theme.ParamedQuiz"
         tools:targetApi="31">
         <activity
-            android:name=".MainActivity"
+            android:name="com.rafalskrzypczyk.paramedquiz.MainActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.App.Starting">
