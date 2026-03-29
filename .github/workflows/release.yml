@@ -88,4 +88,4 @@ jobs:
           packageName: com.rafalskrzypczyk.paramedquiz
           releaseFiles: app/build/outputs/bundle/release/app-release.aab
           track: internal # lub alpha/production
-          status: completed # Bezpiecznie: wrzuca jako szkic
+          status: draft # Bezpiecznie: wrzuca jako szkic
