@@ -49,8 +49,8 @@
     <string name="title_addons">Centrum aktywności </string>
 
     <string name="mode_quiz_desc">Zdobywaj wiedzę grając w quiz!</string>
-    <string name="mode_swipe_desc">Szybkie pytania, szybkie decyzje!</string>
-    <string name="mode_translation_desc">Ucz się słownictwa!</string>
+    <string name="mode_swipe_desc">Błyskawiczne pytania, szybkie decyzje! Trenuj automatyzm i czas reakcji w stanach nagłych.</string>
+    <string name="mode_translation_desc">Opanuj angielskie słownictwo medyczne i ratownicze. Przełam barierę językową w pracy z pacjentem.</string>
     <string name="more_modes_soon">Więcej trybów już wkrótce!</string>
 
     <string name="title_addon_daily_exercises">Zadanie dnia</string>
@@ -143,19 +143,19 @@
     <string name="terms_of_service_title">Regulamin</string>
     <string name="accept_terms_button">Akceptuję regulamin</string>
 
-    <string name="feature_translation_title">Tłumaczenia</string>
-    <string name="feature_translation_desc">Tłumacz kluczowe terminy medyczne i ratownicze.</string>
-    <string name="feature_vocabulary_title">Słownictwo</string>
-    <string name="feature_vocabulary_desc">Ucz się specjalistycznego słownictwa w kontekście.</string>
-    <string name="feature_auto_fix_title">System powtórek</string>
-    <string name="feature_auto_fix_desc">Zoptymalizuj naukę dzięki inteligentnym powtórkom.</string>
+    <string name="feature_translation_title">Profesjonalne tłumaczenia</string>
+    <string name="feature_translation_desc">Tłumacz kluczowe terminy medyczne, objawy i procedury ratunkowe.</string>
+    <string name="feature_vocabulary_title">Słownictwo w kontekście</string>
+    <string name="feature_vocabulary_desc">Ucz się specjalistycznych zwrotów używanych w codziennej praktyce ratowniczej.</string>
+    <string name="feature_auto_fix_title">Inteligentne powtórki</string>
+    <string name="feature_auto_fix_desc">Algorytm automatycznie dobiera trudniejsze terminy, optymalizując czas nauki.</string>
 
-    <string name="feature_swipe_title">Przesuń, aby odpowiedzieć</string>
-    <string name="feature_swipe_desc">Szybkie gesty dla dynamicznej nauki.</string>
-    <string name="feature_speed_title">Szybki quiz</string>
-    <string name="feature_speed_desc">Odpowiadaj szybko na pytania prawda/fałsz.</string>
-    <string name="feature_combo_title">Buduj combo</string>
-    <string name="feature_combo_desc">Zdobywaj punkty za serie poprawnych odpowiedzi.</string>
+    <string name="feature_swipe_title">Intuicyjne gesty (Swipe)</string>
+    <string name="feature_swipe_desc">Przesuwaj w lewo lub w prawo, aby szybko odpowiadać na pytania.</string>
+    <string name="feature_speed_title">Trening pod presją</string>
+    <string name="feature_speed_desc">Szybkie pytania typu prawda/fałsz pomagają utrwalić wiedzę w ułamku sekundy.</string>
+    <string name="feature_combo_title">Grywalizacja i serie</string>
+    <string name="feature_combo_desc">Utrzymuj serię poprawnych odpowiedzi, zdobywaj mnożniki i zwiększaj motywację.</string>
     <string name="title_rating_section">Oceń nas!</string>
     <string name="title_news_section">Co nowego?</string>
     <string name="title_cem_mode">Pytania egzaminacyjne</string>

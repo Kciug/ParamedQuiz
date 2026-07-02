@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -34,7 +33,6 @@ import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Swipe
-import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material.icons.rounded.SwipeVertical
 import androidx.compose.material3.Card
@@ -217,7 +215,13 @@ private fun PurchaseBottomSheetContent(
 
             Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
 
-            PremiumBadge()
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                PremiumBadge()
+                QuestionsBadge(questionCount = details.questionCount, themeColor = details.themeColor)
+            }
 
             Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
 
@@ -242,30 +246,23 @@ private fun PurchaseBottomSheetContent(
                 Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
             }
 
-            Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
+            Spacer(modifier = Modifier.height(Dimens.DEFAULT_PADDING))
+        }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
-            ) {
-                StatCard(
-                    modifier = Modifier.weight(1f),
-                    value = details.questionCount.toString(),
-                    label = stringResource(R.string.stat_questions),
-                    icon = Icons.AutoMirrored.Filled.LibraryBooks,
-                    themeColor = details.themeColor
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = MaterialTheme.colorScheme.surface,
+                    shape = RoundedCornerShape(
+                        topStart = Dimens.RADIUS_DEFAULT,
+                        topEnd = Dimens.RADIUS_DEFAULT
+                    )
                 )
-                StatCard(
-                    modifier = Modifier.weight(1f),
-                    value = details.estimatedTime,
-                    label = stringResource(R.string.stat_time),
-                    icon = Icons.Default.Timer,
-                    themeColor = details.themeColor
-                )
-            }
-
-            Spacer(modifier = Modifier.height(Dimens.LARGE_PADDING))
-
+                .padding(horizontal = Dimens.DEFAULT_PADDING)
+                .padding(top = Dimens.LARGE_PADDING, bottom = Dimens.DEFAULT_PADDING)
+                .windowInsetsPadding(WindowInsets.navigationBars)
+        ) {
             AnimatedContent(
                 targetState = isUnlocked to isPending,
                 transitionSpec = {
@@ -276,10 +273,17 @@ private fun PurchaseBottomSheetContent(
                 when {
                     unlocked -> {
                         if (isAlreadyUnlockedOnEntry) {
-                            ButtonPrimary(
-                                title = stringResource(R.string.btn_start),
-                                onClick = onStartClick
-                            )
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                OwnedBadge(themeColor = details.themeColor)
+                                Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
+                                ButtonPrimary(
+                                    title = stringResource(R.string.btn_start),
+                                    onClick = onStartClick
+                                )
+                            }
                         } else {
                             SuccessSection(onStartClick = onStartClick)
                         }
@@ -301,10 +305,6 @@ private fun PurchaseBottomSheetContent(
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(Dimens.LARGE_PADDING))
-            Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
-            Spacer(modifier = Modifier.height(Dimens.DEFAULT_PADDING))
         }
     }
 }
@@ -448,6 +448,63 @@ private fun PremiumBadge() {
 }
 
 @Composable
+private fun QuestionsBadge(
+    questionCount: Int,
+    themeColor: Color
+) {
+    Surface(
+        color = themeColor.copy(alpha = 0.1f),
+        shape = RoundedCornerShape(Dimens.RADIUS_SMALL),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.LibraryBooks,
+                contentDescription = null,
+                tint = themeColor,
+                modifier = Modifier.size(16.dp)
+            )
+            TextPrimary(
+                text = stringResource(R.string.badge_questions_count, questionCount),
+                color = themeColor,
+                fontWeight = FontWeight.Bold,
+                fontSize = 12.sp
+            )
+        }
+    }
+}
+
+@Composable
+private fun OwnedBadge(themeColor: Color) {
+    Surface(
+        color = themeColor.copy(alpha = 0.1f),
+        shape = RoundedCornerShape(Dimens.RADIUS_SMALL),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = null,
+                tint = themeColor,
+                modifier = Modifier.size(16.dp)
+            )
+            TextPrimary(
+                text = stringResource(R.string.badge_owned),
+                color = themeColor,
+                fontWeight = FontWeight.Bold,
+                fontSize = 12.sp
+            )
+        }
+    }
+}
+
+@Composable
 private fun FeatureItem(feature: PurchaseFeature, themeColor: Color) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -481,37 +538,37 @@ private fun FeatureItem(feature: PurchaseFeature, themeColor: Color) {
     }
 }
 
-@Composable
-private fun StatCard(
-    modifier: Modifier = Modifier,
-    value: String,
-    label: String,
-    icon: ImageVector,
-    themeColor: Color
-) {
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(Dimens.RADIUS_SMALL)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(Dimens.DEFAULT_PADDING),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL)
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = themeColor,
-                modifier = Modifier.size(24.dp)
-            )
-            TextScore(text = value, color = themeColor)
-            TextCaption(text = label, textAlign = TextAlign.Center)
-        }
-    }
-}
+//@Composable
+//private fun StatCard(
+//    modifier: Modifier = Modifier,
+//    value: String,
+//    label: String,
+//    icon: ImageVector,
+//    themeColor: Color
+//) {
+//    Card(
+//        modifier = modifier,
+//        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+//        shape = RoundedCornerShape(Dimens.RADIUS_SMALL)
+//    ) {
+//        Column(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(Dimens.DEFAULT_PADDING),
+//            horizontalAlignment = Alignment.CenterHorizontally,
+//            verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL)
+//        ) {
+//            Icon(
+//                imageVector = icon,
+//                contentDescription = null,
+//                tint = themeColor,
+//                modifier = Modifier.size(24.dp)
+//            )
+//            TextScore(text = value, color = themeColor)
+//            TextCaption(text = label, textAlign = TextAlign.Center)
+//        }
+//    }
+//}
 
 @Preview(name = "Purchase State")
 @Preview(name = "Purchase State Dark", uiMode = Configuration.UI_MODE_NIGHT_YES)
