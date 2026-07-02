@@ -7,7 +7,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -26,12 +25,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccountCircle
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -65,7 +66,6 @@ import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.home_screen.presentation.user_page.statistics.UserStatisticsComponent
 import com.rafalskrzypczyk.home_screen.presentation.user_page.statistics.components.PointsTile
 import com.rafalskrzypczyk.home_screen.presentation.user_page.statistics.components.StreakTile
-import com.rafalskrzypczyk.score.domain.StreakState
 
 
 @Composable
@@ -77,6 +77,9 @@ fun UserPageScreen(
     onOpenRegistration: () -> Unit
 ) {
     var topBarHeight by remember { mutableIntStateOf(0) }
+    val scrollState = rememberScrollState()
+    val isScrolled by remember { derivedStateOf { scrollState.value > 0 } }
+    val showTitle by remember { derivedStateOf { scrollState.value > topBarHeight } }
 
     LaunchedEffect(Unit) {
         onEvent.invoke(UserPageUIEvents.RefreshUserData)
@@ -93,7 +96,7 @@ fun UserPageScreen(
             Column(
                 modifier = modifier
                     .fillMaxSize()
-                    .verticalScroll(rememberScrollState()),
+                    .verticalScroll(scrollState),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
             ) {
@@ -160,14 +163,28 @@ fun UserPageScreen(
                 Spacer(Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom)))
             }
 
-            NavTopBar(
-                modifier = Modifier.onGloballyPositioned {
-                    topBarHeight = it.size.height
-                },
-                actions = { 
-                    SettingsButton { onOpenSettings() } 
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        if (isScrolled) MaterialTheme.colorScheme.background
+                        else Color.Transparent
+                    )
+            ) {
+                NavTopBar(
+                    modifier = Modifier.onGloballyPositioned {
+                        topBarHeight = it.size.height
+                    },
+                    title = if (showTitle) stringResource(com.rafalskrzypczyk.home.R.string.title_profile) else null,
+                    actions = { 
+                        SettingsButton { onOpenSettings() } 
+                    }
+                ) { onNavigateBack() }
+
+                if (isScrolled) {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 }
-            ) { onNavigateBack() }
+            }
         }
     }
 }

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="Typos">
     <string name="title_user_page">Moje konto</string>
+    <string name="title_profile">Profil</string>
     <string name="title_settings">Ustawienia</string>
     <string name="title_change_username">Zmień nazwę</string>
     <string name="title_change_password">Zmień hasło</string>
@@ -172,5 +173,5 @@
     <string name="store_category_title">Dodatkowa Kategoria</string>
     <string name="store_category_desc">Zyskaj natychmiastowy dostęp do dodatkowej, obszernej bazy pytań.</string>
     <string name="store_btn_purchased">Odblokowano</string>
-    <string name="store_btn_loading">Pobieranie...</string>
+    <string name="store_btn_loading">Pobieranie…</string>
 </resources>

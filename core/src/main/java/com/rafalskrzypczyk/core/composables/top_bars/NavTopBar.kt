@@ -15,7 +15,16 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,6 +42,11 @@ fun NavTopBar(
     actions: @Composable RowScope.() -> Unit = {},
     onNavigateBack: () -> Unit,
 ) {
+    var lastNonNullTitle by remember { mutableStateOf("") }
+    if (title != null) {
+        lastNonNullTitle = title
+    }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -42,8 +56,12 @@ fun NavTopBar(
             ),
         contentAlignment = Alignment.Center,
     ) {
-        title?.let {
-            TextHeadline(title)
+        AnimatedVisibility(
+            visible = title != null,
+            enter = fadeIn() + scaleIn(initialScale = 0.8f),
+            exit = fadeOut() + scaleOut(targetScale = 0.8f)
+        ) {
+            TextHeadline(lastNonNullTitle)
         }
         Row (
             modifier = modifier
