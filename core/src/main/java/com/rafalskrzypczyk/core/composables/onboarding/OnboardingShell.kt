@@ -1,14 +1,14 @@
 package com.rafalskrzypczyk.core.composables.onboarding
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -30,12 +30,6 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -56,24 +50,26 @@ fun OnboardingShell(
     showSkipButton: (Int) -> Boolean = { it < pages.size - 1 },
     header: (@Composable () -> Unit)? = null
 ) {
-    var currentPage by rememberSaveable { mutableIntStateOf(0) }
-    var movedToNext by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+    val pagerState = rememberPagerState(pageCount = { pages.size })
 
     val onClickNext = {
-        if(currentPage == pages.size - 1) {
+        if (pagerState.currentPage == pages.size - 1) {
             onFinish()
         } else {
-            movedToNext = true
-            currentPage++
+            coroutineScope.launch {
+                pagerState.animateScrollToPage(pagerState.currentPage + 1)
+            }
         }
     }
 
     val onBackClick = {
-        if (currentPage == 0) {
+        if (pagerState.currentPage == 0) {
             onBack()
         } else {
-            movedToNext = false
-            currentPage--
+            coroutineScope.launch {
+                pagerState.animateScrollToPage(pagerState.currentPage - 1)
+            }
         }
     }
 
@@ -82,67 +78,54 @@ fun OnboardingShell(
     ) { innerPadding ->
         val modifier = Modifier.padding(innerPadding)
 
-        Box(
+        Column(
             modifier = modifier
                 .fillMaxSize()
                 .padding(Dimens.DEFAULT_PADDING)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.TopCenter),
-                horizontalAlignment = Alignment.CenterHorizontally
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.CenterStart
             ) {
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.CenterStart
-                ) {
-                    OnboardingBackButton(showText = currentPage == 0) { onBackClick() }
+                OnboardingBackButton(showText = pagerState.currentPage == 0) { onBackClick() }
 
-                    if (showSkipButton(currentPage)) {
-                        ButtonTertiary(
-                            title = skipButtonText,
-                            onClick = { onFinish() },
-                            fillMaxWidth = false,
-                            modifier = Modifier.align(Alignment.CenterEnd)
-                        )
-                    }
-                }
-
-                if (header != null) {
-                    Spacer(Modifier.height(Dimens.ELEMENTS_SPACING))
-                    header()
+                if (showSkipButton(pagerState.currentPage)) {
+                    ButtonTertiary(
+                        title = skipButtonText,
+                        onClick = { onFinish() },
+                        fillMaxWidth = false,
+                        modifier = Modifier.align(Alignment.CenterEnd)
+                    )
                 }
             }
 
-            AnimatedContent(
-                targetState = currentPage,
-                modifier = Modifier.align(Alignment.Center),
-                label = "currentMode",
-                transitionSpec = {
-                    slideInHorizontally(
-                        initialOffsetX = { if(movedToNext) it else -it }
-                    ) togetherWith slideOutHorizontally(
-                        targetOffsetX = { if(movedToNext) -it else it }
-                    )
-                }
+            if (header != null) {
+                Spacer(Modifier.height(Dimens.ELEMENTS_SPACING))
+                header()
+            }
+
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
             ) { pageIndex ->
                 pages[pageIndex].invoke()
             }
 
             Column(
-                modifier = Modifier.align(Alignment.BottomCenter),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 OnboardingPageIndicator(
                     pagesCount = pages.size,
-                    currentPage = currentPage,
+                    currentPage = pagerState.currentPage,
                     activeColor = MaterialTheme.colorScheme.primary,
                     inactiveColor = MaterialTheme.colorScheme.onBackground
                 )
                 Spacer(Modifier.height(Dimens.ELEMENTS_SPACING))
                 ButtonPrimary(
-                    title = if (currentPage == pages.size - 1) finishButtonText else nextButtonText,
+                    title = if (pagerState.currentPage == pages.size - 1) finishButtonText else nextButtonText,
                     onClick = { onClickNext() }
                 )
             }
