@@ -30,12 +30,9 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.DeleteForever
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -53,7 +50,6 @@ import com.rafalskrzypczyk.core.composables.PreviewContainer
 import com.rafalskrzypczyk.core.composables.SettingsCategoryHeader
 import com.rafalskrzypczyk.core.composables.SettingsDialog
 import com.rafalskrzypczyk.core.composables.SettingsItemRow
-import com.rafalskrzypczyk.core.composables.SettingsSwitchRow
 import com.rafalskrzypczyk.core.composables.TextCaption
 import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.composables.top_bars.NavTopBar
@@ -68,6 +64,7 @@ fun UserSettingsScreen(
     onNavigateBack: () -> Unit,
     onSignOut: () -> Unit,
     onTermsOfService: () -> Unit,
+    onPrivacyPolicy: () -> Unit
 ) {
     val context = LocalContext.current
     val successMsg = stringResource(com.rafalskrzypczyk.core.R.string.desc_success)
@@ -97,7 +94,8 @@ fun UserSettingsScreen(
                         state = state,
                         onEvent = onEvent,
                         onSignOut = onSignOut,
-                        onTermsOfService = onTermsOfService
+                        onTermsOfService = onTermsOfService,
+                        onPrivacyPolicy = onPrivacyPolicy
                     )
                     
                     if (state.responseState == ResponseState.Loading) {
@@ -169,6 +167,7 @@ private fun UserSettingsContent(
     onEvent: (UserSettingsUIEvents) -> Unit,
     onSignOut: () -> Unit,
     onTermsOfService: () -> Unit,
+    onPrivacyPolicy: () -> Unit
 ) {
     Column (modifier = modifier.fillMaxSize()) {
         LazyColumn(
@@ -246,6 +245,14 @@ private fun UserSettingsContent(
                     title = stringResource(R.string.terms_of_service_title),
                     icon = Icons.Outlined.Description,
                     onClick = onTermsOfService
+                )
+            }
+
+            item {
+                SettingsItemRow(
+                    title = stringResource(R.string.privacy_policy),
+                    icon = Icons.Outlined.Description,
+                    onClick = onPrivacyPolicy
                 )
             }
 
@@ -328,7 +335,8 @@ private fun UserNonPasswordSettingsPreview() {
             onEvent = {},
             onNavigateBack = {},
             onSignOut = {},
-            onTermsOfService = {}
+            onTermsOfService = {},
+            onPrivacyPolicy = {}
         )
     }
 }
@@ -346,7 +354,8 @@ private fun UserPasswordSettingsPreview() {
             onEvent = {},
             onNavigateBack = {},
             onSignOut = {},
-            onTermsOfService = {}
+            onTermsOfService = {},
+            onPrivacyPolicy = {}
         )
     }
 }
@@ -364,7 +373,8 @@ private fun UserAnonymousSettingsPreview() {
             onEvent = {},
             onNavigateBack = {},
             onSignOut = {},
-            onTermsOfService = {}
+            onTermsOfService = {},
+            onPrivacyPolicy = {}
         )
     }
 }

@@ -157,6 +157,7 @@ fun NavGraphBuilder.userSettingsDestination(
     onNavigateBack: () -> Unit,
     onSignOut: () -> Unit,
     onTermsOfService: () -> Unit,
+    onPrivacyPolicy: () -> Unit
 ) {
     composable<UserSettings> {
         val viewModel = hiltViewModel<UserSettingsVM>()
@@ -167,7 +168,8 @@ fun NavGraphBuilder.userSettingsDestination(
             onEvent = viewModel::onEvent,
             onNavigateBack = onNavigateBack,
             onSignOut = onSignOut,
-            onTermsOfService = onTermsOfService
+            onTermsOfService = onTermsOfService,
+            onPrivacyPolicy = onPrivacyPolicy
         )
     }
 }
@@ -267,7 +269,8 @@ object Onboarding
 
 fun NavGraphBuilder.onboardingDestination(
     navigateToSignup: () -> Unit,
-    onFinishOnboarding: () -> Unit
+    onFinishOnboarding: () -> Unit,
+    onTermsOfService: () -> Unit
 ) {
     composable<Onboarding> {
         val viewModel = hiltViewModel<OnboardingVM>()
@@ -277,7 +280,8 @@ fun NavGraphBuilder.onboardingDestination(
             state = state.value,
             onEvent = viewModel::onEvent,
             navigateToLogin = navigateToSignup,
-            onFinishOnboarding = onFinishOnboarding
+            onFinishOnboarding = onFinishOnboarding,
+            onTermsOfServiceClick = onTermsOfService
         )
     }
 }

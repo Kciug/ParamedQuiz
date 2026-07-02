@@ -20,6 +20,10 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,7 +42,8 @@ import com.rafalskrzypczyk.home.R
 fun OnboardingWelcomePage(
     isUserLogged: Boolean,
     onStartClick: () -> Unit,
-    navigateToLogin: () -> Unit
+    navigateToLogin: () -> Unit,
+    onTermsOfServiceClick: () -> Unit
 ) {
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -54,14 +59,16 @@ fun OnboardingWelcomePage(
                 modifier = modifier,
                 isUserLogged = isUserLogged,
                 onStartClick = onStartClick,
-                navigateToLogin = navigateToLogin
+                navigateToLogin = navigateToLogin,
+                onTermsOfServiceClick = onTermsOfServiceClick
             )
         } else {
             OnboardingWelcomePagePortrait(
                 modifier = modifier,
                 isUserLogged = isUserLogged,
                 onStartClick = onStartClick,
-                navigateToLogin = navigateToLogin
+                navigateToLogin = navigateToLogin,
+                onTermsOfServiceClick = onTermsOfServiceClick
             )
         }
     }
@@ -73,7 +80,8 @@ fun OnboardingWelcomePageContent(
     isLandscape: Boolean = false,
     isUserLogged: Boolean,
     onStartClick: () -> Unit,
-    navigateToLogin: () -> Unit
+    navigateToLogin: () -> Unit,
+    onTermsOfServiceClick: () -> Unit
 ) {
 
 
@@ -103,6 +111,7 @@ fun OnboardingWelcomePageContent(
                     topEnd = Dimens.RADIUS_DEFAULT
                 )
             )
+            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
             .padding(
                 horizontal = Dimens.DEFAULT_PADDING,
                 vertical = Dimens.LARGE_PADDING
@@ -136,9 +145,17 @@ fun OnboardingWelcomePageContent(
                 .padding(Dimens.DEFAULT_PADDING),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            TextCaptionLink(
+            Text(
                 text = stringResource(R.string.terms_of_service),
-                url = stringResource(R.string.terms_of_service_url)
+                style = MaterialTheme.typography.labelSmall,
+                color = com.rafalskrzypczyk.core.ui.theme.Link,
+                textDecoration = TextDecoration.Underline,
+                modifier = Modifier.clickable(
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() }
+                ) {
+                    onTermsOfServiceClick()
+                }
             )
             TextCaptionLink(
                 text = stringResource(R.string.privacy_policy),
@@ -153,7 +170,8 @@ fun OnboardingWelcomePagePortrait(
     modifier: Modifier = Modifier,
     isUserLogged: Boolean,
     onStartClick: () -> Unit,
-    navigateToLogin: () -> Unit
+    navigateToLogin: () -> Unit,
+    onTermsOfServiceClick: () -> Unit
 ) {
     Column(
         modifier = modifier
@@ -180,7 +198,8 @@ fun OnboardingWelcomePagePortrait(
         OnboardingWelcomePageContent(
             isUserLogged = isUserLogged,
             onStartClick = onStartClick,
-            navigateToLogin = navigateToLogin
+            navigateToLogin = navigateToLogin,
+            onTermsOfServiceClick = onTermsOfServiceClick
         )
     }
 }
@@ -190,7 +209,8 @@ fun OnboardingWelcomePageLandscape(
     modifier: Modifier = Modifier,
     isUserLogged: Boolean,
     onStartClick: () -> Unit,
-    navigateToLogin: () -> Unit
+    navigateToLogin: () -> Unit,
+    onTermsOfServiceClick: () -> Unit
 ) {
     Row(
         modifier = modifier
@@ -215,7 +235,8 @@ fun OnboardingWelcomePageLandscape(
             isLandscape = true,
             isUserLogged = isUserLogged,
             onStartClick = onStartClick,
-            navigateToLogin = navigateToLogin
+            navigateToLogin = navigateToLogin,
+            onTermsOfServiceClick = onTermsOfServiceClick
         )
     }
 }
