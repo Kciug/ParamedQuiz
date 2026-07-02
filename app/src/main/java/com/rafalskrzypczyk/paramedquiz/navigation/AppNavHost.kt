@@ -1,5 +1,6 @@
 package com.rafalskrzypczyk.paramedquiz.navigation
 
+import android.content.Intent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.scaleIn
@@ -7,6 +8,9 @@ import androidx.compose.foundation.background
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.core.net.toUri
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 
@@ -17,6 +21,8 @@ fun AppNavHost(
     isOnboarding: () -> Boolean,
     onFinishOnboarding: () -> Unit,
 ) {
+    val context = LocalContext.current
+    val privacyPolicyUrl = stringResource(com.rafalskrzypczyk.home.R.string.privacy_policy_url)
     NavHost(
         modifier = Modifier.background(MaterialTheme.colorScheme.background),
         navController = navController,
@@ -84,7 +90,11 @@ fun AppNavHost(
         userSettingsDestination(
             onNavigateBack = { navController.popBackStack() },
             onSignOut = { navController.navigateToSignup(popUpToUserPage = true) },
-            onTermsOfService = { navController.navigateToTermsOfService(isMandatory = false) }
+            onTermsOfService = { navController.navigateToTermsOfService(isMandatory = false) },
+            onPrivacyPolicy = {
+                val intent = Intent(Intent.ACTION_VIEW, privacyPolicyUrl.toUri())
+                context.startActivity(intent)
+            }
         )
 
         mainModeDestination(

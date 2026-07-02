@@ -157,6 +157,7 @@ fun NavGraphBuilder.userSettingsDestination(
     onNavigateBack: () -> Unit,
     onSignOut: () -> Unit,
     onTermsOfService: () -> Unit,
+    onPrivacyPolicy: () -> Unit
 ) {
     composable<UserSettings> {
         val viewModel = hiltViewModel<UserSettingsVM>()
@@ -167,7 +168,8 @@ fun NavGraphBuilder.userSettingsDestination(
             onEvent = viewModel::onEvent,
             onNavigateBack = onNavigateBack,
             onSignOut = onSignOut,
-            onTermsOfService = onTermsOfService
+            onTermsOfService = onTermsOfService,
+            onPrivacyPolicy = onPrivacyPolicy
         )
     }
 }
