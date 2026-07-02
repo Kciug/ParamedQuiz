@@ -267,7 +267,8 @@ object Onboarding
 
 fun NavGraphBuilder.onboardingDestination(
     navigateToSignup: () -> Unit,
-    onFinishOnboarding: () -> Unit
+    onFinishOnboarding: () -> Unit,
+    onTermsOfService: () -> Unit
 ) {
     composable<Onboarding> {
         val viewModel = hiltViewModel<OnboardingVM>()
@@ -277,7 +278,8 @@ fun NavGraphBuilder.onboardingDestination(
             state = state.value,
             onEvent = viewModel::onEvent,
             navigateToLogin = navigateToSignup,
-            onFinishOnboarding = onFinishOnboarding
+            onFinishOnboarding = onFinishOnboarding,
+            onTermsOfServiceClick = onTermsOfService
         )
     }
 }

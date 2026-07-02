@@ -109,7 +109,8 @@ fun AppNavHost(
             navigateToSignup = { navController.navigateToSignup() },
             onFinishOnboarding = {
                 onFinishOnboarding()
-            }
+            },
+            onTermsOfService = { navController.navigateToTermsOfService(isMandatory = false) }
         )
 
         storeDestination(

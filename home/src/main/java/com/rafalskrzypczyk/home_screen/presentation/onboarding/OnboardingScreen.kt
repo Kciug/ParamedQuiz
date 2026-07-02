@@ -20,7 +20,8 @@ fun OnboardingScreen(
     state: OnboardingState,
     onEvent: (OnboardingUIEvents) -> Unit,
     navigateToLogin: () -> Unit,
-    onFinishOnboarding: () -> Unit
+    onFinishOnboarding: () -> Unit,
+    onTermsOfServiceClick: () -> Unit
 ) {
     var moveToOnboarding by rememberSaveable { mutableStateOf(false) }
 
@@ -46,7 +47,8 @@ fun OnboardingScreen(
             OnboardingWelcomePage(
                 isUserLogged = state.isLogged,
                 onStartClick = { moveToOnboarding = true },
-                navigateToLogin = navigateToLogin
+                navigateToLogin = navigateToLogin,
+                onTermsOfServiceClick = onTermsOfServiceClick
             )
         }
     }
@@ -61,6 +63,7 @@ private fun OnboardingScreenPreview() {
             onEvent = {},
             navigateToLogin = {},
             onFinishOnboarding = {},
+            onTermsOfServiceClick = {}
         )
     }
 }
