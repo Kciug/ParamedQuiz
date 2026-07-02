@@ -123,6 +123,7 @@
     <string name="desc_subcategories_number">Liczba podkategorii</string>
     <string name="badge_questions_count">%1$d PYTAŃ</string>
     <string name="badge_owned">Posiadane</string>
+    <string name="badge_multiple_choice">WIELOKROTNA ODPOWIEDŹ</string>
     <string name="badge_to_buy">Do kupienia</string>
     <string name="badge_pending">Przetwarzanie…</string>
     <string name="purchase_pending_title">Przetwarzanie płatności</string>

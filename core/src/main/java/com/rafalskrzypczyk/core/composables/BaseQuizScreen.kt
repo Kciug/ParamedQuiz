@@ -7,22 +7,35 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.rounded.OutlinedFlag
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.rafalskrzypczyk.core.R
 import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedScreen
 import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedState
@@ -33,6 +46,7 @@ fun BaseQuizScreen(
     title: String,
     quizTopPanel: @Composable () -> Unit = {},
     currentQuestionIndex: Int = 0,
+    isMultipleChoice: Boolean = false,
     quizFinished: Boolean,
     waitingForAd: Boolean = false,
     quizFinishedState: QuizFinishedState,
@@ -49,7 +63,7 @@ fun BaseQuizScreen(
     val titlePanelConsumed = remember { mutableStateOf(false) }
 
     val defaultTitlePanel: @Composable () -> Unit = {
-        BaseQuizTitlePanel(title, currentQuestionIndex)
+        BaseQuizTitlePanel(title, currentQuestionIndex, isMultipleChoice)
     }
 
     val consumableTitlePanel: @Composable () -> Unit = {
@@ -130,14 +144,62 @@ fun BaseQuizScreen(
 @Composable
 fun BaseQuizTitlePanel(
     title: String,
-    currentQuestionIndex: Int
+    currentQuestionIndex: Int,
+    isMultipleChoice: Boolean = false
 ) {
     Column {
         TextHeadline(title)
         if (currentQuestionIndex > 0) {
-            TextPrimary(
-                text = stringResource(R.string.base_quiz_question_number, currentQuestionIndex),
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextPrimary(
+                    text = stringResource(R.string.base_quiz_question_number, currentQuestionIndex),
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+                )
+                if (isMultipleChoice) {
+                    Spacer(modifier = Modifier.weight(1f))
+                    MultipleChoiceBadge()
+                }
+            }
+        }
+    }
+}
+
+private object MultipleChoiceBadgeDefaults {
+    val HorizontalPadding = 6.dp
+    val VerticalPadding = 1.dp
+    val Spacing = 4.dp
+    val IconSize = 10.dp
+    val Shape = RoundedCornerShape(Dimens.RADIUS_SMALL)
+    const val BackgroundAlpha = 0.15f
+}
+
+@Composable
+private fun MultipleChoiceBadge() {
+    Surface(
+        color = MaterialTheme.colorScheme.tertiary.copy(alpha = MultipleChoiceBadgeDefaults.BackgroundAlpha),
+        shape = MultipleChoiceBadgeDefaults.Shape
+    ) {
+        Row(
+            modifier = Modifier.padding(
+                horizontal = MultipleChoiceBadgeDefaults.HorizontalPadding,
+                vertical = MultipleChoiceBadgeDefaults.VerticalPadding
+            ),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(MultipleChoiceBadgeDefaults.Spacing)
+        ) {
+            Icon(
+                imageVector = Icons.Default.DoneAll,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.tertiary,
+                modifier = Modifier.size(MultipleChoiceBadgeDefaults.IconSize)
+            )
+            TextCaption(
+                text = stringResource(R.string.badge_multiple_choice),
+                color = MaterialTheme.colorScheme.tertiary,
+                fontWeight = FontWeight.Bold
             )
         }
     }
@@ -172,6 +234,7 @@ private fun BaseQuizScreenPreview() {
             quizFinished = false,
             quizFinishedState = QuizFinishedState(),
             showBackConfirmation = false,
+            isMultipleChoice = true,
             onBackAction = {},
             onBackDiscarded = {},
             onBackConfirmed = {},

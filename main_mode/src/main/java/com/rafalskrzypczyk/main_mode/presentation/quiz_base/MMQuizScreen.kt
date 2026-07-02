@@ -85,6 +85,7 @@ fun MMQuizScreen(
         title = state.categoryTitle,
         quizTopPanel = { MMQuizTopPanel(score = state.userScore, correctAnswers = state.correctAnswers) },
         currentQuestionIndex = state.currentQuestionNumber,
+        isMultipleChoice = state.question.correctAnswerIds.size > 1,
         quizFinished = state.isQuizFinished,
         waitingForAd = state.showAd,
         quizFinishedState = state.quizFinishedState,
