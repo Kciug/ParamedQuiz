@@ -40,6 +40,7 @@ import androidx.compose.material.icons.rounded.SwipeVertical
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -47,6 +48,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -160,17 +163,22 @@ private fun PurchaseBottomSheetContent(
     purchaseError: String?,
     isAlreadyUnlockedOnEntry: Boolean
 ) {
+    val scrollState = rememberScrollState()
+    val isScrolled by remember { derivedStateOf { scrollState.value > 0 } }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = Dimens.DEFAULT_PADDING),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .background(MaterialTheme.colorScheme.surfaceContainer)
     ) {
-        Spacer(modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars))
-        Spacer(modifier = Modifier.height(Dimens.DEFAULT_PADDING))
-
-        Box(modifier = Modifier.fillMaxWidth()) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surfaceContainer)
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .padding(horizontal = Dimens.DEFAULT_PADDING)
+                .padding(vertical = Dimens.DEFAULT_PADDING)
+        ) {
             ExitButton(onClose = onDismiss)
             TextTitle(
                 text = details.title,
@@ -178,113 +186,126 @@ private fun PurchaseBottomSheetContent(
             )
         }
 
-        Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
+        if (isScrolled) {
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        }
 
-        Box(
+        Column(
             modifier = Modifier
-                .size(64.dp)
-                .clip(CircleShape)
-                .background(details.themeColor),
-            contentAlignment = Alignment.Center
+                .weight(1f)
+                .fillMaxWidth()
+                .verticalScroll(scrollState)
+                .padding(horizontal = Dimens.DEFAULT_PADDING),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(
-                imageVector = details.icon,
-                contentDescription = null,
-                modifier = Modifier.size(32.dp),
-                tint = MaterialTheme.colorScheme.onSurface
+            Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
+
+            Box(
+                modifier = Modifier
+                    .size(64.dp)
+                    .clip(CircleShape)
+                    .background(details.themeColor),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = details.icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(32.dp),
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            }
+
+            Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
+
+            PremiumBadge()
+
+            Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
+
+            TextPrimary(
+                text = details.description,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = Dimens.DEFAULT_PADDING)
             )
-        }
 
-        Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
+            Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
 
-        PremiumBadge()
+            TextPrimary(
+                text = stringResource(R.string.title_features),
+                modifier = Modifier.fillMaxWidth(),
+                fontWeight = FontWeight.Bold
+            )
 
-        Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
+            Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
 
-        TextPrimary(
-            text = details.description,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(horizontal = Dimens.DEFAULT_PADDING)
-        )
+            details.features.forEach { feature ->
+                FeatureItem(feature, details.themeColor)
+                Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
+            }
 
-        Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
-
-        TextPrimary(
-            text = stringResource(R.string.title_features),
-            modifier = Modifier.fillMaxWidth(),
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
-
-        details.features.forEach { feature ->
-            FeatureItem(feature, details.themeColor)
             Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
-        }
 
-        Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
+            ) {
+                StatCard(
+                    modifier = Modifier.weight(1f),
+                    value = details.questionCount.toString(),
+                    label = stringResource(R.string.stat_questions),
+                    icon = Icons.AutoMirrored.Filled.LibraryBooks,
+                    themeColor = details.themeColor
+                )
+                StatCard(
+                    modifier = Modifier.weight(1f),
+                    value = details.estimatedTime,
+                    label = stringResource(R.string.stat_time),
+                    icon = Icons.Default.Timer,
+                    themeColor = details.themeColor
+                )
+            }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
-        ) {
-            StatCard(
-                modifier = Modifier.weight(1f),
-                value = details.questionCount.toString(),
-                label = stringResource(R.string.stat_questions),
-                icon = Icons.AutoMirrored.Filled.LibraryBooks,
-                themeColor = details.themeColor
-            )
-            StatCard(
-                modifier = Modifier.weight(1f),
-                value = details.estimatedTime,
-                label = stringResource(R.string.stat_time),
-                icon = Icons.Default.Timer,
-                themeColor = details.themeColor
-            )
-        }
+            Spacer(modifier = Modifier.height(Dimens.LARGE_PADDING))
 
-        Spacer(modifier = Modifier.height(Dimens.LARGE_PADDING))
+            AnimatedContent(
+                targetState = isUnlocked to isPending,
+                transitionSpec = {
+                    fadeIn() togetherWith fadeOut()
+                },
+                label = "purchaseSectionTransition"
+            ) { (unlocked, pending) ->
+                when {
+                    unlocked -> {
+                        if (isAlreadyUnlockedOnEntry) {
+                            ButtonPrimary(
+                                title = stringResource(R.string.btn_start),
+                                onClick = onStartClick
+                            )
+                        } else {
+                            SuccessSection(onStartClick = onStartClick)
+                        }
+                    }
 
-        AnimatedContent(
-            targetState = isUnlocked to isPending,
-            transitionSpec = {
-                fadeIn() togetherWith fadeOut()
-            },
-            label = "purchaseSectionTransition"
-        ) { (unlocked, pending) ->
-            when {
-                unlocked -> {
-                    if (isAlreadyUnlockedOnEntry) {
-                        ButtonPrimary(
-                            title = stringResource(R.string.btn_start),
-                            onClick = onStartClick
+                    pending -> {
+                        PendingSection()
+                    }
+
+                    else -> {
+                        PurchaseSection(
+                            price = details.price,
+                            purchaseError = purchaseError,
+                            isPurchasing = isPurchasing,
+                            onBuyClick = onBuyClick,
+                            onTryClick = onTryClick,
+                            themeColor = details.themeColor
                         )
-                    } else {
-                        SuccessSection(onStartClick = onStartClick)
                     }
                 }
-
-                pending -> {
-                    PendingSection()
-                }
-
-                else -> {
-                    PurchaseSection(
-                        price = details.price,
-                        purchaseError = purchaseError,
-                        isPurchasing = isPurchasing,
-                        onBuyClick = onBuyClick,
-                        onTryClick = onTryClick,
-                        themeColor = details.themeColor
-                    )
-                }
             }
-        }
 
-        Spacer(modifier = Modifier.height(Dimens.LARGE_PADDING))
-        Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
-        Spacer(modifier = Modifier.height(Dimens.DEFAULT_PADDING))
+            Spacer(modifier = Modifier.height(Dimens.LARGE_PADDING))
+            Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
+            Spacer(modifier = Modifier.height(Dimens.DEFAULT_PADDING))
+        }
     }
 }
 
