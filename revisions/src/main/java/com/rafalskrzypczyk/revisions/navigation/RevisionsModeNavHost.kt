@@ -18,10 +18,20 @@ import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.revisions.domain.models.RevisionCriterion
 import com.rafalskrzypczyk.revisions.presentation.RevisionsConfigScreen
 import com.rafalskrzypczyk.revisions.presentation.config.RevisionsConfigVM
+import com.rafalskrzypczyk.revisions.presentation.quiz.RevisionsQuizScreen
+import com.rafalskrzypczyk.revisions.presentation.quiz.RevisionsQuizVM
 import kotlinx.serialization.Serializable
 
 @Serializable
 internal object RevisionsConfigRoute
+
+@Serializable
+internal data class RevisionsQuizRoute(
+    val mode: String,
+    val categoryId: Long?,
+    val criterion: String,
+    val limit: Int?
+)
 
 @Composable
 fun RevisionsModeNavHost(
@@ -65,7 +75,20 @@ fun RevisionsModeNavHost(
                 }
             },
             onStartSession = { mode, categoryId, criterion, limit ->
-                // TODO: navigate to revisions quiz screen
+                revisionsNavController.navigate(
+                    RevisionsQuizRoute(
+                        mode = mode.name,
+                        categoryId = categoryId,
+                        criterion = criterion.name,
+                        limit = limit
+                    )
+                )
+            }
+        )
+
+        revisionsQuizDestination(
+            onNavigateBack = {
+                revisionsNavController.popBackStack()
             }
         )
     }
@@ -83,6 +106,20 @@ fun NavGraphBuilder.revisionsConfigDestination(
             onEvent = viewModel::onEvent,
             onNavigateBack = onNavigateBack,
             onStartSession = onStartSession
+        )
+    }
+}
+
+fun NavGraphBuilder.revisionsQuizDestination(
+    onNavigateBack: () -> Unit
+) {
+    composable<RevisionsQuizRoute> {
+        val viewModel: RevisionsQuizVM = hiltViewModel()
+        val state by viewModel.state.collectAsStateWithLifecycle()
+        RevisionsQuizScreen(
+            state = state,
+            onEvent = viewModel::onEvent,
+            onNavigateBack = onNavigateBack
         )
     }
 }

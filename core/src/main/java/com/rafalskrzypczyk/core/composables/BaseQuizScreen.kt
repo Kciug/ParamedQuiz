@@ -36,6 +36,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.rafalskrzypczyk.core.R
 import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedScreen
 import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedState
@@ -53,6 +54,7 @@ fun BaseQuizScreen(
     quizFinishedExtras: @Composable () -> Unit = {},
     showBackConfirmation: Boolean,
     showTopBar: Boolean = true,
+    customBadgeText: String? = null,
     onBackAction: () -> Unit = {},
     onBackDiscarded: () -> Unit = {},
     onBackConfirmed: () -> Unit = {},
@@ -63,7 +65,7 @@ fun BaseQuizScreen(
     val titlePanelConsumed = remember { mutableStateOf(false) }
 
     val defaultTitlePanel: @Composable () -> Unit = {
-        BaseQuizTitlePanel(title, currentQuestionIndex, isMultipleChoice)
+        BaseQuizTitlePanel(title, currentQuestionIndex, isMultipleChoice, customBadgeText)
     }
 
     val consumableTitlePanel: @Composable () -> Unit = {
@@ -145,11 +147,34 @@ fun BaseQuizScreen(
 fun BaseQuizTitlePanel(
     title: String,
     currentQuestionIndex: Int,
-    isMultipleChoice: Boolean = false
+    isMultipleChoice: Boolean = false,
+    customBadgeText: String? = null
 ) {
     Column {
         TextHeadline(title)
-        if (currentQuestionIndex > 0) {
+        if (customBadgeText != null) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(Dimens.RADIUS_SMALL),
+                    color = MaterialTheme.colorScheme.error.copy(alpha = 0.15f)
+                ) {
+                    TextPrimary(
+                        text = customBadgeText,
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                        fontSize = 12.sp
+                    )
+                }
+                if (isMultipleChoice) {
+                    Spacer(modifier = Modifier.weight(1f))
+                    MultipleChoiceBadge()
+                }
+            }
+        } else if (currentQuestionIndex > 0) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically

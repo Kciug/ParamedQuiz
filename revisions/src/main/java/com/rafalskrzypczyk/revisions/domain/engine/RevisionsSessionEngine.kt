@@ -114,9 +114,13 @@ class RevisionsSessionEngine {
 
     fun getCurrentQueueSize(): Int = queue.size
 
+    fun getQueueIds(): Set<Long> = queue.map { it.id }.toSet()
+
     fun getPlayedQuestions(): List<RevisionQuestion> = playedQuestions
 
     fun getFailedQuestionIds(): Set<Long> = failedQuestionIds
+
+    fun getAttemptedQuestionIds(): Set<Long> = attemptedQuestionIds
 
     fun getCorrectAnswersCount(): Int = correctAnswersCount
 
