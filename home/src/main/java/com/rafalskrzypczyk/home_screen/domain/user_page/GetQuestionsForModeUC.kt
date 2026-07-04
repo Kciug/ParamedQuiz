@@ -50,6 +50,8 @@ class GetQuestionsForModeUC @Inject constructor(
                     is Response.Success -> Response.Success(response.data.map { it.toSimpleQuestion() })
                 }
             }.flowOn(Dispatchers.Default)
+            QuizMode.RevisionsMode -> kotlinx.coroutines.flow.flowOf(Response.Success(emptyList()))
         }
+
     }
 }

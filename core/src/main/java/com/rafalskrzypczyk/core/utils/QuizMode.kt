@@ -4,8 +4,10 @@ enum class QuizMode {
     MainMode,
     SwipeMode,
     TranslationMode,
-    CemMode
+    CemMode,
+    RevisionsMode
 }
+
 
 fun QuizMode.next(): QuizMode {
     val entries = QuizMode.entries
