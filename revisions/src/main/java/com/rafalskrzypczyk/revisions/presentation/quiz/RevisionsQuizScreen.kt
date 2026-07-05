@@ -146,6 +146,11 @@ fun RevisionsQuizScreen(
                                 contentKey = { question -> question.id }
                             ) { question ->
                                 QuizGameContent(
+                                    modifier = Modifier.padding(
+                                        top = innerPadding.calculateTopPadding(),
+                                        start = innerPadding.calculateLeftPadding(androidx.compose.ui.unit.LayoutDirection.Ltr),
+                                        end = innerPadding.calculateRightPadding(androidx.compose.ui.unit.LayoutDirection.Ltr)
+                                    ),
                                     scaffoldPadding = innerPadding,
                                     titlePanel = titlePanel,
                                     question = question,
