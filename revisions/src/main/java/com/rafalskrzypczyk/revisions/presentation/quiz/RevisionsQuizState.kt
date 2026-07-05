@@ -30,7 +30,9 @@ data class RevisionsQuizState(
     val userScore: Int = 0,
     val isCorrection: Boolean = false,
     val showReportDialog: Boolean = false,
-    val reportIssueDescription: String = ""
+    val reportIssueDescription: String = "",
+    val progress: Int = 1,
+    val range: Int = 1
 ) {
     val currentQuestionUIM: QuestionUIM?
         get() = mcQuestions.getOrNull(currentMcQuestionIndex)
