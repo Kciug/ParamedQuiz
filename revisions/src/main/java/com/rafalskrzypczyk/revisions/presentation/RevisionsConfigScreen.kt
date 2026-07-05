@@ -13,10 +13,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -33,6 +29,7 @@ import com.rafalskrzypczyk.revisions.presentation.config.RevisionsConfigState
 import com.rafalskrzypczyk.revisions.presentation.config.RevisionsConfigUIEvents
 import com.rafalskrzypczyk.revisions.presentation.config.components.CategorySelectionDialog
 import com.rafalskrzypczyk.revisions.presentation.config.components.RevisionsConfigScreenContent
+import com.rafalskrzypczyk.revisions.presentation.config.components.RevisionConfigDialog
 
 @Composable
 fun RevisionsConfigScreen(
@@ -41,8 +38,6 @@ fun RevisionsConfigScreen(
     onNavigateBack: () -> Unit,
     onStartSession: (QuizMode, Long?, RevisionCriterion, Int?) -> Unit
 ) {
-    var showCategoryDialog by remember { mutableStateOf(false) }
-
     Scaffold(
         topBar = {
             NavTopBar(
@@ -65,22 +60,30 @@ fun RevisionsConfigScreen(
                 }
                 ResponseState.Success -> {
                     RevisionsConfigScreenContent(
-                        state = state,
-                        onEvent = onEvent,
-                        onTriggerCategoryDialog = { showCategoryDialog = true },
-                        onStartSession = onStartSession
+                        selectedMode = state.selectedMode,
+                        onSelectMode = { onEvent(RevisionsConfigUIEvents.SelectMode(it)) }
                     )
                 }
             }
         }
     }
 
-    if (showCategoryDialog && state.categoriesList.isNotEmpty()) {
+    if (state.isConfigDialogVisible) {
+        RevisionConfigDialog(
+            state = state,
+            onEvent = onEvent,
+            onTriggerCategoryDialog = { onEvent(RevisionsConfigUIEvents.ShowCategoryDialog) },
+            onStartSession = onStartSession,
+            onDismiss = { onEvent(RevisionsConfigUIEvents.DismissConfigDialog) }
+        )
+    }
+
+    if (state.isCategoryDialogVisible && state.categoriesList.isNotEmpty()) {
         CategorySelectionDialog(
             categories = state.categoriesList,
             selectedCategory = state.selectedCategory,
             onCategorySelected = { onEvent(RevisionsConfigUIEvents.SelectCategory(it)) },
-            onDismiss = { showCategoryDialog = false }
+            onDismiss = { onEvent(RevisionsConfigUIEvents.DismissCategoryDialog) }
         )
     }
 }

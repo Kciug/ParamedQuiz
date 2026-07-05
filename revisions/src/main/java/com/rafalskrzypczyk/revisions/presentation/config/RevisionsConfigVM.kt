@@ -37,9 +37,24 @@ class RevisionsConfigVM @Inject constructor(
                 if (event.mode != _state.value.selectedMode) {
                     loadModeData(event.mode)
                 }
+                _state.update { it.copy(isConfigDialogVisible = true) }
+            }
+            is RevisionsConfigUIEvents.DismissConfigDialog -> {
+                _state.update { it.copy(isConfigDialogVisible = false) }
+            }
+            is RevisionsConfigUIEvents.ShowCategoryDialog -> {
+                _state.update { it.copy(isCategoryDialogVisible = true) }
+            }
+            is RevisionsConfigUIEvents.DismissCategoryDialog -> {
+                _state.update { it.copy(isCategoryDialogVisible = false) }
             }
             is RevisionsConfigUIEvents.SelectCategory -> {
-                _state.update { it.copy(selectedCategory = event.category) }
+                _state.update {
+                    it.copy(
+                        selectedCategory = event.category,
+                        isCategoryDialogVisible = false
+                    )
+                }
                 updateQuestionsCountAndLimits()
             }
             is RevisionsConfigUIEvents.SelectCriterion -> {
@@ -132,7 +147,7 @@ class RevisionsConfigVM @Inject constructor(
 
     private suspend fun checkTranslationEligibility() {
         val seenQuestions = scoreManager.getScore().seenQuestions
-        val questionsResp = repository.getQuestions(QuizMode.TranslationMode, null).first()
+        val questionsResp = repository.getQuestions(QuizMode.TranslationMode, null).first { it !is Response.Loading }
 
         if (questionsResp is Response.Success) {
             val allQuestions = questionsResp.data

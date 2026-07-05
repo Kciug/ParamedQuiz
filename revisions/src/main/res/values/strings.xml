@@ -2,6 +2,9 @@
 <resources>
     <string name="revisions_config_title">Konfiguracja sesji</string>
     <string name="revisions_select_mode">Wybierz tryb</string>
+    <string name="revisions_mode_main">Quiz</string>
+    <string name="revisions_mode_cem">Pytania egzaminacyjne</string>
+    <string name="revisions_mode_translation">Tłumaczenia</string>
     <string name="revisions_select_pool">Wybierz kategorię</string>
     <string name="revisions_select_criterion">Kryterium doboru pytań</string>
     <string name="revisions_select_limit">Liczba pytań</string>
