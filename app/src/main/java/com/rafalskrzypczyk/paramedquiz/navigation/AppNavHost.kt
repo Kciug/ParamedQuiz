@@ -77,8 +77,8 @@ fun AppNavHost(
             onNavigateToTranslationMode = { navController.navigateToTranslationMode() },
             onNavigateToCemMode = { navController.navigateToCemMode() },
             onNavigateToStore = { navController.navigateToStore() },
-            onNavigateToDev = { navController.navigateToDevOptions()
-            }
+            onNavigateToDev = { navController.navigateToDevOptions() },
+            onNavigateToRevisionsMode = { navController.navigateToRevisionsMode() }
         )
 
         userPageDestination(
@@ -113,6 +113,10 @@ fun AppNavHost(
         cemModeDestination(
             onExit = { navController.popBackStack() },
             onUserPanel = { navController.navigateToUserPage() }
+        )
+
+        revisionsModeDestination(
+            onNavigateBack = { navController.popBackStack() }
         )
 
         onboardingDestination(

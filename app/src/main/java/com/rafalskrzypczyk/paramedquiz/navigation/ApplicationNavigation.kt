@@ -31,6 +31,7 @@ import com.rafalskrzypczyk.paramedquiz.dev.DevVM
 import com.rafalskrzypczyk.signup.SignupNavHost
 import com.rafalskrzypczyk.swipe_mode.navigation.SwipeModeNavHost
 import com.rafalskrzypczyk.swipe_mode.presentation.SwipeModeEntryVM
+import com.rafalskrzypczyk.revisions.navigation.RevisionsModeNavHost
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -91,7 +92,8 @@ fun NavGraphBuilder.mainMenuDestination(
     onNavigateToTranslationMode: () -> Unit,
     onNavigateToCemMode: () -> Unit,
     onNavigateToStore: () -> Unit,
-    onNavigateToDev: () -> Unit
+    onNavigateToDev: () -> Unit,
+    onNavigateToRevisionsMode: () -> Unit
 ) {
     composable<MainMenu> {
         val viewModel = hiltViewModel<HomeScreenVM>()
@@ -108,7 +110,8 @@ fun NavGraphBuilder.mainMenuDestination(
             onNavigateToTranslationMode = onNavigateToTranslationMode,
             onNavigateToCemMode = onNavigateToCemMode,
             onNavigateToStore = onNavigateToStore,
-            onNavigateToDevOptions = onNavigateToDev
+            onNavigateToDevOptions = onNavigateToDev,
+            onNavigateToRevisionsMode = onNavigateToRevisionsMode
         )
     }
 }
@@ -357,3 +360,20 @@ fun NavController.navigateToTermsOfService(isMandatory: Boolean = true) {
         }
     }
 }
+
+@Serializable
+object RevisionsMode
+
+fun NavGraphBuilder.revisionsModeDestination(
+    onNavigateBack: () -> Unit
+) {
+    composable<RevisionsMode> {
+        RevisionsModeNavHost(
+            onExit = onNavigateBack
+        )
+    }
+}
+
+fun NavController.navigateToRevisionsMode() {
+    navigate(route = RevisionsMode)
+}

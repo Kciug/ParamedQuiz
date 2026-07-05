@@ -52,6 +52,8 @@ dependencies {
     implementation(project(":ads"))
     implementation(project(":billing"))
     implementation(project(":firestore"))
+    implementation(project(":revisions"))
+
 
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.compose.runtime)

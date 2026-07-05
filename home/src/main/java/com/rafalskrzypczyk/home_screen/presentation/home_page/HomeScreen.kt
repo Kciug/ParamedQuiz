@@ -83,7 +83,8 @@ fun HomeScreen(
     onNavigateToTranslationMode: () -> Unit,
     onNavigateToCemMode: () -> Unit,
     onNavigateToStore: () -> Unit,
-    onNavigateToDevOptions: () -> Unit
+    onNavigateToDevOptions: () -> Unit,
+    onNavigateToRevisionsMode: () -> Unit
 ) {
     var showDailyExerciseAlreadyDoneAlert by remember { mutableStateOf(false) }
     var showRevisionsUnavailableAlert by remember { mutableStateOf(false) }
@@ -114,8 +115,8 @@ fun HomeScreen(
             title = stringResource(R.string.title_addon_review),
             icon = Icons.Rounded.History,
             iconBackgroundColor = MQBlue,
-            isAvailable = false,
-        ) { showRevisionsUnavailableAlert = true },
+            isAvailable = true,
+        ) { onNavigateToRevisionsMode() },
         Addon(
             title = stringResource(R.string.title_store),
             icon = Icons.Default.Diamond,
@@ -451,7 +452,8 @@ private fun HomeScreenPreview() {
                 onNavigateToCemMode = {},
                 onNavigateToStore = {},
                 onNavigateToDailyExercise = {},
-                onNavigateToDevOptions = {}
+                onNavigateToDevOptions = {},
+                onNavigateToRevisionsMode = {}
             )
         }
     }

@@ -1,6 +1,7 @@
 package com.rafalskrzypczyk.core.utils
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Quiz
 import androidx.compose.material.icons.rounded.SwipeVertical
 import androidx.compose.material.icons.rounded.Translate
@@ -10,6 +11,7 @@ import com.rafalskrzypczyk.core.ui.theme.ModeCem
 import com.rafalskrzypczyk.core.ui.theme.ModeMain
 import com.rafalskrzypczyk.core.ui.theme.ModeSwipe
 import com.rafalskrzypczyk.core.ui.theme.ModeTranslation
+import com.rafalskrzypczyk.core.ui.theme.ModeRevisions
 
 object ModeInfoProvider {
     fun getIcon(mode: QuizMode): ImageVector {
@@ -18,6 +20,7 @@ object ModeInfoProvider {
             QuizMode.SwipeMode -> Icons.Rounded.SwipeVertical
             QuizMode.TranslationMode -> Icons.Rounded.Translate
             QuizMode.CemMode -> Icons.Rounded.Quiz
+            QuizMode.RevisionsMode -> Icons.Rounded.History
         }
     }
 
@@ -27,6 +30,7 @@ object ModeInfoProvider {
             QuizMode.SwipeMode -> ModeSwipe
             QuizMode.TranslationMode -> ModeTranslation
             QuizMode.CemMode -> ModeCem
+            QuizMode.RevisionsMode -> ModeRevisions
         }
     }
 }

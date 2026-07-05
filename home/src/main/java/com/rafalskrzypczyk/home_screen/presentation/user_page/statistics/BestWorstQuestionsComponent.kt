@@ -56,6 +56,8 @@ fun BestWorstQuestionsComponent(
         QuizMode.SwipeMode -> stringResource(com.rafalskrzypczyk.core.R.string.title_swipe_mode)
         QuizMode.TranslationMode -> stringResource(com.rafalskrzypczyk.core.R.string.title_translation_mode)
         QuizMode.CemMode -> stringResource(R.string.title_cem_mode)
+        QuizMode.RevisionsMode -> stringResource(com.rafalskrzypczyk.core.R.string.title_revisions_mode)
+
     }
 
     var movedToNext by remember { mutableStateOf(false) }
