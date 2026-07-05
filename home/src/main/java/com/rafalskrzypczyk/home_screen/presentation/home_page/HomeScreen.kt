@@ -374,8 +374,7 @@ fun HomeScreen(
                 onNavigateToTranslationMode = {
                     onEvent(HomeUIEvents.OpenTranslationModePurchaseSheet)
                 },
-                onNavigateToCemMode = onNavigateToCemMode,
-                onNavigateToRevisionsMode = onNavigateToRevisionsMode
+                onNavigateToCemMode = onNavigateToCemMode
             )
 
             Spacer(modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom)))

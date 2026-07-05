@@ -20,8 +20,7 @@ fun HomeScreenQuizModesMenu(
     onNavigateToMainMode: () -> Unit,
     onNavigateToSwipeMode: (Boolean) -> Unit,
     onNavigateToTranslationMode: () -> Unit,
-    onNavigateToCemMode: () -> Unit,
-    onNavigateToRevisionsMode: () -> Unit
+    onNavigateToCemMode: () -> Unit
 ) {
     Column(
         modifier = modifier
@@ -50,11 +49,5 @@ fun HomeScreenQuizModesMenu(
             description = stringResource(R.string.mode_cem_desc),
             mode = QuizMode.CemMode
         ) { onNavigateToCemMode() }
-        QuizModeButton(
-            title = stringResource(com.rafalskrzypczyk.core.R.string.title_revisions_mode),
-            description = stringResource(R.string.mode_revisions_desc),
-            mode = QuizMode.RevisionsMode
-        ) { onNavigateToRevisionsMode() }
     }
 }
-
