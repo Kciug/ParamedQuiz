@@ -16,7 +16,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.rafalskrzypczyk.core.composables.ButtonSecondary
@@ -59,7 +58,7 @@ fun CategorySelectionDialog(
                         val containerColor = if (isSelected) {
                             MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
                         } else {
-                            MaterialTheme.colorScheme.surface
+                            MaterialTheme.colorScheme.surfaceContainer
                         }
 
                         Card(
@@ -77,11 +76,15 @@ fun CategorySelectionDialog(
                             Column(
                                 modifier = Modifier
                                     .padding(Dimens.DEFAULT_PADDING)
-                                    .alpha(if (category.isEligible) 1.0f else 0.5f)
                             ) {
                                 TextPrimary(
                                     text = category.title,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (category.isEligible) {
+                                        MaterialTheme.colorScheme.onSurface
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                                    }
                                 )
                                 Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
                                 if (category.isEligible) {
