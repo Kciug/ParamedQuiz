@@ -16,7 +16,6 @@ import com.rafalskrzypczyk.revisions.R
 
 @Composable
 fun RevisionsConfigScreenContent(
-    selectedMode: QuizMode,
     onSelectMode: (QuizMode) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -34,11 +33,8 @@ fun RevisionsConfigScreenContent(
         )
 
         listOf(QuizMode.MainMode, QuizMode.CemMode, QuizMode.TranslationMode).forEach { mode ->
-            val isSelected = selectedMode == mode
-
             ModeSelectorCard(
                 mode = mode,
-                selected = isSelected,
                 enabled = true,
                 onClick = { onSelectMode(mode) }
             )

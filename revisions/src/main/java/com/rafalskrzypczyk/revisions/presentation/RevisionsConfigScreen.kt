@@ -60,7 +60,6 @@ fun RevisionsConfigScreen(
                 }
                 ResponseState.Success -> {
                     RevisionsConfigScreenContent(
-                        selectedMode = state.selectedMode,
                         onSelectMode = { onEvent(RevisionsConfigUIEvents.SelectMode(it)) }
                     )
                 }

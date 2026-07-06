@@ -16,12 +16,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.rafalskrzypczyk.core.composables.BaseCustomDialog
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.Loading
@@ -79,6 +81,7 @@ fun RevisionConfigDialog(
             Column(
                 modifier = modifier
                     .fillMaxWidth()
+                    .defaultMinSize(minHeight = 220.dp)
                     .animateContentSize(),
                 verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
             ) {
