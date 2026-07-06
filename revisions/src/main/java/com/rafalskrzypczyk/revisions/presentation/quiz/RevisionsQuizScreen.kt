@@ -67,6 +67,8 @@ fun RevisionsQuizScreen(
     BaseQuizScreen(
         title = modeTitle,
         customBadgeText = if (state.isCorrection) stringResource(R.string.revisions_question_badge_fix_errors) else null,
+        progress = state.progress,
+        range = state.range,
         currentQuestionIndex = state.currentQuestionNumber,
         quizFinished = state.quizFinished,
         quizFinishedState = state.quizFinishedState,
@@ -144,6 +146,11 @@ fun RevisionsQuizScreen(
                                 contentKey = { question -> question.id }
                             ) { question ->
                                 QuizGameContent(
+                                    modifier = Modifier.padding(
+                                        top = innerPadding.calculateTopPadding(),
+                                        start = innerPadding.calculateLeftPadding(androidx.compose.ui.unit.LayoutDirection.Ltr),
+                                        end = innerPadding.calculateRightPadding(androidx.compose.ui.unit.LayoutDirection.Ltr)
+                                    ),
                                     scaffoldPadding = innerPadding,
                                     titlePanel = titlePanel,
                                     question = question,

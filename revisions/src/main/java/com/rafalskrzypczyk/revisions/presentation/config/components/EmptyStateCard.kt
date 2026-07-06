@@ -18,20 +18,22 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.TextHeadline
 import com.rafalskrzypczyk.core.composables.TextPrimary
-import com.rafalskrzypczyk.revisions.R
 
 @Composable
 fun EmptyStateCard(
+    title: String,
+    message: String,
     modifier: Modifier = Modifier
 ) {
     Card(
         shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         modifier = modifier.fillMaxWidth()
     ) {
         Row(
@@ -47,11 +49,11 @@ fun EmptyStateCard(
             Spacer(modifier = Modifier.width(Dimens.ELEMENTS_SPACING))
             Column {
                 TextHeadline(
-                    text = stringResource(R.string.revisions_empty_state_title)
+                    text = title
                 )
                 Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
                 TextPrimary(
-                    text = stringResource(R.string.revisions_empty_state_msg),
+                    text = message,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = MaterialTheme.typography.bodyMedium.fontSize
                 )

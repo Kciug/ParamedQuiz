@@ -121,6 +121,17 @@ class RevisionsQuizVM @Inject constructor(
         val progressNum = (engine.getAttemptedQuestionIds().size + 1).coerceAtMost(engine.getInitialSize())
         val isCorrection = engine.getAttemptedQuestionIds().contains(currentQuestion.id)
 
+        val progressValue: Int
+        val rangeValue: Int
+        if (isCorrection) {
+            val totalCorrectionCount = engine.getInitialSize() - engine.getFirstInteractionCorrectCount()
+            rangeValue = totalCorrectionCount.coerceAtLeast(1)
+            progressValue = (totalCorrectionCount - engine.getCurrentQueueSize() + 1).coerceIn(1, rangeValue)
+        } else {
+            rangeValue = engine.getInitialSize()
+            progressValue = progressNum
+        }
+
         when (currentQuestion) {
             is RevisionQuestion.Main -> {
                 val uim = currentQuestion.question.toUIM()
@@ -130,7 +141,9 @@ class RevisionsQuizVM @Inject constructor(
                         currentMcQuestionIndex = 0,
                         currentQuestionNumber = progressNum,
                         correctAnswersCount = engine.getCorrectAnswersCount(),
-                        isCorrection = isCorrection
+                        isCorrection = isCorrection,
+                        progress = progressValue,
+                        range = rangeValue
                     )
                 }
             }
@@ -142,7 +155,9 @@ class RevisionsQuizVM @Inject constructor(
                         currentMcQuestionIndex = 0,
                         currentQuestionNumber = progressNum,
                         correctAnswersCount = engine.getCorrectAnswersCount(),
-                        isCorrection = isCorrection
+                        isCorrection = isCorrection,
+                        progress = progressValue,
+                        range = rangeValue
                     )
                 }
             }
@@ -154,7 +169,9 @@ class RevisionsQuizVM @Inject constructor(
                         currentTranslationQuestionIndex = 0,
                         currentQuestionNumber = progressNum,
                         correctAnswersCount = engine.getCorrectAnswersCount(),
-                        isCorrection = isCorrection
+                        isCorrection = isCorrection,
+                        progress = progressValue,
+                        range = rangeValue
                     )
                 }
             }

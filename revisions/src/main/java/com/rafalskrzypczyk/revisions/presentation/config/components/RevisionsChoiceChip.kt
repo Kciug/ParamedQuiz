@@ -25,7 +25,7 @@ fun RevisionsChoiceChip(
     val containerColor = if (selected) {
         MaterialTheme.colorScheme.primary
     } else {
-        MaterialTheme.colorScheme.surface
+        MaterialTheme.colorScheme.surfaceContainer
     }
     val contentColor = if (selected) {
         Color.White

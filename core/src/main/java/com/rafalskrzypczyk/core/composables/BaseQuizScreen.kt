@@ -3,8 +3,15 @@ package com.rafalskrzypczyk.core.composables
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -28,6 +35,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -55,6 +63,8 @@ fun BaseQuizScreen(
     showBackConfirmation: Boolean,
     showTopBar: Boolean = true,
     customBadgeText: String? = null,
+    progress: Int = 0,
+    range: Int = 0,
     onBackAction: () -> Unit = {},
     onBackDiscarded: () -> Unit = {},
     onBackConfirmed: () -> Unit = {},
@@ -65,7 +75,14 @@ fun BaseQuizScreen(
     val titlePanelConsumed = remember { mutableStateOf(false) }
 
     val defaultTitlePanel: @Composable () -> Unit = {
-        BaseQuizTitlePanel(title, currentQuestionIndex, isMultipleChoice, customBadgeText)
+        BaseQuizTitlePanel(
+            title = title,
+            currentQuestionIndex = currentQuestionIndex,
+            isMultipleChoice = isMultipleChoice,
+            customBadgeText = customBadgeText,
+            progress = progress,
+            range = range
+        )
     }
 
     val consumableTitlePanel: @Composable () -> Unit = {
@@ -148,44 +165,100 @@ fun BaseQuizTitlePanel(
     title: String,
     currentQuestionIndex: Int,
     isMultipleChoice: Boolean = false,
-    customBadgeText: String? = null
+    customBadgeText: String? = null,
+    progress: Int = 0,
+    range: Int = 0
 ) {
     Column {
         TextHeadline(title)
-        if (customBadgeText != null) {
+        
+        if (progress > 0 && range > 0) {
+            val isCorrection = customBadgeText != null
+            
+            val progressColor by animateColorAsState(
+                targetValue = if (isCorrection) {
+                    MaterialTheme.colorScheme.error
+                } else {
+                    MaterialTheme.colorScheme.primary
+                },
+                animationSpec = tween(durationMillis = 300),
+                label = "quizProgressColorAnimation"
+            )
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL)
             ) {
-                Surface(
-                    shape = RoundedCornerShape(Dimens.RADIUS_SMALL),
-                    color = MaterialTheme.colorScheme.error.copy(alpha = 0.15f)
+                AnimatedVisibility(
+                    visible = isCorrection,
+                    enter = expandHorizontally() + fadeIn(),
+                    exit = shrinkHorizontally() + fadeOut()
                 ) {
-                    TextPrimary(
-                        text = customBadgeText,
-                        color = MaterialTheme.colorScheme.error,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                        fontSize = 12.sp
-                    )
+                    if (customBadgeText != null) {
+                        Surface(
+                            shape = RoundedCornerShape(Dimens.RADIUS_SMALL),
+                            color = MaterialTheme.colorScheme.error.copy(alpha = 0.15f),
+                            modifier = Modifier.padding(end = 4.dp)
+                        ) {
+                            TextPrimary(
+                                text = customBadgeText,
+                                color = MaterialTheme.colorScheme.error,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
                 }
+                
+                QuizLinearProgressBar(
+                    progress = progress,
+                    range = range,
+                    progressColor = progressColor,
+                    modifier = Modifier.weight(1f)
+                )
+                
                 if (isMultipleChoice) {
-                    Spacer(modifier = Modifier.weight(1f))
                     MultipleChoiceBadge()
                 }
             }
-        } else if (currentQuestionIndex > 0) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                TextPrimary(
-                    text = stringResource(R.string.base_quiz_question_number, currentQuestionIndex),
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-                )
-                if (isMultipleChoice) {
-                    Spacer(modifier = Modifier.weight(1f))
-                    MultipleChoiceBadge()
+        } else {
+            if (customBadgeText != null) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(Dimens.RADIUS_SMALL),
+                        color = MaterialTheme.colorScheme.error.copy(alpha = 0.15f)
+                    ) {
+                        TextPrimary(
+                            text = customBadgeText,
+                            color = MaterialTheme.colorScheme.error,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                            fontSize = 12.sp
+                        )
+                    }
+                    if (isMultipleChoice) {
+                        Spacer(modifier = Modifier.weight(1f))
+                        MultipleChoiceBadge()
+                    }
+                }
+            } else if (currentQuestionIndex > 0) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TextPrimary(
+                        text = stringResource(R.string.base_quiz_question_number, currentQuestionIndex),
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+                    )
+                    if (isMultipleChoice) {
+                        Spacer(modifier = Modifier.weight(1f))
+                        MultipleChoiceBadge()
+                    }
                 }
             }
         }

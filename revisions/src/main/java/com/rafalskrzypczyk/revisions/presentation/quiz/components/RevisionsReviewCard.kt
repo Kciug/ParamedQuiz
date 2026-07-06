@@ -14,7 +14,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -45,19 +44,20 @@ fun RevisionsReviewCard(
     isFailed: Boolean,
     isUnfinished: Boolean
 ) {
+    val isCorrected = isFailed && !isUnfinished
     val statusColor = when {
-        isFailed -> MQRed
-        isUnfinished -> MQYellow
+        isUnfinished -> MQRed
+        isCorrected -> MQYellow
         else -> MQGreen
     }
     val statusIcon = when {
-        isFailed -> Icons.Outlined.Close
-        isUnfinished -> Icons.Outlined.Warning
+        isUnfinished -> Icons.Outlined.Close
+        isCorrected -> Icons.Outlined.Check
         else -> Icons.Outlined.Check
     }
     val statusLabel = when {
-        isFailed -> stringResource(R.string.revisions_review_failed_limit)
         isUnfinished -> stringResource(R.string.revisions_review_unfinished)
+        isCorrected -> stringResource(R.string.revisions_review_corrected)
         else -> stringResource(R.string.revisions_review_correct)
     }
 
@@ -108,9 +108,14 @@ fun RevisionsReviewCard(
 
             when (question) {
                 is RevisionQuestion.Main -> {
-                    TextCaption(text = stringResource(R.string.revisions_review_correct_answers))
-                    Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
                     val correctTexts = question.question.answers.filter { it.isCorrect }.map { it.answerText }
+                    val labelRes = if (correctTexts.size > 1) {
+                        R.string.revisions_review_correct_answers_plural
+                    } else {
+                        R.string.revisions_review_correct_answers_singular
+                    }
+                    TextCaption(text = stringResource(labelRes))
+                    Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         correctTexts.forEach { text ->
                             TextPrimary(text = "• $text", fontWeight = FontWeight.Bold, color = MQGreen)
@@ -118,9 +123,14 @@ fun RevisionsReviewCard(
                     }
                 }
                 is RevisionQuestion.Cem -> {
-                    TextCaption(text = stringResource(R.string.revisions_review_correct_answers))
-                    Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
                     val correctTexts = question.question.answers.filter { it.isCorrect }.map { it.answerText }
+                    val labelRes = if (correctTexts.size > 1) {
+                        R.string.revisions_review_correct_answers_plural
+                    } else {
+                        R.string.revisions_review_correct_answers_singular
+                    }
+                    TextCaption(text = stringResource(labelRes))
+                    Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         correctTexts.forEach { text ->
                             TextPrimary(text = "• $text", fontWeight = FontWeight.Bold, color = MQGreen)
@@ -128,7 +138,13 @@ fun RevisionsReviewCard(
                     }
                 }
                 is RevisionQuestion.Translation -> {
-                    TextCaption(text = stringResource(R.string.revisions_review_correct_answers))
+                    val translationsCount = question.question.translations.size
+                    val labelRes = if (translationsCount > 1) {
+                        R.string.revisions_review_correct_translations_plural
+                    } else {
+                        R.string.revisions_review_correct_translations_singular
+                    }
+                    TextCaption(text = stringResource(labelRes))
                     Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),

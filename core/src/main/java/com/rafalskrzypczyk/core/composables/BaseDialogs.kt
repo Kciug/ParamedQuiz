@@ -1,16 +1,23 @@
 package com.rafalskrzypczyk.core.composables
 
 import android.content.res.Configuration
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.filled.Info
@@ -24,22 +31,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.rafalskrzypczyk.core.R
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.core.ui.theme.adaptiveContentColor
 import com.rafalskrzypczyk.core.utils.rememberDebouncedClick
-
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.DialogProperties
 
 @Composable
 fun BaseCustomDialog(
@@ -51,8 +53,7 @@ fun BaseCustomDialog(
     content: @Composable () -> Unit,
     buttons: @Composable () -> Unit
 ) {
-    val configuration = LocalConfiguration.current
-    val screenHeight = configuration.screenHeightDp.dp
+    val screenHeight = LocalWindowInfo.current.containerSize.height.dp
 
     Dialog(
         onDismissRequest = onDismissRequest,
@@ -69,7 +70,13 @@ fun BaseCustomDialog(
                     .padding(top = if (icon != null) Dimens.ICON_BACKGROUND_SIZE_LARGE / 2 else Dimens.DEFAULT_PADDING)
                     .padding(horizontal = Dimens.DEFAULT_PADDING)
                     .fillMaxWidth()
-                    .heightIn(max = screenHeight * 0.9f),
+                    .heightIn(max = screenHeight * 0.9f)
+                    .animateContentSize(
+                        animationSpec = tween(
+                            durationMillis = 220,
+                            easing = FastOutSlowInEasing
+                        )
+                    ),
                 shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT),
                 color = MaterialTheme.colorScheme.surface
             ) {

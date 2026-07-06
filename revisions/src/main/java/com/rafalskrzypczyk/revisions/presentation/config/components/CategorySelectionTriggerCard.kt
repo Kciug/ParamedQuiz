@@ -31,11 +31,13 @@ fun CategorySelectionTriggerCard(
     Card(
         onClick = onClick,
         shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         modifier = modifier.fillMaxWidth()
     ) {
         Row(
-            modifier = Modifier.padding(Dimens.DEFAULT_PADDING),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Dimens.DEFAULT_PADDING),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {

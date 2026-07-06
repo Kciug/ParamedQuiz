@@ -9,4 +9,7 @@ sealed interface RevisionsConfigUIEvents {
     data class SelectCategory(val category: RevisionCategory) : RevisionsConfigUIEvents
     data class SelectCriterion(val criterion: RevisionCriterion) : RevisionsConfigUIEvents
     data class SelectLimit(val limit: Int?) : RevisionsConfigUIEvents
+    data object DismissConfigDialog : RevisionsConfigUIEvents
+    data object ShowCategoryDialog : RevisionsConfigUIEvents
+    data object DismissCategoryDialog : RevisionsConfigUIEvents
 }

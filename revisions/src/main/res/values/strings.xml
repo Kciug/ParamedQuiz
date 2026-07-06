@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="revisions_config_title">Konfiguracja sesji</string>
+    <string name="revisions_config_title">Powtórki</string>
+    <string name="revisions_config_context_title">Powtarzaj wyłącznie pytania, które masz już za sobą.</string>
+    <string name="revisions_config_context_desc">Najpierw wybierz tryb. Typ powtórki wybierzesz w następnym kroku.</string>
     <string name="revisions_select_mode">Wybierz tryb</string>
+    <string name="revisions_mode_main">Quiz</string>
+    <string name="revisions_mode_cem">Pytania egzaminacyjne</string>
+    <string name="revisions_mode_translation">Tłumaczenia</string>
     <string name="revisions_select_pool">Wybierz kategorię</string>
     <string name="revisions_select_criterion">Kryterium doboru pytań</string>
     <string name="revisions_select_limit">Liczba pytań</string>
@@ -23,7 +28,11 @@
     <string name="revisions_review_title">Przegląd pytań</string>
     <string name="revisions_review_failed_limit">Przekroczono limit 3 błędów</string>
     <string name="revisions_review_correct">Ukończone poprawnie</string>
-    <string name="revisions_review_unfinished">W trakcie (nieukończone)</string>
-    <string name="revisions_review_correct_answers">Poprawne odpowiedzi:</string>
+    <string name="revisions_review_unfinished">Nieukończone</string>
+    <string name="revisions_review_corrected">Poprawione</string>
+    <string name="revisions_review_correct_answers_singular">Poprawna odpowiedź:</string>
+    <string name="revisions_review_correct_answers_plural">Poprawne odpowiedzi:</string>
+    <string name="revisions_review_correct_translations_singular">Poprawne tłumaczenie:</string>
+    <string name="revisions_review_correct_translations_plural">Poprawne tłumaczenia:</string>
     <string name="revisions_review_user_answers">Twoje odpowiedzi:</string>
 </resources>
