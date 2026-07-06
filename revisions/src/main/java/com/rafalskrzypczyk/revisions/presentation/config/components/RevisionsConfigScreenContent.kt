@@ -6,11 +6,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import com.rafalskrzypczyk.core.composables.Dimens
-import com.rafalskrzypczyk.core.composables.TextHeadline
+import com.rafalskrzypczyk.core.composables.TextCaption
+import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.revisions.R
 
@@ -28,7 +31,20 @@ fun RevisionsConfigScreenContent(
             .padding(Dimens.DEFAULT_PADDING),
         verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
     ) {
-        TextHeadline(
+        Column(
+            verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL)
+        ) {
+            TextPrimary(
+                text = stringResource(R.string.revisions_config_context_title),
+                fontWeight = FontWeight.Bold
+            )
+            TextCaption(
+                text = stringResource(R.string.revisions_config_context_desc),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        TextPrimary(
             text = stringResource(R.string.revisions_select_mode)
         )
 
