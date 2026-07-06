@@ -26,7 +26,11 @@
     <string name="revisions_review_title">Przegląd pytań</string>
     <string name="revisions_review_failed_limit">Przekroczono limit 3 błędów</string>
     <string name="revisions_review_correct">Ukończone poprawnie</string>
-    <string name="revisions_review_unfinished">W trakcie (nieukończone)</string>
-    <string name="revisions_review_correct_answers">Poprawne odpowiedzi:</string>
+    <string name="revisions_review_unfinished">Nieukończone</string>
+    <string name="revisions_review_corrected">Poprawione</string>
+    <string name="revisions_review_correct_answers_singular">Poprawna odpowiedź:</string>
+    <string name="revisions_review_correct_answers_plural">Poprawne odpowiedzi:</string>
+    <string name="revisions_review_correct_translations_singular">Poprawne tłumaczenie:</string>
+    <string name="revisions_review_correct_translations_plural">Poprawne tłumaczenia:</string>
     <string name="revisions_review_user_answers">Twoje odpowiedzi:</string>
 </resources>
