@@ -1,6 +1,10 @@
 package com.rafalskrzypczyk.revisions.presentation
 
 import android.content.res.Configuration
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
@@ -52,16 +56,24 @@ fun RevisionsConfigScreen(
                 .padding(innerPadding)
                 .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
         ) {
-            when (state.responseState) {
-                ResponseState.Idle -> {}
-                ResponseState.Loading -> Loading()
-                is ResponseState.Error -> ErrorDialog(state.responseState.message) {
-                    onNavigateBack()
-                }
-                ResponseState.Success -> {
-                    RevisionsConfigScreenContent(
-                        onSelectMode = { onEvent(RevisionsConfigUIEvents.SelectMode(it)) }
-                    )
+            AnimatedContent(
+                targetState = state.responseState,
+                transitionSpec = {
+                    scaleIn() togetherWith scaleOut()
+                },
+                label = "responseTransition"
+            ) { responseState ->
+                when (responseState) {
+                    ResponseState.Idle -> {}
+                    ResponseState.Loading -> Loading()
+                    is ResponseState.Error -> ErrorDialog(responseState.message) {
+                        onNavigateBack()
+                    }
+                    ResponseState.Success -> {
+                        RevisionsConfigScreenContent(
+                            onSelectMode = { onEvent(RevisionsConfigUIEvents.SelectMode(it)) }
+                        )
+                    }
                 }
             }
         }
