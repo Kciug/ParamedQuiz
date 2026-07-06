@@ -289,6 +289,7 @@ class RevisionsQuizVM @Inject constructor(
                 failedQuestionIds = engine.getFailedQuestionIds(),
                 attemptedQuestionIds = engine.getAttemptedQuestionIds(),
                 remainingQueueIds = engine.getQueueIds(),
+                errorCounts = engine.getErrorCounts(),
                 quizFinishedState = QuizFinishedState(
                     seenQuestions = engine.getPlayedQuestions().size,
                     correctAnswers = engine.getCorrectAnswersCount(),

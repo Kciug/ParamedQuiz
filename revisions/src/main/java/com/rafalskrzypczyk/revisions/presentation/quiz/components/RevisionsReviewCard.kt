@@ -42,22 +42,22 @@ import com.rafalskrzypczyk.revisions.domain.models.RevisionQuestion
 fun RevisionsReviewCard(
     question: RevisionQuestion,
     isFailed: Boolean,
-    isUnfinished: Boolean
+    isUnfinished: Boolean,
+    hasErrors: Boolean
 ) {
-    val isCorrected = isFailed && !isUnfinished
     val statusColor = when {
-        isUnfinished -> MQRed
-        isCorrected -> MQYellow
+        isFailed || isUnfinished -> MQRed
+        hasErrors -> MQYellow
         else -> MQGreen
     }
     val statusIcon = when {
-        isUnfinished -> Icons.Outlined.Close
-        isCorrected -> Icons.Outlined.Check
+        isFailed || isUnfinished -> Icons.Outlined.Close
+        hasErrors -> Icons.Outlined.Check
         else -> Icons.Outlined.Check
     }
     val statusLabel = when {
-        isUnfinished -> stringResource(R.string.revisions_review_unfinished)
-        isCorrected -> stringResource(R.string.revisions_review_corrected)
+        isFailed || isUnfinished -> stringResource(R.string.revisions_review_incorrect)
+        hasErrors -> stringResource(R.string.revisions_review_corrected)
         else -> stringResource(R.string.revisions_review_correct)
     }
 

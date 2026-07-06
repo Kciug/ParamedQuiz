@@ -30,6 +30,7 @@ fun RevisionsReviewDialog(
     failedQuestionIds: Set<Long>,
     attemptedQuestionIds: Set<Long>,
     remainingQueueIds: Set<Long>,
+    errorCounts: Map<Long, Int>,
     onDismiss: () -> Unit
 ) {
     val windowInfo = LocalWindowInfo.current
@@ -64,10 +65,12 @@ fun RevisionsReviewDialog(
                     items(reviewedQuestions) { question ->
                         val isFailed = failedQuestionIds.contains(question.id)
                         val isUnfinished = remainingQueueIds.contains(question.id)
+                        val hasErrors = (errorCounts[question.id] ?: 0) > 0
                         RevisionsReviewCard(
                             question = question,
                             isFailed = isFailed,
-                            isUnfinished = isUnfinished
+                            isUnfinished = isUnfinished,
+                            hasErrors = hasErrors
                         )
                     }
                 }

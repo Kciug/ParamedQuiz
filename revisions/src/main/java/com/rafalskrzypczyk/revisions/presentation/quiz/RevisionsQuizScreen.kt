@@ -172,6 +172,7 @@ fun RevisionsQuizScreen(
             failedQuestionIds = state.failedQuestionIds,
             attemptedQuestionIds = state.attemptedQuestionIds,
             remainingQueueIds = state.remainingQueueIds,
+            errorCounts = state.errorCounts,
             onDismiss = { onEvent(RevisionsQuizUIEvents.ToggleReviewDialog(false)) }
         )
     }
