@@ -1,11 +1,7 @@
 package com.rafalskrzypczyk.revisions.presentation.config.components
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,9 +10,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -79,27 +73,20 @@ fun RevisionConfigDialog(
         headerContentColor = MaterialTheme.colorScheme.onPrimary,
         content = {
             Column(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .defaultMinSize(minHeight = 220.dp)
-                    .animateContentSize(),
+                modifier = modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
             ) {
-                AnimatedContent(
+                Crossfade(
                     targetState = contentState,
-                    transitionSpec = {
-                        fadeIn(animationSpec = tween(220, delayMillis = 90)) togetherWith
-                        fadeOut(animationSpec = tween(90))
-                    },
-                    label = "DialogContentTransition",
-                    modifier = Modifier.animateContentSize()
+                    animationSpec = tween(220),
+                    label = "DialogContentTransition"
                 ) { target ->
                     when (target) {
                         ConfigContentState.Loading -> {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = Dimens.LARGE_PADDING),
+                                    .height(100.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Loading()
