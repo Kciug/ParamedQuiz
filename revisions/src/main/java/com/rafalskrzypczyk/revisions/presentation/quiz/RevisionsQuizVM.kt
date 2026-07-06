@@ -21,6 +21,7 @@ import com.rafalskrzypczyk.score.domain.ScoreManager
 import com.rafalskrzypczyk.score.domain.StreakManager
 import com.rafalskrzypczyk.score.domain.use_cases.UpdateScoreWithQuestionUC
 import com.rafalskrzypczyk.translation_mode.domain.TranslationQuestionUIM
+import com.rafalskrzypczyk.core.ads.QuizAdHandler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,7 +37,8 @@ class RevisionsQuizVM @Inject constructor(
     private val updateScoreWithQuestion: UpdateScoreWithQuestionUC,
     private val scoreManager: ScoreManager,
     private val streakManager: StreakManager,
-    private val reportIssueUC: ReportIssueUC
+    private val reportIssueUC: ReportIssueUC,
+    private val adHandler: QuizAdHandler
 ) : ViewModel() {
 
     private val mode: QuizMode = QuizMode.valueOf(savedStateHandle.get<String>("mode") ?: QuizMode.MainMode.name)
@@ -55,6 +57,7 @@ class RevisionsQuizVM @Inject constructor(
     init {
         collectScore()
         loadQuestions()
+        adHandler.initialize(viewModelScope)
     }
 
     private fun collectScore() {
@@ -106,6 +109,8 @@ class RevisionsQuizVM @Inject constructor(
             is RevisionsQuizUIEvents.ToggleReportDialog -> _state.update { it.copy(showReportDialog = event.show) }
             is RevisionsQuizUIEvents.OnReportIssueDescriptionChanged -> _state.update { it.copy(reportIssueDescription = event.description) }
             RevisionsQuizUIEvents.OnReportIssue -> reportIssue()
+            RevisionsQuizUIEvents.OnAdShown -> {}
+            RevisionsQuizUIEvents.OnAdDismissed -> handleAdDismissed()
         }
     }
 
@@ -274,12 +279,52 @@ class RevisionsQuizVM @Inject constructor(
     }
 
     private fun displayNextQuestion() {
-        displayCurrentQuestion()
+        val nextQuestion = engine.getCurrentQuestion()
+        val isFinished = nextQuestion == null
+        val answeredCount = engine.getAttemptedQuestionIds().size
+
+        if (adHandler.shouldShowAd(
+                answeredCount = answeredCount,
+                isQuizFinished = isFinished,
+                ignoreThreshold = false
+            )
+        ) {
+            _state.update { it.copy(showAd = true) }
+        } else {
+            proceedToNext()
+        }
+    }
+
+    private fun proceedToNext() {
+        val currentQuestion = engine.getCurrentQuestion()
+        if (currentQuestion == null) {
+            finishQuiz()
+        } else {
+            displayCurrentQuestion()
+        }
     }
 
     private fun handleExitQuiz() {
         _state.update { it.copy(showExitConfirmation = false) }
-        finishQuiz()
+        val answeredCount = engine.getAttemptedQuestionIds().size
+        if (adHandler.shouldShowAd(
+                answeredCount = answeredCount,
+                isQuizFinished = true,
+                ignoreThreshold = false
+            )
+        ) {
+            _state.update { it.copy(showAd = true) }
+        } else {
+            finishQuiz()
+        }
+    }
+
+    private fun handleAdDismissed() {
+        _state.update { it.copy(showAd = false) }
+        adHandler.handleAdDismissed(
+            onContinue = { proceedToNext() },
+            onFinish = { finishQuiz() }
+        )
     }
 
     private fun finishQuiz() {

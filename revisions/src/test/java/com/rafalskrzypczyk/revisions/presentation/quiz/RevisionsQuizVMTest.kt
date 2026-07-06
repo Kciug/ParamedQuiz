@@ -15,6 +15,7 @@ import com.rafalskrzypczyk.score.domain.Score
 import com.rafalskrzypczyk.score.domain.ScoreManager
 import com.rafalskrzypczyk.score.domain.StreakManager
 import com.rafalskrzypczyk.score.domain.use_cases.UpdateScoreWithQuestionUC
+import com.rafalskrzypczyk.core.ads.QuizAdHandler
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
@@ -39,6 +40,7 @@ class RevisionsQuizVMTest {
     private lateinit var scoreManager: ScoreManager
     private lateinit var streakManager: StreakManager
     private lateinit var reportIssueUC: ReportIssueUC
+    private lateinit var adHandler: QuizAdHandler
     private lateinit var savedStateHandle: SavedStateHandle
     private lateinit var viewModel: RevisionsQuizVM
 
@@ -51,6 +53,7 @@ class RevisionsQuizVMTest {
         scoreManager = mockk(relaxed = true)
         streakManager = mockk(relaxed = true)
         reportIssueUC = mockk(relaxed = true)
+        adHandler = mockk(relaxed = true)
         savedStateHandle = SavedStateHandle(
             mapOf(
                 "mode" to QuizMode.MainMode.name,
@@ -88,7 +91,8 @@ class RevisionsQuizVMTest {
             updateScoreWithQuestion = updateScoreWithQuestion,
             scoreManager = scoreManager,
             streakManager = streakManager,
-            reportIssueUC = reportIssueUC
+            reportIssueUC = reportIssueUC,
+            adHandler = adHandler
         )
 
         val state = viewModel.state.value
@@ -118,7 +122,8 @@ class RevisionsQuizVMTest {
             updateScoreWithQuestion = updateScoreWithQuestion,
             scoreManager = scoreManager,
             streakManager = streakManager,
-            reportIssueUC = reportIssueUC
+            reportIssueUC = reportIssueUC,
+            adHandler = adHandler
         )
 
         viewModel.onEvent(RevisionsQuizUIEvents.OnAnswerSelected(1L))
@@ -156,7 +161,8 @@ class RevisionsQuizVMTest {
             updateScoreWithQuestion = updateScoreWithQuestion,
             scoreManager = scoreManager,
             streakManager = streakManager,
-            reportIssueUC = reportIssueUC
+            reportIssueUC = reportIssueUC,
+            adHandler = adHandler
         )
 
         viewModel.onEvent(RevisionsQuizUIEvents.OnAnswerSelected(2L))
@@ -200,7 +206,8 @@ class RevisionsQuizVMTest {
             updateScoreWithQuestion = updateScoreWithQuestion,
             scoreManager = scoreManager,
             streakManager = streakManager,
-            reportIssueUC = reportIssueUC
+            reportIssueUC = reportIssueUC,
+            adHandler = adHandler
         )
 
         viewModel.onEvent(RevisionsQuizUIEvents.OnTranslationAnswerChanged("Jabłko"))
