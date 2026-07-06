@@ -120,6 +120,8 @@ class RevisionsSessionEngine {
 
     fun getFailedQuestionIds(): Set<Long> = failedQuestionIds
 
+    fun getErrorCounts(): Map<Long, Int> = errorCounts
+
     fun getAttemptedQuestionIds(): Set<Long> = attemptedQuestionIds
 
     fun getCorrectAnswersCount(): Int = correctAnswersCount

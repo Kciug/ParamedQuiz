@@ -35,4 +35,5 @@
     <string name="revisions_review_correct_translations_singular">Poprawne tłumaczenie:</string>
     <string name="revisions_review_correct_translations_plural">Poprawne tłumaczenia:</string>
     <string name="revisions_review_user_answers">Twoje odpowiedzi:</string>
+    <string name="revisions_review_incorrect">Błędne</string>
 </resources>

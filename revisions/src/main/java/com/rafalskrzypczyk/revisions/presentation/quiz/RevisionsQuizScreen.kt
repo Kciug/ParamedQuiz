@@ -12,9 +12,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalConfiguration
+import android.app.Activity
+import com.rafalskrzypczyk.core.ads.AdManagerEntryPoint
+import dagger.hilt.android.EntryPointAccessors
 import androidx.compose.ui.res.stringResource
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.BaseQuizScreen
@@ -40,6 +45,26 @@ fun RevisionsQuizScreen(
     onEvent: (RevisionsQuizUIEvents) -> Unit,
     onNavigateBack: () -> Unit
 ) {
+    val context = LocalContext.current
+    val adManager = remember {
+        EntryPointAccessors.fromApplication(context, AdManagerEntryPoint::class.java).adManager()
+    }
+
+    LaunchedEffect(state.showAd) {
+        if (state.showAd) {
+            val activity = context as? Activity
+            if (activity != null) {
+                adManager.showInterstitial(
+                    activity = activity,
+                    onAdShown = { onEvent(RevisionsQuizUIEvents.OnAdShown) },
+                    onAdDismissed = { onEvent(RevisionsQuizUIEvents.OnAdDismissed) }
+                )
+            } else {
+                onEvent(RevisionsQuizUIEvents.OnAdDismissed)
+            }
+        }
+    }
+
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
@@ -71,6 +96,7 @@ fun RevisionsQuizScreen(
         range = state.range,
         currentQuestionIndex = state.currentQuestionNumber,
         quizFinished = state.quizFinished,
+        waitingForAd = state.showAd,
         quizFinishedState = state.quizFinishedState,
         showBackConfirmation = state.showExitConfirmation,
         onBackAction = { onEvent(RevisionsQuizUIEvents.OnBackPressed) },
@@ -172,6 +198,7 @@ fun RevisionsQuizScreen(
             failedQuestionIds = state.failedQuestionIds,
             attemptedQuestionIds = state.attemptedQuestionIds,
             remainingQueueIds = state.remainingQueueIds,
+            errorCounts = state.errorCounts,
             onDismiss = { onEvent(RevisionsQuizUIEvents.ToggleReviewDialog(false)) }
         )
     }

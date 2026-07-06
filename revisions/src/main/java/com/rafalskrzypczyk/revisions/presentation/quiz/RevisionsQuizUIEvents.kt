@@ -12,4 +12,6 @@ sealed interface RevisionsQuizUIEvents {
     data class ToggleReportDialog(val show: Boolean) : RevisionsQuizUIEvents
     data class OnReportIssueDescriptionChanged(val description: String) : RevisionsQuizUIEvents
     object OnReportIssue : RevisionsQuizUIEvents
+    object OnAdShown : RevisionsQuizUIEvents
+    object OnAdDismissed : RevisionsQuizUIEvents
 }
