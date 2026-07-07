@@ -14,7 +14,8 @@ data class Score(
     val lastStreakUpdateDate: Date?,
     @Serializable(with = DateSerializer::class)
     val lastDailyExerciseDate: Date?,
-    val seenQuestions: List<QuestionAnnotation>
+    val seenQuestions: List<QuestionAnnotation>,
+    val bestSwipeCombo: Int = 0
 ) {
     companion object {
         fun empty() = Score(0, 0, null, null, emptyList())
@@ -30,7 +31,8 @@ fun ScoreDTO.toDomain() = Score(
     streak = streak.toInt(),
     lastStreakUpdateDate = lastStreakUpdateDate?.toDate(),
     lastDailyExerciseDate = lastDailyExerciseDate?.toDate(),
-    seenQuestions = seenQuestions.map { it.toDomain() }
+    seenQuestions = seenQuestions.map { it.toDomain() },
+    bestSwipeCombo = bestSwipeCombo.toInt()
 )
 
 fun Score.toDTO() = ScoreDTO(
@@ -38,5 +40,6 @@ fun Score.toDTO() = ScoreDTO(
     streak = streak.toLong(),
     lastStreakUpdateDate = lastStreakUpdateDate?.let { Timestamp(it) },
     lastDailyExerciseDate = lastDailyExerciseDate?.let { Timestamp(it) },
-    seenQuestions = seenQuestions.map { it.toDTO() }
+    seenQuestions = seenQuestions.map { it.toDTO() },
+    bestSwipeCombo = bestSwipeCombo.toLong()
 )

@@ -31,6 +31,7 @@ data class UserPageState (
     val swipeModeResult: Int = 0,
     val swipeModeCorrect: Int = 0,
     val swipeModeTotal: Int = 0,
+    val swipeModeBestCombo: Int = 0,
     val translationModeResult: Int = 0,
     val translationModeCorrect: Int = 0,
     val translationModeTotal: Int = 0,

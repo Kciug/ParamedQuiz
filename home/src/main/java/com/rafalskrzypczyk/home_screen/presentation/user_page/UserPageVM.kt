@@ -88,7 +88,8 @@ class UserPageVM @Inject constructor(
                         totalCorrect = totalCorrect,
                         totalIncorrect = totalIncorrect,
                         totalUnique = totalUnique,
-                        totalIdeal = totalIdeal
+                        totalIdeal = totalIdeal,
+                        swipeModeBestCombo = score.bestSwipeCombo
                     )
                 }
                 getResultsData()

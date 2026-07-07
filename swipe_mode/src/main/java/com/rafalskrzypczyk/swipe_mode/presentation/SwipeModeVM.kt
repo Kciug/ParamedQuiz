@@ -80,7 +80,8 @@ class SwipeModeVM @Inject constructor(
         adHandler.initialize(viewModelScope)
         viewModelScope.launch {
             useCases.getUserScore().collectLatest { score ->
-                _state.update { it.copy(userScore = score.score) }
+                bestStreak = maxOf(bestStreak, score.bestSwipeCombo)
+                _state.update { it.copy(userScore = score.score, bestStreak = bestStreak) }
             }
         }
 
@@ -397,6 +398,7 @@ class SwipeModeVM @Inject constructor(
 
     private fun finishQuiz() {
         useCases.incrementCompletedQuizzes()
+        useCases.updateBestCombo(bestStreak)
         val totalDuration = System.currentTimeMillis() - quizStartTime
         val questionsAnswered = currentQuestionIndex
         val averageTime = if (questionsAnswered > 0) totalResponseTimeAccumulator / questionsAnswered else 0L

@@ -33,6 +33,7 @@ fun UserStatisticsComponent(
     swipeModeResult: Int,
     swipeModeCorrect: Int = 0,
     swipeModeTotal: Int = 0,
+    swipeModeBestCombo: Int = 0,
     translationModeResult: Int,
     translationModeCorrect: Int = 0,
     translationModeTotal: Int = 0,
@@ -78,7 +79,8 @@ fun UserStatisticsComponent(
                 score = swipeModeResult,
                 correctAnswers = swipeModeCorrect,
                 totalAnswers = swipeModeTotal,
-                isAvailable = swipeModeResultAvailable
+                isAvailable = swipeModeResultAvailable,
+                bestCombo = swipeModeBestCombo
             )
             
             ModeScoreTile(
@@ -129,6 +131,7 @@ private fun UserStatisticsComponentPreview() {
             swipeModeResult = 32,
             swipeModeCorrect = 32,
             swipeModeTotal = 100,
+            swipeModeBestCombo = 12,
             translationModeResult = 55,
             translationModeCorrect = 55,
             translationModeTotal = 100,

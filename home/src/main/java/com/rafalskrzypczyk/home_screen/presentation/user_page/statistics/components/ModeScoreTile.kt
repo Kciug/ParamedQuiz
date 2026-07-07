@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.RocketLaunch
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -36,7 +38,8 @@ fun ModeScoreTile(
     score: Int,
     correctAnswers: Int,
     totalAnswers: Int,
-    isAvailable: Boolean
+    isAvailable: Boolean,
+    bestCombo: Int? = null
 ) {
     val color = ModeInfoProvider.getColor(mode)
     val icon = ModeInfoProvider.getIcon(mode)
@@ -82,6 +85,23 @@ fun ModeScoreTile(
                     )
                 } else {
                     TextCaption(text = stringResource(R.string.stats_no_data_for_mode_msg))
+                }
+
+                if (bestCombo != null && bestCombo > 0) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.RocketLaunch,
+                            contentDescription = null,
+                            tint = color,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        TextCaption(
+                            text = stringResource(R.string.stats_best_combo, bestCombo)
+                        )
+                    }
                 }
             }
 

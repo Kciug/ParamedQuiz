@@ -145,6 +145,7 @@ fun UserPageScreen(
                     swipeModeResult = state.swipeModeResult,
                     swipeModeCorrect = state.swipeModeCorrect,
                     swipeModeTotal = state.swipeModeTotal,
+                    swipeModeBestCombo = state.swipeModeBestCombo,
                     translationModeResult = state.translationModeResult,
                     translationModeCorrect = state.translationModeCorrect,
                     translationModeTotal = state.translationModeTotal,
