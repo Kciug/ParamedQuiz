@@ -52,6 +52,7 @@ import com.rafalskrzypczyk.core.composables.ErrorDialog
 import com.rafalskrzypczyk.core.composables.InfoDialog
 import com.rafalskrzypczyk.core.composables.Loading
 import com.rafalskrzypczyk.core.composables.PreviewContainer
+import com.rafalskrzypczyk.core.composables.SettingsCategoryCard
 import com.rafalskrzypczyk.core.composables.SettingsCategoryHeader
 import com.rafalskrzypczyk.core.composables.SettingsDialog
 import com.rafalskrzypczyk.core.composables.SettingsItemRow
@@ -211,31 +212,31 @@ private fun UserSettingsContent(
                 item {
                     SettingsCategoryHeader(stringResource(R.string.settings_category_account))
                 }
-                
+
                 item {
-                    SettingsItemRow(
-                        title = stringResource(R.string.title_change_username),
-                        icon = Icons.Outlined.Badge,
-                        onClick = { onEvent(UserSettingsUIEvents.ToggleChangeUsernameDialog(true)) }
-                    )
-                }
-                
-                if (state.accountType == UserAuthenticationMethod.PASSWORD) {
-                    item {
+                    SettingsCategoryCard {
                         SettingsItemRow(
-                            title = stringResource(R.string.title_change_password),
-                            icon = Icons.Outlined.Lock,
-                            onClick = { onEvent(UserSettingsUIEvents.ToggleChangePasswordDialog(true)) }
+                            title = stringResource(R.string.title_change_username),
+                            icon = Icons.Outlined.Badge,
+                            onClick = { onEvent(UserSettingsUIEvents.ToggleChangeUsernameDialog(true)) }
                         )
+
+                        if (state.accountType == UserAuthenticationMethod.PASSWORD) {
+                            SettingsItemRow(
+                                title = stringResource(R.string.title_change_password),
+                                icon = Icons.Outlined.Lock,
+                                onClick = { onEvent(UserSettingsUIEvents.ToggleChangePasswordDialog(true)) }
+                            )
+                        }
                     }
                 }
             }
-            
+
             /*
             item {
                 SettingsCategoryHeader(stringResource(R.string.settings_category_app))
             }
-            
+
             item {
                 val notificationsEnabled = remember { mutableStateOf(false) }
                 SettingsSwitchRow(
@@ -252,11 +253,13 @@ private fun UserSettingsContent(
             }
 
             item {
-                SettingsItemRow(
-                    title = stringResource(R.string.title_delete_progress),
-                    icon = Icons.Outlined.DeleteForever,
-                    onClick = { onEvent(UserSettingsUIEvents.ToggleDeleteProgressDialog(true)) }
-                )
+                SettingsCategoryCard {
+                    SettingsItemRow(
+                        title = stringResource(R.string.title_delete_progress),
+                        icon = Icons.Outlined.DeleteForever,
+                        onClick = { onEvent(UserSettingsUIEvents.ToggleDeleteProgressDialog(true)) }
+                    )
+                }
             }
 
             item {
@@ -264,47 +267,41 @@ private fun UserSettingsContent(
             }
 
             item {
-                SettingsItemRow(
-                    title = stringResource(R.string.terms_of_service_title),
-                    icon = Icons.Outlined.Description,
-                    onClick = onTermsOfService
-                )
-            }
-
-            item {
-                SettingsItemRow(
-                    title = stringResource(R.string.privacy_policy),
-                    icon = Icons.Outlined.Description,
-                    onClick = onPrivacyPolicy
-                )
-            }
-
-            item {
-                SettingsItemRow(
-                    title = stringResource(R.string.settings_about_app),
-                    icon = Icons.Outlined.Info,
-                    onClick = onAbout
-                )
-            }
-
-            if (!state.isAnonymous) {
-                item {
+                SettingsCategoryCard {
                     SettingsItemRow(
-                        title = stringResource(R.string.title_delete_account),
-                        icon = Icons.Outlined.Delete,
-                        onClick = { onEvent(UserSettingsUIEvents.ToggleDeleteAccountDialog(true)) }
+                        title = stringResource(R.string.terms_of_service_title),
+                        icon = Icons.Outlined.Description,
+                        onClick = onTermsOfService
                     )
-                }
 
-                item {
                     SettingsItemRow(
-                        title = stringResource(R.string.btn_logout),
-                        icon = Icons.AutoMirrored.Rounded.Logout,
-                        onClick = {
-                            onEvent.invoke(UserSettingsUIEvents.SignOut)
-                            onSignOut()
-                        }
+                        title = stringResource(R.string.privacy_policy),
+                        icon = Icons.Outlined.Description,
+                        onClick = onPrivacyPolicy
                     )
+
+                    SettingsItemRow(
+                        title = stringResource(R.string.settings_about_app),
+                        icon = Icons.Outlined.Info,
+                        onClick = onAbout
+                    )
+
+                    if (!state.isAnonymous) {
+                        SettingsItemRow(
+                            title = stringResource(R.string.title_delete_account),
+                            icon = Icons.Outlined.Delete,
+                            onClick = { onEvent(UserSettingsUIEvents.ToggleDeleteAccountDialog(true)) }
+                        )
+
+                        SettingsItemRow(
+                            title = stringResource(R.string.btn_logout),
+                            icon = Icons.AutoMirrored.Rounded.Logout,
+                            onClick = {
+                                onEvent.invoke(UserSettingsUIEvents.SignOut)
+                                onSignOut()
+                            }
+                        )
+                    }
                 }
             }
         }
