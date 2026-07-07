@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -29,10 +28,15 @@ import androidx.compose.material.icons.outlined.Badge
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.DeleteForever
 import androidx.compose.material.icons.outlined.Description
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,6 +49,7 @@ import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.ConfirmationDialog
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.ErrorDialog
+import com.rafalskrzypczyk.core.composables.InfoDialog
 import com.rafalskrzypczyk.core.composables.Loading
 import com.rafalskrzypczyk.core.composables.PreviewContainer
 import com.rafalskrzypczyk.core.composables.SettingsCategoryHeader
@@ -68,6 +73,13 @@ fun UserSettingsScreen(
 ) {
     val context = LocalContext.current
     val successMsg = stringResource(com.rafalskrzypczyk.core.R.string.desc_success)
+
+    val appVersion = remember {
+        runCatching {
+            context.packageManager.getPackageInfo(context.packageName, 0).versionName
+        }.getOrNull().orEmpty()
+    }
+    var showAboutDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.showSuccessToast) {
         if (state.showSuccessToast) {
@@ -95,7 +107,8 @@ fun UserSettingsScreen(
                         onEvent = onEvent,
                         onSignOut = onSignOut,
                         onTermsOfService = onTermsOfService,
-                        onPrivacyPolicy = onPrivacyPolicy
+                        onPrivacyPolicy = onPrivacyPolicy,
+                        onAbout = { showAboutDialog = true }
                     )
                     
                     if (state.responseState == ResponseState.Loading) {
@@ -158,6 +171,17 @@ fun UserSettingsScreen(
             onDismiss = { onEvent(UserSettingsUIEvents.ToggleDeleteProgressDialog(false)) }
         )
     }
+
+    if (showAboutDialog) {
+        InfoDialog(
+            title = stringResource(R.string.about_app_title),
+            message = stringResource(R.string.about_app_description) +
+                    "\n\n" +
+                    stringResource(R.string.about_app_version, appVersion),
+            icon = Icons.Outlined.Info,
+            onDismiss = { showAboutDialog = false }
+        )
+    }
 }
 
 @Composable
@@ -167,14 +191,13 @@ private fun UserSettingsContent(
     onEvent: (UserSettingsUIEvents) -> Unit,
     onSignOut: () -> Unit,
     onTermsOfService: () -> Unit,
-    onPrivacyPolicy: () -> Unit
+    onPrivacyPolicy: () -> Unit,
+    onAbout: () -> Unit
 ) {
     Column (modifier = modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier.weight(1f),
-            contentPadding = PaddingValues(
-                bottom = WindowInsets.safeDrawing.asPaddingValues().calculateBottomPadding()
-            )
+            contentPadding = PaddingValues(bottom = Dimens.DEFAULT_PADDING)
         ) {
             if (!state.isAnonymous) {
                 item {
@@ -256,6 +279,14 @@ private fun UserSettingsContent(
                 )
             }
 
+            item {
+                SettingsItemRow(
+                    title = stringResource(R.string.settings_about_app),
+                    icon = Icons.Outlined.Info,
+                    onClick = onAbout
+                )
+            }
+
             if (!state.isAnonymous) {
                 item {
                     SettingsItemRow(
@@ -277,6 +308,12 @@ private fun UserSettingsContent(
                 }
             }
         }
+
+        BrandingElement(
+            modifier = Modifier
+                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
+                .padding(vertical = Dimens.DEFAULT_PADDING)
+        )
     }
 }
 

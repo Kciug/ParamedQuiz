@@ -59,8 +59,8 @@
     <string name="title_addon_review">Powtórki</string>
     <string name="title_addon_first_aid">Pierwsza pomoc</string>
 
-    <string name="branding_created_with">Stworzono z</string>
-    <string name="branding_frontfolks">frontfolks</string>
+    <string name="branding_made_with">Made with</string>
+    <string name="branding_by_frontfolks">by Frontfolks</string>
     <string name="desc_branding_love">miłością</string>
 
     <string name="stats_header">Statystyki</string>
@@ -141,6 +141,11 @@
     <string name="settings_category_data">Dane</string>
     <string name="settings_notifications_soon">Powiadomienia (wkrótce)</string>
     <string name="settings_category_other">Inne</string>
+    <string name="settings_about_app">O aplikacji</string>
+
+    <string name="about_app_title">O aplikacji</string>
+    <string name="about_app_description">MediQuiz to Twoje mobilne centrum wiedzy ratowniczej. Ucz się, rozwiązuj quizy i sprawdzaj swoją wiedzę z zakresu ratownictwa medycznego w każdej chwili.</string>
+    <string name="about_app_version">Wersja %1$s</string>
 
     <string name="terms_of_service_title">Regulamin</string>
     <string name="accept_terms_button">Akceptuję regulamin</string>
