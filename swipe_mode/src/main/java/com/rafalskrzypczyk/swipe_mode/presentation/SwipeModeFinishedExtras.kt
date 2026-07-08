@@ -14,8 +14,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.outlined.Timer
-import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material.icons.rounded.AccessTime
+import androidx.compose.material.icons.rounded.Bolt
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -49,8 +51,10 @@ fun SwipeModeFinishedExtras(
     isNewRecord: Boolean = false,
     averageResponseTimeMs: Long,
     totalDurationMs: Long,
-    type1Errors: Int,
-    type2Errors: Int
+    avgTimeCorrectMs: Long,
+    avgTimeWrongMs: Long,
+    fastestCorrectMs: Long,
+    wrongAnswers: Int
 ) {
     val progress = if (totalQuestions > 0) correctAnswers.toFloat() / totalQuestions else 0f
     val percentage = (progress * 100).toInt()
@@ -137,10 +141,13 @@ fun SwipeModeFinishedExtras(
                 )
             }
 
-            // Error Analysis
-            ErrorAnalysisSection(
-                type1Errors = type1Errors,
-                type2Errors = type2Errors
+            // Speed & Accuracy Analysis
+            SpeedAccuracySection(
+                avgTimeCorrectMs = avgTimeCorrectMs,
+                avgTimeWrongMs = avgTimeWrongMs,
+                fastestCorrectMs = fastestCorrectMs,
+                correctAnswers = correctAnswers,
+                wrongAnswers = wrongAnswers
             )
         }
     }
@@ -178,13 +185,14 @@ private fun NewRecordBadge() {
 fun TimeStat(
     icon: ImageVector,
     value: String,
-    label: String
+    label: String,
+    tint: Color = MaterialTheme.colorScheme.secondary
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.secondary,
+            tint = tint,
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
@@ -195,36 +203,46 @@ fun TimeStat(
     }
 }
 
+private const val IMPULSIVE_RATIO = 0.7f
+private const val HESITANT_RATIO = 1.3f
+private const val MIN_ERRORS_FOR_VERDICT = 3
+
 @Composable
-fun ErrorAnalysisSection(
-    type1Errors: Int,
-    type2Errors: Int
+fun SpeedAccuracySection(
+    avgTimeCorrectMs: Long,
+    avgTimeWrongMs: Long,
+    fastestCorrectMs: Long,
+    correctAnswers: Int,
+    wrongAnswers: Int
 ) {
-    val totalErrors = type1Errors + type2Errors
-    
     val feedbackTitle: String
     val feedbackMsg: String
     val highlightColor: Color
 
     when {
-        totalErrors == 0 -> {
+        wrongAnswers == 0 && correctAnswers > 0 -> {
             feedbackTitle = stringResource(R.string.feedback_perfect_title)
             feedbackMsg = stringResource(R.string.feedback_perfect_msg)
             highlightColor = MQGreen
         }
-        type1Errors > type2Errors -> {
-            feedbackTitle = stringResource(R.string.feedback_type_1_title)
-            feedbackMsg = stringResource(R.string.feedback_type_1_msg)
+        correctAnswers == 0 || wrongAnswers < MIN_ERRORS_FOR_VERDICT -> {
+            feedbackTitle = stringResource(R.string.speed_verdict_insufficient_title)
+            feedbackMsg = stringResource(R.string.speed_verdict_insufficient_msg)
+            highlightColor = MaterialTheme.colorScheme.primary
+        }
+        avgTimeWrongMs < avgTimeCorrectMs * IMPULSIVE_RATIO -> {
+            feedbackTitle = stringResource(R.string.speed_verdict_impulsive_title)
+            feedbackMsg = stringResource(R.string.speed_verdict_impulsive_msg)
             highlightColor = MaterialTheme.colorScheme.tertiary
         }
-        type2Errors > type1Errors -> {
-            feedbackTitle = stringResource(R.string.feedback_type_2_title)
-            feedbackMsg = stringResource(R.string.feedback_type_2_msg)
+        avgTimeWrongMs > avgTimeCorrectMs * HESITANT_RATIO -> {
+            feedbackTitle = stringResource(R.string.speed_verdict_hesitant_title)
+            feedbackMsg = stringResource(R.string.speed_verdict_hesitant_msg)
             highlightColor = MaterialTheme.colorScheme.error
         }
         else -> {
-            feedbackTitle = stringResource(R.string.feedback_balanced_title)
-            feedbackMsg = stringResource(R.string.feedback_balanced_msg)
+            feedbackTitle = stringResource(R.string.speed_verdict_balanced_title)
+            feedbackMsg = stringResource(R.string.speed_verdict_balanced_msg)
             highlightColor = MaterialTheme.colorScheme.primary
         }
     }
@@ -239,34 +257,59 @@ fun ErrorAnalysisSection(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    imageVector = Icons.Outlined.Warning,
+                    imageVector = Icons.Rounded.Bolt,
                     contentDescription = null,
                     tint = highlightColor
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 TextHeadline(
-                    text = stringResource(R.string.stats_error_analysis_title)
+                    text = stringResource(R.string.stats_speed_accuracy_title)
                 )
             }
-            
+
             TextPrimary(
                 text = feedbackTitle,
                 color = highlightColor
             )
-            
+
             TextPrimary(
                 text = feedbackMsg,
                 maxLines = Int.MAX_VALUE
             )
 
-            if (totalErrors > 0) {
+            if (avgTimeCorrectMs > 0 || avgTimeWrongMs > 0) {
                 Spacer(modifier = Modifier.height(4.dp))
-                Column(
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    TextCaption(text = "${stringResource(R.string.stats_type_1_error)}: $type1Errors")
-                    TextCaption(text = "${stringResource(R.string.stats_type_2_error)}: $type2Errors")
+                    TimeStat(
+                        icon = Icons.Rounded.Check,
+                        value = formatTime(avgTimeCorrectMs),
+                        label = stringResource(R.string.stats_avg_time_correct),
+                        tint = MQGreen
+                    )
+                    TimeStat(
+                        icon = Icons.Rounded.Close,
+                        value = formatTime(avgTimeWrongMs),
+                        label = stringResource(R.string.stats_avg_time_wrong),
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+
+            if (fastestCorrectMs > 0) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Rounded.Bolt,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    TextCaption(
+                        text = stringResource(R.string.stats_fastest_correct, formatTime(fastestCorrectMs))
+                    )
                 }
             }
         }
@@ -295,8 +338,10 @@ private fun SwipeModeFinishedExtrasPreview() {
             isNewRecord = true,
             averageResponseTimeMs = 1250,
             totalDurationMs = 45000,
-            type1Errors = 5,
-            type2Errors = 2
+            avgTimeCorrectMs = 1100,
+            avgTimeWrongMs = 700,
+            fastestCorrectMs = 480,
+            wrongAnswers = 5
         )
     }
 }

@@ -20,6 +20,20 @@
     <string name="stats_avg_time">Śr. czas odp.</string>
     <string name="stats_total_time">Czas całkowity</string>
     
+    <string name="stats_speed_accuracy_title">Tempo i trafność</string>
+    <string name="stats_avg_time_correct">Śr. czas trafnych</string>
+    <string name="stats_avg_time_wrong">Śr. czas błędnych</string>
+    <string name="stats_fastest_correct">Najszybsza trafna: %1$s</string>
+
+    <string name="speed_verdict_impulsive_title">Impulsywne błędy</string>
+    <string name="speed_verdict_impulsive_msg">Mylisz się szybciej, niż odpowiadasz poprawnie. Zwolnij o ułamek sekundy i czytaj pytanie do końca — pochopne decyzje kosztują Cię punkty.</string>
+    <string name="speed_verdict_hesitant_title">Wahasz się przy trudnych</string>
+    <string name="speed_verdict_hesitant_msg">Nad błędnymi odpowiedziami myślisz dłużej niż nad trafnymi. To sygnał luk w wiedzy — te tematy warto doszlifować, a nie tylko zgadywać.</string>
+    <string name="speed_verdict_balanced_title">Równe tempo</string>
+    <string name="speed_verdict_balanced_msg">Odpowiadasz w podobnym tempie niezależnie od wyniku. Solidna, wyważona gra — teraz celuj w wyższą skuteczność.</string>
+    <string name="speed_verdict_insufficient_title">Buduj swój profil</string>
+    <string name="speed_verdict_insufficient_msg">Za mało błędów, by ocenić Twoje tempo. Rozegraj więcej pytań, aby odblokować analizę tempa i trafności.</string>
+
     <string name="stats_error_analysis_title">Analiza Błędów Decyzyjnych</string>
     <string name="stats_type_1_error">Błąd Typu I (Fałszywe Odrzucenie)</string>
     <string name="stats_type_2_error">Błąd Typu II (Fałszywa Akceptacja)</string>

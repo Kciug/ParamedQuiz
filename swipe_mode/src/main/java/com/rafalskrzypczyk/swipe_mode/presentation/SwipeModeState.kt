@@ -23,6 +23,9 @@ data class SwipeModeState(
     // New Metrics
     val averageResponseTime: Long = 0L,
     val totalQuizDuration: Long = 0L,
+    val avgResponseTimeCorrect: Long = 0L,
+    val avgResponseTimeWrong: Long = 0L,
+    val fastestCorrectResponseTime: Long = 0L,
     val type1Errors: Int = 0, // False Negatives (User said False, was True)
     val type2Errors: Int = 0,  // False Positives (User said True, was False)
     

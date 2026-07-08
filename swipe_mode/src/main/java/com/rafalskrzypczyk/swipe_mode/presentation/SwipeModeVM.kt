@@ -71,6 +71,9 @@ class SwipeModeVM @Inject constructor(
     private var quizStartTime: Long = 0L
     private var currentQuestionStartTime: Long = 0L
     private var totalResponseTimeAccumulator: Long = 0L
+    private var correctResponseTimeAccumulator: Long = 0L
+    private var wrongResponseTimeAccumulator: Long = 0L
+    private var fastestCorrectMs: Long = Long.MAX_VALUE
 
     // Error stats
     private var type1Errors: Int = 0
@@ -351,7 +354,11 @@ class SwipeModeVM @Inject constructor(
         val answeredQuestion = questions.first { questionId == it.id }
         val answeredCorrectly = answeredQuestion.isCorrect == isCorrect
 
-        if (!answeredCorrectly) {
+        if (answeredCorrectly) {
+            correctResponseTimeAccumulator += duration
+            fastestCorrectMs = minOf(fastestCorrectMs, duration)
+        } else {
+            wrongResponseTimeAccumulator += duration
             if (answeredQuestion.isCorrect) {
                 type1Errors++
             } else {
@@ -407,11 +414,19 @@ class SwipeModeVM @Inject constructor(
         val questionsAnswered = currentQuestionIndex
         val averageTime = if (questionsAnswered > 0) totalResponseTimeAccumulator / questionsAnswered else 0L
 
+        val wrongAnswers = type1Errors + type2Errors
+        val avgTimeCorrect = if (correctAnswers > 0) correctResponseTimeAccumulator / correctAnswers else 0L
+        val avgTimeWrong = if (wrongAnswers > 0) wrongResponseTimeAccumulator / wrongAnswers else 0L
+        val fastestCorrect = if (correctAnswers > 0 && fastestCorrectMs != Long.MAX_VALUE) fastestCorrectMs else 0L
+
         _state.update { it.copy(
             showAd = false,
             isQuizFinished = true,
             averageResponseTime = averageTime,
             totalQuizDuration = totalDuration,
+            avgResponseTimeCorrect = avgTimeCorrect,
+            avgResponseTimeWrong = avgTimeWrong,
+            fastestCorrectResponseTime = fastestCorrect,
             isNewComboRecord = isNewComboRecord,
             quizFinishedState = QuizFinishedState(
                 seenQuestions = currentQuestionIndex,
