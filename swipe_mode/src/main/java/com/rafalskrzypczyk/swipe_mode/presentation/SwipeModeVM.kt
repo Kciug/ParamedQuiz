@@ -79,6 +79,9 @@ class SwipeModeVM @Inject constructor(
     private var type1Errors: Int = 0
     private var type2Errors: Int = 0
 
+    // Ordered per-answer outcomes (for the combo momentum strip)
+    private val answerHistory = mutableListOf<Boolean>()
+
     init {
         _state.update { it.copy(isTrial = isTrialActive) }
         adHandler.initialize(viewModelScope)
@@ -354,6 +357,8 @@ class SwipeModeVM @Inject constructor(
         val answeredQuestion = questions.first { questionId == it.id }
         val answeredCorrectly = answeredQuestion.isCorrect == isCorrect
 
+        answerHistory.add(answeredCorrectly)
+
         if (answeredCorrectly) {
             correctResponseTimeAccumulator += duration
             fastestCorrectMs = minOf(fastestCorrectMs, duration)
@@ -427,6 +432,7 @@ class SwipeModeVM @Inject constructor(
             avgResponseTimeCorrect = avgTimeCorrect,
             avgResponseTimeWrong = avgTimeWrong,
             fastestCorrectResponseTime = fastestCorrect,
+            answerHistory = answerHistory.toList(),
             isNewComboRecord = isNewComboRecord,
             quizFinishedState = QuizFinishedState(
                 seenQuestions = currentQuestionIndex,

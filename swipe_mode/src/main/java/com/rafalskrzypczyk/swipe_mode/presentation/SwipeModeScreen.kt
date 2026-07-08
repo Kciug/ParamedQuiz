@@ -110,6 +110,7 @@ fun SwipeModeScreen(
                  totalQuestions = state.quizFinishedState.seenQuestions,
                  bestStreak = state.bestStreak,
                  isNewRecord = state.isNewComboRecord,
+                 answerHistory = state.answerHistory,
                  averageResponseTimeMs = state.averageResponseTime,
                  totalDurationMs = state.totalQuizDuration,
                  avgTimeCorrectMs = state.avgResponseTimeCorrect,

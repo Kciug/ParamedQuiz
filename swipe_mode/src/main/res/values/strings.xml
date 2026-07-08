@@ -20,6 +20,13 @@
     <string name="stats_avg_time">Śr. czas odp.</string>
     <string name="stats_total_time">Czas całkowity</string>
     
+    <string name="combo_narrative_none">Tym razem bez serii — wróć i złap rytm.</string>
+    <string name="combo_narrative_flawless">Nieprzerwana seria — bezbłędny przejazd od startu do mety! 🔥</string>
+    <string name="combo_narrative_choppy">Rwany rytm — najdłuższa seria to tylko %1$d. Spróbuj złapać dłuższą.</string>
+    <string name="combo_narrative_strong_finish">Mocna końcówka! Serię %1$d złapałeś na finiszu. 🔥</string>
+    <string name="combo_narrative_fast_start">Szybki start — najdłuższą serię (%1$d) miałeś na początku.</string>
+    <string name="combo_narrative_mid">Rytm złapany w trakcie — najdłuższa seria: %1$d.</string>
+
     <string name="stats_speed_accuracy_title">Tempo i trafność</string>
     <string name="stats_avg_time_correct">Śr. czas trafnych</string>
     <string name="stats_avg_time_wrong">Śr. czas błędnych</string>

@@ -1,5 +1,6 @@
 package com.rafalskrzypczyk.swipe_mode.presentation
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,6 +12,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.remember
+import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.outlined.Timer
@@ -39,6 +42,7 @@ import com.rafalskrzypczyk.core.composables.TextCaption
 import com.rafalskrzypczyk.core.composables.TextHeadline
 import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.ui.theme.MQGreen
+import com.rafalskrzypczyk.core.ui.theme.MQRed
 import com.rafalskrzypczyk.swipe_mode.R
 import java.util.concurrent.TimeUnit
 
@@ -49,6 +53,7 @@ fun SwipeModeFinishedExtras(
     totalQuestions: Int,
     bestStreak: Int,
     isNewRecord: Boolean = false,
+    answerHistory: List<Boolean> = emptyList(),
     averageResponseTimeMs: Long,
     totalDurationMs: Long,
     avgTimeCorrectMs: Long,
@@ -108,21 +113,12 @@ fun SwipeModeFinishedExtras(
                 TextPrimary(text = stringResource(R.string.swipe_mode_effectiveness))
             }
 
-            // Streak Section
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
-            ) {
-                TextHeadline(
-                    text = bestStreak.toString(),
-                    color = MaterialTheme.colorScheme.primary
-                )
-                TextPrimary(text = stringResource(R.string.stats_best_streak))
-
-                if (isNewRecord) {
-                    NewRecordBadge()
-                }
-            }
+            // Combo Section (record + momentum strip + narrative)
+            ComboSection(
+                bestStreak = bestStreak,
+                isNewRecord = isNewRecord,
+                answerHistory = answerHistory
+            )
 
             // Time Stats
             Row(
@@ -151,6 +147,101 @@ fun SwipeModeFinishedExtras(
             )
         }
     }
+}
+
+@Composable
+private fun ComboSection(
+    bestStreak: Int,
+    isNewRecord: Boolean,
+    answerHistory: List<Boolean>
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
+        ) {
+            TextHeadline(
+                text = bestStreak.toString(),
+                color = MaterialTheme.colorScheme.primary
+            )
+            TextPrimary(text = stringResource(R.string.stats_best_streak))
+
+            if (isNewRecord) {
+                NewRecordBadge()
+            }
+        }
+
+        if (answerHistory.isNotEmpty()) {
+            MomentumStrip(history = answerHistory)
+            TextCaption(text = comboNarrativeText(answerHistory))
+        }
+    }
+}
+
+@Composable
+private fun MomentumStrip(history: List<Boolean>) {
+    val bestRun = remember(history) { longestTrueRun(history) }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(18.dp),
+        horizontalArrangement = Arrangement.spacedBy(2.dp),
+        verticalAlignment = Alignment.Bottom
+    ) {
+        history.forEachIndexed { index, correct ->
+            val inBestRun = bestRun != null && index in bestRun
+            val barHeight = when {
+                inBestRun -> 18.dp
+                correct -> 13.dp
+                else -> 9.dp
+            }
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(barHeight)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(if (correct) MQGreen else MQRed)
+            )
+        }
+    }
+}
+
+@Composable
+private fun comboNarrativeText(history: List<Boolean>): String {
+    val run = longestTrueRun(history)
+    val best = run?.count() ?: 0
+    val total = history.size
+    return when {
+        run == null -> stringResource(R.string.combo_narrative_none)
+        best >= total -> stringResource(R.string.combo_narrative_flawless)
+        best <= 1 -> stringResource(R.string.combo_narrative_choppy, best)
+        run.last == total - 1 -> stringResource(R.string.combo_narrative_strong_finish, best)
+        run.first == 0 -> stringResource(R.string.combo_narrative_fast_start, best)
+        else -> stringResource(R.string.combo_narrative_mid, best)
+    }
+}
+
+private fun longestTrueRun(history: List<Boolean>): IntRange? {
+    var bestStart = -1
+    var bestLen = 0
+    var curStart = -1
+    var curLen = 0
+    history.forEachIndexed { i, v ->
+        if (v) {
+            if (curLen == 0) curStart = i
+            curLen++
+            if (curLen > bestLen) {
+                bestLen = curLen
+                bestStart = curStart
+            }
+        } else {
+            curLen = 0
+        }
+    }
+    return if (bestLen > 0) bestStart until (bestStart + bestLen) else null
 }
 
 @Composable
@@ -336,6 +427,10 @@ private fun SwipeModeFinishedExtrasPreview() {
             totalQuestions = 20,
             bestStreak = 8,
             isNewRecord = true,
+            answerHistory = listOf(
+                true, true, false, true, true, true, true, true, false, true,
+                true, false, true, true, true, false, true, true, true, true
+            ),
             averageResponseTimeMs = 1250,
             totalDurationMs = 45000,
             avgTimeCorrectMs = 1100,
