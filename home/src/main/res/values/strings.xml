@@ -141,6 +141,10 @@
     <string name="settings_category_app">Aplikacja</string>
     <string name="settings_category_data">Dane</string>
     <string name="settings_notifications_soon">Powiadomienia (wkrótce)</string>
+    <string name="settings_notifications">Powiadomienia</string>
+    <string name="settings_reminder_time">Godzina przypomnienia</string>
+    <string name="settings_system_notifications">Ustawienia systemowe powiadomień</string>
+    <string name="title_reminder_time">Godzina przypomnienia</string>
     <string name="settings_category_other">Inne</string>
     <string name="settings_about_app">O aplikacji</string>
 

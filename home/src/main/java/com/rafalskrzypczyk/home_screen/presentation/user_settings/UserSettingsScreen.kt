@@ -1,7 +1,10 @@
 package com.rafalskrzypczyk.home_screen.presentation.user_settings
 
+import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -30,6 +33,9 @@ import androidx.compose.material.icons.outlined.DeleteForever
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,6 +51,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.ConfirmationDialog
 import com.rafalskrzypczyk.core.composables.Dimens
@@ -56,12 +65,16 @@ import com.rafalskrzypczyk.core.composables.SettingsCategoryCard
 import com.rafalskrzypczyk.core.composables.SettingsCategoryHeader
 import com.rafalskrzypczyk.core.composables.SettingsDialog
 import com.rafalskrzypczyk.core.composables.SettingsItemRow
+import com.rafalskrzypczyk.core.composables.SettingsSwitchRow
+import com.rafalskrzypczyk.core.composables.TimePickerDialog
 import com.rafalskrzypczyk.core.composables.TextCaption
 import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.composables.top_bars.NavTopBar
 import com.rafalskrzypczyk.core.ui.theme.MQYellow
 import com.rafalskrzypczyk.core.user_management.UserAuthenticationMethod
 import com.rafalskrzypczyk.home.R
+import com.rafalskrzypczyk.notifications.NotificationPermission
+import com.rafalskrzypczyk.notifications.NotificationSettings
 
 @Composable
 fun UserSettingsScreen(
@@ -183,6 +196,16 @@ fun UserSettingsScreen(
             onDismiss = { showAboutDialog = false }
         )
     }
+
+    if (state.showTimePickerDialog) {
+        TimePickerDialog(
+            title = stringResource(R.string.title_reminder_time),
+            initialHour = state.reminderHour,
+            initialMinute = state.reminderMinute,
+            onConfirm = { hour, minute -> onEvent(UserSettingsUIEvents.SetReminderTime(hour, minute)) },
+            onDismiss = { onEvent(UserSettingsUIEvents.ToggleTimePickerDialog(false)) }
+        )
+    }
 }
 
 @Composable
@@ -195,6 +218,41 @@ private fun UserSettingsContent(
     onPrivacyPolicy: () -> Unit,
     onAbout: () -> Unit
 ) {
+    val context = LocalContext.current
+    var systemEnabled by remember { mutableStateOf(NotificationPermission.areNotificationsEnabled(context)) }
+
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        systemEnabled = NotificationPermission.areNotificationsEnabled(context)
+    }
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        systemEnabled = NotificationPermission.areNotificationsEnabled(context)
+        if (granted) onEvent(UserSettingsUIEvents.SetNotificationsEnabled(true))
+    }
+
+    val onNotificationsToggle: (Boolean) -> Unit = { enabled ->
+        if (enabled) {
+            onEvent(UserSettingsUIEvents.SetNotificationsEnabled(true))
+            if (!systemEnabled) {
+                val permissionNotGranted = NotificationPermission.requiresRuntimePermission() &&
+                    ContextCompat.checkSelfPermission(
+                        context,
+                        NotificationPermission.POST_NOTIFICATIONS
+                    ) != PackageManager.PERMISSION_GRANTED
+                if (permissionNotGranted) {
+                    notificationPermissionLauncher.launch(NotificationPermission.POST_NOTIFICATIONS)
+                } else {
+                    // Zablokowane na poziomie systemu — kierujemy do ustawień systemowych.
+                    NotificationSettings.openAppNotificationSettings(context)
+                }
+            }
+        } else {
+            onEvent(UserSettingsUIEvents.SetNotificationsEnabled(false))
+        }
+    }
+
     Column (modifier = modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier.weight(1f),
@@ -232,21 +290,36 @@ private fun UserSettingsContent(
                 }
             }
 
-            /*
             item {
                 SettingsCategoryHeader(stringResource(R.string.settings_category_app))
             }
 
             item {
-                val notificationsEnabled = remember { mutableStateOf(false) }
-                SettingsSwitchRow(
-                    title = stringResource(R.string.settings_notifications_soon),
-                    icon = Icons.Outlined.Notifications,
-                    checked = notificationsEnabled.value,
-                    onCheckedChange = { notificationsEnabled.value = it }
-                )
+                SettingsCategoryCard {
+                    SettingsSwitchRow(
+                        title = stringResource(R.string.settings_notifications),
+                        icon = Icons.Outlined.Notifications,
+                        checked = state.notificationsEnabled && systemEnabled,
+                        onCheckedChange = onNotificationsToggle
+                    )
+
+                    if (state.notificationsEnabled) {
+                        SettingsItemRow(
+                            title = stringResource(R.string.settings_reminder_time),
+                            icon = Icons.Outlined.Schedule,
+                            value = formatReminderTime(state.reminderHour, state.reminderMinute),
+                            showChevron = false,
+                            onClick = { onEvent(UserSettingsUIEvents.ToggleTimePickerDialog(true)) }
+                        )
+                    }
+
+                    SettingsItemRow(
+                        title = stringResource(R.string.settings_system_notifications),
+                        icon = Icons.Outlined.Settings,
+                        onClick = { NotificationSettings.openAppNotificationSettings(context) }
+                    )
+                }
             }
-            */
 
             item {
                 SettingsCategoryHeader(stringResource(R.string.settings_category_data))
@@ -313,6 +386,9 @@ private fun UserSettingsContent(
         )
     }
 }
+
+private fun formatReminderTime(hour: Int, minute: Int): String =
+    "%02d:%02d".format(hour, minute)
 
 @Composable
 private fun UserSettingsUserDetails(

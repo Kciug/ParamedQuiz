@@ -23,8 +23,13 @@ class SharedPreferencesService @Inject constructor(
         const val KEY_RATING_PROMPT_DISABLED = "rating_prompt_disabled"
         const val KEY_LAST_RATING_PROMPT_DATE = "last_rating_prompt_date"
         const val KEY_SEEN_NEWS_IDS = "seen_news_ids"
+        const val KEY_NOTIFICATIONS_ENABLED = "notifications_enabled"
+        const val KEY_REMINDER_HOUR = "reminder_hour"
+        const val KEY_REMINDER_MINUTE = "reminder_minute"
 
         const val DEFAULT_STRING_VALUE = ""
+        const val DEFAULT_REMINDER_HOUR = 19
+        const val DEFAULT_REMINDER_MINUTE = 0
     }
 
     override fun getSeenNewsIds(): Set<String> {
@@ -186,6 +191,31 @@ class SharedPreferencesService @Inject constructor(
     override fun setLastRatingPromptDate(timestamp: Long) {
         sharedPreferences.edit {
             putLong(KEY_LAST_RATING_PROMPT_DATE, timestamp)
+        }
+    }
+
+    override fun isNotificationsEnabled(): Boolean {
+        return sharedPreferences.getBoolean(KEY_NOTIFICATIONS_ENABLED, false)
+    }
+
+    override fun setNotificationsEnabled(enabled: Boolean) {
+        sharedPreferences.edit {
+            putBoolean(KEY_NOTIFICATIONS_ENABLED, enabled)
+        }
+    }
+
+    override fun getReminderHour(): Int {
+        return sharedPreferences.getInt(KEY_REMINDER_HOUR, DEFAULT_REMINDER_HOUR)
+    }
+
+    override fun getReminderMinute(): Int {
+        return sharedPreferences.getInt(KEY_REMINDER_MINUTE, DEFAULT_REMINDER_MINUTE)
+    }
+
+    override fun setReminderTime(hour: Int, minute: Int) {
+        sharedPreferences.edit {
+            putInt(KEY_REMINDER_HOUR, hour)
+            putInt(KEY_REMINDER_MINUTE, minute)
         }
     }
 }

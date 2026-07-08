@@ -46,4 +46,11 @@ interface SharedPreferencesApi {
     fun getSeenNewsIds(): Set<String>
     fun addSeenNewsId(id: String)
     fun clearSeenNewsIds()
+
+    fun isNotificationsEnabled(): Boolean
+    fun setNotificationsEnabled(enabled: Boolean)
+
+    fun getReminderHour(): Int
+    fun getReminderMinute(): Int
+    fun setReminderTime(hour: Int, minute: Int)
 }

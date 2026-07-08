@@ -15,9 +15,11 @@ dependencies {
     implementation(project(":cem_mode"))
     implementation(project(":score"))
     implementation(project(":billing"))
-    
+    implementation(project(":notifications"))
+
     implementation(libs.billing.ktx)
     implementation(libs.androidx.compose.runtime)
+    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.coil.compose)
     
     implementation(platform(libs.firebase.bom))
