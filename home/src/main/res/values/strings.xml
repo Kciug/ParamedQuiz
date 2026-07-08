@@ -145,6 +145,10 @@
     <string name="settings_reminder_time">Godzina przypomnienia</string>
     <string name="settings_system_notifications">Ustawienia systemowe powiadomień</string>
     <string name="title_reminder_time">Godzina przypomnienia</string>
+    <string name="notification_consent_title">Ucz się regularnie 📚</string>
+    <string name="notification_consent_message">Włącz przypomnienia, a delikatnie damy Ci znać, kiedy warto wrócić do nauki. Bez spamu — maksymalnie raz dziennie.</string>
+    <string name="notification_consent_enable">Włącz przypomnienia</string>
+    <string name="notification_consent_later">Może później</string>
     <string name="settings_category_other">Inne</string>
     <string name="settings_about_app">O aplikacji</string>
 

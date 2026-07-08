@@ -1,7 +1,10 @@
 package com.rafalskrzypczyk.home_screen.presentation.home_page
 
 import android.app.Activity
+import android.content.pm.PackageManager
 import android.content.res.Configuration
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -46,6 +49,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.InfoDialog
 import com.rafalskrzypczyk.core.composables.TextHeadline
@@ -59,10 +65,12 @@ import com.rafalskrzypczyk.core.ui.theme.MQYellow
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.core.utils.InAppReviewManager
 import com.rafalskrzypczyk.home.R
+import com.rafalskrzypczyk.notifications.NotificationPermission
 import com.rafalskrzypczyk.home_screen.presentation.home_page.components.Addon
 import com.rafalskrzypczyk.home_screen.presentation.home_page.components.HomeNewsBanner
 import com.rafalskrzypczyk.home_screen.presentation.home_page.components.HomeScreenAddonsMenu
 import com.rafalskrzypczyk.home_screen.presentation.home_page.components.HomeScreenQuizModesMenu
+import com.rafalskrzypczyk.home_screen.presentation.home_page.components.NotificationConsentDialog
 import com.rafalskrzypczyk.home_screen.presentation.home_page.components.SwipePurchaseBottomSheet
 import com.rafalskrzypczyk.home_screen.presentation.home_page.components.TranslationPurchaseBottomSheet
 import com.rafalskrzypczyk.score.domain.StreakState
@@ -97,6 +105,13 @@ fun HomeScreen(
     val reviewManager = remember(context) { InAppReviewManager(context) }
     val scrollState = rememberScrollState()
 
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) onEvent(HomeUIEvents.OnNotificationConsentAccepted)
+        else onEvent(HomeUIEvents.OnNotificationConsentDenied)
+    }
+
     val addons = listOf(
         Addon(
             title = stringResource(R.string.title_addon_daily_exercises),
@@ -128,6 +143,11 @@ fun HomeScreen(
 
     LaunchedEffect(Unit) {
         onEvent.invoke(HomeUIEvents.GetData)
+    }
+
+    // Ponowna ocena pre-promptu powiadomień przy każdym powrocie na ekran (np. z Dev Options / po quizie).
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        onEvent.invoke(HomeUIEvents.RecheckNotificationConsent)
     }
 
     LaunchedEffect(state.ratingPromptState) {
@@ -420,9 +440,27 @@ fun HomeScreen(
             message = state.feedbackErrorMessage,
             icon = Icons.Default.PriorityHigh,
             headerColor = MQRed,
-            onDismiss = { 
+            onDismiss = {
                 onEvent(HomeUIEvents.OnFeedbackErrorConsumed)
             }
+        )
+    }
+
+    if (state.showNotificationConsentPrompt) {
+        NotificationConsentDialog(
+            onEnable = {
+                val alreadyGranted = !NotificationPermission.requiresRuntimePermission() ||
+                    ContextCompat.checkSelfPermission(
+                        context,
+                        NotificationPermission.POST_NOTIFICATIONS
+                    ) == PackageManager.PERMISSION_GRANTED
+                if (alreadyGranted) {
+                    onEvent(HomeUIEvents.OnNotificationConsentAccepted)
+                } else {
+                    notificationPermissionLauncher.launch(NotificationPermission.POST_NOTIFICATIONS)
+                }
+            },
+            onDismiss = { onEvent(HomeUIEvents.OnNotificationConsentDismissed) }
         )
     }
 }

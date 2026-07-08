@@ -29,6 +29,17 @@ class DevVM @Inject constructor(
             DevOptionsUIEvents.ResetNews -> resetNews()
             DevOptionsUIEvents.ResetPurchases -> resetPurchases()
             DevOptionsUIEvents.SendTestNotification -> sendTestNotification()
+            DevOptionsUIEvents.TriggerNotificationConsent -> triggerNotificationConsent()
+        }
+    }
+
+    private fun triggerNotificationConsent() {
+        sharedPreferences.resetNotificationPromptCount()
+        sharedPreferences.setLastNotificationPromptDate(0L)
+        sharedPreferences.setNotificationPromptDisabled(false)
+        sharedPreferences.setNotificationsEnabled(false)
+        if (sharedPreferences.getCompletedQuizzesCount() < 1) {
+            sharedPreferences.incrementCompletedQuizzesCount()
         }
     }
 

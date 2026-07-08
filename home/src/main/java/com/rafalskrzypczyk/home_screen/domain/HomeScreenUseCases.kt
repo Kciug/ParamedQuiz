@@ -1,9 +1,13 @@
 package com.rafalskrzypczyk.home_screen.domain
 
 import com.rafalskrzypczyk.core.domain.use_cases.CheckAppRatingEligibilityUC
+import com.rafalskrzypczyk.core.domain.use_cases.CheckNotificationConsentEligibilityUC
+import com.rafalskrzypczyk.core.domain.use_cases.DisableNotificationPromptUC
 import com.rafalskrzypczyk.core.domain.use_cases.DisableRatingPromptUC
 import com.rafalskrzypczyk.core.domain.use_cases.DismissAppRatingUC
+import com.rafalskrzypczyk.core.domain.use_cases.MarkNotificationPromptShownUC
 import com.rafalskrzypczyk.core.domain.use_cases.SetAppRatedUC
+import com.rafalskrzypczyk.core.domain.use_cases.SetNotificationsEnabledUC
 import com.rafalskrzypczyk.core.user_management.CheckIsUserLoggedInUC
 import com.rafalskrzypczyk.firestore.domain.use_cases.GetQuestionsCountUC
 import com.rafalskrzypczyk.firestore.domain.use_cases.SaveFeedbackUC
@@ -29,5 +33,9 @@ data class HomeScreenUseCases @Inject constructor(
     val saveFeedback: SaveFeedbackUC,
     val getNewsBanners: GetNewsBannersUC,
     val markNewsAsSeen: MarkNewsAsSeenUC,
-    val resetSeenNews: ResetSeenNewsUC
+    val resetSeenNews: ResetSeenNewsUC,
+    val checkNotificationConsentEligibility: CheckNotificationConsentEligibilityUC,
+    val markNotificationPromptShown: MarkNotificationPromptShownUC,
+    val setNotificationsEnabled: SetNotificationsEnabledUC,
+    val disableNotificationPrompt: DisableNotificationPromptUC
 )

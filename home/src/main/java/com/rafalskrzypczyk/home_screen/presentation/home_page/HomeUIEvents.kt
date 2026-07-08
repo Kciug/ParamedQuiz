@@ -22,6 +22,11 @@ sealed interface HomeUIEvents {
     data object OnFeedbackSuccessConsumed : HomeUIEvents
     data object OnFeedbackErrorConsumed : HomeUIEvents
     data class DismissNews(val id: String) : HomeUIEvents
+
+    data object OnNotificationConsentAccepted : HomeUIEvents
+    data object OnNotificationConsentDenied : HomeUIEvents
+    data object OnNotificationConsentDismissed : HomeUIEvents
+    data object RecheckNotificationConsent : HomeUIEvents
 }
 
 sealed interface HomeSideEffect {

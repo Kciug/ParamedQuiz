@@ -103,6 +103,10 @@ class HomeScreenVM @Inject constructor(
             HomeUIEvents.OnFeedbackSuccessConsumed -> _state.update { it.copy(ratingPromptState = RatingPromptState.HIDDEN) }
             HomeUIEvents.OnFeedbackErrorConsumed -> _state.update { it.copy(feedbackErrorMessage = null) }
             is HomeUIEvents.DismissNews -> dismissNews(event.id)
+            HomeUIEvents.OnNotificationConsentAccepted -> onNotificationConsentAccepted()
+            HomeUIEvents.OnNotificationConsentDenied -> onNotificationConsentDenied()
+            HomeUIEvents.OnNotificationConsentDismissed -> _state.update { it.copy(showNotificationConsentPrompt = false) }
+            HomeUIEvents.RecheckNotificationConsent -> checkNotificationConsentEligibility()
         }
     }
 
@@ -113,6 +117,7 @@ class HomeScreenVM @Inject constructor(
 
     private fun getData() {
         checkRatingEligibility()
+        checkNotificationConsentEligibility()
         viewModelScope.launch {
             useCases.getUserScore().collectLatest { userScore ->
                 _state.update {
@@ -202,6 +207,27 @@ class HomeScreenVM @Inject constructor(
         if (useCases.checkAppRatingEligibility()) {
             _state.update { it.copy(ratingPromptState = RatingPromptState.QUESTION) }
         }
+    }
+
+    private fun checkNotificationConsentEligibility() {
+        // Nie pokazujemy dwóch promptów naraz — prompt oceny ma pierwszeństwo, gdy jest widoczny.
+        if (state.value.ratingPromptState != RatingPromptState.HIDDEN) return
+
+        if (useCases.checkNotificationConsentEligibility()) {
+            useCases.markNotificationPromptShown()
+            _state.update { it.copy(showNotificationConsentPrompt = true) }
+        }
+    }
+
+    private fun onNotificationConsentAccepted() {
+        useCases.setNotificationsEnabled(true)
+        _state.update { it.copy(showNotificationConsentPrompt = false) }
+        // Realne planowanie przypomnień dojdzie w kolejnym etapie (scheduler).
+    }
+
+    private fun onNotificationConsentDenied() {
+        useCases.disableNotificationPrompt()
+        _state.update { it.copy(showNotificationConsentPrompt = false) }
     }
 
     private fun handleRatingSelected(rating: Int) {

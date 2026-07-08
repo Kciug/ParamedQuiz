@@ -26,6 +26,9 @@ class SharedPreferencesService @Inject constructor(
         const val KEY_NOTIFICATIONS_ENABLED = "notifications_enabled"
         const val KEY_REMINDER_HOUR = "reminder_hour"
         const val KEY_REMINDER_MINUTE = "reminder_minute"
+        const val KEY_NOTIFICATION_PROMPT_COUNT = "notification_prompt_count"
+        const val KEY_LAST_NOTIFICATION_PROMPT_DATE = "last_notification_prompt_date"
+        const val KEY_NOTIFICATION_PROMPT_DISABLED = "notification_prompt_disabled"
 
         const val DEFAULT_STRING_VALUE = ""
         const val DEFAULT_REMINDER_HOUR = 19
@@ -216,6 +219,43 @@ class SharedPreferencesService @Inject constructor(
         sharedPreferences.edit {
             putInt(KEY_REMINDER_HOUR, hour)
             putInt(KEY_REMINDER_MINUTE, minute)
+        }
+    }
+
+    override fun getNotificationPromptCount(): Int {
+        return sharedPreferences.getInt(KEY_NOTIFICATION_PROMPT_COUNT, 0)
+    }
+
+    override fun incrementNotificationPromptCount() {
+        val current = getNotificationPromptCount()
+        sharedPreferences.edit {
+            putInt(KEY_NOTIFICATION_PROMPT_COUNT, current + 1)
+        }
+    }
+
+    override fun resetNotificationPromptCount() {
+        sharedPreferences.edit {
+            putInt(KEY_NOTIFICATION_PROMPT_COUNT, 0)
+        }
+    }
+
+    override fun getLastNotificationPromptDate(): Long {
+        return sharedPreferences.getLong(KEY_LAST_NOTIFICATION_PROMPT_DATE, 0L)
+    }
+
+    override fun setLastNotificationPromptDate(timestamp: Long) {
+        sharedPreferences.edit {
+            putLong(KEY_LAST_NOTIFICATION_PROMPT_DATE, timestamp)
+        }
+    }
+
+    override fun isNotificationPromptDisabled(): Boolean {
+        return sharedPreferences.getBoolean(KEY_NOTIFICATION_PROMPT_DISABLED, false)
+    }
+
+    override fun setNotificationPromptDisabled(disabled: Boolean) {
+        sharedPreferences.edit {
+            putBoolean(KEY_NOTIFICATION_PROMPT_DISABLED, disabled)
         }
     }
 }

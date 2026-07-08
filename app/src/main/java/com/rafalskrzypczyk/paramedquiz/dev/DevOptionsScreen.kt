@@ -96,6 +96,9 @@ fun DevOptionsScreen(
             }) {
                 Text("Send Test Notification")
             }
+            Button(onClick = { onEvent.invoke(DevOptionsUIEvents.TriggerNotificationConsent) }) {
+                Text("Trigger Notification Consent")
+            }
         }
     }
 }
