@@ -56,11 +56,16 @@ class ReminderWorker(
         val scoreResponse = deps.scoreRepository().getUserScore().first { it !is Response.Loading }
         if (scoreResponse is Response.Success) {
             val score = scoreResponse.data
+            val weakCount = score.seenQuestions.count {
+                it.timesSeen > 0 && it.timesCorrect.toDouble() / it.timesSeen < 0.5
+            }
             val decision = decider.decide(
                 lastStreakUpdateDate = score.lastStreakUpdateDate,
                 streak = score.streak,
                 now = Date(),
-                lastWinbackDaySent = sharedPrefs.getLastWinbackDaySent()
+                lastWinbackDaySent = sharedPrefs.getLastWinbackDaySent(),
+                weakQuestionsCount = weakCount,
+                lastRevisionReminderDate = sharedPrefs.getLastRevisionReminderDate()
             )
             handleDecision(decision, sharedPrefs)
         }
@@ -98,6 +103,16 @@ class ReminderWorker(
                     destination = NotificationDestination.HOME
                 )
                 sharedPrefs.setLastWinbackDaySent(decision.day)
+            }
+
+            ReminderDecision.Revision -> {
+                notifier.show(
+                    notificationId = NotificationIds.REVISION,
+                    title = applicationContext.getString(R.string.notification_revision_title),
+                    text = RevisionReminderContent.random(),
+                    destination = NotificationDestination.REVISIONS
+                )
+                sharedPrefs.setLastRevisionReminderDate(System.currentTimeMillis())
             }
         }
     }

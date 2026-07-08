@@ -100,4 +100,56 @@ class ReminderDeciderTest {
         )
         assertEquals(ReminderDecision.Daily, result)
     }
+
+    @Test
+    fun `weak questions with interval elapsed returns Revision`() {
+        val result = decider.decide(
+            lastStreakUpdateDate = daysAgo(3),
+            streak = 5,
+            now = now,
+            lastWinbackDaySent = 0,
+            weakQuestionsCount = 5,
+            lastRevisionReminderDate = 0L
+        )
+        assertEquals(ReminderDecision.Revision, result)
+    }
+
+    @Test
+    fun `revision blocked when interval not elapsed`() {
+        val result = decider.decide(
+            lastStreakUpdateDate = daysAgo(3),
+            streak = 5,
+            now = now,
+            lastWinbackDaySent = 0,
+            weakQuestionsCount = 5,
+            lastRevisionReminderDate = daysAgo(1).time
+        )
+        assertEquals(ReminderDecision.Daily, result)
+    }
+
+    @Test
+    fun `too few weak questions returns Daily`() {
+        val result = decider.decide(
+            lastStreakUpdateDate = daysAgo(3),
+            streak = 5,
+            now = now,
+            lastWinbackDaySent = 0,
+            weakQuestionsCount = 1,
+            lastRevisionReminderDate = 0L
+        )
+        assertEquals(ReminderDecision.Daily, result)
+    }
+
+    @Test
+    fun `winback takes precedence over revision on day seven`() {
+        val result = decider.decide(
+            lastStreakUpdateDate = daysAgo(7),
+            streak = 5,
+            now = now,
+            lastWinbackDaySent = 0,
+            weakQuestionsCount = 5,
+            lastRevisionReminderDate = 0L
+        )
+        assertEquals(ReminderDecision.Winback(7), result)
+    }
 }

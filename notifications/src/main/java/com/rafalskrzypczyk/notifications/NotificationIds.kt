@@ -5,4 +5,5 @@ object NotificationIds {
     const val DAILY_REMINDER = 1001
     const val STREAK_REMINDER = 1002
     const val WINBACK = 1003
+    const val REVISION = 1004
 }

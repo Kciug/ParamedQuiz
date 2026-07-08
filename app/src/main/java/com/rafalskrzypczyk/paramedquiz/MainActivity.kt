@@ -22,6 +22,7 @@ import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.notifications.NotificationDestination
 import com.rafalskrzypczyk.paramedquiz.navigation.AppNavHost
 import com.rafalskrzypczyk.paramedquiz.navigation.navigateToMainMenu
+import com.rafalskrzypczyk.paramedquiz.navigation.navigateToRevisionsMode
 import com.rafalskrzypczyk.score.domain.ScoreManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -121,6 +122,7 @@ class MainActivity : ComponentActivity() {
             deepLinkDestination.collect { destination ->
                 when (destination) {
                     NotificationDestination.HOME -> navController.navigateToMainMenu()
+                    NotificationDestination.REVISIONS -> navController.navigateToRevisionsMode()
                     null -> Unit
                 }
                 // Skonsumuj cel, żeby nie nawigować ponownie przy recompositions.

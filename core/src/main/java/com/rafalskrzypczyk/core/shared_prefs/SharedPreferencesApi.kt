@@ -66,4 +66,7 @@ interface SharedPreferencesApi {
 
     fun getLastWinbackDaySent(): Int
     fun setLastWinbackDaySent(day: Int)
+
+    fun getLastRevisionReminderDate(): Long
+    fun setLastRevisionReminderDate(timestamp: Long)
 }

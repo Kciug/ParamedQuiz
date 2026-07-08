@@ -6,7 +6,8 @@ import java.util.concurrent.TimeUnit
 
 /**
  * Czysta (bez zależności Android) logika decyzyjna „oceń i zdecyduj" — realizuje pseudokod spec §5.2.
- * Priorytet: DONE → nic; PENDING & streak≥min → Streak; daysSince ∈ winbackDays → Win-back; wpp → Daily.
+ * Priorytet: DONE → nic; PENDING & streak≥min → Streak; Win-back (7/14) → Winback;
+ * Revision (słabe pytania & interwał) → Revision; wpp → Daily.
  *
  * Stany liczone samodzielnie z [lastStreakUpdateDate] (bez StreakManager.getStreakState, który ma
  * efekt uboczny zerowania serii).
@@ -17,8 +18,12 @@ class ReminderDecider {
         streak: Int,
         now: Date,
         lastWinbackDaySent: Int,
+        weakQuestionsCount: Int = 0,
+        lastRevisionReminderDate: Long = 0L,
         streakMinValue: Int = DEFAULT_STREAK_MIN_VALUE,
-        winbackDays: List<Int> = DEFAULT_WINBACK_DAYS
+        winbackDays: List<Int> = DEFAULT_WINBACK_DAYS,
+        minWeakQuestions: Int = DEFAULT_MIN_WEAK_QUESTIONS,
+        revisionIntervalDays: Int = DEFAULT_REVISION_INTERVAL_DAYS
     ): ReminderDecision {
         val daysSince = daysSinceLastDone(lastStreakUpdateDate, now)
 
@@ -36,7 +41,21 @@ class ReminderDecider {
             return ReminderDecision.Winback(winbackDay)
         }
 
+        // Revision — gdy jest co powtarzać i minął interwał od ostatniego przypomnienia.
+        if (weakQuestionsCount >= minWeakQuestions &&
+            daysSinceRevisionReminder(lastRevisionReminderDate, now) >= revisionIntervalDays
+        ) {
+            return ReminderDecision.Revision
+        }
+
         return ReminderDecision.Daily
+    }
+
+    /** Pełne dni od ostatniego revision remindera; duża wartość gdy nigdy (0). */
+    private fun daysSinceRevisionReminder(lastRevisionReminderDate: Long, now: Date): Long {
+        if (lastRevisionReminderDate == 0L) return Long.MAX_VALUE
+        val diff = now.toDateOnly().time - Date(lastRevisionReminderDate).toDateOnly().time
+        return TimeUnit.MILLISECONDS.toDays(diff)
     }
 
     /** Liczba pełnych dni od ostatniego zaliczenia; [Long.MAX_VALUE] gdy nigdy nie zaliczono. */
@@ -49,5 +68,7 @@ class ReminderDecider {
     companion object {
         const val DEFAULT_STREAK_MIN_VALUE = 2
         val DEFAULT_WINBACK_DAYS = listOf(7, 14)
+        const val DEFAULT_MIN_WEAK_QUESTIONS = 3
+        const val DEFAULT_REVISION_INTERVAL_DAYS = 3
     }
 }

@@ -7,7 +7,8 @@ package com.rafalskrzypczyk.notifications
  * Na razie obsługujemy tylko [HOME]; kolejne cele (np. powtórki) dojdą w następnych etapach.
  */
 enum class NotificationDestination {
-    HOME;
+    HOME,
+    REVISIONS;
 
     companion object {
         const val EXTRA_DESTINATION = "notification_destination"

@@ -5,4 +5,5 @@
     <string name="notification_daily_title">Czas na naukę 📚</string>
     <string name="notification_streak_title">Nie przerywaj serii! 🔥</string>
     <string name="notification_winback_title">Wróć do nauki 👋</string>
+    <string name="notification_revision_title">Czas na powtórkę 🔁</string>
 </resources>

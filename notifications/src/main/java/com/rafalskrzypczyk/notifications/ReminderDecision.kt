@@ -8,6 +8,9 @@ sealed interface ReminderDecision {
     /** Bazowe przypomnienie o nauce. */
     data object Daily : ReminderDecision
 
+    /** Powtórka słabych pytań. */
+    data object Revision : ReminderDecision
+
     /** Seria zagrożona — [streak] to aktualna liczba dni. */
     data class Streak(val streak: Int) : ReminderDecision
 

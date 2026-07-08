@@ -111,6 +111,9 @@ fun DevOptionsScreen(
             Button(onClick = { onEvent.invoke(DevOptionsUIEvents.SimInactive14) }) {
                 Text("Sim Inactive 14d")
             }
+            Button(onClick = { onEvent.invoke(DevOptionsUIEvents.SimWeakQuestions) }) {
+                Text("Sim Weak Questions")
+            }
         }
     }
 }

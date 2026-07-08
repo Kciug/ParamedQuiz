@@ -30,6 +30,7 @@ class SharedPreferencesService @Inject constructor(
         const val KEY_LAST_NOTIFICATION_PROMPT_DATE = "last_notification_prompt_date"
         const val KEY_NOTIFICATION_PROMPT_DISABLED = "notification_prompt_disabled"
         const val KEY_LAST_WINBACK_DAY_SENT = "last_winback_day_sent"
+        const val KEY_LAST_REVISION_REMINDER_DATE = "last_revision_reminder_date"
 
         const val DEFAULT_STRING_VALUE = ""
         const val DEFAULT_REMINDER_HOUR = 19
@@ -267,6 +268,16 @@ class SharedPreferencesService @Inject constructor(
     override fun setLastWinbackDaySent(day: Int) {
         sharedPreferences.edit {
             putInt(KEY_LAST_WINBACK_DAY_SENT, day)
+        }
+    }
+
+    override fun getLastRevisionReminderDate(): Long {
+        return sharedPreferences.getLong(KEY_LAST_REVISION_REMINDER_DATE, 0L)
+    }
+
+    override fun setLastRevisionReminderDate(timestamp: Long) {
+        sharedPreferences.edit {
+            putLong(KEY_LAST_REVISION_REMINDER_DATE, timestamp)
         }
     }
 }
