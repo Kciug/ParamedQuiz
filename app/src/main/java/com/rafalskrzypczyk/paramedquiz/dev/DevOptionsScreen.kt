@@ -102,6 +102,15 @@ fun DevOptionsScreen(
             Button(onClick = { onEvent.invoke(DevOptionsUIEvents.TriggerReminderNow) }) {
                 Text("Trigger Reminder Now")
             }
+            Button(onClick = { onEvent.invoke(DevOptionsUIEvents.SimStreakPending) }) {
+                Text("Sim Streak PENDING")
+            }
+            Button(onClick = { onEvent.invoke(DevOptionsUIEvents.SimInactive7) }) {
+                Text("Sim Inactive 7d")
+            }
+            Button(onClick = { onEvent.invoke(DevOptionsUIEvents.SimInactive14) }) {
+                Text("Sim Inactive 14d")
+            }
         }
     }
 }

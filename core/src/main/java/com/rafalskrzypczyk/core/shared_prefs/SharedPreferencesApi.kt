@@ -63,4 +63,7 @@ interface SharedPreferencesApi {
 
     fun isNotificationPromptDisabled(): Boolean
     fun setNotificationPromptDisabled(disabled: Boolean)
+
+    fun getLastWinbackDaySent(): Int
+    fun setLastWinbackDaySent(day: Int)
 }

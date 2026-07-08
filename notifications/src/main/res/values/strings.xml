@@ -3,4 +3,6 @@
     <string name="notification_channel_reminders_name">Przypomnienia</string>
     <string name="notification_channel_reminders_desc">Przypomnienia o nauce i powtórkach.</string>
     <string name="notification_daily_title">Czas na naukę 📚</string>
+    <string name="notification_streak_title">Nie przerywaj serii! 🔥</string>
+    <string name="notification_winback_title">Wróć do nauki 👋</string>
 </resources>

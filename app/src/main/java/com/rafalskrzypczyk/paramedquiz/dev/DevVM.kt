@@ -7,9 +7,11 @@ import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
 import com.rafalskrzypczyk.notifications.NotificationDestination
 import com.rafalskrzypczyk.notifications.Notifier
 import com.rafalskrzypczyk.notifications.ReminderScheduler
+import com.rafalskrzypczyk.score.domain.ScoreManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.util.Calendar
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -18,7 +20,8 @@ class DevVM @Inject constructor(
     private val sharedPreferences: SharedPreferencesApi,
     private val billingRepository: BillingRepository,
     private val notifier: Notifier,
-    private val reminderScheduler: ReminderScheduler
+    private val reminderScheduler: ReminderScheduler,
+    private val scoreManager: ScoreManager
 ): ViewModel() {
 
     fun onEvent(event: DevOptionsUIEvents) {
@@ -33,7 +36,19 @@ class DevVM @Inject constructor(
             DevOptionsUIEvents.SendTestNotification -> sendTestNotification()
             DevOptionsUIEvents.TriggerNotificationConsent -> triggerNotificationConsent()
             DevOptionsUIEvents.TriggerReminderNow -> reminderScheduler.debugRunNow()
+            DevOptionsUIEvents.SimStreakPending -> simulateStreak(daysAgo = 1, streak = 5)
+            DevOptionsUIEvents.SimInactive7 -> simulateStreak(daysAgo = 7, streak = 5)
+            DevOptionsUIEvents.SimInactive14 -> simulateStreak(daysAgo = 14, streak = 5)
         }
+    }
+
+    private fun simulateStreak(daysAgo: Int, streak: Int) {
+        val date = Calendar.getInstance().apply { add(Calendar.DAY_OF_MONTH, -daysAgo) }.time
+        scoreManager.updateScore(
+            scoreManager.getScore().copy(streak = streak, lastStreakUpdateDate = date)
+        )
+        scoreManager.forceSync()
+        sharedPreferences.setLastWinbackDaySent(0)
     }
 
     private fun triggerNotificationConsent() {

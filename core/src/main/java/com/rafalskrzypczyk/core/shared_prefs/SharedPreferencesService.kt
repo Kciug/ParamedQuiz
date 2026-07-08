@@ -29,6 +29,7 @@ class SharedPreferencesService @Inject constructor(
         const val KEY_NOTIFICATION_PROMPT_COUNT = "notification_prompt_count"
         const val KEY_LAST_NOTIFICATION_PROMPT_DATE = "last_notification_prompt_date"
         const val KEY_NOTIFICATION_PROMPT_DISABLED = "notification_prompt_disabled"
+        const val KEY_LAST_WINBACK_DAY_SENT = "last_winback_day_sent"
 
         const val DEFAULT_STRING_VALUE = ""
         const val DEFAULT_REMINDER_HOUR = 19
@@ -256,6 +257,16 @@ class SharedPreferencesService @Inject constructor(
     override fun setNotificationPromptDisabled(disabled: Boolean) {
         sharedPreferences.edit {
             putBoolean(KEY_NOTIFICATION_PROMPT_DISABLED, disabled)
+        }
+    }
+
+    override fun getLastWinbackDaySent(): Int {
+        return sharedPreferences.getInt(KEY_LAST_WINBACK_DAY_SENT, 0)
+    }
+
+    override fun setLastWinbackDaySent(day: Int) {
+        sharedPreferences.edit {
+            putInt(KEY_LAST_WINBACK_DAY_SENT, day)
         }
     }
 }

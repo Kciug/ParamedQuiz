@@ -11,4 +11,7 @@ sealed interface DevOptionsUIEvents {
     object SendTestNotification: DevOptionsUIEvents
     object TriggerNotificationConsent: DevOptionsUIEvents
     object TriggerReminderNow: DevOptionsUIEvents
+    object SimStreakPending: DevOptionsUIEvents
+    object SimInactive7: DevOptionsUIEvents
+    object SimInactive14: DevOptionsUIEvents
 }
