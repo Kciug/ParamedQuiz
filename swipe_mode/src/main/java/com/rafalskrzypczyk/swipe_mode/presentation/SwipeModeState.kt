@@ -18,6 +18,7 @@ data class SwipeModeState(
     val correctAnswers: Int = 0,
     val currentStreak: Int = 0,
     val bestStreak: Int = 0,
+    val isNewComboRecord: Boolean = false,
     
     // New Metrics
     val averageResponseTime: Long = 0L,

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material.icons.rounded.AccessTime
@@ -45,6 +46,7 @@ fun SwipeModeFinishedExtras(
     correctAnswers: Int,
     totalQuestions: Int,
     bestStreak: Int,
+    isNewRecord: Boolean = false,
     averageResponseTimeMs: Long,
     totalDurationMs: Long,
     type1Errors: Int,
@@ -112,6 +114,10 @@ fun SwipeModeFinishedExtras(
                     color = MaterialTheme.colorScheme.primary
                 )
                 TextPrimary(text = stringResource(R.string.stats_best_streak))
+
+                if (isNewRecord) {
+                    NewRecordBadge()
+                }
             }
 
             // Time Stats
@@ -135,6 +141,34 @@ fun SwipeModeFinishedExtras(
             ErrorAnalysisSection(
                 type1Errors = type1Errors,
                 type2Errors = type2Errors
+            )
+        }
+    }
+}
+
+@Composable
+private fun NewRecordBadge() {
+    Surface(
+        shape = RoundedCornerShape(percent = 50),
+        color = MaterialTheme.colorScheme.primary
+    ) {
+        Row(
+            modifier = Modifier.padding(
+                horizontal = Dimens.SMALL_PADDING,
+                vertical = Dimens.ELEMENTS_SPACING_SMALL / 2
+            ),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.EmojiEvents,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.size(16.dp)
+            )
+            TextCaption(
+                text = stringResource(R.string.stats_new_combo_record),
+                color = MaterialTheme.colorScheme.onPrimary
             )
         }
     }
@@ -246,7 +280,7 @@ private fun formatTime(millis: Long): String {
     } else {
         val minutes = TimeUnit.MILLISECONDS.toMinutes(millis)
         val remainingSeconds = seconds - TimeUnit.MINUTES.toSeconds(minutes)
-        String.format("%d:%02d", minutes, remainingSeconds)
+        "$minutes:${remainingSeconds.toString().padStart(2, '0')}"
     }
 }
 
@@ -258,6 +292,7 @@ private fun SwipeModeFinishedExtrasPreview() {
             correctAnswers = 15,
             totalQuestions = 20,
             bestStreak = 8,
+            isNewRecord = true,
             averageResponseTimeMs = 1250,
             totalDurationMs = 45000,
             type1Errors = 5,

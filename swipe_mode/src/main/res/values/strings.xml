@@ -10,7 +10,8 @@
     <string name="swipe_mode_stats_title">Statystyki</string>
     <string name="swipe_mode_effectiveness">Skuteczność</string>
     
-    <string name="stats_best_streak">Najlepsza seria</string>
+    <string name="stats_best_streak">Najlepsze combo</string>
+    <string name="stats_new_combo_record">Nowy rekord!</string>
 
     <string name="ic_desc_rotate_screen">Odwróć ekran</string>
     <string name="rotate_screen_info">Dla najlepszych wrażeń z tego trybu odwróć ekran telefonu.</string>
