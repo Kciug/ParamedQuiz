@@ -2,4 +2,5 @@
 <resources>
     <string name="notification_channel_reminders_name">Przypomnienia</string>
     <string name="notification_channel_reminders_desc">Przypomnienia o nauce i powtórkach.</string>
+    <string name="notification_daily_title">Czas na naukę 📚</string>
 </resources>

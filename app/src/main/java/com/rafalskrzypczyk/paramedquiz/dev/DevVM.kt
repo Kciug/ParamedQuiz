@@ -6,6 +6,7 @@ import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
 import com.rafalskrzypczyk.notifications.NotificationDestination
 import com.rafalskrzypczyk.notifications.Notifier
+import com.rafalskrzypczyk.notifications.ReminderScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -16,7 +17,8 @@ import javax.inject.Inject
 class DevVM @Inject constructor(
     private val sharedPreferences: SharedPreferencesApi,
     private val billingRepository: BillingRepository,
-    private val notifier: Notifier
+    private val notifier: Notifier,
+    private val reminderScheduler: ReminderScheduler
 ): ViewModel() {
 
     fun onEvent(event: DevOptionsUIEvents) {
@@ -30,6 +32,7 @@ class DevVM @Inject constructor(
             DevOptionsUIEvents.ResetPurchases -> resetPurchases()
             DevOptionsUIEvents.SendTestNotification -> sendTestNotification()
             DevOptionsUIEvents.TriggerNotificationConsent -> triggerNotificationConsent()
+            DevOptionsUIEvents.TriggerReminderNow -> reminderScheduler.debugRunNow()
         }
     }
 

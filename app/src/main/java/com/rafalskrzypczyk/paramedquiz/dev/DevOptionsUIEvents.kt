@@ -10,4 +10,5 @@ sealed interface DevOptionsUIEvents {
     object ResetPurchases: DevOptionsUIEvents
     object SendTestNotification: DevOptionsUIEvents
     object TriggerNotificationConsent: DevOptionsUIEvents
+    object TriggerReminderNow: DevOptionsUIEvents
 }

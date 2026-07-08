@@ -9,6 +9,7 @@ import com.rafalskrzypczyk.home_screen.domain.use_cases.UserSettingsUseCases
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
+import com.rafalskrzypczyk.notifications.ReminderScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,7 +22,8 @@ import javax.inject.Inject
 class UserSettingsVM @Inject constructor(
     private val useCases: UserSettingsUseCases,
     private val premiumStatusProvider: PremiumStatusProvider,
-    private val sharedPrefs: SharedPreferencesApi
+    private val sharedPrefs: SharedPreferencesApi,
+    private val reminderScheduler: ReminderScheduler
 ) : ViewModel() {
     private val _state = MutableStateFlow(UserSettingsState())
     val state = _state.asStateFlow()
@@ -64,7 +66,7 @@ class UserSettingsVM @Inject constructor(
     private fun setNotificationsEnabled(enabled: Boolean) {
         sharedPrefs.setNotificationsEnabled(enabled)
         _state.update { it.copy(notificationsEnabled = enabled) }
-        // Realne planowanie/anulowanie przypomnień dojdzie w kolejnym etapie (scheduler).
+        if (enabled) reminderScheduler.schedule() else reminderScheduler.cancel()
     }
 
     private fun setReminderTime(hour: Int, minute: Int) {
@@ -76,6 +78,7 @@ class UserSettingsVM @Inject constructor(
                 showTimePickerDialog = false
             )
         }
+        if (state.value.notificationsEnabled) reminderScheduler.schedule()
     }
 
     private fun loadUserData() {

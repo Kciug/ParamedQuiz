@@ -99,6 +99,9 @@ fun DevOptionsScreen(
             Button(onClick = { onEvent.invoke(DevOptionsUIEvents.TriggerNotificationConsent) }) {
                 Text("Trigger Notification Consent")
             }
+            Button(onClick = { onEvent.invoke(DevOptionsUIEvents.TriggerReminderNow) }) {
+                Text("Trigger Reminder Now")
+            }
         }
     }
 }
