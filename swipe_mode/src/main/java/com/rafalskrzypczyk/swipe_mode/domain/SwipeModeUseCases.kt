@@ -6,6 +6,7 @@ import com.rafalskrzypczyk.firestore.domain.use_cases.ReportIssueUC
 import com.rafalskrzypczyk.score.domain.use_cases.GetStreakUC
 import com.rafalskrzypczyk.score.domain.use_cases.GetUserScoreUC
 import com.rafalskrzypczyk.score.domain.use_cases.IncreaseStreakByQuestionsUC
+import com.rafalskrzypczyk.score.domain.use_cases.UpdateBestSwipeComboUC
 import com.rafalskrzypczyk.score.domain.use_cases.UpdateScoreWithQuestionUC
 import javax.inject.Inject
 
@@ -17,6 +18,7 @@ data class SwipeModeUseCases @Inject constructor (
     val getUserScore: GetUserScoreUC,
     val updateScore: UpdateScoreWithQuestionUC,
     val updateStreak: IncreaseStreakByQuestionsUC,
+    val updateBestCombo: UpdateBestSwipeComboUC,
     val getStreak: GetStreakUC,
     val reportIssue: ReportIssueUC,
     val getQuestionsCount: GetQuestionsCountUC,

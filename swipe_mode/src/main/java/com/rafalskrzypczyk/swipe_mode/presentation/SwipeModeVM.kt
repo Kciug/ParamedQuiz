@@ -60,6 +60,7 @@ class SwipeModeVM @Inject constructor(
     private var correctAnswers: Int = 0
     private var currentStreak: Int = 0
     private var bestStreak: Int = 0
+    private var initialBestCombo: Int = 0
     private var earnedPoints: Int = 0
     private var isStreakUpdatedInSession = false
 
@@ -70,17 +71,25 @@ class SwipeModeVM @Inject constructor(
     private var quizStartTime: Long = 0L
     private var currentQuestionStartTime: Long = 0L
     private var totalResponseTimeAccumulator: Long = 0L
+    private var correctResponseTimeAccumulator: Long = 0L
+    private var wrongResponseTimeAccumulator: Long = 0L
+    private var fastestCorrectMs: Long = Long.MAX_VALUE
 
     // Error stats
     private var type1Errors: Int = 0
     private var type2Errors: Int = 0
+
+    // Ordered per-answer outcomes (for the combo momentum strip)
+    private val answerHistory = mutableListOf<Boolean>()
 
     init {
         _state.update { it.copy(isTrial = isTrialActive) }
         adHandler.initialize(viewModelScope)
         viewModelScope.launch {
             useCases.getUserScore().collectLatest { score ->
-                _state.update { it.copy(userScore = score.score) }
+                initialBestCombo = score.bestSwipeCombo
+                bestStreak = maxOf(bestStreak, score.bestSwipeCombo)
+                _state.update { it.copy(userScore = score.score, bestStreak = bestStreak) }
             }
         }
 
@@ -348,7 +357,13 @@ class SwipeModeVM @Inject constructor(
         val answeredQuestion = questions.first { questionId == it.id }
         val answeredCorrectly = answeredQuestion.isCorrect == isCorrect
 
-        if (!answeredCorrectly) {
+        answerHistory.add(answeredCorrectly)
+
+        if (answeredCorrectly) {
+            correctResponseTimeAccumulator += duration
+            fastestCorrectMs = minOf(fastestCorrectMs, duration)
+        } else {
+            wrongResponseTimeAccumulator += duration
             if (answeredQuestion.isCorrect) {
                 type1Errors++
             } else {
@@ -396,16 +411,29 @@ class SwipeModeVM @Inject constructor(
     }
 
     private fun finishQuiz() {
+        val isNewComboRecord = bestStreak > initialBestCombo
+
         useCases.incrementCompletedQuizzes()
+        useCases.updateBestCombo(bestStreak)
         val totalDuration = System.currentTimeMillis() - quizStartTime
         val questionsAnswered = currentQuestionIndex
         val averageTime = if (questionsAnswered > 0) totalResponseTimeAccumulator / questionsAnswered else 0L
+
+        val wrongAnswers = type1Errors + type2Errors
+        val avgTimeCorrect = if (correctAnswers > 0) correctResponseTimeAccumulator / correctAnswers else 0L
+        val avgTimeWrong = if (wrongAnswers > 0) wrongResponseTimeAccumulator / wrongAnswers else 0L
+        val fastestCorrect = if (correctAnswers > 0 && fastestCorrectMs != Long.MAX_VALUE) fastestCorrectMs else 0L
 
         _state.update { it.copy(
             showAd = false,
             isQuizFinished = true,
             averageResponseTime = averageTime,
             totalQuizDuration = totalDuration,
+            avgResponseTimeCorrect = avgTimeCorrect,
+            avgResponseTimeWrong = avgTimeWrong,
+            fastestCorrectResponseTime = fastestCorrect,
+            answerHistory = answerHistory.toList(),
+            isNewComboRecord = isNewComboRecord,
             quizFinishedState = QuizFinishedState(
                 seenQuestions = currentQuestionIndex,
                 correctAnswers = correctAnswers,

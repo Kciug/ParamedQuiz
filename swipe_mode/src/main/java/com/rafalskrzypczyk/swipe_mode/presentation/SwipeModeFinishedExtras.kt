@@ -1,5 +1,6 @@
 package com.rafalskrzypczyk.swipe_mode.presentation
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,10 +12,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.remember
+import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.outlined.Timer
-import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material.icons.rounded.AccessTime
+import androidx.compose.material.icons.rounded.Bolt
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -36,6 +42,7 @@ import com.rafalskrzypczyk.core.composables.TextCaption
 import com.rafalskrzypczyk.core.composables.TextHeadline
 import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.ui.theme.MQGreen
+import com.rafalskrzypczyk.core.ui.theme.MQRed
 import com.rafalskrzypczyk.swipe_mode.R
 import java.util.concurrent.TimeUnit
 
@@ -45,10 +52,14 @@ fun SwipeModeFinishedExtras(
     correctAnswers: Int,
     totalQuestions: Int,
     bestStreak: Int,
+    isNewRecord: Boolean = false,
+    answerHistory: List<Boolean> = emptyList(),
     averageResponseTimeMs: Long,
     totalDurationMs: Long,
-    type1Errors: Int,
-    type2Errors: Int
+    avgTimeCorrectMs: Long,
+    avgTimeWrongMs: Long,
+    fastestCorrectMs: Long,
+    wrongAnswers: Int
 ) {
     val progress = if (totalQuestions > 0) correctAnswers.toFloat() / totalQuestions else 0f
     val percentage = (progress * 100).toInt()
@@ -102,17 +113,12 @@ fun SwipeModeFinishedExtras(
                 TextPrimary(text = stringResource(R.string.swipe_mode_effectiveness))
             }
 
-            // Streak Section
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
-            ) {
-                TextHeadline(
-                    text = bestStreak.toString(),
-                    color = MaterialTheme.colorScheme.primary
-                )
-                TextPrimary(text = stringResource(R.string.stats_best_streak))
-            }
+            // Combo Section (record + momentum strip + narrative)
+            ComboSection(
+                bestStreak = bestStreak,
+                isNewRecord = isNewRecord,
+                answerHistory = answerHistory
+            )
 
             // Time Stats
             Row(
@@ -131,10 +137,136 @@ fun SwipeModeFinishedExtras(
                 )
             }
 
-            // Error Analysis
-            ErrorAnalysisSection(
-                type1Errors = type1Errors,
-                type2Errors = type2Errors
+            // Speed & Accuracy Analysis
+            SpeedAccuracySection(
+                avgTimeCorrectMs = avgTimeCorrectMs,
+                avgTimeWrongMs = avgTimeWrongMs,
+                fastestCorrectMs = fastestCorrectMs,
+                correctAnswers = correctAnswers,
+                wrongAnswers = wrongAnswers
+            )
+        }
+    }
+}
+
+@Composable
+private fun ComboSection(
+    bestStreak: Int,
+    isNewRecord: Boolean,
+    answerHistory: List<Boolean>
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
+        ) {
+            TextHeadline(
+                text = bestStreak.toString(),
+                color = MaterialTheme.colorScheme.primary
+            )
+            TextPrimary(text = stringResource(R.string.stats_best_streak))
+
+            if (isNewRecord) {
+                NewRecordBadge()
+            }
+        }
+
+        if (answerHistory.isNotEmpty()) {
+            MomentumStrip(history = answerHistory)
+            TextCaption(text = comboNarrativeText(answerHistory))
+        }
+    }
+}
+
+@Composable
+private fun MomentumStrip(history: List<Boolean>) {
+    val bestRun = remember(history) { longestTrueRun(history) }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(18.dp),
+        horizontalArrangement = Arrangement.spacedBy(2.dp),
+        verticalAlignment = Alignment.Bottom
+    ) {
+        history.forEachIndexed { index, correct ->
+            val inBestRun = bestRun != null && index in bestRun
+            val barHeight = when {
+                inBestRun -> 18.dp
+                correct -> 13.dp
+                else -> 9.dp
+            }
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(barHeight)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(if (correct) MQGreen else MQRed)
+            )
+        }
+    }
+}
+
+@Composable
+private fun comboNarrativeText(history: List<Boolean>): String {
+    val run = longestTrueRun(history)
+    val best = run?.count() ?: 0
+    val total = history.size
+    return when {
+        run == null -> stringResource(R.string.combo_narrative_none)
+        best >= total -> stringResource(R.string.combo_narrative_flawless)
+        best <= 1 -> stringResource(R.string.combo_narrative_choppy, best)
+        run.last == total - 1 -> stringResource(R.string.combo_narrative_strong_finish, best)
+        run.first == 0 -> stringResource(R.string.combo_narrative_fast_start, best)
+        else -> stringResource(R.string.combo_narrative_mid, best)
+    }
+}
+
+private fun longestTrueRun(history: List<Boolean>): IntRange? {
+    var bestStart = -1
+    var bestLen = 0
+    var curStart = -1
+    var curLen = 0
+    history.forEachIndexed { i, v ->
+        if (v) {
+            if (curLen == 0) curStart = i
+            curLen++
+            if (curLen > bestLen) {
+                bestLen = curLen
+                bestStart = curStart
+            }
+        } else {
+            curLen = 0
+        }
+    }
+    return if (bestLen > 0) bestStart until (bestStart + bestLen) else null
+}
+
+@Composable
+private fun NewRecordBadge() {
+    Surface(
+        shape = RoundedCornerShape(percent = 50),
+        color = MaterialTheme.colorScheme.primary
+    ) {
+        Row(
+            modifier = Modifier.padding(
+                horizontal = Dimens.SMALL_PADDING,
+                vertical = Dimens.ELEMENTS_SPACING_SMALL / 2
+            ),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.EmojiEvents,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.size(16.dp)
+            )
+            TextCaption(
+                text = stringResource(R.string.stats_new_combo_record),
+                color = MaterialTheme.colorScheme.onPrimary
             )
         }
     }
@@ -144,13 +276,14 @@ fun SwipeModeFinishedExtras(
 fun TimeStat(
     icon: ImageVector,
     value: String,
-    label: String
+    label: String,
+    tint: Color = MaterialTheme.colorScheme.secondary
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.secondary,
+            tint = tint,
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
@@ -161,36 +294,46 @@ fun TimeStat(
     }
 }
 
+private const val IMPULSIVE_RATIO = 0.7f
+private const val HESITANT_RATIO = 1.3f
+private const val MIN_ERRORS_FOR_VERDICT = 3
+
 @Composable
-fun ErrorAnalysisSection(
-    type1Errors: Int,
-    type2Errors: Int
+fun SpeedAccuracySection(
+    avgTimeCorrectMs: Long,
+    avgTimeWrongMs: Long,
+    fastestCorrectMs: Long,
+    correctAnswers: Int,
+    wrongAnswers: Int
 ) {
-    val totalErrors = type1Errors + type2Errors
-    
     val feedbackTitle: String
     val feedbackMsg: String
     val highlightColor: Color
 
     when {
-        totalErrors == 0 -> {
+        wrongAnswers == 0 && correctAnswers > 0 -> {
             feedbackTitle = stringResource(R.string.feedback_perfect_title)
             feedbackMsg = stringResource(R.string.feedback_perfect_msg)
             highlightColor = MQGreen
         }
-        type1Errors > type2Errors -> {
-            feedbackTitle = stringResource(R.string.feedback_type_1_title)
-            feedbackMsg = stringResource(R.string.feedback_type_1_msg)
+        correctAnswers == 0 || wrongAnswers < MIN_ERRORS_FOR_VERDICT -> {
+            feedbackTitle = stringResource(R.string.speed_verdict_insufficient_title)
+            feedbackMsg = stringResource(R.string.speed_verdict_insufficient_msg)
+            highlightColor = MaterialTheme.colorScheme.primary
+        }
+        avgTimeWrongMs < avgTimeCorrectMs * IMPULSIVE_RATIO -> {
+            feedbackTitle = stringResource(R.string.speed_verdict_impulsive_title)
+            feedbackMsg = stringResource(R.string.speed_verdict_impulsive_msg)
             highlightColor = MaterialTheme.colorScheme.tertiary
         }
-        type2Errors > type1Errors -> {
-            feedbackTitle = stringResource(R.string.feedback_type_2_title)
-            feedbackMsg = stringResource(R.string.feedback_type_2_msg)
+        avgTimeWrongMs > avgTimeCorrectMs * HESITANT_RATIO -> {
+            feedbackTitle = stringResource(R.string.speed_verdict_hesitant_title)
+            feedbackMsg = stringResource(R.string.speed_verdict_hesitant_msg)
             highlightColor = MaterialTheme.colorScheme.error
         }
         else -> {
-            feedbackTitle = stringResource(R.string.feedback_balanced_title)
-            feedbackMsg = stringResource(R.string.feedback_balanced_msg)
+            feedbackTitle = stringResource(R.string.speed_verdict_balanced_title)
+            feedbackMsg = stringResource(R.string.speed_verdict_balanced_msg)
             highlightColor = MaterialTheme.colorScheme.primary
         }
     }
@@ -205,34 +348,59 @@ fun ErrorAnalysisSection(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    imageVector = Icons.Outlined.Warning,
+                    imageVector = Icons.Rounded.Bolt,
                     contentDescription = null,
                     tint = highlightColor
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 TextHeadline(
-                    text = stringResource(R.string.stats_error_analysis_title)
+                    text = stringResource(R.string.stats_speed_accuracy_title)
                 )
             }
-            
+
             TextPrimary(
                 text = feedbackTitle,
                 color = highlightColor
             )
-            
+
             TextPrimary(
                 text = feedbackMsg,
                 maxLines = Int.MAX_VALUE
             )
 
-            if (totalErrors > 0) {
+            if (avgTimeCorrectMs > 0 || avgTimeWrongMs > 0) {
                 Spacer(modifier = Modifier.height(4.dp))
-                Column(
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    TextCaption(text = "${stringResource(R.string.stats_type_1_error)}: $type1Errors")
-                    TextCaption(text = "${stringResource(R.string.stats_type_2_error)}: $type2Errors")
+                    TimeStat(
+                        icon = Icons.Rounded.Check,
+                        value = formatTime(avgTimeCorrectMs),
+                        label = stringResource(R.string.stats_avg_time_correct),
+                        tint = MQGreen
+                    )
+                    TimeStat(
+                        icon = Icons.Rounded.Close,
+                        value = formatTime(avgTimeWrongMs),
+                        label = stringResource(R.string.stats_avg_time_wrong),
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+
+            if (fastestCorrectMs > 0) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Rounded.Bolt,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    TextCaption(
+                        text = stringResource(R.string.stats_fastest_correct, formatTime(fastestCorrectMs))
+                    )
                 }
             }
         }
@@ -246,7 +414,7 @@ private fun formatTime(millis: Long): String {
     } else {
         val minutes = TimeUnit.MILLISECONDS.toMinutes(millis)
         val remainingSeconds = seconds - TimeUnit.MINUTES.toSeconds(minutes)
-        String.format("%d:%02d", minutes, remainingSeconds)
+        "$minutes:${remainingSeconds.toString().padStart(2, '0')}"
     }
 }
 
@@ -258,10 +426,17 @@ private fun SwipeModeFinishedExtrasPreview() {
             correctAnswers = 15,
             totalQuestions = 20,
             bestStreak = 8,
+            isNewRecord = true,
+            answerHistory = listOf(
+                true, true, false, true, true, true, true, true, false, true,
+                true, false, true, true, true, false, true, true, true, true
+            ),
             averageResponseTimeMs = 1250,
             totalDurationMs = 45000,
-            type1Errors = 5,
-            type2Errors = 2
+            avgTimeCorrectMs = 1100,
+            avgTimeWrongMs = 700,
+            fastestCorrectMs = 480,
+            wrongAnswers = 5
         )
     }
 }

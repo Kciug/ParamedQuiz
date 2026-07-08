@@ -9,5 +9,6 @@ data class ScoreDTO(
     val streak: Long = 0,
     val lastStreakUpdateDate: Timestamp? = null,
     val lastDailyExerciseDate: Timestamp? = null,
-    val seenQuestions: List<QuestionAnnotationDTO> = emptyList()
+    val seenQuestions: List<QuestionAnnotationDTO> = emptyList(),
+    val bestSwipeCombo: Long = 0
 )
