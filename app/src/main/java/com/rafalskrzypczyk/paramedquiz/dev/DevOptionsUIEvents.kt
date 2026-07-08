@@ -8,4 +8,5 @@ sealed interface DevOptionsUIEvents {
     object TriggerRatingPrompt: DevOptionsUIEvents
     object ResetNews: DevOptionsUIEvents
     object ResetPurchases: DevOptionsUIEvents
+    object SendTestNotification: DevOptionsUIEvents
 }

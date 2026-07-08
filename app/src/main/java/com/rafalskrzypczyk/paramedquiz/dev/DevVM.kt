@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
+import com.rafalskrzypczyk.notifications.NotificationDestination
+import com.rafalskrzypczyk.notifications.Notifier
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -13,7 +15,8 @@ import javax.inject.Inject
 @HiltViewModel
 class DevVM @Inject constructor(
     private val sharedPreferences: SharedPreferencesApi,
-    private val billingRepository: BillingRepository
+    private val billingRepository: BillingRepository,
+    private val notifier: Notifier
 ): ViewModel() {
 
     fun onEvent(event: DevOptionsUIEvents) {
@@ -25,7 +28,17 @@ class DevVM @Inject constructor(
             DevOptionsUIEvents.TriggerRatingPrompt -> triggerRatingPrompt()
             DevOptionsUIEvents.ResetNews -> resetNews()
             DevOptionsUIEvents.ResetPurchases -> resetPurchases()
+            DevOptionsUIEvents.SendTestNotification -> sendTestNotification()
         }
+    }
+
+    private fun sendTestNotification() {
+        notifier.show(
+            notificationId = TEST_NOTIFICATION_ID,
+            title = "Testowe powiadomienie",
+            text = "To jest testowe powiadomienie. Tapnij, aby otworzyć ekran główny.",
+            destination = NotificationDestination.HOME
+        )
     }
 
     private fun resetPurchases() {
@@ -70,5 +83,9 @@ class DevVM @Inject constructor(
         repeat(5) {
             sharedPreferences.incrementCompletedQuizzesCount()
         }
+    }
+
+    companion object {
+        private const val TEST_NOTIFICATION_ID = 9999
     }
 }

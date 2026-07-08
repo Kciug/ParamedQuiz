@@ -53,6 +53,7 @@ dependencies {
     implementation(project(":billing"))
     implementation(project(":firestore"))
     implementation(project(":revisions"))
+    implementation(project(":notifications"))
 
 
     implementation(libs.androidx.core.splashscreen)

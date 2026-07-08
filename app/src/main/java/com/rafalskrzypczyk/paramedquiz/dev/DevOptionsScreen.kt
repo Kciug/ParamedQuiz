@@ -14,9 +14,15 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import com.rafalskrzypczyk.notifications.NotificationPermission
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,6 +46,13 @@ fun DevOptionsScreen(
         }
     ) { innerPadding ->
         val modifier = Modifier.padding(innerPadding)
+        val context = LocalContext.current
+
+        // Po decyzji o uprawnieniu i tak próbujemy wysłać — Notifier sam pominie wysyłkę,
+        // jeśli powiadomienia są zablokowane.
+        val notificationPermissionLauncher = rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { onEvent.invoke(DevOptionsUIEvents.SendTestNotification) }
 
         Column(
             modifier
@@ -67,6 +80,21 @@ fun DevOptionsScreen(
             }
             Button(onClick = { onEvent.invoke(DevOptionsUIEvents.ResetPurchases) }) {
                 Text("Reset Purchases")
+            }
+            Button(onClick = {
+                val needsRequest = NotificationPermission.requiresRuntimePermission() &&
+                    ContextCompat.checkSelfPermission(
+                        context,
+                        NotificationPermission.POST_NOTIFICATIONS
+                    ) != PackageManager.PERMISSION_GRANTED
+
+                if (needsRequest) {
+                    notificationPermissionLauncher.launch(NotificationPermission.POST_NOTIFICATIONS)
+                } else {
+                    onEvent.invoke(DevOptionsUIEvents.SendTestNotification)
+                }
+            }) {
+                Text("Send Test Notification")
             }
         }
     }
