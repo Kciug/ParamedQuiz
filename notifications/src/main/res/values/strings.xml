@@ -4,6 +4,8 @@
     <string name="notification_channel_reminders_desc">Przypomnienia o nauce i powtórkach.</string>
     <string name="notification_channel_news_name">Nowości i aktualizacje</string>
     <string name="notification_channel_news_desc">Nowe zestawy pytań, aktualizacje i komunikaty.</string>
+    <string name="notification_channel_marketing_name">Marketing</string>
+    <string name="notification_channel_marketing_desc">Promocje, oferty i wiadomości marketingowe.</string>
     <string name="notification_daily_title">Czas na naukę 📚</string>
     <string name="notification_streak_title">Nie przerywaj serii! 🔥</string>
     <string name="notification_winback_title">Wróć do nauki 👋</string>

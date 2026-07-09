@@ -16,5 +16,6 @@ sealed interface DevOptionsUIEvents {
     object SimInactive14: DevOptionsUIEvents
     object SimWeakQuestions: DevOptionsUIEvents
     object ForceConfigRefresh: DevOptionsUIEvents
-    object SimulateContentNotification: DevOptionsUIEvents
+    object SimulateNewsNotification: DevOptionsUIEvents
+    object SimulateMarketingNotification: DevOptionsUIEvents
 }

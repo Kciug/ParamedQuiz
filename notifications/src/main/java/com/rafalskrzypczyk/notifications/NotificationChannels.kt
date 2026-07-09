@@ -9,6 +9,7 @@ import androidx.core.content.getSystemService
 object NotificationChannels {
     const val REMINDERS_CHANNEL_ID = "reminders"
     const val NEWS_CHANNEL_ID = "news"
+    const val MARKETING_CHANNEL_ID = "marketing"
 
     /**
      * Tworzy kanały powiadomień (idempotentne — bezpieczne do wielokrotnego wywołania).
@@ -38,6 +39,17 @@ object NotificationChannels {
                 description = context.getString(R.string.notification_channel_news_desc)
             }
             manager.createNotificationChannel(news)
+        }
+
+        if (manager.getNotificationChannel(MARKETING_CHANNEL_ID) == null) {
+            val marketing = NotificationChannel(
+                MARKETING_CHANNEL_ID,
+                context.getString(R.string.notification_channel_marketing_name),
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                description = context.getString(R.string.notification_channel_marketing_desc)
+            }
+            manager.createNotificationChannel(marketing)
         }
     }
 }

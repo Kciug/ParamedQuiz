@@ -50,12 +50,20 @@ class ContentMessagingService : FirebaseMessagingService() {
         val destination = NotificationDestination.fromExtra(data[NotificationDestination.EXTRA_DESTINATION])
             ?: NotificationDestination.HOME
 
+        // Kategoria = kanał; z payloadu (channel_id lub data["channel"]), domyślnie „news".
+        val requestedChannel = message.notification?.channelId ?: data["channel"]
+        val (channelId, notificationId) = if (requestedChannel == NotificationChannels.MARKETING_CHANNEL_ID) {
+            NotificationChannels.MARKETING_CHANNEL_ID to NotificationIds.MARKETING
+        } else {
+            NotificationChannels.NEWS_CHANNEL_ID to NotificationIds.NEWS
+        }
+
         deps.notifier().show(
-            notificationId = NotificationIds.CONTENT,
+            notificationId = notificationId,
             title = title,
             text = body,
             destination = destination,
-            channelId = NotificationChannels.NEWS_CHANNEL_ID
+            channelId = channelId
         )
     }
 }

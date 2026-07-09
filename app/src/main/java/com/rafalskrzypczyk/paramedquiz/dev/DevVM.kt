@@ -48,12 +48,19 @@ class DevVM @Inject constructor(
             DevOptionsUIEvents.ForceConfigRefresh -> viewModelScope.launch {
                 notificationConfigRepository.refresh(force = true)
             }
-            DevOptionsUIEvents.SimulateContentNotification -> notifier.show(
-                notificationId = NotificationIds.CONTENT,
+            DevOptionsUIEvents.SimulateNewsNotification -> notifier.show(
+                notificationId = NotificationIds.NEWS,
                 title = "🆕 Nowy zestaw pytań",
                 text = "Sprawdź nowe pytania dodane do aplikacji!",
                 destination = NotificationDestination.HOME,
                 channelId = NotificationChannels.NEWS_CHANNEL_ID
+            )
+            DevOptionsUIEvents.SimulateMarketingNotification -> notifier.show(
+                notificationId = NotificationIds.MARKETING,
+                title = "🎉 Promocja Premium",
+                text = "Odblokuj wszystkie tryby w super cenie!",
+                destination = NotificationDestination.HOME,
+                channelId = NotificationChannels.MARKETING_CHANNEL_ID
             )
         }
     }
