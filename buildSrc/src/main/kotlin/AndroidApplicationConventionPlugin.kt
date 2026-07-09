@@ -47,6 +47,13 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                             "proguard-rules.pro"
                         )
                     }
+                    create("staging") {
+                        // Dziedziczy minify/shrink/proguard z release - build testowy ma byc lustrem produkcji
+                        initWith(getByName("release"))
+                        isDebuggable = false
+                        // Ten sam applicationId (bez suffixu) - staging wchodzi na internal track tej samej apki
+                        versionNameSuffix = "-staging" + "%03d".format(ProjectConfig.STAGING_NUMBER)
+                    }
                 }
             }
 

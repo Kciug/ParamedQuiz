@@ -41,6 +41,11 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                             "proguard-rules.pro"
                         )
                     }
+                    // Wariant staging musi istniec w kazdym module - inaczej app:staging przez fallback
+                    // konsumowalby release i flaga DEV_OPTIONS_ENABLED bylaby false
+                    create("staging") {
+                        initWith(getByName("release"))
+                    }
                 }
             }
 

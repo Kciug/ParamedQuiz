@@ -11,6 +11,20 @@ android {
     buildFeatures {
         buildConfig = true
     }
+
+    defaultConfig {
+        // Domyslnie wylaczone (release dziedziczy false); wlaczane w debug i staging ponizej
+        buildConfigField("boolean", "DEV_OPTIONS_ENABLED", "false")
+    }
+
+    buildTypes {
+        getByName("debug") {
+            buildConfigField("boolean", "DEV_OPTIONS_ENABLED", "true")
+        }
+        getByName("staging") {
+            buildConfigField("boolean", "DEV_OPTIONS_ENABLED", "true")
+        }
+    }
 }
 
 dependencies {

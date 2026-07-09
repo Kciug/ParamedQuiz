@@ -31,7 +31,7 @@ import com.rafalskrzypczyk.core.composables.UserStreakLabel
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.core.BuildConfig
 
-private val IS_DEV_MENU_ENABLED = BuildConfig.DEBUG
+private val IS_DEV_MENU_ENABLED = BuildConfig.DEV_OPTIONS_ENABLED
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

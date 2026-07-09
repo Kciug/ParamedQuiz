@@ -52,6 +52,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
+import androidx.core.content.pm.PackageInfoCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import com.rafalskrzypczyk.core.api_response.ResponseState
@@ -66,6 +67,7 @@ import com.rafalskrzypczyk.core.composables.SettingsCategoryHeader
 import com.rafalskrzypczyk.core.composables.SettingsDialog
 import com.rafalskrzypczyk.core.composables.SettingsItemRow
 import com.rafalskrzypczyk.core.composables.SettingsSwitchRow
+import com.rafalskrzypczyk.core.composables.TestBuildBanner
 import com.rafalskrzypczyk.core.composables.TimePickerDialog
 import com.rafalskrzypczyk.core.composables.TextCaption
 import com.rafalskrzypczyk.core.composables.TextPrimary
@@ -90,7 +92,8 @@ fun UserSettingsScreen(
 
     val appVersion = remember {
         runCatching {
-            context.packageManager.getPackageInfo(context.packageName, 0).versionName
+            val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            "${packageInfo.versionName} (${PackageInfoCompat.getLongVersionCode(packageInfo)})"
         }.getOrNull().orEmpty()
     }
     var showAboutDialog by remember { mutableStateOf(false) }
@@ -378,6 +381,10 @@ private fun UserSettingsContent(
                 }
             }
         }
+
+        TestBuildBanner(
+            modifier = Modifier.padding(bottom = Dimens.DEFAULT_PADDING)
+        )
 
         BrandingElement(
             modifier = Modifier
