@@ -9,6 +9,7 @@ import com.rafalskrzypczyk.home_screen.domain.use_cases.UserSettingsUseCases
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
+import com.rafalskrzypczyk.notifications.ContentTopicManager
 import com.rafalskrzypczyk.notifications.ReminderScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,7 +24,8 @@ class UserSettingsVM @Inject constructor(
     private val useCases: UserSettingsUseCases,
     private val premiumStatusProvider: PremiumStatusProvider,
     private val sharedPrefs: SharedPreferencesApi,
-    private val reminderScheduler: ReminderScheduler
+    private val reminderScheduler: ReminderScheduler,
+    private val contentTopicManager: ContentTopicManager
 ) : ViewModel() {
     private val _state = MutableStateFlow(UserSettingsState())
     val state = _state.asStateFlow()
@@ -67,6 +69,7 @@ class UserSettingsVM @Inject constructor(
         sharedPrefs.setNotificationsEnabled(enabled)
         _state.update { it.copy(notificationsEnabled = enabled) }
         if (enabled) reminderScheduler.schedule() else reminderScheduler.cancel()
+        contentTopicManager.ensureSubscription()
     }
 
     private fun setReminderTime(hour: Int, minute: Int) {

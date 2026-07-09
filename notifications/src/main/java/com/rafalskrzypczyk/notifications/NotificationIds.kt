@@ -6,4 +6,6 @@ object NotificationIds {
     const val STREAK_REMINDER = 1002
     const val WINBACK = 1003
     const val REVISION = 1004
+    const val NEWS = 2001
+    const val MARKETING = 2002
 }

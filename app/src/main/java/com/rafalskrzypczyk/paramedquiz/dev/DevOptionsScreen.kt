@@ -156,6 +156,18 @@ fun DevOptionsScreen(
                             info = "Wymaga włączonych powiadomień.",
                             onClick = { onEvent(DevOptionsUIEvents.TriggerReminderNow) }
                         )
+                        DevActionRow(
+                            title = "Symuluj powiadomienie Nowości",
+                            icon = Icons.Outlined.Notifications,
+                            info = "Lokalny podgląd powiadomienia z kanału Nowości (bez FCM).",
+                            onClick = { onEvent(DevOptionsUIEvents.SimulateNewsNotification) }
+                        )
+                        DevActionRow(
+                            title = "Symuluj powiadomienie Marketing",
+                            icon = Icons.Outlined.Notifications,
+                            info = "Lokalny podgląd powiadomienia z kanału Marketing (bez FCM).",
+                            onClick = { onEvent(DevOptionsUIEvents.SimulateMarketingNotification) }
+                        )
                     }
                 }
 

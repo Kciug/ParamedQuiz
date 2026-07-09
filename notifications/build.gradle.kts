@@ -14,5 +14,8 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.kotlinx.serialization.json)
 
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging)
+
     testImplementation(libs.bundles.unit.test)
 }
