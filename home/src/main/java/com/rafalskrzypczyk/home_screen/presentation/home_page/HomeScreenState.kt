@@ -30,5 +30,6 @@ data class HomeScreenState (
     val feedbackText: String = "",
     val isSendingFeedback: Boolean = false,
     val feedbackErrorMessage: String? = null,
-    val newsBanners: List<NewsBannerDTO> = emptyList()
+    val newsBanners: List<NewsBannerDTO> = emptyList(),
+    val showNotificationConsentPrompt: Boolean = false
 )

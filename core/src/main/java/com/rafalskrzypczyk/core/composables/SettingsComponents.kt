@@ -63,6 +63,7 @@ fun SettingsItemRow(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     icon: ImageVector? = null,
+    value: String? = null,
     showChevron: Boolean = true
 ) {
     Row(
@@ -85,6 +86,14 @@ fun SettingsItemRow(
             text = title,
             modifier = Modifier.weight(1f)
         )
+
+        if (value != null) {
+            TextPrimary(
+                text = value,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.width(Dimens.ELEMENTS_SPACING))
+        }
 
         if (showChevron) {
             Icon(

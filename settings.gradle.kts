@@ -36,4 +36,5 @@ include(":cem_mode")
 include(":ads")
 include(":billing")
 include(":revisions")
+include(":notifications")
 

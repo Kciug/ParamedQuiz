@@ -23,8 +23,18 @@ class SharedPreferencesService @Inject constructor(
         const val KEY_RATING_PROMPT_DISABLED = "rating_prompt_disabled"
         const val KEY_LAST_RATING_PROMPT_DATE = "last_rating_prompt_date"
         const val KEY_SEEN_NEWS_IDS = "seen_news_ids"
+        const val KEY_NOTIFICATIONS_ENABLED = "notifications_enabled"
+        const val KEY_REMINDER_HOUR = "reminder_hour"
+        const val KEY_REMINDER_MINUTE = "reminder_minute"
+        const val KEY_NOTIFICATION_PROMPT_COUNT = "notification_prompt_count"
+        const val KEY_LAST_NOTIFICATION_PROMPT_DATE = "last_notification_prompt_date"
+        const val KEY_NOTIFICATION_PROMPT_DISABLED = "notification_prompt_disabled"
+        const val KEY_LAST_WINBACK_DAY_SENT = "last_winback_day_sent"
+        const val KEY_LAST_REVISION_REMINDER_DATE = "last_revision_reminder_date"
 
         const val DEFAULT_STRING_VALUE = ""
+        const val DEFAULT_REMINDER_HOUR = 19
+        const val DEFAULT_REMINDER_MINUTE = 0
     }
 
     override fun getSeenNewsIds(): Set<String> {
@@ -186,6 +196,88 @@ class SharedPreferencesService @Inject constructor(
     override fun setLastRatingPromptDate(timestamp: Long) {
         sharedPreferences.edit {
             putLong(KEY_LAST_RATING_PROMPT_DATE, timestamp)
+        }
+    }
+
+    override fun isNotificationsEnabled(): Boolean {
+        return sharedPreferences.getBoolean(KEY_NOTIFICATIONS_ENABLED, false)
+    }
+
+    override fun setNotificationsEnabled(enabled: Boolean) {
+        sharedPreferences.edit {
+            putBoolean(KEY_NOTIFICATIONS_ENABLED, enabled)
+        }
+    }
+
+    override fun getReminderHour(): Int {
+        return sharedPreferences.getInt(KEY_REMINDER_HOUR, DEFAULT_REMINDER_HOUR)
+    }
+
+    override fun getReminderMinute(): Int {
+        return sharedPreferences.getInt(KEY_REMINDER_MINUTE, DEFAULT_REMINDER_MINUTE)
+    }
+
+    override fun setReminderTime(hour: Int, minute: Int) {
+        sharedPreferences.edit {
+            putInt(KEY_REMINDER_HOUR, hour)
+            putInt(KEY_REMINDER_MINUTE, minute)
+        }
+    }
+
+    override fun getNotificationPromptCount(): Int {
+        return sharedPreferences.getInt(KEY_NOTIFICATION_PROMPT_COUNT, 0)
+    }
+
+    override fun incrementNotificationPromptCount() {
+        val current = getNotificationPromptCount()
+        sharedPreferences.edit {
+            putInt(KEY_NOTIFICATION_PROMPT_COUNT, current + 1)
+        }
+    }
+
+    override fun resetNotificationPromptCount() {
+        sharedPreferences.edit {
+            putInt(KEY_NOTIFICATION_PROMPT_COUNT, 0)
+        }
+    }
+
+    override fun getLastNotificationPromptDate(): Long {
+        return sharedPreferences.getLong(KEY_LAST_NOTIFICATION_PROMPT_DATE, 0L)
+    }
+
+    override fun setLastNotificationPromptDate(timestamp: Long) {
+        sharedPreferences.edit {
+            putLong(KEY_LAST_NOTIFICATION_PROMPT_DATE, timestamp)
+        }
+    }
+
+    override fun isNotificationPromptDisabled(): Boolean {
+        return sharedPreferences.getBoolean(KEY_NOTIFICATION_PROMPT_DISABLED, false)
+    }
+
+    override fun setNotificationPromptDisabled(disabled: Boolean) {
+        sharedPreferences.edit {
+            putBoolean(KEY_NOTIFICATION_PROMPT_DISABLED, disabled)
+        }
+    }
+
+    override fun getLastWinbackDaySent(): Int {
+        return sharedPreferences.getInt(KEY_LAST_WINBACK_DAY_SENT, 0)
+    }
+
+    override fun setLastWinbackDaySent(day: Int) {
+        sharedPreferences.edit {
+            putInt(KEY_LAST_WINBACK_DAY_SENT, day)
+        }
+    }
+
+    override fun getLastRevisionReminderDate(): Long {
+        return sharedPreferences.getLong(KEY_LAST_REVISION_REMINDER_DATE, 0L)
+    }
+
+    override fun setLastRevisionReminderDate(timestamp: Long) {
+        sharedPreferences.edit {
+            putLong(KEY_LAST_REVISION_REMINDER_DATE, timestamp)
         }
     }
 }

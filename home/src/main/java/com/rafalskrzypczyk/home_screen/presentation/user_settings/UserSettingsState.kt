@@ -17,10 +17,15 @@ data class UserSettingsState(
     
     val isAnonymous: Boolean = false,
 
+    val notificationsEnabled: Boolean = false,
+    val reminderHour: Int = 19,
+    val reminderMinute: Int = 0,
+
     val showChangePasswordDialog: Boolean = false,
     val showChangeUsernameDialog: Boolean = false,
     val showDeleteAccountDialog: Boolean = false,
     val showDeleteProgressDialog: Boolean = false,
+    val showTimePickerDialog: Boolean = false,
 
     val showSuccessToast: Boolean = false
 )

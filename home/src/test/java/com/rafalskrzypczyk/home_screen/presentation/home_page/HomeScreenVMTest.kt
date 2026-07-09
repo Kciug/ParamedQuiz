@@ -4,6 +4,7 @@ import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.home_screen.domain.HomeScreenUseCases
+import com.rafalskrzypczyk.notifications.ReminderScheduler
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
@@ -24,6 +25,7 @@ class HomeScreenVMTest {
     private lateinit var useCases: HomeScreenUseCases
     private lateinit var premiumStatusProvider: PremiumStatusProvider
     private lateinit var billingRepository: BillingRepository
+    private lateinit var reminderScheduler: ReminderScheduler
     private lateinit var viewModel: HomeScreenVM
 
     @Before
@@ -33,13 +35,14 @@ class HomeScreenVMTest {
         useCases = mockk(relaxed = true)
         premiumStatusProvider = mockk(relaxed = true)
         billingRepository = mockk(relaxed = true)
-        
+        reminderScheduler = mockk(relaxed = true)
+
         every { billingRepository.availableProducts } returns flowOf(emptyList())
         every { useCases.getUserScore() } returns flowOf(mockk(relaxed = true))
         every { useCases.getUserData() } returns flowOf(mockk(relaxed = true))
         every { premiumStatusProvider.ownedProductIds } returns flowOf(emptySet())
         
-        viewModel = HomeScreenVM(useCases, premiumStatusProvider, billingRepository)
+        viewModel = HomeScreenVM(useCases, premiumStatusProvider, billingRepository, reminderScheduler)
     }
 
     @After

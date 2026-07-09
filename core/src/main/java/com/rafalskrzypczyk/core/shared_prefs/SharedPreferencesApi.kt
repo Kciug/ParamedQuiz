@@ -46,4 +46,27 @@ interface SharedPreferencesApi {
     fun getSeenNewsIds(): Set<String>
     fun addSeenNewsId(id: String)
     fun clearSeenNewsIds()
+
+    fun isNotificationsEnabled(): Boolean
+    fun setNotificationsEnabled(enabled: Boolean)
+
+    fun getReminderHour(): Int
+    fun getReminderMinute(): Int
+    fun setReminderTime(hour: Int, minute: Int)
+
+    fun getNotificationPromptCount(): Int
+    fun incrementNotificationPromptCount()
+    fun resetNotificationPromptCount()
+
+    fun getLastNotificationPromptDate(): Long
+    fun setLastNotificationPromptDate(timestamp: Long)
+
+    fun isNotificationPromptDisabled(): Boolean
+    fun setNotificationPromptDisabled(disabled: Boolean)
+
+    fun getLastWinbackDaySent(): Int
+    fun setLastWinbackDaySent(day: Int)
+
+    fun getLastRevisionReminderDate(): Long
+    fun setLastRevisionReminderDate(timestamp: Long)
 }

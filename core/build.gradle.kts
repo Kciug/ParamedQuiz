@@ -7,6 +7,10 @@ plugins {
 
 android {
     namespace = "com.rafalskrzypczyk.core"
+
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {

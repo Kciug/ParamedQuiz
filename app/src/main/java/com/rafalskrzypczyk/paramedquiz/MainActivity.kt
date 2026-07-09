@@ -1,5 +1,6 @@
 package com.rafalskrzypczyk.paramedquiz
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -18,9 +19,13 @@ import com.rafalskrzypczyk.core.ads.AdManager
 import com.rafalskrzypczyk.core.composables.ErrorDialog
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
+import com.rafalskrzypczyk.notifications.NotificationDestination
 import com.rafalskrzypczyk.paramedquiz.navigation.AppNavHost
+import com.rafalskrzypczyk.paramedquiz.navigation.navigateToMainMenu
+import com.rafalskrzypczyk.paramedquiz.navigation.navigateToRevisionsMode
 import com.rafalskrzypczyk.score.domain.ScoreManager
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -36,14 +41,19 @@ class MainActivity : ComponentActivity() {
 
     private val viewModel: MainActivityVM by viewModels()
 
+    /** Cel deep-linku z tapniętego powiadomienia; kolekcjonowany w [Navigation]. */
+    private val deepLinkDestination = MutableStateFlow<NotificationDestination?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
-        
+
         if (sharedPreferences.getInstallDate() == 0L) {
             sharedPreferences.setInstallDate(System.currentTimeMillis())
         }
-        
+
+        handleDeepLinkIntent(intent)
+
         enableEdgeToEdge()
         setContent {
             ParamedQuizTheme {
@@ -78,9 +88,22 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleDeepLinkIntent(intent)
+    }
+
     override fun onStop() {
         super.onStop()
         scoreManager.forceSync()
+    }
+
+    private fun handleDeepLinkIntent(intent: Intent?) {
+        val destination = NotificationDestination.fromExtra(
+            intent?.getStringExtra(NotificationDestination.EXTRA_DESTINATION)
+        ) ?: return
+        deepLinkDestination.value = destination
     }
 
     @Composable
@@ -92,6 +115,18 @@ class MainActivity : ComponentActivity() {
                 navController.navigate(destination) {
                     popUpTo(0) { inclusive = true }
                 }
+            }
+        }
+
+        LaunchedEffect(Unit) {
+            deepLinkDestination.collect { destination ->
+                when (destination) {
+                    NotificationDestination.HOME -> navController.navigateToMainMenu()
+                    NotificationDestination.REVISIONS -> navController.navigateToRevisionsMode()
+                    null -> Unit
+                }
+                // Skonsumuj cel, żeby nie nawigować ponownie przy recompositions.
+                if (destination != null) deepLinkDestination.value = null
             }
         }
 
@@ -109,4 +144,3 @@ class MainActivity : ComponentActivity() {
         viewModel.onEvent(MainActivityUIEvents.OnboardingFinished)
     }
 }
-
