@@ -1,6 +1,7 @@
 package com.rafalskrzypczyk.core.composables
 
 import android.content.res.Configuration
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -8,10 +9,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -21,6 +24,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -102,6 +106,39 @@ fun SettingsItemRow(
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+    }
+}
+
+/**
+ * Subtelny panel informacyjny pod pozycja ustawien/dev-options - wyjasnia warunki dzialania
+ * opcji (np. wymagane uprawnienia), zeby tester nie zglaszal falszywych bledow.
+ */
+@Composable
+fun SettingsInfoPanel(
+    text: String,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = Dimens.DEFAULT_PADDING)
+            .padding(bottom = Dimens.SMALL_PADDING)
+            .clip(RoundedCornerShape(Dimens.RADIUS_SMALL))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .padding(horizontal = Dimens.SMALL_PADDING, vertical = Dimens.SMALL_PADDING),
+        verticalAlignment = Alignment.Top
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.Info,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(18.dp)
+        )
+        Spacer(modifier = Modifier.width(Dimens.ELEMENTS_SPACING_SMALL))
+        TextCaption(
+            text = text,
+            modifier = Modifier.weight(1f)
+        )
     }
 }
 
