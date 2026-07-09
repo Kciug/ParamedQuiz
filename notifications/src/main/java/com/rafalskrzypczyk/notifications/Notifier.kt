@@ -25,13 +25,14 @@ class Notifier @Inject constructor(
         notificationId: Int,
         title: String,
         text: String,
-        destination: NotificationDestination
+        destination: NotificationDestination,
+        channelId: String = NotificationChannels.REMINDERS_CHANNEL_ID
     ) {
         if (!NotificationPermission.areNotificationsEnabled(context)) return
 
         NotificationChannels.ensureCreated(context)
 
-        val notification = NotificationCompat.Builder(context, NotificationChannels.REMINDERS_CHANNEL_ID)
+        val notification = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(title)
             .setContentText(text)

@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
+import com.rafalskrzypczyk.notifications.NotificationChannels
 import com.rafalskrzypczyk.notifications.NotificationDestination
+import com.rafalskrzypczyk.notifications.NotificationIds
 import com.rafalskrzypczyk.notifications.Notifier
 import com.rafalskrzypczyk.notifications.ReminderScheduler
 import com.rafalskrzypczyk.notifications.config.NotificationConfigRepository
@@ -46,6 +48,13 @@ class DevVM @Inject constructor(
             DevOptionsUIEvents.ForceConfigRefresh -> viewModelScope.launch {
                 notificationConfigRepository.refresh(force = true)
             }
+            DevOptionsUIEvents.SimulateContentNotification -> notifier.show(
+                notificationId = NotificationIds.CONTENT,
+                title = "🆕 Nowy zestaw pytań",
+                text = "Sprawdź nowe pytania dodane do aplikacji!",
+                destination = NotificationDestination.HOME,
+                channelId = NotificationChannels.NEWS_CHANNEL_ID
+            )
         }
     }
 

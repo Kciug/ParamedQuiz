@@ -12,6 +12,7 @@ import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.composables.rating.RatingPromptState
 import com.rafalskrzypczyk.core.domain.UserFeedback
 import com.rafalskrzypczyk.home_screen.domain.HomeScreenUseCases
+import com.rafalskrzypczyk.notifications.ContentTopicManager
 import com.rafalskrzypczyk.notifications.ReminderScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -28,7 +29,8 @@ class HomeScreenVM @Inject constructor(
     private val useCases: HomeScreenUseCases,
     private val premiumStatusProvider: PremiumStatusProvider,
     private val billingRepository: BillingRepository,
-    private val reminderScheduler: ReminderScheduler
+    private val reminderScheduler: ReminderScheduler,
+    private val contentTopicManager: ContentTopicManager
 ): ViewModel() {
     private val _state = MutableStateFlow(HomeScreenState())
     val state = _state.asStateFlow()
@@ -222,6 +224,7 @@ class HomeScreenVM @Inject constructor(
     private fun onNotificationConsentAccepted() {
         useCases.setNotificationsEnabled(true)
         reminderScheduler.schedule()
+        contentTopicManager.ensureSubscription()
         _state.update { it.copy(showNotificationConsentPrompt = false) }
     }
 
