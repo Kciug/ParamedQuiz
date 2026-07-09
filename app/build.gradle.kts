@@ -32,6 +32,15 @@ android {
         release {
             signingConfig = signingConfigs.getByName("release")
         }
+        getByName("staging") {
+            // W CI podpisujemy kluczem uploadu (Play wymaga tego klucza dla tej apki);
+            // lokalnie (brak keystore.jks) fallback na debug, zeby build sie skladal
+            signingConfig = if (file("keystore.jks").exists()) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
+        }
     }
 }
 

@@ -1,18 +1,8 @@
-name: Release to Play Store
+name: Staging to Play Store (Internal)
 
 on:
   workflow_dispatch: # Uruchamianie ręczne przyciskiem
     inputs:
-      version_type:
-        description: 'Version Bump Type'
-        required: true
-        default: 'patch'
-        type: choice
-        options:
-          - patch
-          - minor
-          - major
-          - none
       release_notes:
         description: 'Release Notes (optional)'
         required: false
@@ -62,9 +52,9 @@ jobs:
           echo "ADMOB_INTERSTITIAL_UNIT_ID=${{ secrets.ADMOB_INTERSTITIAL_UNIT_ID }}" >> local.properties
           echo "GOOGLE_WEB_CLIENT_ID=${{ secrets.GOOGLE_WEB_CLIENT_ID }}" >> local.properties
 
-      # 3. Podbijanie wersji
-      - name: Bump Version
-        run: python buildSrc/scripts/bump_version.py ${{ github.event.inputs.version_type }}
+      # 3. Podbijanie numeru stagingu (STAGING_NUMBER + VERSION_CODE, VERSION_NAME bez zmian)
+      - name: Bump Staging Version
+        run: python buildSrc/scripts/bump_version.py staging
 
       # 4. Commitowanie nowej wersji do repo
       - name: Commit and Push Version Bump
@@ -72,19 +62,19 @@ jobs:
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
           git add buildSrc/src/main/kotlin/ProjectConfig.kt
-          git commit -m "CI: Bump version [skip ci]"
+          git commit -m "CI: Bump staging version [skip ci]"
           git push
 
-      # 5. Budowanie
+      # 5. Budowanie buildu staging
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build Release AAB
+      - name: Build Staging AAB
         env:
           SIGNING_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           SIGNING_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-        run: ./gradlew bundleRelease
+        run: ./gradlew bundleStaging
 
       # 6. Przygotowanie changeloga
       - name: Prepare Release Notes
@@ -94,14 +84,13 @@ jobs:
             echo "${{ github.event.inputs.release_notes }}" > whatsnew/pl-PL/default.txt
           fi
 
-      # 7. Wysylanie do Sklepu
-      - name: Upload to Play Store
+      # 7. Wysylanie na track internal (testy wewnetrzne)
+      - name: Upload to Play Store (Internal)
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_CONSOLE_JSON }}
           packageName: com.frontfolks.mediquiz
-          releaseFiles: app/build/outputs/bundle/release/app-release.aab
-          track: alpha # Testy zamkniete (closed testing). Jesli masz nazwany track - wpisz jego nazwe
-          status: draft
+          releaseFiles: app/build/outputs/bundle/staging/app-staging.aab
+          track: internal
+          status: completed # Od razu dostepne dla testerow wewnetrznych
           whatsNewDirectory: whatsnew
-
