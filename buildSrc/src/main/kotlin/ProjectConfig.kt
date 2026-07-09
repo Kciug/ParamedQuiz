@@ -5,5 +5,5 @@ object ProjectConfig {
     const val COMPILE_SDK = 36
     const val VERSION_CODE = 114
     const val VERSION_NAME = "1.0.0"
-    const val STAGING_NUMBER = 0 // Podbijane przez staging CI; resetowane do 0 przy realnym release
+    const val STAGING_NUMBER = 4 // Podbijane przez staging CI; resetowane do 0 przy realnym release
 }
