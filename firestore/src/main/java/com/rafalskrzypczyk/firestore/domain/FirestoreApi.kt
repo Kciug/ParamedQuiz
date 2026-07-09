@@ -6,6 +6,8 @@ import com.rafalskrzypczyk.firestore.domain.models.CemCategoryDTO
 import com.rafalskrzypczyk.firestore.domain.models.FeedbackDTO
 import com.rafalskrzypczyk.firestore.domain.models.IssueReportDTO
 import com.rafalskrzypczyk.firestore.domain.models.NewsBannerDTO
+import com.rafalskrzypczyk.firestore.domain.models.NotificationConfigDTO
+import com.rafalskrzypczyk.firestore.domain.models.NotificationTemplateDTO
 import com.rafalskrzypczyk.firestore.domain.models.QuestionDTO
 import com.rafalskrzypczyk.firestore.domain.models.ScoreDTO
 import com.rafalskrzypczyk.firestore.domain.models.SwipeQuestionDTO
@@ -41,4 +43,7 @@ interface FirestoreApi {
     fun getNewsBanners(): Flow<Response<List<NewsBannerDTO>>>
 
     fun getNewsBannerUpdates(): Flow<List<NewsBannerDTO>>
+
+    fun getNotificationConfig(): Flow<Response<NotificationConfigDTO>>
+    fun getNotificationTemplates(): Flow<Response<List<NotificationTemplateDTO>>>
 }

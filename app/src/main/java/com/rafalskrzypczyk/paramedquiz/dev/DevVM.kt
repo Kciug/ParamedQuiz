@@ -7,6 +7,7 @@ import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
 import com.rafalskrzypczyk.notifications.NotificationDestination
 import com.rafalskrzypczyk.notifications.Notifier
 import com.rafalskrzypczyk.notifications.ReminderScheduler
+import com.rafalskrzypczyk.notifications.config.NotificationConfigRepository
 import com.rafalskrzypczyk.score.domain.QuestionAnnotation
 import com.rafalskrzypczyk.score.domain.ScoreManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,7 +23,8 @@ class DevVM @Inject constructor(
     private val billingRepository: BillingRepository,
     private val notifier: Notifier,
     private val reminderScheduler: ReminderScheduler,
-    private val scoreManager: ScoreManager
+    private val scoreManager: ScoreManager,
+    private val notificationConfigRepository: NotificationConfigRepository
 ): ViewModel() {
 
     fun onEvent(event: DevOptionsUIEvents) {
@@ -41,6 +43,9 @@ class DevVM @Inject constructor(
             DevOptionsUIEvents.SimInactive7 -> simulateStreak(daysAgo = 7, streak = 5)
             DevOptionsUIEvents.SimInactive14 -> simulateStreak(daysAgo = 14, streak = 5)
             DevOptionsUIEvents.SimWeakQuestions -> simulateWeakQuestions()
+            DevOptionsUIEvents.ForceConfigRefresh -> viewModelScope.launch {
+                notificationConfigRepository.refresh(force = true)
+            }
         }
     }
 

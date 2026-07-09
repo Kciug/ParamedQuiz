@@ -16,6 +16,8 @@ import com.rafalskrzypczyk.firestore.domain.models.CemCategoryDTO
 import com.rafalskrzypczyk.firestore.domain.models.FeedbackDTO
 import com.rafalskrzypczyk.firestore.domain.models.IssueReportDTO
 import com.rafalskrzypczyk.firestore.domain.models.NewsBannerDTO
+import com.rafalskrzypczyk.firestore.domain.models.NotificationConfigDTO
+import com.rafalskrzypczyk.firestore.domain.models.NotificationTemplateDTO
 import com.rafalskrzypczyk.firestore.domain.models.QuestionDTO
 import com.rafalskrzypczyk.firestore.domain.models.ScoreDTO
 import com.rafalskrzypczyk.firestore.domain.models.SwipeQuestionDTO
@@ -177,6 +179,25 @@ class FirestoreService @Inject constructor(
 
     override fun getNewsBannerUpdates(): Flow<List<NewsBannerDTO>> = attachFirestoreListener(FirestoreCollections.NEWS_BANNERS)
         .map { it.toObjects(NewsBannerDTO::class.java).filter { banner -> banner.isActive } }
+
+    override fun getNotificationConfig(): Flow<Response<NotificationConfigDTO>> = flow {
+        emit(Response.Loading)
+        val config = firestore.collection(FirestoreCollections.APP_CONFIG)
+            .document(FirestoreCollections.NOTIFICATIONS_CONFIG)
+            .get()
+            .await()
+            .toObject(NotificationConfigDTO::class.java)
+        emit(config?.let { Response.Success(it) } ?: Response.Error(resourceProvider.getString(R.string.error_no_data)))
+    }.catch { emit(Response.Error(handleError(it))) }
+
+    override fun getNotificationTemplates(): Flow<Response<List<NotificationTemplateDTO>>> = flow {
+        emit(Response.Loading)
+        val templates = firestore.collection(FirestoreCollections.NOTIFICATION_TEMPLATES)
+            .get()
+            .await()
+            .toObjects(NotificationTemplateDTO::class.java)
+        emit(Response.Success(templates))
+    }.catch { emit(Response.Error(handleError(it))) }
 
     private fun handleError(e: Throwable): String {
         return if (e is FirebaseFirestoreException) {

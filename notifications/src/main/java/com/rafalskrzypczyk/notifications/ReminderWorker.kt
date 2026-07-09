@@ -5,6 +5,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
+import com.rafalskrzypczyk.notifications.config.NotificationConfigRepository
 import com.rafalskrzypczyk.score.domain.ScoreRepository
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -25,6 +26,7 @@ interface ReminderWorkerEntryPoint {
     fun notifier(): Notifier
     fun sharedPrefs(): SharedPreferencesApi
     fun reminderScheduler(): ReminderScheduler
+    fun configRepository(): NotificationConfigRepository
 }
 
 /**
@@ -43,6 +45,7 @@ class ReminderWorker(
     override suspend fun doWork(): Result {
         val sharedPrefs = deps.sharedPrefs()
         val reminderScheduler = deps.reminderScheduler()
+        val configRepo = deps.configRepository()
 
         // Wyłączone w apce — nic nie rób i nie przeplanowuj (anulowanie realizuje scheduler).
         if (!sharedPrefs.isNotificationsEnabled()) return Result.success()
@@ -52,6 +55,9 @@ class ReminderWorker(
             reminderScheduler.schedule()
             return Result.success()
         }
+
+        // Odświeżenie configu z Firestore (time-boxed do raz/7 dni); ciche na błędach.
+        configRepo.refresh()
 
         val scoreResponse = deps.scoreRepository().getUserScore().first { it !is Response.Loading }
         if (scoreResponse is Response.Success) {
@@ -65,9 +71,12 @@ class ReminderWorker(
                 now = Date(),
                 lastWinbackDaySent = sharedPrefs.getLastWinbackDaySent(),
                 weakQuestionsCount = weakCount,
-                lastRevisionReminderDate = sharedPrefs.getLastRevisionReminderDate()
+                lastRevisionReminderDate = sharedPrefs.getLastRevisionReminderDate(),
+                streakMinValue = configRepo.streakMinValue(),
+                winbackDays = configRepo.winbackDays(),
+                revisionIntervalDays = configRepo.revisionIntervalDays()
             )
-            handleDecision(decision, sharedPrefs)
+            handleDecision(decision, sharedPrefs, configRepo)
         }
         // Response.Error / brak danych → zachowawczo nic nie wysyłamy.
 
@@ -75,7 +84,11 @@ class ReminderWorker(
         return Result.success()
     }
 
-    private fun handleDecision(decision: ReminderDecision, sharedPrefs: SharedPreferencesApi) {
+    private fun handleDecision(
+        decision: ReminderDecision,
+        sharedPrefs: SharedPreferencesApi,
+        configRepo: NotificationConfigRepository
+    ) {
         val notifier = deps.notifier()
         when (decision) {
             // None występuje tylko przy DONE dziś — resetujemy próg win-backu na nową nieaktywność.
@@ -84,14 +97,14 @@ class ReminderWorker(
             ReminderDecision.Daily -> notifier.show(
                 notificationId = NotificationIds.DAILY_REMINDER,
                 title = applicationContext.getString(R.string.notification_daily_title),
-                text = DailyReminderContent.random(),
+                text = configRepo.dailyText(),
                 destination = NotificationDestination.HOME
             )
 
             is ReminderDecision.Streak -> notifier.show(
                 notificationId = NotificationIds.STREAK_REMINDER,
                 title = applicationContext.getString(R.string.notification_streak_title),
-                text = StreakReminderContent.random(decision.streak),
+                text = configRepo.streakText(decision.streak),
                 destination = NotificationDestination.HOME
             )
 
@@ -99,7 +112,7 @@ class ReminderWorker(
                 notifier.show(
                     notificationId = NotificationIds.WINBACK,
                     title = applicationContext.getString(R.string.notification_winback_title),
-                    text = WinbackReminderContent.forDay(decision.day),
+                    text = configRepo.winbackText(decision.day),
                     destination = NotificationDestination.HOME
                 )
                 sharedPrefs.setLastWinbackDaySent(decision.day)
@@ -109,7 +122,7 @@ class ReminderWorker(
                 notifier.show(
                     notificationId = NotificationIds.REVISION,
                     title = applicationContext.getString(R.string.notification_revision_title),
-                    text = RevisionReminderContent.random(),
+                    text = configRepo.revisionText(),
                     destination = NotificationDestination.REVISIONS
                 )
                 sharedPrefs.setLastRevisionReminderDate(System.currentTimeMillis())

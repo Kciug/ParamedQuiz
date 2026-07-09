@@ -114,6 +114,9 @@ fun DevOptionsScreen(
             Button(onClick = { onEvent.invoke(DevOptionsUIEvents.SimWeakQuestions) }) {
                 Text("Sim Weak Questions")
             }
+            Button(onClick = { onEvent.invoke(DevOptionsUIEvents.ForceConfigRefresh) }) {
+                Text("Force Config Refresh")
+            }
         }
     }
 }
