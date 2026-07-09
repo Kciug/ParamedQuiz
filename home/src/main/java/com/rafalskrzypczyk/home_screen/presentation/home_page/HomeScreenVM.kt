@@ -212,9 +212,7 @@ class HomeScreenVM @Inject constructor(
     }
 
     private fun checkNotificationConsentEligibility() {
-        // Nie pokazujemy dwóch promptów naraz — prompt oceny ma pierwszeństwo, gdy jest widoczny.
-        if (state.value.ratingPromptState != RatingPromptState.HIDDEN) return
-
+        // Priming (dialog modalny) i prompt oceny (karta) żyją na różnych warstwach — mogą współistnieć.
         if (useCases.checkNotificationConsentEligibility()) {
             useCases.markNotificationPromptShown()
             _state.update { it.copy(showNotificationConsentPrompt = true) }
