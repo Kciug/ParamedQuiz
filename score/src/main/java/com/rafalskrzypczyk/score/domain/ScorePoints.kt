@@ -1,13 +1,11 @@
 package com.rafalskrzypczyk.score.domain
 
 object ScorePoints {
-    const val CORRECT = 100
-    const val FIRST_CORRECT = 300
-    const val ZERO = 0
+    private const val ZERO = 0
 
     fun calculateForQuestion(isCorrect: Boolean, firstCorrect: Boolean) : Int {
         return if(isCorrect) {
-            if(firstCorrect) FIRST_CORRECT else CORRECT
+            if(firstCorrect) ScoreConfig.FIRST_CORRECT else ScoreConfig.CORRECT
         } else ZERO
     }
 }

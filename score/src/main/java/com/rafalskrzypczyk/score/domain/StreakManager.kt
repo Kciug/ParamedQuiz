@@ -8,15 +8,11 @@ import java.util.Date
 class StreakManager @Inject constructor(
     private val scoreManager: ScoreManager
 ) {
-    companion object {
-        private const val STREAK_POINTS_THRESHOLD = 3
-    }
-
     private var increaseStreakPoints = 0
 
     fun increaseStreakByQuestions(): Boolean {
         increaseStreakPoints++
-        if (increaseStreakPoints >= STREAK_POINTS_THRESHOLD) {
+        if (increaseStreakPoints >= ScoreConfig.STREAK_POINTS_THRESHOLD) {
             return increaseStreakForToday()
         }
         return false

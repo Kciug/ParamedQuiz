@@ -1,5 +1,6 @@
 package com.rafalskrzypczyk.revisions.domain.engine
 
+import com.rafalskrzypczyk.revisions.domain.RevisionsConfig
 import com.rafalskrzypczyk.revisions.domain.models.RevisionQuestion
 
 sealed interface RevisionAnswerResult {
@@ -83,7 +84,7 @@ class RevisionsSessionEngine {
             val currentErrors = (errorCounts[questionId] ?: 0) + 1
             errorCounts[questionId] = currentErrors
 
-            if (currentErrors >= 3) {
+            if (currentErrors >= RevisionsConfig.MAX_ERRORS_PER_QUESTION) {
                 queue.removeAt(0)
                 failedQuestionIds.add(questionId)
                 val isSessionFinished = queue.isEmpty()

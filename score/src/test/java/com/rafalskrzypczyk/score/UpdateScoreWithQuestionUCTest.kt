@@ -3,7 +3,7 @@ package com.rafalskrzypczyk.score
 import com.rafalskrzypczyk.score.domain.QuestionAnnotation
 import com.rafalskrzypczyk.score.domain.Score
 import com.rafalskrzypczyk.score.domain.ScoreManager
-import com.rafalskrzypczyk.score.domain.ScorePoints
+import com.rafalskrzypczyk.score.domain.ScoreConfig
 import com.rafalskrzypczyk.score.domain.use_cases.UpdateScoreWithQuestionUC
 import io.mockk.every
 import io.mockk.mockk
@@ -36,7 +36,7 @@ class UpdateScoreWithQuestionUCTest {
         verify(exactly = 1) { scoreManager.updateScore(capture(slot)) }
 
         val updated = slot.captured
-        assertEquals(ScorePoints.FIRST_CORRECT, updated.score)
+        assertEquals(ScoreConfig.FIRST_CORRECT, updated.score)
         assertEquals(1, updated.seenQuestions.size)
 
         with(updated.seenQuestions.first()) {
@@ -60,7 +60,7 @@ class UpdateScoreWithQuestionUCTest {
         verify { scoreManager.updateScore(capture(slot)) }
 
         val updated = slot.captured
-        assertEquals((10 + ScorePoints.CORRECT), updated.score)
+        assertEquals((10 + ScoreConfig.CORRECT), updated.score)
         val q = updated.seenQuestions.first()
         assertEquals(2, q.timesSeen)
         assertEquals(2, q.timesCorrect)

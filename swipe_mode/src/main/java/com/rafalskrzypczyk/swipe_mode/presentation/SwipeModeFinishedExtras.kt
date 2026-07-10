@@ -294,10 +294,6 @@ fun TimeStat(
     }
 }
 
-private const val IMPULSIVE_RATIO = 0.7f
-private const val HESITANT_RATIO = 1.3f
-private const val MIN_ERRORS_FOR_VERDICT = 3
-
 @Composable
 fun SpeedAccuracySection(
     avgTimeCorrectMs: Long,
@@ -316,17 +312,17 @@ fun SpeedAccuracySection(
             feedbackMsg = stringResource(R.string.feedback_perfect_msg)
             highlightColor = MQGreen
         }
-        correctAnswers == 0 || wrongAnswers < MIN_ERRORS_FOR_VERDICT -> {
+        correctAnswers == 0 || wrongAnswers < SwipeVerdictConfig.MIN_ERRORS_FOR_VERDICT -> {
             feedbackTitle = stringResource(R.string.speed_verdict_insufficient_title)
             feedbackMsg = stringResource(R.string.speed_verdict_insufficient_msg)
             highlightColor = MaterialTheme.colorScheme.primary
         }
-        avgTimeWrongMs < avgTimeCorrectMs * IMPULSIVE_RATIO -> {
+        avgTimeWrongMs < avgTimeCorrectMs * SwipeVerdictConfig.IMPULSIVE_RATIO -> {
             feedbackTitle = stringResource(R.string.speed_verdict_impulsive_title)
             feedbackMsg = stringResource(R.string.speed_verdict_impulsive_msg)
             highlightColor = MaterialTheme.colorScheme.tertiary
         }
-        avgTimeWrongMs > avgTimeCorrectMs * HESITANT_RATIO -> {
+        avgTimeWrongMs > avgTimeCorrectMs * SwipeVerdictConfig.HESITANT_RATIO -> {
             feedbackTitle = stringResource(R.string.speed_verdict_hesitant_title)
             feedbackMsg = stringResource(R.string.speed_verdict_hesitant_msg)
             highlightColor = MaterialTheme.colorScheme.error
