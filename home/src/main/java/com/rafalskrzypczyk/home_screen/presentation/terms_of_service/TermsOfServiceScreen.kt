@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
@@ -33,6 +34,7 @@ import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.Loading
 import com.rafalskrzypczyk.core.composables.TextHeadline
 import com.rafalskrzypczyk.core.composables.TextPrimary
+import com.rafalskrzypczyk.core.testing.TestTags
 import com.rafalskrzypczyk.home.R
 import com.rafalskrzypczyk.home_screen.presentation.terms_of_service.components.TermsOfServiceTopBar
 
@@ -102,7 +104,9 @@ fun TermsOfServiceScreen(
 
                         ButtonPrimary(
                             title = stringResource(R.string.accept_terms_button),
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag(TestTags.TOS_ACCEPT_BUTTON),
                             onClick = { onEvent(TermsOfServiceUIEvents.AcceptTerms) }
                         )
                     }
