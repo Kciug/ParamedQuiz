@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.FactCheck
 import androidx.compose.material.icons.automirrored.filled.MenuBook
@@ -288,10 +289,13 @@ fun OnboardingSequenceLoginPageLoginSuccessfullyBadge() {
         TextPrimary(
             text = stringResource(R.string.ob_page_end_logged_successfully),
             color = Color.Black,
-            modifier = Modifier.padding(
-                start = Dimens.ELEMENTS_SPACING_SMALL,
-                end = Dimens.DEFAULT_PADDING
-            )
+            maxLines = 1,
+            autoSize = TextAutoSize.StepBased(
+                minFontSize = 12.sp,
+                maxFontSize = 16.sp,
+                stepSize = 1.sp
+            ),
+            modifier = Modifier.padding(start = Dimens.ELEMENTS_SPACING_SMALL)
         )
     }
 }
