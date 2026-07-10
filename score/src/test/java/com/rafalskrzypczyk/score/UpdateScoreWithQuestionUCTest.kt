@@ -1,9 +1,10 @@
 package com.rafalskrzypczyk.score
 
+import com.rafalskrzypczyk.core.domain.config.GameplayConfig
+import com.rafalskrzypczyk.core.domain.config.GameplayConfigProvider
 import com.rafalskrzypczyk.score.domain.QuestionAnnotation
 import com.rafalskrzypczyk.score.domain.Score
 import com.rafalskrzypczyk.score.domain.ScoreManager
-import com.rafalskrzypczyk.score.domain.ScoreConfig
 import com.rafalskrzypczyk.score.domain.use_cases.UpdateScoreWithQuestionUC
 import io.mockk.every
 import io.mockk.mockk
@@ -17,10 +18,15 @@ class UpdateScoreWithQuestionUCTest {
     private lateinit var scoreManager: ScoreManager
     private lateinit var updateScoreWithQuestionUC: UpdateScoreWithQuestionUC
 
+    private val gameplayConfig = mockk<GameplayConfigProvider> {
+        every { correctPoints() } returns GameplayConfig.DEFAULT.correctPoints
+        every { firstCorrectPoints() } returns GameplayConfig.DEFAULT.firstCorrectPoints
+    }
+
     @Before
     fun setup() {
         scoreManager = mockk(relaxed = true)
-        updateScoreWithQuestionUC = UpdateScoreWithQuestionUC(scoreManager)
+        updateScoreWithQuestionUC = UpdateScoreWithQuestionUC(scoreManager, gameplayConfig)
     }
 
     @Test
@@ -36,7 +42,7 @@ class UpdateScoreWithQuestionUCTest {
         verify(exactly = 1) { scoreManager.updateScore(capture(slot)) }
 
         val updated = slot.captured
-        assertEquals(ScoreConfig.FIRST_CORRECT, updated.score)
+        assertEquals(GameplayConfig.DEFAULT.firstCorrectPoints, updated.score)
         assertEquals(1, updated.seenQuestions.size)
 
         with(updated.seenQuestions.first()) {
@@ -60,7 +66,7 @@ class UpdateScoreWithQuestionUCTest {
         verify { scoreManager.updateScore(capture(slot)) }
 
         val updated = slot.captured
-        assertEquals((10 + ScoreConfig.CORRECT), updated.score)
+        assertEquals((10 + GameplayConfig.DEFAULT.correctPoints), updated.score)
         val q = updated.seenQuestions.first()
         assertEquals(2, q.timesSeen)
         assertEquals(2, q.timesCorrect)

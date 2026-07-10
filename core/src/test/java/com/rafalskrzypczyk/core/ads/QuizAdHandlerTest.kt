@@ -1,6 +1,7 @@
 package com.rafalskrzypczyk.core.ads
 
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
+import com.rafalskrzypczyk.core.domain.config.GameplayConfigProvider
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -19,6 +20,10 @@ class QuizAdHandlerTest {
     private val premiumStatusProvider = mockk<PremiumStatusProvider> {
         every { isAdsFree } returns isAdsFreeFlow
     }
+    private val gameplayConfig = mockk<GameplayConfigProvider> {
+        every { adFrequency() } returns 20
+        every { exitAdThreshold() } returns 10
+    }
     private val testDispatcher = UnconfinedTestDispatcher()
     private val testScope = TestScope(testDispatcher)
 
@@ -27,7 +32,7 @@ class QuizAdHandlerTest {
     @Before
     fun setUp() {
         isAdsFreeFlow.value = false
-        sut = QuizAdHandler(premiumStatusProvider)
+        sut = QuizAdHandler(premiumStatusProvider, gameplayConfig)
         sut.initialize(testScope)
     }
 

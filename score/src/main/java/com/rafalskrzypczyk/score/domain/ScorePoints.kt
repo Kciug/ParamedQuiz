@@ -3,9 +3,14 @@ package com.rafalskrzypczyk.score.domain
 object ScorePoints {
     private const val ZERO = 0
 
-    fun calculateForQuestion(isCorrect: Boolean, firstCorrect: Boolean) : Int {
+    fun calculateForQuestion(
+        isCorrect: Boolean,
+        firstCorrect: Boolean,
+        correctPoints: Int,
+        firstCorrectPoints: Int
+    ) : Int {
         return if(isCorrect) {
-            if(firstCorrect) ScoreConfig.FIRST_CORRECT else ScoreConfig.CORRECT
+            if(firstCorrect) firstCorrectPoints else correctPoints
         } else ZERO
     }
 }

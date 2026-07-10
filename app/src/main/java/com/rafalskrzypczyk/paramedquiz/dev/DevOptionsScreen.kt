@@ -231,6 +231,13 @@ fun DevOptionsScreen(
                             info = "Pobiera teksty powiadomień z Firestore — wymaga internetu.",
                             onClick = { onEvent(DevOptionsUIEvents.ForceConfigRefresh) }
                         )
+                        DevActionRow(
+                            title = "Wymuś odświeżenie gameplay configu",
+                            icon = Icons.Outlined.CloudSync,
+                            info = "Pobiera parametry rozgrywki z Remote Config (reklamy, zadanie dnia, " +
+                                "punktacja, streak) — wymaga internetu.",
+                            onClick = { onEvent(DevOptionsUIEvents.ForceGameplayConfigRefresh) }
+                        )
                     }
                 }
             }
