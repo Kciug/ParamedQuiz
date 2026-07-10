@@ -71,7 +71,8 @@ fun RevisionsConfigScreen(
                     }
                     ResponseState.Success -> {
                         RevisionsConfigScreenContent(
-                            onSelectMode = { onEvent(RevisionsConfigUIEvents.SelectMode(it)) }
+                            onSelectMode = { onEvent(RevisionsConfigUIEvents.SelectMode(it)) },
+                            loadingMode = state.loadingMode
                         )
                     }
                 }

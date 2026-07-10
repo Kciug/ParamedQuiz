@@ -1,7 +1,5 @@
 package com.rafalskrzypczyk.revisions.presentation.config.components
 
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,6 +8,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextButton
@@ -31,12 +30,6 @@ import com.rafalskrzypczyk.revisions.domain.models.RevisionCriterion
 import com.rafalskrzypczyk.revisions.presentation.config.RevisionsConfigState
 import com.rafalskrzypczyk.revisions.presentation.config.RevisionsConfigUIEvents
 
-private enum class ConfigContentState {
-    Loading,
-    Config,
-    Empty
-}
-
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun RevisionConfigDialog(
@@ -49,11 +42,7 @@ fun RevisionConfigDialog(
 ) {
     val isLoading = state.isQuestionsLoading || state.isCategoriesLoading
 
-    val contentState = when {
-        isLoading -> ConfigContentState.Loading
-        state.isModeEligible && !state.isEmptyState -> ConfigContentState.Config
-        else -> ConfigContentState.Empty
-    }
+    val isEmptyContent = !state.isModeEligible || state.isEmptyState
 
     val title = when (state.selectedMode) {
         QuizMode.MainMode -> stringResource(R.string.revisions_mode_main)
@@ -76,101 +65,96 @@ fun RevisionConfigDialog(
                 modifier = modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
             ) {
-                Crossfade(
-                    targetState = contentState,
-                    animationSpec = tween(220),
-                    label = "DialogContentTransition"
-                ) { target ->
-                    when (target) {
-                        ConfigContentState.Loading -> {
+                if (isEmptyContent) {
+                    val emptyTitle = if (!state.isModeEligible) {
+                        "Tryb niedostępny"
+                    } else {
+                        stringResource(R.string.revisions_empty_state_title)
+                    }
+
+                    val msg = if (!state.isModeEligible) {
+                        stringResource(R.string.revisions_mode_not_enough_answers)
+                    } else {
+                        stringResource(R.string.revisions_empty_state_msg)
+                    }
+
+                    EmptyStateCard(
+                        title = emptyTitle,
+                        message = msg
+                    )
+                } else {
+                    if (state.selectedMode != QuizMode.TranslationMode) {
+                        Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
+                        TextHeadline(
+                            text = stringResource(R.string.revisions_select_pool)
+                        )
+                        CategorySelectionTriggerCard(
+                            category = state.selectedCategory,
+                            onClick = onTriggerCategoryDialog
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
+                    TextHeadline(
+                        text = stringResource(R.string.revisions_select_criterion)
+                    )
+
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL),
+                        verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        RevisionCriterion.entries.forEach { criterion ->
+                            val isSelected = state.selectedCriterion == criterion
+                            RevisionsChoiceChip(
+                                selected = isSelected,
+                                title = when (criterion) {
+                                    RevisionCriterion.WORST -> "Najgorsze"
+                                    RevisionCriterion.BEST -> "Najlepsze"
+                                    RevisionCriterion.UNDER_50 -> "Poniżej 50% trafności"
+                                },
+                                onClick = { onEvent(RevisionsConfigUIEvents.SelectCriterion(criterion)) }
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
+                    TextHeadline(
+                        text = stringResource(R.string.revisions_select_limit)
+                    )
+
+                    // Sekcja limitów odświeża się po zmianie kryterium/kategorii — trzymamy
+                    // stabilną wysokość i lokalny loader, żeby dialog nie skakał.
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 48.dp),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        if (state.isQuestionsLoading) {
                             Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(100.dp),
+                                modifier = Modifier.fillMaxWidth(),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Loading()
                             }
-                        }
-                        ConfigContentState.Config -> {
-                            Column(
-                                verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
+                        } else {
+                            FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL),
+                                verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL),
+                                modifier = Modifier.fillMaxWidth()
                             ) {
-                                if (state.selectedMode != QuizMode.TranslationMode) {
-                                    Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
-                                    TextHeadline(
-                                        text = stringResource(R.string.revisions_select_pool)
+                                state.availableLimits.forEach { limit ->
+                                    val isSelected = state.selectedLimit == limit
+                                    val title =
+                                        limit?.toString() ?: stringResource(R.string.revisions_limit_all, state.availableQuestionsCount)
+                                    RevisionsChoiceChip(
+                                        selected = isSelected,
+                                        title = title,
+                                        onClick = { onEvent(RevisionsConfigUIEvents.SelectLimit(limit)) }
                                     )
-                                    CategorySelectionTriggerCard(
-                                        category = state.selectedCategory,
-                                        onClick = onTriggerCategoryDialog
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
-                                TextHeadline(
-                                    text = stringResource(R.string.revisions_select_criterion)
-                                )
-
-                                FlowRow(
-                                    horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL),
-                                    verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL),
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    RevisionCriterion.entries.forEach { criterion ->
-                                        val isSelected = state.selectedCriterion == criterion
-                                        RevisionsChoiceChip(
-                                            selected = isSelected,
-                                            title = when (criterion) {
-                                                RevisionCriterion.WORST -> "Najgorsze"
-                                                RevisionCriterion.BEST -> "Najlepsze"
-                                                RevisionCriterion.UNDER_50 -> "Poniżej 50% trafności"
-                                            },
-                                            onClick = { onEvent(RevisionsConfigUIEvents.SelectCriterion(criterion)) }
-                                        )
-                                    }
-                                }
-
-                                Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
-                                TextHeadline(
-                                    text = stringResource(R.string.revisions_select_limit)
-                                )
-
-                                FlowRow(
-                                    horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL),
-                                    verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL),
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    state.availableLimits.forEach { limit ->
-                                        val isSelected = state.selectedLimit == limit
-                                        val title =
-                                            limit?.toString() ?: stringResource(R.string.revisions_limit_all, state.availableQuestionsCount)
-                                        RevisionsChoiceChip(
-                                            selected = isSelected,
-                                            title = title,
-                                            onClick = { onEvent(RevisionsConfigUIEvents.SelectLimit(limit)) }
-                                        )
-                                    }
                                 }
                             }
-                        }
-                        ConfigContentState.Empty -> {
-                            val emptyTitle = if (!state.isModeEligible) {
-                                "Tryb niedostępny"
-                            } else {
-                                stringResource(R.string.revisions_empty_state_title)
-                            }
-
-                            val msg = if (!state.isModeEligible) {
-                                stringResource(R.string.revisions_mode_not_enough_answers)
-                            } else {
-                                stringResource(R.string.revisions_empty_state_msg)
-                            }
-
-                            EmptyStateCard(
-                                title = emptyTitle,
-                                message = msg
-                            )
                         }
                     }
                 }
