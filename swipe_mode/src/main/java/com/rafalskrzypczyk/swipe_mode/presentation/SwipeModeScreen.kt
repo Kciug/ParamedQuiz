@@ -159,8 +159,7 @@ fun SwipeModeScreen(
                             label = "responseTransition"
                         ) { responseState ->
                             when(responseState) {
-                                ResponseState.Idle -> {}
-                                ResponseState.Loading -> Loading()
+                                ResponseState.Idle, ResponseState.Loading -> Loading()
                                 is ResponseState.Error -> ErrorDialog(responseState.message) { onNavigateBack() }
                                 ResponseState.Success -> {
                                     SwipeModeScreenContent(
