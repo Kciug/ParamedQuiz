@@ -1,12 +1,14 @@
 package com.rafalskrzypczyk.score.domain.use_cases
 
+import com.rafalskrzypczyk.core.domain.config.GameplayConfigProvider
 import com.rafalskrzypczyk.score.domain.QuestionAnnotation
 import com.rafalskrzypczyk.score.domain.ScoreManager
 import com.rafalskrzypczyk.score.domain.ScorePoints
 import javax.inject.Inject
 
 class UpdateScoreWithQuestionUC @Inject constructor(
-    private val scoreManager: ScoreManager
+    private val scoreManager: ScoreManager,
+    private val gameplayConfig: GameplayConfigProvider
 ) {
     operator fun invoke(questionId: Long, answeredCorrectly: Boolean) : Int {
         val currentScore = scoreManager.getScore()
@@ -26,11 +28,16 @@ class UpdateScoreWithQuestionUC @Inject constructor(
             .toMutableList()
 
         if (updatedSeenQuestions.none { it.questionId == questionId }) {
-            updatedSeenQuestions.add(QuestionAnnotation.Companion.new(questionId, answeredCorrectly))
+            updatedSeenQuestions.add(QuestionAnnotation.new(questionId, answeredCorrectly))
             firstCorrectAnswer = answeredCorrectly
         }
 
-        val earnedPoints = ScorePoints.calculateForQuestion(answeredCorrectly, firstCorrectAnswer)
+        val earnedPoints = ScorePoints.calculateForQuestion(
+            isCorrect = answeredCorrectly,
+            firstCorrect = firstCorrectAnswer,
+            correctPoints = gameplayConfig.correctPoints(),
+            firstCorrectPoints = gameplayConfig.firstCorrectPoints()
+        )
 
         val newScore = currentScore.copy(
             score = currentScore.score + earnedPoints,

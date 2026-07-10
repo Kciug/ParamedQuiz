@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.utils.QuizMode
+import com.rafalskrzypczyk.revisions.domain.RevisionsConfig
 import com.rafalskrzypczyk.revisions.domain.RevisionsRepository
 import com.rafalskrzypczyk.revisions.domain.use_cases.GetRevisionsQuestionsUC
 import com.rafalskrzypczyk.score.domain.ScoreManager
@@ -162,7 +163,7 @@ class RevisionsConfigVM @Inject constructor(
                 seenQuestions.find { it.questionId == q.id }?.timesSeen ?: 0L
             }.toInt()
 
-            val isEligible = answeredCount >= 10
+            val isEligible = answeredCount >= RevisionsConfig.MIN_ANSWERED_FOR_TRANSLATION
             _state.update {
                 it.copy(
                     isModeEligible = isEligible,
@@ -218,8 +219,7 @@ class RevisionsConfigVM @Inject constructor(
     }
 
     private fun calculateAvailableLimits(questionsCount: Int): List<Int?> {
-        val baseLimits = listOf(10, 20, 50, 100)
-        val filtered = baseLimits.filter { it <= questionsCount }
+        val filtered = RevisionsConfig.QUESTION_LIMIT_OPTIONS.filter { it <= questionsCount }
         return filtered + listOf(null)
     }
 }

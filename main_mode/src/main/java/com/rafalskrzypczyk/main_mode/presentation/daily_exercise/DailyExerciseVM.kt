@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.core.ads.QuizAdHandler
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
+import com.rafalskrzypczyk.core.domain.config.GameplayConfigProvider
 import com.rafalskrzypczyk.core.utils.ResourceProvider
 import com.rafalskrzypczyk.main_mode.R
 import com.rafalskrzypczyk.main_mode.domain.daily_exercise.DailyExerciseUseCases
@@ -20,15 +21,12 @@ class DailyExerciseVM @Inject constructor(
     private val useCases: DailyExerciseUseCases,
     private val resourceProvider: ResourceProvider,
     private val scoreManager: ScoreManager,
+    private val gameplayConfig: GameplayConfigProvider,
     adHandler: QuizAdHandler
 ): BaseQuizVM(
     useCases = useCases.base,
     adHandler = adHandler
 ) {
-    companion object {
-        const val DAILY_EXERCISE_QUESTIONS_AMOUNT = 3
-    }
-
     init {
         viewModelScope.launch { loadQuestions() }
     }
@@ -38,7 +36,7 @@ class DailyExerciseVM @Inject constructor(
             when (response) {
                 is Response.Success -> {
                     initializeQuiz(
-                        questions = response.data.take(DAILY_EXERCISE_QUESTIONS_AMOUNT),
+                        questions = response.data.take(gameplayConfig.dailyExerciseQuestionsAmount()),
                         title = resourceProvider.getString(R.string.title_daily_exercise)
                     )
                     _state.update { it.copy(isDailyExercise = true) } 

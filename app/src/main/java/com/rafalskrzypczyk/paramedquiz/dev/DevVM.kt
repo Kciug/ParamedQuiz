@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.core.ads.AdManager
+import com.rafalskrzypczyk.core.domain.config.GameplayConfigProvider
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
 import com.rafalskrzypczyk.notifications.NotificationChannels
 import com.rafalskrzypczyk.notifications.NotificationDestination
@@ -28,6 +29,7 @@ class DevVM @Inject constructor(
     private val reminderScheduler: ReminderScheduler,
     private val scoreManager: ScoreManager,
     private val notificationConfigRepository: NotificationConfigRepository,
+    private val gameplayConfig: GameplayConfigProvider,
     private val adManager: AdManager
 ): ViewModel() {
 
@@ -50,6 +52,9 @@ class DevVM @Inject constructor(
             DevOptionsUIEvents.SimWeakQuestions -> simulateWeakQuestions()
             DevOptionsUIEvents.ForceConfigRefresh -> viewModelScope.launch {
                 notificationConfigRepository.refresh(force = true)
+            }
+            DevOptionsUIEvents.ForceGameplayConfigRefresh -> viewModelScope.launch {
+                gameplayConfig.refresh(force = true)
             }
             DevOptionsUIEvents.SimulateNewsNotification -> notifier.show(
                 notificationId = NotificationIds.NEWS,

@@ -1,5 +1,6 @@
 package com.rafalskrzypczyk.core.domain.use_cases
 
+import com.rafalskrzypczyk.core.domain.config.NotificationConsentConfig
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -16,23 +17,18 @@ class CheckNotificationConsentEligibilityUC @Inject constructor(
         if (sharedPrefs.isNotificationPromptDisabled()) return false
 
         // Pierwsza ukończona sesja musiała się wydarzyć.
-        if (sharedPrefs.getCompletedQuizzesCount() < 1) return false
+        if (sharedPrefs.getCompletedQuizzesCount() < NotificationConsentConfig.MIN_COMPLETED_QUIZZES) return false
 
         // Maksymalnie pokazanie początkowe + 2 ponowienia.
-        if (sharedPrefs.getNotificationPromptCount() >= MAX_PROMPTS) return false
+        if (sharedPrefs.getNotificationPromptCount() >= NotificationConsentConfig.MAX_PROMPTS) return false
 
         // Odstęp co najmniej 7 dni między pokazaniami.
         val lastPromptDate = sharedPrefs.getLastNotificationPromptDate()
         if (lastPromptDate != 0L) {
             val daysSinceLastPrompt = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis() - lastPromptDate)
-            if (daysSinceLastPrompt < MIN_DAYS_BETWEEN_PROMPTS) return false
+            if (daysSinceLastPrompt < NotificationConsentConfig.MIN_DAYS_BETWEEN_PROMPTS) return false
         }
 
         return true
-    }
-
-    companion object {
-        private const val MAX_PROMPTS = 3
-        private const val MIN_DAYS_BETWEEN_PROMPTS = 7
     }
 }

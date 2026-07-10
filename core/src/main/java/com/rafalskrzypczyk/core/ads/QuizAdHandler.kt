@@ -1,13 +1,15 @@
 package com.rafalskrzypczyk.core.ads
 
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
+import com.rafalskrzypczyk.core.domain.config.GameplayConfigProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class QuizAdHandler @Inject constructor(
-    private val premiumStatusProvider: PremiumStatusProvider
+    private val premiumStatusProvider: PremiumStatusProvider,
+    private val gameplayConfig: GameplayConfigProvider
 ) {
     private var isAdsFree = false
     private var isFinishingQuiz = false
@@ -33,14 +35,14 @@ class QuizAdHandler @Inject constructor(
         val questionsSinceLastAd = answeredCount - lastAdAnsweredCount
 
         if (isQuizFinished) {
-            if (ignoreThreshold || questionsSinceLastAd >= AdConfig.EXIT_AD_THRESHOLD) {
+            if (ignoreThreshold || questionsSinceLastAd >= gameplayConfig.exitAdThreshold()) {
                 isFinishingQuiz = true
                 return true
             }
             return false
         }
 
-        if (answeredCount > 0 && answeredCount % AdConfig.AD_FREQUENCY == 0 && answeredCount > lastAdAnsweredCount) {
+        if (answeredCount > 0 && answeredCount % gameplayConfig.adFrequency() == 0 && answeredCount > lastAdAnsweredCount) {
             isFinishingQuiz = false
             lastAdAnsweredCount = answeredCount
             return true

@@ -1,22 +1,20 @@
 package com.rafalskrzypczyk.score.domain
 
+import com.rafalskrzypczyk.core.domain.config.GameplayConfigProvider
 import com.rafalskrzypczyk.core.utils.toDateOnly
 import jakarta.inject.Inject
 import java.util.Calendar
 import java.util.Date
 
 class StreakManager @Inject constructor(
-    private val scoreManager: ScoreManager
+    private val scoreManager: ScoreManager,
+    private val gameplayConfig: GameplayConfigProvider
 ) {
-    companion object {
-        private const val STREAK_POINTS_THRESHOLD = 3
-    }
-
     private var increaseStreakPoints = 0
 
     fun increaseStreakByQuestions(): Boolean {
         increaseStreakPoints++
-        if (increaseStreakPoints >= STREAK_POINTS_THRESHOLD) {
+        if (increaseStreakPoints >= gameplayConfig.streakPointsThreshold()) {
             return increaseStreakForToday()
         }
         return false
