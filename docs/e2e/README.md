@@ -55,9 +55,9 @@ Dane „Given" opisują stan, który ustawia się przez seed fake'ów i preferen
 | Plik | Obszar | P0 | P1 | P2 | Zautomatyzowane |
 |------|--------|----|----|----|-----------------|
 | [01-onboarding.md](01-onboarding.md) | Onboarding | 1 | 2 | 1 | 0 |
-| [02-regulamin.md](02-regulamin.md) | Regulamin | 1 | 2 | 1 | 0 |
+| [02-regulamin.md](02-regulamin.md) | Regulamin | 1 | 2 | 1 | 1 |
 | [03-konto-i-logowanie.md](03-konto-i-logowanie.md) | Konto/logowanie | 1 | 3 | 2 | 0 |
-| [04-ekran-glowny.md](04-ekran-glowny.md) | Ekran główny | 1 | 2 | 1 | 0 |
+| [04-ekran-glowny.md](04-ekran-glowny.md) | Ekran główny | 1 | 2 | 1 | 1 |
 | [05-tryb-glowny.md](05-tryb-glowny.md) | Tryb główny | 2 | 2 | 2 | 0 |
 | [06-cwiczenie-dnia.md](06-cwiczenie-dnia.md) | Ćwiczenie dnia | 1 | 1 | 2 | 0 |
 | [07-tryb-swipe.md](07-tryb-swipe.md) | Tryb Swipe | 1 | 3 | 2 | 0 |

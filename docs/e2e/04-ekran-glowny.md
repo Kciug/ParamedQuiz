@@ -4,7 +4,7 @@
 
 ### E2E-HOME-01 — ekran główny prezentuje status i wejścia do trybów
 - **Priorytet:** P0
-- **Status:** ☐ manualny
+- **Status:** ✅ zautomatyzowany — `app/src/test/.../e2e/HomeHarnessTest` (weryfikuje render ekranu głównego dla powracającego użytkownika)
 - **Given:** użytkownik po onboardingu i akceptacji regulaminu; posiada jakiś wynik i serię.
 - **When:** wchodzi na ekran główny.
 - **Then:** widoczne są punkty i seria na górnym pasku, menu trybów (główny, Swipe, tłumaczeń, CEM) oraz dodatki (ćwiczenie dnia, powtórki, sklep).

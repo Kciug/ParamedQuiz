@@ -8,4 +8,7 @@ package com.rafalskrzypczyk.core.testing
 object TestTags {
     // Regulamin (Terms of Service)
     const val TOS_ACCEPT_BUTTON = "tos_accept_button"
+
+    // Ekran główny (Home)
+    const val HOME_ROOT = "home_root"
 }
