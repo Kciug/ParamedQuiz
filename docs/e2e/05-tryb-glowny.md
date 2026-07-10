@@ -4,7 +4,7 @@
 
 ### E2E-MAIN-01 — rozegranie quizu kategorii do ekranu wyniku
 - **Priorytet:** P0
-- **Status:** ☐ manualny
+- **Status:** ✅ zautomatyzowany — `app/src/test/.../e2e/MainModeQuizHarnessTest`
 - **Given:** darmowa kategoria z kilkoma pytaniami (seed); reklamy wyłączone.
 - **When:** użytkownik wchodzi w kategorię; dla każdego pytania zaznacza odpowiedź i zatwierdza; przechodzi do końca.
 - **Then:** po ostatnim pytaniu pojawia się ekran wyniku z liczbą pytań, poprawnych odpowiedzi i zdobytymi punktami.

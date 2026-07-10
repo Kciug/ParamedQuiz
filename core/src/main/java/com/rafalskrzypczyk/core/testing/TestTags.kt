@@ -11,4 +11,9 @@ object TestTags {
 
     // Ekran główny (Home)
     const val HOME_ROOT = "home_root"
+
+    // Quiz (wspólne dla trybów opartych o QuizGameContent)
+    const val QUIZ_SUBMIT_BUTTON = "quiz_submit_button"
+    const val QUIZ_NEXT_BUTTON = "quiz_next_button"
+    const val QUIZ_FINISHED_ROOT = "quiz_finished_root"
 }
