@@ -3,6 +3,7 @@ package com.rafalskrzypczyk.paramedquiz.dev
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.billing.domain.BillingRepository
+import com.rafalskrzypczyk.core.ads.AdManager
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
 import com.rafalskrzypczyk.notifications.NotificationChannels
 import com.rafalskrzypczyk.notifications.NotificationDestination
@@ -26,7 +27,8 @@ class DevVM @Inject constructor(
     private val notifier: Notifier,
     private val reminderScheduler: ReminderScheduler,
     private val scoreManager: ScoreManager,
-    private val notificationConfigRepository: NotificationConfigRepository
+    private val notificationConfigRepository: NotificationConfigRepository,
+    private val adManager: AdManager
 ): ViewModel() {
 
     fun onEvent(event: DevOptionsUIEvents) {
@@ -34,6 +36,7 @@ class DevVM @Inject constructor(
             DevOptionsUIEvents.ResetOnboarding -> resetOnboarding()
             DevOptionsUIEvents.ResetModularOnboarding -> resetModularOnboarding()
             DevOptionsUIEvents.ClearTermsAcceptance -> clearTerms()
+            DevOptionsUIEvents.ResetAdsConsent -> adManager.resetConsent()
             DevOptionsUIEvents.ResetRatingStats -> resetRatingStats()
             DevOptionsUIEvents.TriggerRatingPrompt -> triggerRatingPrompt()
             DevOptionsUIEvents.ResetNews -> resetNews()

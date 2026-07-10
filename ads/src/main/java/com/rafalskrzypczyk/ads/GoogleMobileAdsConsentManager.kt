@@ -2,6 +2,7 @@ package com.rafalskrzypczyk.ads
 
 import android.app.Activity
 import android.content.Context
+import com.google.android.ump.ConsentDebugSettings
 import com.google.android.ump.ConsentInformation
 import com.google.android.ump.ConsentRequestParameters
 import com.google.android.ump.FormError
@@ -14,8 +15,20 @@ class GoogleMobileAdsConsentManager(context: Context) {
         activity: Activity,
         onConsentGatheringCompleteListener: (FormError?) -> Unit
     ) {
-        val params = ConsentRequestParameters.Builder()
-            .build()
+        val paramsBuilder = ConsentRequestParameters.Builder()
+
+        // W debugu wymuszamy geografię EOG, żeby formularz zgody pojawiał się na emulatorze /
+        // poza EOG (bez tego Google uznaje, że zgoda nie jest wymagana i formularz się nie pokazuje).
+        // Emulatory są automatycznie traktowane jako test device — hash niepotrzebny. Dla FIZYCZNEGO
+        // urządzenia poza EOG dodaj hashed ID z logcatu przez .addTestDeviceHashedId("...").
+        if (BuildConfig.DEBUG) {
+            val debugSettings = ConsentDebugSettings.Builder(activity)
+                .setDebugGeography(ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_EEA)
+                .build()
+            paramsBuilder.setConsentDebugSettings(debugSettings)
+        }
+
+        val params = paramsBuilder.build()
 
         consentInformation.requestConsentInfoUpdate(
             activity,
@@ -33,4 +46,9 @@ class GoogleMobileAdsConsentManager(context: Context) {
 
     val canRequestAds: Boolean
         get() = consentInformation.canRequestAds()
+
+    /** Czyści zapisany stan zgody — po tym następne [gatherConsent] ponownie pokaże formularz. */
+    fun reset() {
+        consentInformation.reset()
+    }
 }

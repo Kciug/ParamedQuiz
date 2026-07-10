@@ -34,10 +34,16 @@ class RevisionsConfigVM @Inject constructor(
     fun onEvent(event: RevisionsConfigUIEvents) {
         when (event) {
             is RevisionsConfigUIEvents.SelectMode -> {
-                if (event.mode != _state.value.selectedMode) {
+                val currentState = _state.value
+                if (currentState.loadingMode != null) return
+                val isAlreadyLoaded = event.mode == currentState.selectedMode &&
+                        !currentState.isCategoriesLoading && !currentState.isQuestionsLoading
+                if (isAlreadyLoaded) {
+                    _state.update { it.copy(isConfigDialogVisible = true) }
+                } else {
+                    _state.update { it.copy(loadingMode = event.mode) }
                     loadModeData(event.mode)
                 }
-                _state.update { it.copy(isConfigDialogVisible = true) }
             }
             is RevisionsConfigUIEvents.DismissConfigDialog -> {
                 _state.update { it.copy(isConfigDialogVisible = false) }
@@ -132,6 +138,7 @@ class RevisionsConfigVM @Inject constructor(
                                 it.copy(
                                     isCategoriesLoading = false,
                                     isQuestionsLoading = false,
+                                    loadingMode = null,
                                     responseState = ResponseState.Error(response.error)
                                 )
                             }
@@ -168,6 +175,7 @@ class RevisionsConfigVM @Inject constructor(
             _state.update {
                 it.copy(
                     isQuestionsLoading = false,
+                    loadingMode = null,
                     responseState = ResponseState.Error(questionsResp.error)
                 )
             }
@@ -199,7 +207,9 @@ class RevisionsConfigVM @Inject constructor(
                             availableLimits = limits,
                             selectedLimit = newLimit,
                             isEmptyState = count == 0,
-                            isQuestionsLoading = false
+                            isQuestionsLoading = false,
+                            isConfigDialogVisible = if (it.loadingMode != null) true else it.isConfigDialogVisible,
+                            loadingMode = null
                         )
                     }
                 }

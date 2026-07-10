@@ -7,24 +7,28 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Logout
 import androidx.compose.material.icons.outlined.Badge
@@ -68,9 +72,9 @@ import com.rafalskrzypczyk.core.composables.SettingsDialog
 import com.rafalskrzypczyk.core.composables.SettingsItemRow
 import com.rafalskrzypczyk.core.composables.SettingsSwitchRow
 import com.rafalskrzypczyk.core.composables.TestBuildBanner
-import com.rafalskrzypczyk.core.composables.TimePickerDialog
 import com.rafalskrzypczyk.core.composables.TextCaption
 import com.rafalskrzypczyk.core.composables.TextPrimary
+import com.rafalskrzypczyk.core.composables.TimePickerDialog
 import com.rafalskrzypczyk.core.composables.top_bars.NavTopBar
 import com.rafalskrzypczyk.core.ui.theme.MQYellow
 import com.rafalskrzypczyk.core.user_management.UserAuthenticationMethod
@@ -256,25 +260,27 @@ private fun UserSettingsContent(
         }
     }
 
-    Column (modifier = modifier.fillMaxSize()) {
-        LazyColumn(
-            modifier = Modifier.weight(1f),
-            contentPadding = PaddingValues(bottom = Dimens.DEFAULT_PADDING)
+    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+        val scrollState = rememberScrollState()
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(scrollState)
+                .heightIn(min = maxHeight),
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            if (!state.isAnonymous) {
-                item {
+            Column(
+                modifier = Modifier.padding(bottom = Dimens.DEFAULT_PADDING)
+            ) {
+                if (!state.isAnonymous) {
                     UserSettingsUserDetails(
-                        userName = if(state.isAnonymous) stringResource(R.string.user_anonymous) else state.userName,
+                        userName = state.userName,
                         userEmail = state.userEmail,
                         isPremium = state.isPremium
                     )
-                }
 
-                item {
                     SettingsCategoryHeader(stringResource(R.string.settings_category_account))
-                }
 
-                item {
                     SettingsCategoryCard {
                         SettingsItemRow(
                             title = stringResource(R.string.title_change_username),
@@ -291,13 +297,9 @@ private fun UserSettingsContent(
                         }
                     }
                 }
-            }
 
-            item {
                 SettingsCategoryHeader(stringResource(R.string.settings_category_app))
-            }
 
-            item {
                 SettingsCategoryCard {
                     SettingsSwitchRow(
                         title = stringResource(R.string.settings_notifications),
@@ -322,13 +324,9 @@ private fun UserSettingsContent(
                         onClick = { NotificationSettings.openAppNotificationSettings(context) }
                     )
                 }
-            }
 
-            item {
                 SettingsCategoryHeader(stringResource(R.string.settings_category_data))
-            }
 
-            item {
                 SettingsCategoryCard {
                     SettingsItemRow(
                         title = stringResource(R.string.title_delete_progress),
@@ -336,13 +334,9 @@ private fun UserSettingsContent(
                         onClick = { onEvent(UserSettingsUIEvents.ToggleDeleteProgressDialog(true)) }
                     )
                 }
-            }
 
-            item {
                 SettingsCategoryHeader(stringResource(R.string.settings_category_other))
-            }
 
-            item {
                 SettingsCategoryCard {
                     SettingsItemRow(
                         title = stringResource(R.string.terms_of_service_title),
@@ -380,17 +374,19 @@ private fun UserSettingsContent(
                     }
                 }
             }
+
+            Column {
+                TestBuildBanner(
+                    modifier = Modifier.padding(bottom = Dimens.DEFAULT_PADDING)
+                )
+
+                BrandingElement(
+                    modifier = Modifier
+                        .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
+                        .padding(vertical = Dimens.DEFAULT_PADDING)
+                )
+            }
         }
-
-        TestBuildBanner(
-            modifier = Modifier.padding(bottom = Dimens.DEFAULT_PADDING)
-        )
-
-        BrandingElement(
-            modifier = Modifier
-                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom))
-                .padding(vertical = Dimens.DEFAULT_PADDING)
-        )
     }
 }
 

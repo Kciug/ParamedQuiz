@@ -20,6 +20,7 @@ import com.rafalskrzypczyk.revisions.R
 @Composable
 fun RevisionsConfigScreenContent(
     onSelectMode: (QuizMode) -> Unit,
+    loadingMode: QuizMode?,
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
@@ -52,6 +53,7 @@ fun RevisionsConfigScreenContent(
             ModeSelectorCard(
                 mode = mode,
                 enabled = true,
+                loading = loadingMode == mode,
                 onClick = { onSelectMode(mode) }
             )
         }

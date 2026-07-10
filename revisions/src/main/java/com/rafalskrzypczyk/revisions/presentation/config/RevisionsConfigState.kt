@@ -21,5 +21,6 @@ data class RevisionsConfigState(
     val isCategoriesLoading: Boolean = false,
     val isQuestionsLoading: Boolean = false,
     val isConfigDialogVisible: Boolean = false,
-    val isCategoryDialogVisible: Boolean = false
+    val isCategoryDialogVisible: Boolean = false,
+    val loadingMode: QuizMode? = null
 )

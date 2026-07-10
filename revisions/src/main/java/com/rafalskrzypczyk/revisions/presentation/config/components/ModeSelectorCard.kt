@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -31,7 +32,8 @@ fun ModeSelectorCard(
     mode: QuizMode,
     enabled: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    loading: Boolean = false
 ) {
     val containerColor = MaterialTheme.colorScheme.surface
 
@@ -60,12 +62,20 @@ fun ModeSelectorCard(
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.size(32.dp)
-                    )
+                    if (loading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(28.dp),
+                            color = MaterialTheme.colorScheme.onBackground,
+                            strokeWidth = 3.dp
+                        )
+                    } else {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onBackground,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
                 }
 
                 Column(

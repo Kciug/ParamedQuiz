@@ -8,23 +8,31 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.CloudOff
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import com.rafalskrzypczyk.core.composables.ButtonPrimary
 import com.rafalskrzypczyk.core.composables.Dimens
-import com.rafalskrzypczyk.core.composables.ErrorDialog
 import com.rafalskrzypczyk.core.composables.Loading
+import com.rafalskrzypczyk.core.composables.TextHeadline
+import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.home.R
 import com.rafalskrzypczyk.home_screen.presentation.terms_of_service.components.TermsOfServiceTopBar
 
@@ -64,9 +72,9 @@ fun TermsOfServiceScreen(
             if (state.isLoading) {
                 Loading(modifier = Modifier.fillMaxSize())
             } else if (state.error != null) {
-                ErrorDialog(state.error) {
-                    onEvent(TermsOfServiceUIEvents.LoadTerms)
-                }
+                TermsOfServiceErrorState(
+                    onRetry = { onEvent(TermsOfServiceUIEvents.LoadTerms) }
+                )
             } else {
                 state.terms?.let { terms ->
                     Card(
@@ -101,5 +109,39 @@ fun TermsOfServiceScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun TermsOfServiceErrorState(
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(Dimens.DEFAULT_PADDING),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING, Alignment.CenterVertically)
+    ) {
+        Icon(
+            imageVector = Icons.Rounded.CloudOff,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(64.dp)
+        )
+        TextHeadline(
+            text = stringResource(R.string.terms_error_title),
+            textAlign = TextAlign.Center
+        )
+        TextPrimary(
+            text = stringResource(R.string.terms_error_message),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
+        )
+        ButtonPrimary(
+            title = stringResource(R.string.terms_error_retry),
+            onClick = onRetry
+        )
     }
 }

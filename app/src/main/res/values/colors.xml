@@ -9,4 +9,6 @@
     <color name="white">#FFFFFFFF</color>
     <color name="splash_background">#F8F9FF</color>
     <color name="splash_background_dark">#0F0F1A</color>
+    <!-- Tło okna po splashu — musi zgadzać się z colorScheme.background (Background / BackgroundDark). -->
+    <color name="window_background">#F8F9FF</color>
 </resources>

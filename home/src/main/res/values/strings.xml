@@ -158,6 +158,9 @@
 
     <string name="terms_of_service_title">Regulamin</string>
     <string name="accept_terms_button">Akceptuję regulamin</string>
+    <string name="terms_error_title">Nie udało się wczytać regulaminu</string>
+    <string name="terms_error_message">Sprawdź połączenie z internetem i spróbuj ponownie.</string>
+    <string name="terms_error_retry">Spróbuj ponownie</string>
 
     <string name="feature_translation_title">Profesjonalne tłumaczenia</string>
     <string name="feature_translation_desc">Tłumacz kluczowe terminy medyczne, objawy i procedury ratunkowe.</string>

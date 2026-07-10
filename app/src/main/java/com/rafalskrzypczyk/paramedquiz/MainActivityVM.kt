@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
 class MainActivityVM @Inject constructor(
@@ -33,7 +34,24 @@ class MainActivityVM @Inject constructor(
     val navigationEvent = _navigationEvent.asSharedFlow()
 
     init {
+        prefetchTermsOfService()
         checkInitialStatus()
+    }
+
+    /**
+     * Rozgrzewa cache Firestore dla dokumentu regulaminu już na starcie (w trakcie onboardingu),
+     * żeby po jego zakończeniu ekran regulaminu renderował się bez zauważalnego laga (spinnera).
+     * `getTermsOfServiceUpdates` (decyzja) i `getTermsOfService` (treść ekranu) czytają ten sam
+     * dokument, więc jeden warm-up read pokrywa oba. Błędy/brak sieci ignorujemy — to tylko warm-up.
+     */
+    private fun prefetchTermsOfService() {
+        viewModelScope.launch {
+            runCatching {
+                listenTermsOfServiceUpdatesUC()
+                    .filter { it !is TermsOfServiceStatus.Loading }
+                    .first()
+            }
+        }
     }
 
     fun onEvent(event: MainActivityUIEvents) {
@@ -45,23 +63,7 @@ class MainActivityVM @Inject constructor(
     private fun onOnboardingFinished() {
         sharedPrefs.setOnboardingStatus(true)
         viewModelScope.launch {
-            val status = getDefinitiveStatus()
-
-            when (status) {
-                is TermsOfServiceStatus.Accepted -> {
-                    _navigationEvent.emit(MainMenu)
-                }
-                is TermsOfServiceStatus.NeedsAcceptance -> {
-                    _navigationEvent.emit(TermsOfService(isMandatory = true))
-                }
-                is TermsOfServiceStatus.Error -> {
-                    val destination = if (sharedPrefs.getAcceptedTermsVersion() != -1) MainMenu else TermsOfService(isMandatory = true)
-                    _navigationEvent.emit(destination)
-                }
-                else -> {
-                    _navigationEvent.emit(MainMenu)
-                }
-            }
+            _navigationEvent.emit(resolveStartDestination())
         }
     }
 
@@ -72,30 +74,32 @@ class MainActivityVM @Inject constructor(
                 return@launch
             }
 
-            val status = getDefinitiveStatus()
+            val destination = resolveStartDestination()
+            _state.update { it.copy(startDestination = destination, isLoading = false) }
+        }
+    }
 
-            when (status) {
-                is TermsOfServiceStatus.Accepted -> {
-                    _state.update { it.copy(startDestination = MainMenu, isLoading = false) }
-                }
-                is TermsOfServiceStatus.NeedsAcceptance -> {
-                    _state.update { it.copy(startDestination = TermsOfService(isMandatory = true), isLoading = false) }
-                }
-                is TermsOfServiceStatus.Error -> {
-                    val destination = if (sharedPrefs.getAcceptedTermsVersion() != -1) MainMenu else TermsOfService(isMandatory = true)
-                    _state.update { it.copy(startDestination = destination, isLoading = false) }
-                }
-                else -> {
-                    // Fallback for timeout/null
-                    val destination = if (sharedPrefs.getAcceptedTermsVersion() != -1) MainMenu else TermsOfService(isMandatory = true)
-                    _state.update { it.copy(startDestination = destination, isLoading = false) }
-                }
-            }
+    /**
+     * Wspólna reguła docelowej trasy dla [checkInitialStatus] i [onOnboardingFinished].
+     *
+     * Świeża instalacja (`acceptedVersion == -1`, nigdy nic nie zaakceptowano) → regulamin jest
+     * obowiązkowy zawsze; nie czekamy na Firestore (short-circuit). Dla użytkownika, który już
+     * kiedyś akceptował, Firestore rozstrzyga jedynie czy pojawiła się nowa wersja — a timeout/błąd
+     * nie blokuje go w menu.
+     */
+    private suspend fun resolveStartDestination(): Any {
+        if (sharedPrefs.getAcceptedTermsVersion() == -1) {
+            return TermsOfService(isMandatory = true)
+        }
+        return when (getDefinitiveStatus()) {
+            is TermsOfServiceStatus.NeedsAcceptance -> TermsOfService(isMandatory = true)
+            is TermsOfServiceStatus.Accepted -> MainMenu
+            else -> MainMenu
         }
     }
 
     private suspend fun getDefinitiveStatus(): TermsOfServiceStatus? {
-        return withTimeoutOrNull(3000L) {
+        return withTimeoutOrNull(3000L.milliseconds) {
             listenTermsOfServiceUpdatesUC()
                 .filter { it !is TermsOfServiceStatus.Loading }
                 .first()

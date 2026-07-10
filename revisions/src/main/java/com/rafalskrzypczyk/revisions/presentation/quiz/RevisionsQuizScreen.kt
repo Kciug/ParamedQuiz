@@ -137,8 +137,7 @@ fun RevisionsQuizScreen(
             label = "quizResponseTransition"
         ) { responseState ->
             when (responseState) {
-                ResponseState.Idle -> {}
-                ResponseState.Loading -> Loading()
+                ResponseState.Idle, ResponseState.Loading -> Loading()
                 is ResponseState.Error -> ErrorDialog(responseState.message) { onNavigateBack() }
                 ResponseState.Success -> {
                     if (isLandscape && state.mode == QuizMode.TranslationMode) {

@@ -6,6 +6,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -13,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.rememberNavController
 import com.rafalskrzypczyk.core.ads.AdManager
@@ -52,30 +56,40 @@ class MainActivity : ComponentActivity() {
             sharedPreferences.setInstallDate(System.currentTimeMillis())
         }
 
-        handleDeepLinkIntent(intent)
+        // Deep-link obsługujemy tylko przy świeżym starcie. Przy odtworzeniu Activity
+        // (savedInstanceState != null) back stack jest już przywracany przez NavHost —
+        // ponowna nawigacja z zachowanego intentu zostawiałaby pusty NavHost (biały ekran).
+        if (savedInstanceState == null) {
+            handleDeepLinkIntent(intent)
+        }
 
         enableEdgeToEdge()
         setContent {
             ParamedQuizTheme {
-                val state = viewModel.state.collectAsState().value
-                var showErrorDialog by remember { mutableStateOf(false) }
-                var errorMessage by remember { mutableStateOf("") }
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    val state = viewModel.state.collectAsState().value
+                    var showErrorDialog by remember { mutableStateOf(false) }
+                    var errorMessage by remember { mutableStateOf("") }
 
-                LaunchedEffect(Unit) {
-                    scoreManager.errorFlow.collect { msg ->
-                        errorMessage = msg
-                        showErrorDialog = true
+                    LaunchedEffect(Unit) {
+                        scoreManager.errorFlow.collect { msg ->
+                            errorMessage = msg
+                            showErrorDialog = true
+                        }
                     }
-                }
 
-                if (!state.isLoading && state.startDestination != null) {
-                    Navigation(state.startDestination)
-                }
+                    if (!state.isLoading && state.startDestination != null) {
+                        Navigation(state.startDestination)
+                    }
 
-                if (showErrorDialog) {
-                    ErrorDialog(errorMessage) {
-                        showErrorDialog = false
-                        errorMessage = ""
+                    if (showErrorDialog) {
+                        ErrorDialog(errorMessage) {
+                            showErrorDialog = false
+                            errorMessage = ""
+                        }
                     }
                 }
             }
@@ -104,6 +118,12 @@ class MainActivity : ComponentActivity() {
             intent?.getStringExtra(NotificationDestination.EXTRA_DESTINATION)
         ) ?: return
         deepLinkDestination.value = destination
+        // Konsumujemy extra, żeby zachowany intent nie odpalił deep-linku ponownie
+        // przy kolejnym odtworzeniu Activity.
+        intent?.let {
+            it.removeExtra(NotificationDestination.EXTRA_DESTINATION)
+            setIntent(it)
+        }
     }
 
     @Composable
