@@ -110,6 +110,13 @@ fun DevOptionsScreen(
                             info = "Okno regulaminu pojawi się przy następnym starcie.",
                             onClick = { onEvent(DevOptionsUIEvents.ClearTermsAcceptance) }
                         )
+                        DevActionRow(
+                            title = "Reset zgody reklamowej",
+                            icon = Icons.Outlined.RestartAlt,
+                            info = "Czyści zgodę UMP. Formularz pojawi się przy następnym starcie " +
+                                "(tylko w EOG/UK). Język formularza zależy od języka systemu i konfiguracji w AdMob.",
+                            onClick = { onEvent(DevOptionsUIEvents.ResetAdsConsent) }
+                        )
                     }
                 }
 

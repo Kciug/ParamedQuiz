@@ -42,6 +42,10 @@ class AdManagerImpl @Inject constructor(
         }
     }
 
+    override fun resetConsent() {
+        consentManager.reset()
+    }
+
     override fun initialize(activity: Activity) {
         consentManager.gatherConsent(activity) { _ ->
             if (consentManager.canRequestAds && !isAdsFree) {
