@@ -11,6 +11,7 @@ import androidx.compose.ui.test.performClick
 import androidx.lifecycle.ViewModelStore
 import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
+import com.rafalskrzypczyk.core.feedback.NoOpFeedbackManager
 import com.rafalskrzypczyk.core.testing.TestTags
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.firestore.domain.models.CategoryDTO
@@ -80,7 +81,7 @@ class MainModeCategoryPurchaseHarnessTest {
 
     @Test
     fun `clicking locked category opens purchase dialog`() {
-        val viewModel = MMCategoriesVM(useCases, billingRepository, premiumStatusProvider)
+        val viewModel = MMCategoriesVM(useCases, billingRepository, premiumStatusProvider, NoOpFeedbackManager)
             .also { viewModelStore.put("vm", it) }
 
         composeRule.setContent {
