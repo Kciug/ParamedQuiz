@@ -22,10 +22,11 @@ import kotlinx.serialization.Serializable
 @Composable
 fun TranslationModeNavHost(
     onExit: () -> Unit,
-    showOnboarding: Boolean
+    showOnboarding: Boolean,
+    isTrial: Boolean = false
 ) {
     val navController = rememberNavController()
-    val startDest: Any = remember { if (showOnboarding) Onboarding else TranslationQuiz }
+    val startDest: Any = remember(showOnboarding, isTrial) { if (showOnboarding) Onboarding else TranslationQuiz(isTrial) }
 
     NavHost(
         modifier = Modifier.background(MaterialTheme.colorScheme.background),
@@ -62,7 +63,7 @@ fun TranslationModeNavHost(
                 onNavigateBack = onExit,
                 onFinishOnboarding = {
                     viewModel.finishOnboarding {
-                        navController.navigate(TranslationQuiz) {
+                        navController.navigate(TranslationQuiz(isTrial)) {
                             popUpTo(Onboarding) { inclusive = true }
                         }
                     }
@@ -77,8 +78,10 @@ fun TranslationModeNavHost(
             TranslationQuizScreen(
                 state = state.value,
                 effect = viewModel.effect,
+                billingEffect = viewModel.billingEffect,
                 onEvent = viewModel::onEvent,
-                onNavigateBack = onExit
+                onNavigateBack = onExit,
+                onLaunchBilling = { activity -> viewModel.launchBillingFlow(activity) }
             )
         }
     }
@@ -88,4 +91,4 @@ fun TranslationModeNavHost(
 object Onboarding
 
 @Serializable
-object TranslationQuiz
+data class TranslationQuiz(val isTrial: Boolean = false)

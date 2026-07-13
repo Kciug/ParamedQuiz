@@ -7,5 +7,7 @@ import java.io.Serializable
 data class TranslationQuestionDTO(
     val id: Long = 0,
     val phrase: String = "",
-    val translations: List<String> = emptyList()
+    val translations: List<String> = emptyList(),
+    @field:JvmField
+    val isFree: Boolean = false
 ) : Serializable

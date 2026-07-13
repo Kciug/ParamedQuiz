@@ -35,4 +35,18 @@
 - **Status:** ☐ manualny
 - **Given:** użytkownik bez zakupu trybu i bez pełnego pakietu.
 - **When:** próbuje wejść w tryb tłumaczeń z ekranu głównego.
-- **Then:** prezentowany panel zakupu zamiast rozgrywki (brak wersji próbnej).
+- **Then:** prezentowany panel zakupu zamiast rozgrywki, z opcjami „Kup za…" oraz „Wypróbuj" (wersja próbna).
+
+### E2E-TRANS-06 — trial → wyczerpanie → panel zakończenia → zakup → pełny tryb
+- **Priorytet:** P0
+- **Status:** ☐ manualny (automatyzacja planowana — wzór `E2E-SWIPE-01`)
+- **Given:** użytkownik bez zakupu Tłumaczeń; część pytań oznaczona `isFree` (wersja próbna).
+- **When:** na panelu zakupu wybiera „Wypróbuj", ocenia wszystkie darmowe pytania (`isFree`); na panelu zakończenia triala inicjuje zakup (fake billing) i kończy go sukcesem.
+- **Then:** trial pokazuje wyłącznie pytania `isFree`; po wyczerpaniu pojawia się panel zakończenia z ceną; po zakupie tryb automatycznie przeładowuje pełną pulę i kontynuuje jako pełny (bez ponownego wejścia).
+
+### E2E-TRANS-07 — anulowanie zakupu pozostawia trial
+- **Priorytet:** P2
+- **Status:** ☐ manualny
+- **Given:** panel zakończenia triala tłumaczeń.
+- **When:** użytkownik inicjuje zakup i go anuluje.
+- **Then:** brak odblokowania; użytkownik pozostaje w kontekście triala; możliwość ponowienia.

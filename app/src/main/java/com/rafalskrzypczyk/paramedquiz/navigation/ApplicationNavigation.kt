@@ -89,7 +89,7 @@ fun NavGraphBuilder.mainMenuDestination(
     onNavigateToDailyExercise: () -> Unit,
     onNavigateToMainMode: () -> Unit,
     onNavigateToSwipeMode: (Boolean) -> Unit,
-    onNavigateToTranslationMode: () -> Unit,
+    onNavigateToTranslationMode: (Boolean) -> Unit,
     onNavigateToCemMode: () -> Unit,
     onNavigateToStore: () -> Unit,
     onNavigateToDev: () -> Unit,
@@ -228,7 +228,7 @@ fun NavController.navigateToSwipeMode(isTrial: Boolean = false) {
 }
 
 @Serializable
-object TranslationMode
+data class TranslationMode(val isTrial: Boolean = false)
 
 fun NavGraphBuilder.translationModeDestination(
     onNavigateBack: () -> Unit
@@ -236,16 +236,18 @@ fun NavGraphBuilder.translationModeDestination(
     composable<TranslationMode> {
         val viewModel = hiltViewModel<TranslationModeEntryVM>()
         val showOnboarding = remember { viewModel.shouldShowOnboarding() }
-        
+        val route = it.toRoute<TranslationMode>()
+
         TranslationModeNavHost(
             onExit = onNavigateBack,
-            showOnboarding = showOnboarding
+            showOnboarding = showOnboarding,
+            isTrial = route.isTrial
         )
     }
 }
 
-fun NavController.navigateToTranslationMode() {
-    navigate(route = TranslationMode)
+fun NavController.navigateToTranslationMode(isTrial: Boolean = false) {
+    navigate(route = TranslationMode(isTrial = isTrial))
 }
 
 @Serializable

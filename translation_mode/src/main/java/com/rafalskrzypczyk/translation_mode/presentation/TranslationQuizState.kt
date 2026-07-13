@@ -15,7 +15,14 @@ data class TranslationQuizState(
     val showExitConfirmation: Boolean = false,
     val showReportDialog: Boolean = false,
     val reportIssueDescription: String = "",
-    val showReviewDialog: Boolean = false
+    val showReviewDialog: Boolean = false,
+    val isTrial: Boolean = false,
+    val showTrialFinishedPanel: Boolean = false,
+    val translationModePrice: String? = null,
+    val totalTranslationQuestions: Int = 0,
+    val isPurchasing: Boolean = false,
+    val isPending: Boolean = false,
+    val purchaseError: String? = null
 ) {
     val currentQuestion: TranslationQuestionUIM?
         get() = questions.getOrNull(currentQuestionIndex)

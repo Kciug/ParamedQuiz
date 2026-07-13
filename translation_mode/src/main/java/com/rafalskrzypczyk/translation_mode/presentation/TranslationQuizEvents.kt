@@ -11,4 +11,6 @@ sealed class TranslationQuizEvents {
     data class OnReportIssueDescriptionChanged(val description: String) : TranslationQuizEvents()
     object OnReportIssue : TranslationQuizEvents()
     data class ToggleReviewDialog(val show: Boolean) : TranslationQuizEvents()
+    object BuyMode : TranslationQuizEvents()
+    data class ExitTrial(val navigateBack: () -> Unit) : TranslationQuizEvents()
 }

@@ -74,7 +74,7 @@ fun AppNavHost(
             onNavigateToDailyExercise = { navController.navigateToDailyExercise() },
             onNavigateToMainMode = { navController.navigateToMainMode() },
             onNavigateToSwipeMode = { isTrial -> navController.navigateToSwipeMode(isTrial) },
-            onNavigateToTranslationMode = { navController.navigateToTranslationMode() },
+            onNavigateToTranslationMode = { isTrial -> navController.navigateToTranslationMode(isTrial) },
             onNavigateToCemMode = { navController.navigateToCemMode() },
             onNavigateToStore = { navController.navigateToStore() },
             onNavigateToDev = { navController.navigateToDevOptions() },

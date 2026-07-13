@@ -23,7 +23,7 @@ Tryb Tłumaczeń ćwiczy znajomość terminologii: użytkownikowi prezentowany j
 ## 2. Dostęp i warunki
 
 - Tryb jest **płatny**; dostęp po zakupie samego trybu **lub** posiadaniu pełnego pakietu.
-- Zakup i wejście obsługiwane są m.in. z [ekranu głównego](04-ekran-glowny.md) (panel zakupu). W przeciwieństwie do trybu Swipe **nie ma wersji próbnej**.
+- Zakup i wejście obsługiwane są m.in. z [ekranu głównego](04-ekran-glowny.md) (panel zakupu). Bliźniaczo do trybu Swipe dostępna jest **wersja próbna** („Wypróbuj") — trial pokazuje wyłącznie pytania oznaczone `isFree`, a po ich wyczerpaniu prezentowany jest panel zakończenia z opcją zakupu. Zakup w trakcie triala odblokowuje pełny tryb bez wychodzenia.
 - Przy **pierwszym wejściu** wyświetlany jest onboarding trybu (jednorazowo).
 - **Reklamy nie występują** w tym trybie.
 
