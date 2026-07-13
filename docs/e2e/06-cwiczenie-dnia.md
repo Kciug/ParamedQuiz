@@ -4,7 +4,7 @@
 
 ### E2E-DAILY-01 — ćwiczenie dnia podbija serię i blokuje się do jutra
 - **Priorytet:** P0
-- **Status:** ☐ manualny
+- **Status:** ✅ zautomatyzowany — `app/src/test/.../e2e/DailyExerciseHarnessTest` (z kontrolowanym `TimeProvider`)
 - **Given:** ćwiczenie dnia dostępne (nie wykonano dziś); sterowalny czas ustawiony na „dziś".
 - **When:** użytkownik wchodzi w ćwiczenie dnia, rozwiązuje zestaw do końca.
 - **Then:** seria zostaje podbita; data wykonania ustawiona na dziś; po powrocie element „ćwiczenie dnia" nie jest już wyróżniony, a ponowne wejście pokazuje komunikat „już wykonane".

@@ -48,6 +48,12 @@ hilt {
     enableAggregatingTask = false
 }
 
+// Każda klasa testowa E2E w świeżym JVM — pełna izolacja Robolectric+Hilt (bez wycieków
+// współdzielonych singletonów / globalnego stanu coroutines między testami w tym samym procesie).
+tasks.withType<Test>().configureEach {
+    forkEvery = 1
+}
+
 dependencies {
     implementation(project(":core"))
     implementation(project(":home"))

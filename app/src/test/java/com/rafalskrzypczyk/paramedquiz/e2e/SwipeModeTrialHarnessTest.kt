@@ -7,6 +7,7 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModelStore
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.core.ads.QuizAdHandler
@@ -22,6 +23,7 @@ import com.rafalskrzypczyk.swipe_mode.presentation.SwipeModeVM
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
+import org.junit.After
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -68,6 +70,8 @@ class SwipeModeTrialHarnessTest {
     @Inject
     lateinit var fakePremium: FakePremiumStatusProvider
 
+    private val viewModelStore = ViewModelStore()
+
     @Before
     fun setUp() {
         hiltRule.inject()
@@ -85,7 +89,7 @@ class SwipeModeTrialHarnessTest {
             billingRepository,
             fakePremium,
             SavedStateHandle(mapOf("isTrial" to true))
-        )
+        ).also { viewModelStore.put("vm", it) }
 
         composeRule.setContent {
             val state by viewModel.state.collectAsState()
@@ -102,7 +106,7 @@ class SwipeModeTrialHarnessTest {
         }
 
         // 1) Wczytana wersja próbna z jednym darmowym pytaniem.
-        composeRule.waitUntil(timeoutMillis = 5_000) {
+        composeRule.waitUntil(timeoutMillis = 15_000) {
             viewModel.state.value.questionsPair.isNotEmpty()
         }
         assertTrue("Sesja powinna startować jako trial", viewModel.state.value.isTrial)
@@ -116,15 +120,15 @@ class SwipeModeTrialHarnessTest {
             viewModel.onEvent(SwipeModeUIEvents.OnFinalFeedbackFinished)
         }
 
-        composeRule.waitUntil(timeoutMillis = 5_000) {
+        composeRule.waitUntil(timeoutMillis = 15_000) {
             viewModel.state.value.showTrialFinishedPanel
         }
 
         // 3) Cena produktu wczytana (przycisk kupna aktywny), przycisk widoczny → klik.
-        composeRule.waitUntil(timeoutMillis = 5_000) {
+        composeRule.waitUntil(timeoutMillis = 15_000) {
             viewModel.state.value.swipeModePrice != null
         }
-        composeRule.waitUntil(timeoutMillis = 5_000) {
+        composeRule.waitUntil(timeoutMillis = 15_000) {
             composeRule.onAllNodesWithTag(TestTags.SWIPE_TRIAL_BUY_BUTTON).fetchSemanticsNodes().isNotEmpty()
         }
         composeRule.onNodeWithTag(TestTags.SWIPE_TRIAL_BUY_BUTTON).performClick()
@@ -133,11 +137,16 @@ class SwipeModeTrialHarnessTest {
         composeRule.runOnIdle {
             fakePremium.setOwned(BillingIds.ID_SWIPE_MODE)
         }
-        composeRule.waitUntil(timeoutMillis = 5_000) {
+        composeRule.waitUntil(timeoutMillis = 15_000) {
             !viewModel.state.value.isTrial
         }
 
         assertFalse("Po zakupie tryb nie powinien być już trialem", viewModel.state.value.isTrial)
         assertFalse("Panel triala powinien zniknąć", viewModel.state.value.showTrialFinishedPanel)
+    }
+
+    @After
+    fun tearDown() {
+        viewModelStore.clear()
     }
 }

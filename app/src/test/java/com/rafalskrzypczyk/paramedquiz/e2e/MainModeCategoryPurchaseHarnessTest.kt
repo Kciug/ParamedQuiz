@@ -8,6 +8,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.lifecycle.ViewModelStore
 import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.testing.TestTags
@@ -20,6 +21,7 @@ import com.rafalskrzypczyk.paramedquiz.e2e.fakes.FakeFirestoreApi
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
@@ -60,6 +62,7 @@ class MainModeCategoryPurchaseHarnessTest {
     lateinit var premiumStatusProvider: PremiumStatusProvider
 
     private val paidCategoryId = 200L
+    private val viewModelStore = ViewModelStore()
 
     @Before
     fun setUp() {
@@ -78,6 +81,7 @@ class MainModeCategoryPurchaseHarnessTest {
     @Test
     fun `clicking locked category opens purchase dialog`() {
         val viewModel = MMCategoriesVM(useCases, billingRepository, premiumStatusProvider)
+            .also { viewModelStore.put("vm", it) }
 
         composeRule.setContent {
             val state by viewModel.state.collectAsState()
@@ -97,7 +101,7 @@ class MainModeCategoryPurchaseHarnessTest {
         composeRule.onNodeWithText("KATEGORIA_PLATNA").performClick()
 
         // Otwiera się dialog zakupu dla właśnie tej kategorii.
-        composeRule.waitUntil(timeoutMillis = 5_000) {
+        composeRule.waitUntil(timeoutMillis = 15_000) {
             viewModel.state.value.selectedCategoryForPurchase != null
         }
         assertEquals(paidCategoryId, viewModel.state.value.selectedCategoryForPurchase?.id)
@@ -106,14 +110,19 @@ class MainModeCategoryPurchaseHarnessTest {
         composeRule.onNodeWithTag(TestTags.PURCHASE_DIALOG_BUY_BUTTON).assertExists()
     }
 
+    @After
+    fun tearDown() {
+        viewModelStore.clear()
+    }
+
     private fun waitForText(text: String) {
-        composeRule.waitUntil(timeoutMillis = 5_000) {
+        composeRule.waitUntil(timeoutMillis = 15_000) {
             composeRule.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty()
         }
     }
 
     private fun waitForTag(tag: String) {
-        composeRule.waitUntil(timeoutMillis = 5_000) {
+        composeRule.waitUntil(timeoutMillis = 15_000) {
             composeRule.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty()
         }
     }

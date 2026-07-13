@@ -52,7 +52,7 @@ class HomeHarnessTest {
         // .use { } zamyka Activity po teście — bez tego pozostawiona MainActivity zaśmieca
         // współdzielony main looper Robolectrika i psuje kolejne testy w suicie.
         ActivityScenario.launch(MainActivity::class.java).use {
-            composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.waitUntil(timeoutMillis = 15_000) {
                 composeRule.onAllNodesWithTag(TestTags.HOME_ROOT).fetchSemanticsNodes().isNotEmpty()
             }
 

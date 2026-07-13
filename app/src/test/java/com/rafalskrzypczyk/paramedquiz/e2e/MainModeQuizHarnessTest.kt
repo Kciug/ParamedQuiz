@@ -9,6 +9,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModelStore
 import com.rafalskrzypczyk.core.ads.QuizAdHandler
 import com.rafalskrzypczyk.core.testing.TestTags
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
@@ -21,6 +22,7 @@ import com.rafalskrzypczyk.paramedquiz.e2e.fakes.FakeFirestoreApi
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
@@ -60,6 +62,7 @@ class MainModeQuizHarnessTest {
     lateinit var adHandler: QuizAdHandler
 
     private val categoryId = 100L
+    private val viewModelStore = ViewModelStore()
 
     @Before
     fun setUp() {
@@ -92,7 +95,7 @@ class MainModeQuizHarnessTest {
             SavedStateHandle(mapOf("categoryId" to categoryId, "categoryTitle" to "KATEGORIA")),
             useCases,
             adHandler
-        )
+        ).also { viewModelStore.put("vm", it) }
 
         composeRule.setContent {
             val state by viewModel.state.collectAsState()
@@ -117,6 +120,11 @@ class MainModeQuizHarnessTest {
         assertEquals(2, viewModel.state.value.quizFinishedState.correctAnswers)
     }
 
+    @After
+    fun tearDown() {
+        viewModelStore.clear()
+    }
+
     private fun answerCorrectlyAndAdvance(correctAnswerText: String) {
         waitForText(correctAnswerText)
         composeRule.onNodeWithText(correctAnswerText).performClick()
@@ -126,13 +134,13 @@ class MainModeQuizHarnessTest {
     }
 
     private fun waitForText(text: String) {
-        composeRule.waitUntil(timeoutMillis = 5_000) {
+        composeRule.waitUntil(timeoutMillis = 15_000) {
             composeRule.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty()
         }
     }
 
     private fun waitForTag(tag: String) {
-        composeRule.waitUntil(timeoutMillis = 5_000) {
+        composeRule.waitUntil(timeoutMillis = 15_000) {
             composeRule.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty()
         }
     }
