@@ -16,4 +16,7 @@ object TestTags {
     const val QUIZ_SUBMIT_BUTTON = "quiz_submit_button"
     const val QUIZ_NEXT_BUTTON = "quiz_next_button"
     const val QUIZ_FINISHED_ROOT = "quiz_finished_root"
+
+    // Tryb Swipe
+    const val SWIPE_TRIAL_BUY_BUTTON = "swipe_trial_buy_button"
 }

@@ -49,12 +49,14 @@ class HomeHarnessTest {
 
     @Test
     fun `returning user lands on home screen`() {
-        ActivityScenario.launch(MainActivity::class.java)
+        // .use { } zamyka Activity po teście — bez tego pozostawiona MainActivity zaśmieca
+        // współdzielony main looper Robolectrika i psuje kolejne testy w suicie.
+        ActivityScenario.launch(MainActivity::class.java).use {
+            composeRule.waitUntil(timeoutMillis = 5_000) {
+                composeRule.onAllNodesWithTag(TestTags.HOME_ROOT).fetchSemanticsNodes().isNotEmpty()
+            }
 
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            composeRule.onAllNodesWithTag(TestTags.HOME_ROOT).fetchSemanticsNodes().isNotEmpty()
+            composeRule.onNodeWithTag(TestTags.HOME_ROOT).assertExists()
         }
-
-        composeRule.onNodeWithTag(TestTags.HOME_ROOT).assertExists()
     }
 }

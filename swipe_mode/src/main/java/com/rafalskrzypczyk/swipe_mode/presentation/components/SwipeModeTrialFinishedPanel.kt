@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -31,6 +32,7 @@ import com.rafalskrzypczyk.core.composables.TextCaption
 import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.composables.TextScore
 import com.rafalskrzypczyk.core.composables.TextTitle
+import com.rafalskrzypczyk.core.testing.TestTags
 
 @Composable
 fun SwipeModeTrialFinishedPanel(
@@ -131,6 +133,7 @@ fun SwipeModeTrialFinishedPanel(
                 } else {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         ButtonPrimary(
+                            modifier = Modifier.testTag(TestTags.SWIPE_TRIAL_BUY_BUTTON),
                             title = stringResource(R.string.btn_buy_for, price ?: "---"),
                             onClick = onBuyClick,
                             enabled = price != null && !loading,

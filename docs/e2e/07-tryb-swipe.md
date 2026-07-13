@@ -4,7 +4,7 @@
 
 ### E2E-SWIPE-01 — trial → wyczerpanie → panel zakończenia → zakup → pełny tryb
 - **Priorytet:** P0
-- **Status:** ☐ manualny
+- **Status:** ✅ zautomatyzowany — `app/src/test/.../e2e/SwipeModeTrialHarnessTest`
 - **Given:** użytkownik bez zakupu Swipe; wersja próbna z kilkoma darmowymi pytaniami (seed).
 - **When:** wchodzi w trial, ocenia wszystkie darmowe pytania; na panelu zakończenia triala inicjuje zakup (fake billing) i kończy go sukcesem.
 - **Then:** po zakupie tryb automatycznie przeładowuje pełną pulę i kontynuuje jako pełny (bez ponownego wejścia).
