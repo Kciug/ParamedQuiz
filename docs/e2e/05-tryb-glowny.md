@@ -11,7 +11,7 @@
 
 ### E2E-MAIN-02 — zablokowana kategoria otwiera okno zakupu
 - **Priorytet:** P0
-- **Status:** ☐ manualny
+- **Status:** ✅ zautomatyzowany — `app/src/test/.../e2e/MainModeCategoryPurchaseHarnessTest`
 - **Given:** płatna kategoria, do której użytkownik nie ma dostępu (brak pełnego pakietu).
 - **When:** użytkownik wybiera zablokowaną kategorię.
 - **Then:** zamiast quizu otwiera się okno zakupu (z ceną, jeśli dostępna).
