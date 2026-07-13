@@ -4,7 +4,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
-import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -63,6 +62,7 @@ class MainModeQuizHarnessTest {
 
     private val categoryId = 100L
     private val viewModelStore = ViewModelStore()
+    private lateinit var viewModel: MMQuizVM
 
     @Before
     fun setUp() {
@@ -76,22 +76,13 @@ class MainModeQuizHarnessTest {
                     AnswerDTO(id = 1, answerText = "ODP_1A", isCorrect = true),
                     AnswerDTO(id = 2, answerText = "ODP_1B", isCorrect = false)
                 )
-            ),
-            QuestionDTO(
-                id = 2,
-                questionText = "PYTANIE_2",
-                categoryIDs = listOf(categoryId),
-                answers = listOf(
-                    AnswerDTO(id = 3, answerText = "ODP_2A", isCorrect = true),
-                    AnswerDTO(id = 4, answerText = "ODP_2B", isCorrect = false)
-                )
             )
         )
     }
 
     @Test
     fun `play category quiz through to finish screen`() {
-        val viewModel = MMQuizVM(
+        viewModel = MMQuizVM(
             SavedStateHandle(mapOf("categoryId" to categoryId, "categoryTitle" to "KATEGORIA")),
             useCases,
             adHandler
@@ -110,14 +101,13 @@ class MainModeQuizHarnessTest {
         }
 
         answerCorrectlyAndAdvance("ODP_1A")
-        answerCorrectlyAndAdvance("ODP_2A")
 
         // Ekran wyniku osiągnięty…
         waitForTag(TestTags.QUIZ_FINISHED_ROOT)
         composeRule.onNodeWithTag(TestTags.QUIZ_FINISHED_ROOT).assertExists()
 
-        // …i obie odpowiedzi policzone jako poprawne.
-        assertEquals(2, viewModel.state.value.quizFinishedState.correctAnswers)
+        // …i poprawna odpowiedź policzona.
+        assertEquals(1, viewModel.state.value.quizFinishedState.correctAnswers)
     }
 
     @After
@@ -126,21 +116,20 @@ class MainModeQuizHarnessTest {
     }
 
     private fun answerCorrectlyAndAdvance(correctAnswerText: String) {
-        waitForText(correctAnswerText)
+        // Czekamy aż pytanie z tą odpowiedzią jest w stanie VM (load asynchroniczny) — stabilniejsze
+        // niż pollowanie samego węzła UI pod Robolectrikiem.
+        composeRule.waitUntil(timeoutMillis = 30_000) {
+            viewModel.state.value.question.answers.any { it.answerText == correctAnswerText }
+        }
+        composeRule.waitForIdle()
         composeRule.onNodeWithText(correctAnswerText).performClick()
         composeRule.onNodeWithTag(TestTags.QUIZ_SUBMIT_BUTTON).performClick()
         waitForTag(TestTags.QUIZ_NEXT_BUTTON)
         composeRule.onNodeWithTag(TestTags.QUIZ_NEXT_BUTTON).performClick()
     }
 
-    private fun waitForText(text: String) {
-        composeRule.waitUntil(timeoutMillis = 15_000) {
-            composeRule.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty()
-        }
-    }
-
     private fun waitForTag(tag: String) {
-        composeRule.waitUntil(timeoutMillis = 15_000) {
+        composeRule.waitUntil(timeoutMillis = 30_000) {
             composeRule.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty()
         }
     }

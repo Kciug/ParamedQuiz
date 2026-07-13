@@ -4,7 +4,7 @@
 
 ### E2E-REV-01 — konfiguracja i rozegranie sesji powtórek do wyniku
 - **Priorytet:** P0
-- **Status:** ☐ manualny
+- **Status:** ✅ zautomatyzowany — `app/src/test/.../e2e/RevisionsSessionHarnessTest`
 - **Given:** użytkownik ma historię odpowiedzianych pytań w trybie głównym (seed skuteczności per pytanie).
 - **When:** wchodzi w powtórki; wybiera tryb źródłowy, kategorię, kryterium i rozmiar sesji; rozpoczyna i rozwiązuje sesję.
 - **Then:** sesja startuje z pytaniami zgodnymi z konfiguracją; po zakończeniu pojawia się ekran wyniku.

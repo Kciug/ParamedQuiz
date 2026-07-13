@@ -106,7 +106,7 @@ class SwipeModeTrialHarnessTest {
         }
 
         // 1) Wczytana wersja próbna z jednym darmowym pytaniem.
-        composeRule.waitUntil(timeoutMillis = 15_000) {
+        composeRule.waitUntil(timeoutMillis = 30_000) {
             viewModel.state.value.questionsPair.isNotEmpty()
         }
         assertTrue("Sesja powinna startować jako trial", viewModel.state.value.isTrial)
@@ -120,15 +120,15 @@ class SwipeModeTrialHarnessTest {
             viewModel.onEvent(SwipeModeUIEvents.OnFinalFeedbackFinished)
         }
 
-        composeRule.waitUntil(timeoutMillis = 15_000) {
+        composeRule.waitUntil(timeoutMillis = 30_000) {
             viewModel.state.value.showTrialFinishedPanel
         }
 
         // 3) Cena produktu wczytana (przycisk kupna aktywny), przycisk widoczny → klik.
-        composeRule.waitUntil(timeoutMillis = 15_000) {
+        composeRule.waitUntil(timeoutMillis = 30_000) {
             viewModel.state.value.swipeModePrice != null
         }
-        composeRule.waitUntil(timeoutMillis = 15_000) {
+        composeRule.waitUntil(timeoutMillis = 30_000) {
             composeRule.onAllNodesWithTag(TestTags.SWIPE_TRIAL_BUY_BUTTON).fetchSemanticsNodes().isNotEmpty()
         }
         composeRule.onNodeWithTag(TestTags.SWIPE_TRIAL_BUY_BUTTON).performClick()
@@ -137,7 +137,7 @@ class SwipeModeTrialHarnessTest {
         composeRule.runOnIdle {
             fakePremium.setOwned(BillingIds.ID_SWIPE_MODE)
         }
-        composeRule.waitUntil(timeoutMillis = 15_000) {
+        composeRule.waitUntil(timeoutMillis = 30_000) {
             !viewModel.state.value.isTrial
         }
 

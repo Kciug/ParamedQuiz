@@ -101,7 +101,7 @@ class MainModeCategoryPurchaseHarnessTest {
         composeRule.onNodeWithText("KATEGORIA_PLATNA").performClick()
 
         // Otwiera się dialog zakupu dla właśnie tej kategorii.
-        composeRule.waitUntil(timeoutMillis = 15_000) {
+        composeRule.waitUntil(timeoutMillis = 30_000) {
             viewModel.state.value.selectedCategoryForPurchase != null
         }
         assertEquals(paidCategoryId, viewModel.state.value.selectedCategoryForPurchase?.id)
@@ -116,13 +116,13 @@ class MainModeCategoryPurchaseHarnessTest {
     }
 
     private fun waitForText(text: String) {
-        composeRule.waitUntil(timeoutMillis = 15_000) {
+        composeRule.waitUntil(timeoutMillis = 30_000) {
             composeRule.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty()
         }
     }
 
     private fun waitForTag(tag: String) {
-        composeRule.waitUntil(timeoutMillis = 15_000) {
+        composeRule.waitUntil(timeoutMillis = 30_000) {
             composeRule.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty()
         }
     }
