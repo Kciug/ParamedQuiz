@@ -6,6 +6,8 @@ import com.rafalskrzypczyk.core.ads.QuizAdHandler
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedState
+import com.rafalskrzypczyk.core.feedback.FeedbackEvent
+import com.rafalskrzypczyk.core.feedback.FeedbackManager
 import com.rafalskrzypczyk.core.report_issues.IssueReport
 import com.rafalskrzypczyk.main_mode.domain.models.Question
 import com.rafalskrzypczyk.main_mode.domain.quiz_base.BaseQuizUseCases
@@ -22,7 +24,8 @@ import kotlinx.coroutines.flow.asSharedFlow
 
 abstract class BaseQuizVM (
     private val useCases: BaseQuizUseCases,
-    protected val adHandler: QuizAdHandler
+    protected val adHandler: QuizAdHandler,
+    protected val feedbackManager: FeedbackManager
 ): ViewModel() {
     @Suppress("PropertyName")
     protected val _state = MutableStateFlow(QuizState())
@@ -142,6 +145,8 @@ abstract class BaseQuizVM (
 
         val isCorrect = quizEngine.submitAnswer(selectedIds)
 
+        feedbackManager.perform(if (isCorrect) FeedbackEvent.ANSWER_CORRECT else FeedbackEvent.ANSWER_WRONG)
+
         val processedQuestion = currentQ.submitAnswer(isCorrect, precision)
         val newHistory = state.value.answeredQuestions + processedQuestion
         
@@ -245,6 +250,7 @@ abstract class BaseQuizVM (
 
     protected open fun finishQuiz() {
         useCases.incrementCompletedQuizzes()
+        feedbackManager.perform(FeedbackEvent.QUIZ_COMPLETED)
         _state.update { it.copy(
             showAd = false,
             isQuizFinished = true,

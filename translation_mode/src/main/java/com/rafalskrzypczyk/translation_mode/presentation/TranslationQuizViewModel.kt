@@ -12,6 +12,8 @@ import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedState
+import com.rafalskrzypczyk.core.feedback.FeedbackEvent
+import com.rafalskrzypczyk.core.feedback.FeedbackManager
 import com.rafalskrzypczyk.firestore.data.FirestoreCollections
 import com.rafalskrzypczyk.firestore.domain.models.IssueReportDTO
 import com.rafalskrzypczyk.firestore.domain.models.TranslationQuestionDTO
@@ -42,6 +44,7 @@ class TranslationQuizViewModel @Inject constructor(
     private val useCases: TranslationUseCases,
     private val billingRepository: BillingRepository,
     private val premiumStatusProvider: PremiumStatusProvider,
+    private val feedbackManager: FeedbackManager,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -259,6 +262,8 @@ class TranslationQuizViewModel @Inject constructor(
         val userAnswer = currentQ.userAnswer.trim()
         val isCorrect = currentQ.possibleTranslations.any { it.equals(userAnswer, ignoreCase = true) }
 
+        feedbackManager.perform(if (isCorrect) FeedbackEvent.ANSWER_CORRECT else FeedbackEvent.ANSWER_WRONG)
+
         val updatedQuestions = currentState.questions.toMutableList()
         updatedQuestions[index] = currentQ.copy(
             userAnswer = userAnswer,
@@ -299,6 +304,7 @@ class TranslationQuizViewModel @Inject constructor(
 
     private fun finishQuiz() {
         useCases.incrementCompletedQuizzes()
+        feedbackManager.perform(FeedbackEvent.QUIZ_COMPLETED)
         _state.update {
             it.copy(
                 isQuizFinished = true,

@@ -37,29 +37,40 @@ Legenda: 🔊 dźwięk · 📳 haptic · 🔊📳 oba
 > niezwiązany** problem `processDebugGoogleServices` (namespace `com.frontfolks.mediquiz`
 > nie ma wpisu w `google-services.json`).
 
+## Iteracja 2 — dźwięk + zdarzenia quizu ✅ ZROBIONE
+
+- [x] Warstwa dźwięku aktywna — mapa `soundResources` (`fb_correct/wrong/complete/record`),
+      eager preload `SoundPool` w `init` (`FeedbackManagerImpl`)
+- [x] 🔊📳 poprawna/błędna + koniec quizu wyzwalane z ViewModeli WSZYSTKICH trybów
+      (main/cem/daily przez `BaseQuizVM`, plus `RevisionsQuizVM`, `SwipeModeVM`,
+      `TranslationQuizViewModel`)
+- [x] 🔊📳 swipe: nowy rekord combo → `NEW_RECORD` (zamiast `QUIZ_COMPLETED`)
+
+> **Weryfikacja:** `:core` + `:main_mode` + `:cem_mode` + `:swipe_mode` + `:translation_mode`
+> + `:revisions` → `BUILD SUCCESSFUL`. Pełna walidacja grafu Hilt i `assembleDebug` `:app`
+> nadal blokowane przez niezwiązany `processDebugGoogleServices` (namespace).
+
 ## Poziom 1 — rdzeń quizu (main_mode + cem_mode)
 
 - [ ] 📳 zaznaczenie odpowiedzi — `QuizGameContent.kt:260` `AnswerButton.onClick` (lekki tick)
-- [ ] 🔊📳 **poprawna / błędna odpowiedź** — `QuizSubmittedSection.kt:37` (steruje `isAnswerCorrect`);
-      logika: `BaseQuizVM.submitAnswer()` (~l.124). Dźwięk sukcesu vs błędu; haptic: sukces = double-tick, błąd = LongPress/error
+- [x] 🔊📳 **poprawna / błędna odpowiedź** — wyzwalane w `BaseQuizVM.submitAnswer()`
+      (`perform(ANSWER_CORRECT/ANSWER_WRONG)`); dźwięk + haptic
 - [ ] 📳 „Następne pytanie" — `QuizSubmittedSection.kt:90` (pokryte globalnym hookiem)
-- [ ] 🔊📳 **koniec quizu** — `core/.../composables/QuizFinishScreen.kt:32` + `BaseQuizVM.finishQuiz()`
-      (dźwięk „complete", haptic przy dobiciu paska do 100%)
+- [x] 🔊📳 **koniec quizu** — `BaseQuizVM.finishQuiz()` (`perform(QUIZ_COMPLETED)`)
 
 ## Poziom 1 — swipe_mode
 
 - [ ] 📳 przekroczenie progu przeciągnięcia — `SwipeQuizCard.kt:89` (`positionalThreshold 0.7`) — tick „złapało"
 - [ ] 📳 wylot karty (commit) — `SwipeQuizCard.kt:106-112` (`settledValue` → `onSubmit`) — „whoosh" tick
-- [ ] 🔊📳 poprawna / błędna — `AnswerResultIndicator.kt:54` (CORRECT/INCORRECT)
-- [ ] 🔊📳 **nowy rekord combo / streak** — `SwipeModeVM` `updateStreak` / `isNewComboRecord` w `finishQuiz()`
-      (osobny nagradzający dźwięk, mocny haptic — rzadkie zdarzenie)
+- [x] 🔊📳 poprawna / błędna — `SwipeModeVM.submitAnswer()` (`perform(ANSWER_CORRECT/ANSWER_WRONG)`)
+- [x] 🔊📳 **nowy rekord combo** — `SwipeModeVM.finishQuiz()` (`isNewComboRecord` → `NEW_RECORD`)
 - [ ] 🔊📳 duży feedback końcowy — `isLastAnswerFeedbackVisible` (ostatnia odpowiedź sesji)
 
 ## Poziom 2 — translation_mode
 
 - [ ] 📳 wysłanie tłumaczenia — `TranslationQuizContent.kt:145` (przycisk Check / klawiatura Done → `OnSubmitAnswer`)
-- [ ] 🔊📳 poprawna / błędna — `TranslationFeedbackPanel.kt:49-90` (steruje `isCorrect`)
-- [ ] 🔊📳 koniec sesji — `TranslationQuizViewModel.finishQuiz()`
+- [x] 🔊📳 poprawna / błędna — `TranslationQuizViewModel.submitAnswer()` (`perform(ANSWER_CORRECT/ANSWER_WRONG)`)
+- [x] 🔊📳 koniec sesji — `TranslationQuizViewModel.finishQuiz()` (`perform(QUIZ_COMPLETED)`)
 
 ## Poziom 3 — nawigacja i ekran główny
 

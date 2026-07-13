@@ -5,6 +5,7 @@ import com.rafalskrzypczyk.core.ads.QuizAdHandler
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.domain.config.GameplayConfigProvider
+import com.rafalskrzypczyk.core.feedback.FeedbackManager
 import com.rafalskrzypczyk.core.utils.ResourceProvider
 import com.rafalskrzypczyk.main_mode.R
 import com.rafalskrzypczyk.main_mode.domain.daily_exercise.DailyExerciseUseCases
@@ -22,10 +23,12 @@ class DailyExerciseVM @Inject constructor(
     private val resourceProvider: ResourceProvider,
     private val scoreManager: ScoreManager,
     private val gameplayConfig: GameplayConfigProvider,
-    adHandler: QuizAdHandler
+    adHandler: QuizAdHandler,
+    feedbackManager: FeedbackManager
 ): BaseQuizVM(
     useCases = useCases.base,
-    adHandler = adHandler
+    adHandler = adHandler,
+    feedbackManager = feedbackManager
 ) {
     init {
         viewModelScope.launch { loadQuestions() }

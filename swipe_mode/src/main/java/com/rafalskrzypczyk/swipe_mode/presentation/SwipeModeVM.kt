@@ -13,6 +13,8 @@ import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedState
+import com.rafalskrzypczyk.core.feedback.FeedbackEvent
+import com.rafalskrzypczyk.core.feedback.FeedbackManager
 import com.rafalskrzypczyk.core.report_issues.IssueReport
 import com.rafalskrzypczyk.firestore.data.FirestoreCollections
 import com.rafalskrzypczyk.swipe_mode.domain.SwipeModeUseCases
@@ -40,6 +42,7 @@ class SwipeModeVM @Inject constructor(
     private val adHandler: QuizAdHandler,
     private val billingRepository: BillingRepository,
     private val premiumStatusProvider: PremiumStatusProvider,
+    private val feedbackManager: FeedbackManager,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     private val _state = MutableStateFlow(SwipeModeState())
@@ -357,6 +360,8 @@ class SwipeModeVM @Inject constructor(
         val answeredQuestion = questions.first { questionId == it.id }
         val answeredCorrectly = answeredQuestion.isCorrect == isCorrect
 
+        feedbackManager.perform(if (answeredCorrectly) FeedbackEvent.ANSWER_CORRECT else FeedbackEvent.ANSWER_WRONG)
+
         answerHistory.add(answeredCorrectly)
 
         if (answeredCorrectly) {
@@ -412,6 +417,8 @@ class SwipeModeVM @Inject constructor(
 
     private fun finishQuiz() {
         val isNewComboRecord = bestStreak > initialBestCombo
+
+        feedbackManager.perform(if (isNewComboRecord) FeedbackEvent.NEW_RECORD else FeedbackEvent.QUIZ_COMPLETED)
 
         useCases.incrementCompletedQuizzes()
         useCases.updateBestCombo(bestStreak)

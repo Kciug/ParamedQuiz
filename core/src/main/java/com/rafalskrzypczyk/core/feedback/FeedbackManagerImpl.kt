@@ -7,6 +7,7 @@ import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import com.rafalskrzypczyk.core.R
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -14,20 +15,25 @@ import javax.inject.Singleton
 
 @Singleton
 class FeedbackManagerImpl @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val prefs: SharedPreferencesApi
 ) : FeedbackManager {
 
     private val vibrator: Vibrator? by lazy { resolveVibrator() }
 
-    private val soundResources: Map<FeedbackEvent, Int> = emptyMap()
+    private val soundResources: Map<FeedbackEvent, Int> = mapOf(
+        FeedbackEvent.ANSWER_CORRECT to R.raw.fb_correct,
+        FeedbackEvent.ANSWER_WRONG to R.raw.fb_wrong,
+        FeedbackEvent.QUIZ_COMPLETED to R.raw.fb_complete,
+        FeedbackEvent.NEW_RECORD to R.raw.fb_record
+    )
 
     private val soundPool: SoundPool by lazy {
         SoundPool.Builder()
             .setMaxStreams(MAX_STREAMS)
             .setAudioAttributes(
                 AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION)
+                    .setUsage(AudioAttributes.USAGE_GAME)
                     .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                     .build()
             )
@@ -36,6 +42,10 @@ class FeedbackManagerImpl @Inject constructor(
 
     private val loadedSounds: Map<FeedbackEvent, Int> by lazy {
         soundResources.mapValues { soundPool.load(context, it.value, 1) }
+    }
+
+    init {
+        loadedSounds
     }
 
     override fun perform(event: FeedbackEvent) {

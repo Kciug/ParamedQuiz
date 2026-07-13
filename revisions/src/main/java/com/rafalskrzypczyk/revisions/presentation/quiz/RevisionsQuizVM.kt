@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedState
+import com.rafalskrzypczyk.core.feedback.FeedbackEvent
+import com.rafalskrzypczyk.core.feedback.FeedbackManager
 import com.rafalskrzypczyk.core.report_issues.IssueReport
 import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.firestore.domain.models.TranslationQuestionDTO
@@ -38,7 +40,8 @@ class RevisionsQuizVM @Inject constructor(
     private val scoreManager: ScoreManager,
     private val streakManager: StreakManager,
     private val reportIssueUC: ReportIssueUC,
-    private val adHandler: QuizAdHandler
+    private val adHandler: QuizAdHandler,
+    private val feedbackManager: FeedbackManager
 ) : ViewModel() {
 
     private val mode: QuizMode = QuizMode.valueOf(savedStateHandle.get<String>("mode") ?: QuizMode.MainMode.name)
@@ -230,6 +233,8 @@ class RevisionsQuizVM @Inject constructor(
 
         val result = engine.submitAnswer(isCorrect) ?: return
 
+        feedbackManager.perform(if (isCorrect) FeedbackEvent.ANSWER_CORRECT else FeedbackEvent.ANSWER_WRONG)
+
         if (result.isFirstAttempt) {
             val earned = updateScoreWithQuestion(currentQ.id, isCorrect)
             engine.addEarnedPoints(earned)
@@ -255,6 +260,8 @@ class RevisionsQuizVM @Inject constructor(
         val isCorrect = currentQ.possibleTranslations.any { it.trim().lowercase() == userAnswerTrimmed }
 
         val result = engine.submitAnswer(isCorrect) ?: return
+
+        feedbackManager.perform(if (isCorrect) FeedbackEvent.ANSWER_CORRECT else FeedbackEvent.ANSWER_WRONG)
 
         if (result.isFirstAttempt) {
             val earned = updateScoreWithQuestion(currentQ.id, isCorrect)
@@ -328,6 +335,7 @@ class RevisionsQuizVM @Inject constructor(
     }
 
     private fun finishQuiz() {
+        feedbackManager.perform(FeedbackEvent.QUIZ_COMPLETED)
         _state.update {
             it.copy(
                 quizFinished = true,
