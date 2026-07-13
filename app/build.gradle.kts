@@ -71,6 +71,12 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    // Harness E2E (Robolectric + Hilt + Compose UI test) — testy uruchamiane na JVM.
+    testImplementation(platform(libs.androidx.compose.bom))
+    testImplementation(libs.bundles.robolectric.e2e)
+    kaptTest(libs.hilt.compiler)
+    debugImplementation(libs.androidx.ui.test.manifest)
     
     implementation(libs.kotlinx.serialization.json)
     implementation(platform(libs.firebase.bom))

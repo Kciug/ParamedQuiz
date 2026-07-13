@@ -30,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -37,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.rafalskrzypczyk.core.R
+import com.rafalskrzypczyk.core.testing.TestTags
 import com.rafalskrzypczyk.core.ui.theme.MQGreen
 
 @Composable
@@ -182,6 +184,7 @@ private fun PurchaseContent(
         Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
 
         ButtonPrimary(
+            modifier = Modifier.testTag(TestTags.PURCHASE_DIALOG_BUY_BUTTON),
             title = stringResource(R.string.btn_buy),
             onClick = onConfirm,
             enabled = price != null,

@@ -38,6 +38,12 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                     targetCompatibility = JavaVersion.VERSION_11
                 }
 
+                // Robolectric potrzebuje zasobów Androida w testach JVM (unit test) — E2E harness.
+                testOptions {
+                    unitTests.isIncludeAndroidResources = true
+                    unitTests.isReturnDefaultValues = true
+                }
+
                 buildTypes {
                     getByName("release") {
                         isMinifyEnabled = true

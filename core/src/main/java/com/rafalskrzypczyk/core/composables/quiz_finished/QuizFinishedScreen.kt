@@ -26,9 +26,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.rafalskrzypczyk.core.R
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.PreviewContainer
@@ -38,9 +38,11 @@ import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.composables.UserPointsLabel
 import com.rafalskrzypczyk.core.composables.quiz_finished.components.QuizFinishedBottomBar
 import com.rafalskrzypczyk.core.composables.quiz_finished.components.StreakUpdateSection
+import com.rafalskrzypczyk.core.testing.TestTags
 import com.rafalskrzypczyk.core.ui.theme.MQGreen
 import com.rafalskrzypczyk.core.ui.theme.MQYellow
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun QuizFinishedScreen(
@@ -52,7 +54,7 @@ fun QuizFinishedScreen(
     val backButtonVisible = remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        delay(enterDelay)
+        delay(enterDelay.milliseconds)
         backButtonVisible.value = true
     }
 
@@ -68,6 +70,7 @@ fun QuizFinishedScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .testTag(TestTags.QUIZ_FINISHED_ROOT)
                 .padding(innerPadding)
                 .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
                 .verticalScroll(rememberScrollState()),

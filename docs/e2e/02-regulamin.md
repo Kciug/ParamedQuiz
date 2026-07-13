@@ -4,7 +4,7 @@
 
 ### E2E-TOS-01 — akceptacja obowiązkowego regulaminu odblokowuje aplikację
 - **Priorytet:** P0
-- **Status:** ☐ manualny
+- **Status:** ✅ zautomatyzowany — `app/src/test/.../e2e/TermsOfServiceHarnessTest`
 - **Given:** świeża instalacja (nigdy nie zaakceptowano regulaminu); backend serwuje regulamin w wersji N.
 - **When:** po onboardingu wyświetla się ekran regulaminu; użytkownik wybiera „Akceptuję".
 - **Then:** zaakceptowana wersja N zapamiętana; użytkownik trafia na ekran główny.

@@ -6,9 +6,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -17,20 +20,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.rafalskrzypczyk.core.composables.ButtonPrimary
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.TextPrimary
+import com.rafalskrzypczyk.core.testing.TestTags
 import com.rafalskrzypczyk.core.ui.theme.MQGreen
 import com.rafalskrzypczyk.core.ui.theme.MQRed
 import com.rafalskrzypczyk.main_mode.R
-
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.unit.dp
 
 @Composable
 fun QuizSubmittedSection(
@@ -43,8 +44,7 @@ fun QuizSubmittedSection(
     val verifiedText = stringResource(if(isAnswerCorrect) R.string.answer_correct else R.string.answer_incorrect)
     val verifiedColor = if(isAnswerCorrect) MQGreen else MQRed
 
-    val configuration = LocalConfiguration.current
-    val screenHeight = configuration.screenHeightDp.dp
+    val screenHeight = LocalWindowInfo.current.containerSize.height.dp
 
     Column(modifier = Modifier
         .fillMaxWidth()
@@ -88,7 +88,9 @@ fun QuizSubmittedSection(
         }
         Spacer(modifier = Modifier.height(Dimens.DEFAULT_PADDING))
         ButtonPrimary(
-            modifier = Modifier.padding(bottom = Dimens.DEFAULT_PADDING),
+            modifier = Modifier
+                .padding(bottom = Dimens.DEFAULT_PADDING)
+                .testTag(TestTags.QUIZ_NEXT_BUTTON),
             title = stringResource(R.string.btn_next_question),
             onClick = onNextQuestion
         )

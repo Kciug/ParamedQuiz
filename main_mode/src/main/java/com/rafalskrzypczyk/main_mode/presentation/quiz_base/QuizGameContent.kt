@@ -35,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -44,6 +45,7 @@ import com.rafalskrzypczyk.core.composables.ButtonPrimary
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.PreviewContainer
 import com.rafalskrzypczyk.core.composables.TextPrimary
+import com.rafalskrzypczyk.core.testing.TestTags
 import com.rafalskrzypczyk.main_mode.R
 
 @Composable
@@ -102,7 +104,9 @@ fun QuizGameContent(
                         isSubmitted = question.isAnswerSubmitted
                     )
                     ButtonPrimary(
-                        modifier = Modifier.padding(top = Dimens.DEFAULT_PADDING),
+                        modifier = Modifier
+                            .padding(top = Dimens.DEFAULT_PADDING)
+                            .testTag(TestTags.QUIZ_SUBMIT_BUTTON),
                         title = stringResource(R.string.btn_submit),
                         onClick = onSubmitAnswer
                     )
@@ -158,10 +162,12 @@ fun QuizGameContent(
                                 )
 
                                 ButtonPrimary(
-                                    modifier = Modifier.padding(
-                                        top = Dimens.DEFAULT_PADDING,
-                                        bottom = Dimens.DEFAULT_PADDING
-                                    ),
+                                    modifier = Modifier
+                                        .padding(
+                                            top = Dimens.DEFAULT_PADDING,
+                                            bottom = Dimens.DEFAULT_PADDING
+                                        )
+                                        .testTag(TestTags.QUIZ_SUBMIT_BUTTON),
                                     title = stringResource(R.string.btn_submit),
                                     onClick = onSubmitAnswer
                                 )

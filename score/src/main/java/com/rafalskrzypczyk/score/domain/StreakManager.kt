@@ -1,6 +1,7 @@
 package com.rafalskrzypczyk.score.domain
 
 import com.rafalskrzypczyk.core.domain.config.GameplayConfigProvider
+import com.rafalskrzypczyk.core.utils.TimeProvider
 import com.rafalskrzypczyk.core.utils.toDateOnly
 import jakarta.inject.Inject
 import java.util.Calendar
@@ -8,9 +9,17 @@ import java.util.Date
 
 class StreakManager @Inject constructor(
     private val scoreManager: ScoreManager,
-    private val gameplayConfig: GameplayConfigProvider
+    private val gameplayConfig: GameplayConfigProvider,
+    private val timeProvider: TimeProvider
 ) {
     private var increaseStreakPoints = 0
+
+    private fun today(): Date = timeProvider.now().toDateOnly()
+
+    private fun yesterday(): Date = Calendar.getInstance().apply {
+        time = timeProvider.now()
+        add(Calendar.DAY_OF_MONTH, -1)
+    }.time.toDateOnly()
 
     fun increaseStreakByQuestions(): Boolean {
         increaseStreakPoints++
@@ -27,9 +36,7 @@ class StreakManager @Inject constructor(
     fun validateStreak() {
         val score = scoreManager.getScore()
         val lastStreakDate = score.lastStreakUpdateDate?.toDateOnly()
-        val streakPendingDate = Calendar.getInstance().apply {
-            add(Calendar.DAY_OF_MONTH, -1)
-        }.time.toDateOnly()
+        val streakPendingDate = yesterday()
 
         if (lastStreakDate != null && lastStreakDate < streakPendingDate) {
             clearStreak()
@@ -38,8 +45,8 @@ class StreakManager @Inject constructor(
 
     fun getStreakState(lastStreakUpdateDate: Date): StreakState {
         return when(lastStreakUpdateDate.toDateOnly()) {
-            Calendar.getInstance().time.toDateOnly() -> StreakState.DONE
-            Calendar.getInstance().apply { add(Calendar.DAY_OF_MONTH, -1) }.time.toDateOnly() -> StreakState.PENDING
+            today() -> StreakState.DONE
+            yesterday() -> StreakState.PENDING
             else -> {
                 clearStreak()
                 StreakState.MISSED
@@ -50,7 +57,7 @@ class StreakManager @Inject constructor(
     private fun increaseStreakForToday(): Boolean {
         val score = scoreManager.getScore()
 
-        val today = Calendar.getInstance().time.toDateOnly()
+        val today = today()
 
         val lastUpdate = score.lastStreakUpdateDate?.toDateOnly()
 
