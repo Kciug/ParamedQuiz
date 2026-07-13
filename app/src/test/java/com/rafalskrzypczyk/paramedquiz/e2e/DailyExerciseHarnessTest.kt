@@ -10,6 +10,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.rafalskrzypczyk.core.ads.QuizAdHandler
 import com.rafalskrzypczyk.core.domain.config.GameplayConfigProvider
+import com.rafalskrzypczyk.core.feedback.NoOpFeedbackManager
 import com.rafalskrzypczyk.core.testing.TestTags
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.core.utils.ResourceProvider
@@ -118,7 +119,8 @@ class DailyExerciseHarnessTest {
             resourceProvider,
             scoreManager,
             gameplayConfig,
-            adHandler
+            adHandler,
+            NoOpFeedbackManager
         ).also { viewModelStore.put("vm", it) }
 
         composeRule.setContent {

@@ -3,6 +3,7 @@ package com.rafalskrzypczyk.main_mode.presentation.categories_screen
 import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.billing.domain.getCategoryBillingId
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
+import com.rafalskrzypczyk.core.feedback.NoOpFeedbackManager
 import com.rafalskrzypczyk.core.quiz.models.CategoryUIM
 import com.rafalskrzypczyk.main_mode.domain.quiz_categories.MMCategoriesUseCases
 import io.mockk.coVerify
@@ -37,7 +38,7 @@ class MMCategoriesVMTest {
         
         every { billingRepository.availableProducts } returns flowOf(emptyList())
         
-        viewModel = MMCategoriesVM(useCases, billingRepository, premiumStatusProvider)
+        viewModel = MMCategoriesVM(useCases, billingRepository, premiumStatusProvider, NoOpFeedbackManager)
     }
 
     @After

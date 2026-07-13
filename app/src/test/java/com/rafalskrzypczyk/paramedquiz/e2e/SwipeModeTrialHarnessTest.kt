@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModelStore
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.core.ads.QuizAdHandler
+import com.rafalskrzypczyk.core.feedback.NoOpFeedbackManager
 import com.rafalskrzypczyk.core.testing.TestTags
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.firestore.domain.models.SwipeQuestionDTO
@@ -88,6 +89,7 @@ class SwipeModeTrialHarnessTest {
             adHandler,
             billingRepository,
             fakePremium,
+            NoOpFeedbackManager,
             SavedStateHandle(mapOf("isTrial" to true))
         ).also { viewModelStore.put("vm", it) }
 

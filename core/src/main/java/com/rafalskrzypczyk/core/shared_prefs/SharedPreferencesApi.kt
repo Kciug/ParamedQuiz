@@ -50,6 +50,12 @@ interface SharedPreferencesApi {
     fun isNotificationsEnabled(): Boolean
     fun setNotificationsEnabled(enabled: Boolean)
 
+    fun isSoundEnabled(): Boolean
+    fun setSoundEnabled(enabled: Boolean)
+
+    fun isHapticEnabled(): Boolean
+    fun setHapticEnabled(enabled: Boolean)
+
     fun getReminderHour(): Int
     fun getReminderMinute(): Int
     fun setReminderTime(hour: Int, minute: Int)

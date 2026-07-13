@@ -11,6 +11,8 @@ import com.rafalskrzypczyk.billing.domain.getCategoryBillingId
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
+import com.rafalskrzypczyk.core.feedback.FeedbackEvent
+import com.rafalskrzypczyk.core.feedback.FeedbackManager
 import com.rafalskrzypczyk.core.quiz.models.CategoryUIM
 import com.rafalskrzypczyk.main_mode.domain.quiz_categories.MMCategoriesUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,7 +30,8 @@ import javax.inject.Inject
 class MMCategoriesVM @Inject constructor(
     private val useCases: MMCategoriesUseCases,
     private val billingRepository: BillingRepository,
-    private val premiumStatusProvider: PremiumStatusProvider
+    private val premiumStatusProvider: PremiumStatusProvider,
+    private val feedbackManager: FeedbackManager
 ): ViewModel() {
     private val _state = MutableStateFlow(MMCategoriesState())
     val state = _state.asStateFlow()
@@ -113,6 +116,7 @@ class MMCategoriesVM @Inject constructor(
                 if (pendingId != null) {
                     val billingId = getCategoryBillingId(pendingId)
                     if (ownedIds.contains(billingId) || hasFull) {
+                        feedbackManager.perform(FeedbackEvent.PURCHASE)
                         _state.update { it.copy(pendingPurchaseCategoryId = null, isPurchasing = false, purchaseError = null) }
                     }
                 }

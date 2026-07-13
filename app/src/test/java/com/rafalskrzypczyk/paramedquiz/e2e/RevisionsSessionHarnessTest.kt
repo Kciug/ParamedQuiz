@@ -11,6 +11,7 @@ import androidx.compose.ui.test.performClick
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModelStore
 import com.rafalskrzypczyk.core.ads.QuizAdHandler
+import com.rafalskrzypczyk.core.feedback.NoOpFeedbackManager
 import com.rafalskrzypczyk.core.testing.TestTags
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.firestore.domain.models.AnswerDTO
@@ -124,7 +125,8 @@ class RevisionsSessionHarnessTest {
             scoreManager,
             streakManager,
             reportIssueUC,
-            adHandler
+            adHandler,
+            NoOpFeedbackManager
         ).also { viewModelStore.put("vm", it) }
 
         composeRule.setContent {

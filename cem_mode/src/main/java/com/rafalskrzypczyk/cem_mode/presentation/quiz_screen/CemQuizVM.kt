@@ -6,6 +6,8 @@ import com.rafalskrzypczyk.cem_mode.domain.use_cases.CemQuestionsUseCases
 import com.rafalskrzypczyk.core.ads.QuizAdHandler
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
+import com.rafalskrzypczyk.core.feedback.FeedbackEvent
+import com.rafalskrzypczyk.core.feedback.FeedbackManager
 import com.rafalskrzypczyk.main_mode.presentation.quiz_base.BaseQuizVM
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collectLatest
@@ -17,10 +19,12 @@ import javax.inject.Inject
 class CemQuizVM @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val useCases: CemQuestionsUseCases,
-    adHandler: QuizAdHandler
+    adHandler: QuizAdHandler,
+    feedbackManager: FeedbackManager
 ): BaseQuizVM(
     useCases = useCases.base,
-    adHandler = adHandler
+    adHandler = adHandler,
+    feedbackManager = feedbackManager
 ) {
     private val categoryId: Long = savedStateHandle.get<Long>("categoryId") ?: -1
     private val categoryTitle: String = savedStateHandle.get<String>("categoryTitle") ?: ""
@@ -48,6 +52,7 @@ class CemQuizVM @Inject constructor(
         super.submitAnswer()
         if (useCases.updateStreak()) {
             isStreakUpdatedInSession = true
+            feedbackManager.perform(FeedbackEvent.STREAK_UP)
         }
     }
 

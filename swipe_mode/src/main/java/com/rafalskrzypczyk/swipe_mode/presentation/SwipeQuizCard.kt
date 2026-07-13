@@ -54,8 +54,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.PreviewContainer
+import com.rafalskrzypczyk.core.feedback.FeedbackEvent
+import com.rafalskrzypczyk.core.feedback.LocalFeedbackManager
 import com.rafalskrzypczyk.swipe_mode.R
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 import kotlin.math.cos
@@ -73,6 +76,7 @@ fun SwipeQuestionCard(
     onSubmit: (Long, Boolean) -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
+    val feedbackManager = LocalFeedbackManager.current
 
     val decayAnimationSpec = rememberSplineBasedDecay<Float>()
     val density = LocalDensity.current
@@ -108,6 +112,14 @@ fun SwipeQuestionCard(
             .collectLatest {
                 if (it == SwipeDirection.Right) onSubmit(question.id, true)
                 if (it == SwipeDirection.Left) onSubmit(question.id, false)
+            }
+    }
+
+    LaunchedEffect(dragState) {
+        snapshotFlow { dragState.targetValue }
+            .drop(1)
+            .collect {
+                if (it != SwipeDirection.Resting) feedbackManager.perform(FeedbackEvent.CLICK)
             }
     }
 

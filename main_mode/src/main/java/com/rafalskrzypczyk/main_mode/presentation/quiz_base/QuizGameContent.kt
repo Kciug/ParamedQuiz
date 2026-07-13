@@ -45,6 +45,8 @@ import com.rafalskrzypczyk.core.composables.ButtonPrimary
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.PreviewContainer
 import com.rafalskrzypczyk.core.composables.TextPrimary
+import com.rafalskrzypczyk.core.feedback.FeedbackEvent
+import com.rafalskrzypczyk.core.feedback.LocalFeedbackManager
 import com.rafalskrzypczyk.core.testing.TestTags
 import com.rafalskrzypczyk.main_mode.R
 
@@ -244,6 +246,7 @@ fun AnswerButton(
     isSubmitted: Boolean,
     onSelected: (Long) -> Unit
 ) {
+    val feedbackManager = LocalFeedbackManager.current
     Card(
         modifier = modifier.wrapContentHeight(),
         colors = CardDefaults.cardColors(
@@ -257,7 +260,10 @@ fun AnswerButton(
             null
         },
         enabled = isSubmitted.not(),
-        onClick = { onSelected(answer.id) },
+        onClick = {
+            feedbackManager.perform(FeedbackEvent.CLICK)
+            onSelected(answer.id)
+        },
     ) {
         Box(
             modifier = Modifier

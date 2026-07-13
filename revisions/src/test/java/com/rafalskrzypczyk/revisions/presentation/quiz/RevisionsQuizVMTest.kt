@@ -3,6 +3,7 @@ package com.rafalskrzypczyk.revisions.presentation.quiz
 import androidx.lifecycle.SavedStateHandle
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
+import com.rafalskrzypczyk.core.feedback.NoOpFeedbackManager
 import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.firestore.domain.models.TranslationQuestionDTO
 import com.rafalskrzypczyk.firestore.domain.use_cases.ReportIssueUC
@@ -92,7 +93,8 @@ class RevisionsQuizVMTest {
             scoreManager = scoreManager,
             streakManager = streakManager,
             reportIssueUC = reportIssueUC,
-            adHandler = adHandler
+            adHandler = adHandler,
+            feedbackManager = NoOpFeedbackManager
         )
 
         val state = viewModel.state.value
@@ -123,7 +125,8 @@ class RevisionsQuizVMTest {
             scoreManager = scoreManager,
             streakManager = streakManager,
             reportIssueUC = reportIssueUC,
-            adHandler = adHandler
+            adHandler = adHandler,
+            feedbackManager = NoOpFeedbackManager
         )
 
         viewModel.onEvent(RevisionsQuizUIEvents.OnAnswerSelected(1L))
@@ -162,7 +165,8 @@ class RevisionsQuizVMTest {
             scoreManager = scoreManager,
             streakManager = streakManager,
             reportIssueUC = reportIssueUC,
-            adHandler = adHandler
+            adHandler = adHandler,
+            feedbackManager = NoOpFeedbackManager
         )
 
         viewModel.onEvent(RevisionsQuizUIEvents.OnAnswerSelected(2L))
@@ -207,7 +211,8 @@ class RevisionsQuizVMTest {
             scoreManager = scoreManager,
             streakManager = streakManager,
             reportIssueUC = reportIssueUC,
-            adHandler = adHandler
+            adHandler = adHandler,
+            feedbackManager = NoOpFeedbackManager
         )
 
         viewModel.onEvent(RevisionsQuizUIEvents.OnTranslationAnswerChanged("Jabłko"))

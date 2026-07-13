@@ -27,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,6 +40,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.rafalskrzypczyk.core.R
+import com.rafalskrzypczyk.core.feedback.FeedbackEvent
+import com.rafalskrzypczyk.core.feedback.LocalFeedbackManager
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.core.ui.theme.adaptiveContentColor
 import com.rafalskrzypczyk.core.utils.rememberDebouncedClick
@@ -153,6 +156,10 @@ fun ErrorDialog(
     errorMessage: String,
     onInteraction: () -> Unit
 ) {
+    val feedbackManager = LocalFeedbackManager.current
+    LaunchedEffect(Unit) {
+        feedbackManager.perform(FeedbackEvent.ERROR)
+    }
     BaseCustomDialog(
         onDismissRequest = {}, // Modal, must interact
         icon = Icons.Outlined.ErrorOutline,
