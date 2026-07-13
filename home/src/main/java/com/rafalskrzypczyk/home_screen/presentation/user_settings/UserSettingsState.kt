@@ -21,6 +21,9 @@ data class UserSettingsState(
     val reminderHour: Int = 19,
     val reminderMinute: Int = 0,
 
+    val soundEnabled: Boolean = true,
+    val hapticEnabled: Boolean = true,
+
     val showChangePasswordDialog: Boolean = false,
     val showChangeUsernameDialog: Boolean = false,
     val showDeleteAccountDialog: Boolean = false,

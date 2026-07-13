@@ -40,6 +40,8 @@ import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.Vibration
+import androidx.compose.material.icons.outlined.VolumeUp
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -322,6 +324,20 @@ private fun UserSettingsContent(
                         title = stringResource(R.string.settings_system_notifications),
                         icon = Icons.Outlined.Settings,
                         onClick = { NotificationSettings.openAppNotificationSettings(context) }
+                    )
+
+                    SettingsSwitchRow(
+                        title = stringResource(R.string.settings_sound),
+                        icon = Icons.Outlined.VolumeUp,
+                        checked = state.soundEnabled,
+                        onCheckedChange = { onEvent(UserSettingsUIEvents.SetSoundEnabled(it)) }
+                    )
+
+                    SettingsSwitchRow(
+                        title = stringResource(R.string.settings_haptic),
+                        icon = Icons.Outlined.Vibration,
+                        checked = state.hapticEnabled,
+                        onCheckedChange = { onEvent(UserSettingsUIEvents.SetHapticEnabled(it)) }
                     )
                 }
 

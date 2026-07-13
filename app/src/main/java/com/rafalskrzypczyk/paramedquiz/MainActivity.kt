@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -20,6 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.rememberNavController
 import com.rafalskrzypczyk.core.ads.AdManager
+import com.rafalskrzypczyk.core.feedback.FeedbackManager
+import com.rafalskrzypczyk.core.feedback.LocalFeedbackManager
 import com.rafalskrzypczyk.core.composables.ErrorDialog
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
@@ -42,6 +45,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var adManager: AdManager
+
+    @Inject
+    lateinit var feedbackManager: FeedbackManager
 
     private val viewModel: MainActivityVM by viewModels()
 
@@ -66,6 +72,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ParamedQuizTheme {
+                CompositionLocalProvider(LocalFeedbackManager provides feedbackManager) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -91,6 +98,7 @@ class MainActivity : ComponentActivity() {
                             errorMessage = ""
                         }
                     }
+                }
                 }
             }
         }

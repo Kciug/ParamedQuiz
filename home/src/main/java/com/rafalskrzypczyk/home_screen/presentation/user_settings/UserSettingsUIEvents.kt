@@ -23,6 +23,9 @@ sealed interface UserSettingsUIEvents {
     data class SetReminderTime(val hour: Int, val minute: Int) : UserSettingsUIEvents
     data class ToggleTimePickerDialog(val show: Boolean) : UserSettingsUIEvents
 
+    data class SetSoundEnabled(val enabled: Boolean) : UserSettingsUIEvents
+    data class SetHapticEnabled(val enabled: Boolean) : UserSettingsUIEvents
+
     object OnSuccessToastShown : UserSettingsUIEvents
     object DeleteProgress : UserSettingsUIEvents
 }

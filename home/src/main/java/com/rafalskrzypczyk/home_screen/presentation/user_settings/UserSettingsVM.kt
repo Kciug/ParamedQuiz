@@ -52,6 +52,8 @@ class UserSettingsVM @Inject constructor(
             is UserSettingsUIEvents.SetNotificationsEnabled -> setNotificationsEnabled(event.enabled)
             is UserSettingsUIEvents.SetReminderTime -> setReminderTime(event.hour, event.minute)
             is UserSettingsUIEvents.ToggleTimePickerDialog -> _state.update { it.copy(showTimePickerDialog = event.show) }
+            is UserSettingsUIEvents.SetSoundEnabled -> setSoundEnabled(event.enabled)
+            is UserSettingsUIEvents.SetHapticEnabled -> setHapticEnabled(event.enabled)
         }
     }
 
@@ -60,9 +62,21 @@ class UserSettingsVM @Inject constructor(
             it.copy(
                 notificationsEnabled = sharedPrefs.isNotificationsEnabled(),
                 reminderHour = sharedPrefs.getReminderHour(),
-                reminderMinute = sharedPrefs.getReminderMinute()
+                reminderMinute = sharedPrefs.getReminderMinute(),
+                soundEnabled = sharedPrefs.isSoundEnabled(),
+                hapticEnabled = sharedPrefs.isHapticEnabled()
             )
         }
+    }
+
+    private fun setSoundEnabled(enabled: Boolean) {
+        sharedPrefs.setSoundEnabled(enabled)
+        _state.update { it.copy(soundEnabled = enabled) }
+    }
+
+    private fun setHapticEnabled(enabled: Boolean) {
+        sharedPrefs.setHapticEnabled(enabled)
+        _state.update { it.copy(hapticEnabled = enabled) }
     }
 
     private fun setNotificationsEnabled(enabled: Boolean) {

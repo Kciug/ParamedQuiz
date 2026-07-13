@@ -2,6 +2,8 @@ package com.rafalskrzypczyk.core.di
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.rafalskrzypczyk.core.feedback.FeedbackManager
+import com.rafalskrzypczyk.core.feedback.FeedbackManagerImpl
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesService
 import com.rafalskrzypczyk.core.user_management.UserManager
@@ -56,4 +58,8 @@ abstract class CoreModuleBinds {
     @Binds
     @Singleton
     abstract fun bindUserManager(manager: UserManagerImpl): UserManager
+
+    @Binds
+    @Singleton
+    abstract fun bindFeedbackManager(feedbackManager: FeedbackManagerImpl): FeedbackManager
 }

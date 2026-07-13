@@ -24,6 +24,8 @@ class SharedPreferencesService @Inject constructor(
         const val KEY_LAST_RATING_PROMPT_DATE = "last_rating_prompt_date"
         const val KEY_SEEN_NEWS_IDS = "seen_news_ids"
         const val KEY_NOTIFICATIONS_ENABLED = "notifications_enabled"
+        const val KEY_SOUND_ENABLED = "sound_enabled"
+        const val KEY_HAPTIC_ENABLED = "haptic_enabled"
         const val KEY_REMINDER_HOUR = "reminder_hour"
         const val KEY_REMINDER_MINUTE = "reminder_minute"
         const val KEY_NOTIFICATION_PROMPT_COUNT = "notification_prompt_count"
@@ -206,6 +208,26 @@ class SharedPreferencesService @Inject constructor(
     override fun setNotificationsEnabled(enabled: Boolean) {
         sharedPreferences.edit {
             putBoolean(KEY_NOTIFICATIONS_ENABLED, enabled)
+        }
+    }
+
+    override fun isSoundEnabled(): Boolean {
+        return sharedPreferences.getBoolean(KEY_SOUND_ENABLED, true)
+    }
+
+    override fun setSoundEnabled(enabled: Boolean) {
+        sharedPreferences.edit {
+            putBoolean(KEY_SOUND_ENABLED, enabled)
+        }
+    }
+
+    override fun isHapticEnabled(): Boolean {
+        return sharedPreferences.getBoolean(KEY_HAPTIC_ENABLED, true)
+    }
+
+    override fun setHapticEnabled(enabled: Boolean) {
+        sharedPreferences.edit {
+            putBoolean(KEY_HAPTIC_ENABLED, enabled)
         }
     }
 
