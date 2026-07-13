@@ -10,6 +10,8 @@ import com.rafalskrzypczyk.billing.domain.PurchaseResult
 import com.rafalskrzypczyk.billing.domain.getCategoryBillingId
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
+import com.rafalskrzypczyk.core.feedback.FeedbackEvent
+import com.rafalskrzypczyk.core.feedback.FeedbackManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,7 +25,8 @@ import javax.inject.Inject
 @HiltViewModel
 class StoreVM @Inject constructor(
     private val premiumStatusProvider: PremiumStatusProvider,
-    private val billingRepository: BillingRepository
+    private val billingRepository: BillingRepository,
+    private val feedbackManager: FeedbackManager
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(StoreState())
@@ -114,9 +117,11 @@ class StoreVM @Inject constructor(
 
                 val pendingId = _state.value.pendingPurchaseModeId
                 if (pendingId != null && ownedIds.contains(pendingId)) {
+                    feedbackManager.perform(FeedbackEvent.PURCHASE)
                     _effect.emit(StoreSideEffect.PurchaseSuccess(pendingId))
                     _state.update { it.copy(pendingPurchaseModeId = null) }
                 } else if (pendingId == BillingIds.ID_FULL_PACKAGE && hasFull) {
+                    feedbackManager.perform(FeedbackEvent.PURCHASE)
                     _effect.emit(StoreSideEffect.PurchaseSuccess(pendingId))
                     _state.update { it.copy(pendingPurchaseModeId = null) }
                 }

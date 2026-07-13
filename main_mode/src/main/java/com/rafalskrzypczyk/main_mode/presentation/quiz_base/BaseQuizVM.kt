@@ -102,6 +102,7 @@ abstract class BaseQuizVM (
                         showReportDialog = false, 
                         reportIssueDescription = ""
                     ) }
+                    feedbackManager.perform(FeedbackEvent.SUCCESS)
                     _effect.emit(QuizSideEffect.ShowReportSuccess)
                 }
             }

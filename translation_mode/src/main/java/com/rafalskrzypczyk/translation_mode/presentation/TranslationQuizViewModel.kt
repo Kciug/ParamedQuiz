@@ -278,6 +278,7 @@ class TranslationQuizViewModel @Inject constructor(
         if (isCorrect) {
             if (useCases.increaseStreakByQuestions()) {
                 isStreakUpdatedInSession = true
+                feedbackManager.perform(FeedbackEvent.STREAK_UP)
             }
         }
 
@@ -335,6 +336,7 @@ class TranslationQuizViewModel @Inject constructor(
                      showReportDialog = false, 
                      reportIssueDescription = ""
                  ) }
+                 feedbackManager.perform(FeedbackEvent.SUCCESS)
                  _effect.emit(QuizSideEffect.ShowReportSuccess)
              }
         }.launchIn(viewModelScope)

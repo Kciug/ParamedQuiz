@@ -75,16 +75,18 @@ Legenda: 🔊 dźwięk · 📳 haptic · 🔊📳 oba
 ## Poziom 3 — nawigacja i ekran główny
 
 - [ ] 📳 wybór trybu — `home/.../home_page/components/QuizModeButton.kt:29` (pokryte globalnym hookiem)
-- [ ] 🔊📳 przyrost streaka / dzienny streak — `home/.../user_page/statistics/components/StreakTile.kt:39`;
-      logika w `score` (`IncreaseStreakInstantlyUC`)
-- [ ] 🔊📳 ukończenie „Ćwiczenia dnia" — `DailyExerciseVM.finishQuiz()`
+- [x] 📳 przyrost dziennego streaka → `STREAK_UP` — w blokach `updateStreak()==true`
+      (MM/Cem/Daily/Swipe/Translation/Revisions ×2). Haptic-only (nakłada się na `ANSWER_CORRECT`).
+- [x] 📳 ukończenie „Ćwiczenia dnia" — `DailyExerciseVM.finishQuiz()` (`STREAK_UP` + `QUIZ_COMPLETED`)
 
-## Poziom 4 — dialogi i akcje krytyczne (delikatnie)
+## Poziom 4 — dialogi i akcje krytyczne (delikatnie) ✅ (bez ConfirmationDialog)
 
-- [ ] 📳 błąd — `core/.../composables/BaseDialogs.kt` `ErrorDialog` (error-pattern, bez dźwięku)
-- [ ] 📳 potwierdzenie destrukcyjne — `ConfirmationDialog` (np. wyjście z quizu)
-- [ ] 🔊📳 zgłoszenie błędu wysłane — `QuizSideEffect.ShowReportSuccess` (`MMQuizScreen.kt:59`)
-- [ ] 🔊📳 udany zakup premium — `PurchaseCategoryDialog.onSuccessConfirm`
+- [x] 📳 błąd → `ERROR` — `BaseDialogs.kt` `ErrorDialog` (`LaunchedEffect(Unit)`, pokrywa 12 callsite'ów)
+- [ ] 📳 potwierdzenie destrukcyjne — `ConfirmationDialog` — **świadomie pominięte** (częste dialogi:
+      wylogowanie/wyjście/usuń → wibracja przy każdym pojawieniu = szum; przycisk „Potwierdź" ma `CLICK`)
+- [x] 📳 zgłoszenie błędu wysłane → `SUCCESS` — przy `emit(ShowReportSuccess)` (Base/Swipe/Translation)
+- [x] 🔊📳 udany zakup → `PURCHASE` (dźwięk `fb_record` + haptic) — `StoreVM` + `MMCategoriesVM`
+      (moment przyznania dostępu; trial-in-quiz świadomie pominięty)
 
 ---
 

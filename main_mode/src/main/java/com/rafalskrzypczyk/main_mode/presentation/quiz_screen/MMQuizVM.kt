@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.core.ads.QuizAdHandler
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
+import com.rafalskrzypczyk.core.feedback.FeedbackEvent
 import com.rafalskrzypczyk.core.feedback.FeedbackManager
 import com.rafalskrzypczyk.main_mode.domain.quiz.MMQuizUseCases
 import com.rafalskrzypczyk.main_mode.presentation.quiz_base.BaseQuizVM
@@ -51,6 +52,7 @@ class MMQuizVM @Inject constructor(
         super.submitAnswer()
         if (useCases.updateStreak()) {
             isStreakUpdatedInSession = true
+            feedbackManager.perform(FeedbackEvent.STREAK_UP)
         }
     }
 

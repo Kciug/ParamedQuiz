@@ -6,6 +6,9 @@ enum class FeedbackEvent {
     ANSWER_WRONG,
     QUIZ_COMPLETED,
     NEW_RECORD,
+    STREAK_UP,
+    PURCHASE,
+    SUCCESS,
     ERROR
 }
 

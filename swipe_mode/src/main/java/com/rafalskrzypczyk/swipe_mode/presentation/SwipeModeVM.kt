@@ -294,6 +294,7 @@ class SwipeModeVM @Inject constructor(
                             showReportDialog = false, 
                             reportIssueDescription = ""
                         ) }
+                        feedbackManager.perform(FeedbackEvent.SUCCESS)
                         _quizEffect.emit(QuizSideEffect.ShowReportSuccess)
                     }
                 }
@@ -396,6 +397,7 @@ class SwipeModeVM @Inject constructor(
 
         if (useCases.updateStreak()) {
             isStreakUpdatedInSession = true
+            feedbackManager.perform(FeedbackEvent.STREAK_UP)
         }
     }
 

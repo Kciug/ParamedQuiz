@@ -25,7 +25,8 @@ class FeedbackManagerImpl @Inject constructor(
         FeedbackEvent.ANSWER_CORRECT to R.raw.fb_correct,
         FeedbackEvent.ANSWER_WRONG to R.raw.fb_wrong,
         FeedbackEvent.QUIZ_COMPLETED to R.raw.fb_complete,
-        FeedbackEvent.NEW_RECORD to R.raw.fb_record
+        FeedbackEvent.NEW_RECORD to R.raw.fb_record,
+        FeedbackEvent.PURCHASE to R.raw.fb_record
     )
 
     private val soundPool: SoundPool by lazy {
@@ -84,6 +85,9 @@ class FeedbackManagerImpl @Inject constructor(
         FeedbackEvent.ANSWER_WRONG -> longArrayOf(0, 120)
         FeedbackEvent.QUIZ_COMPLETED -> longArrayOf(0, 30, 50, 30, 50, 60)
         FeedbackEvent.NEW_RECORD -> longArrayOf(0, 40, 40, 40, 40, 90)
+        FeedbackEvent.STREAK_UP -> longArrayOf(0, 25, 40, 25, 40, 50)
+        FeedbackEvent.PURCHASE -> longArrayOf(0, 40, 40, 40, 40, 90)
+        FeedbackEvent.SUCCESS -> longArrayOf(0, 20, 50, 20)
         FeedbackEvent.ERROR -> longArrayOf(0, 80, 60, 80)
     }
 

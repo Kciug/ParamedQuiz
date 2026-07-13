@@ -240,7 +240,9 @@ class RevisionsQuizVM @Inject constructor(
             engine.addEarnedPoints(earned)
             if (isCorrect && !isStreakUpdatedInSession) {
                 viewModelScope.launch {
-                    streakManager.increaseStreak()
+                    if (streakManager.increaseStreak()) {
+                        feedbackManager.perform(FeedbackEvent.STREAK_UP)
+                    }
                     isStreakUpdatedInSession = true
                 }
             }
@@ -268,7 +270,9 @@ class RevisionsQuizVM @Inject constructor(
             engine.addEarnedPoints(earned)
             if (isCorrect && !isStreakUpdatedInSession) {
                 viewModelScope.launch {
-                    streakManager.increaseStreak()
+                    if (streakManager.increaseStreak()) {
+                        feedbackManager.perform(FeedbackEvent.STREAK_UP)
+                    }
                     isStreakUpdatedInSession = true
                 }
             }
