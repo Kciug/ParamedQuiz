@@ -20,6 +20,9 @@ object TestTags {
     // Tryb Swipe
     const val SWIPE_TRIAL_BUY_BUTTON = "swipe_trial_buy_button"
 
+    // Tryb Tłumaczenia
+    const val TRANSLATION_TRIAL_BUY_BUTTON = "translation_trial_buy_button"
+
     // Dialog zakupu (wspólny — kategorie, tryby)
     const val PURCHASE_DIALOG_BUY_BUTTON = "purchase_dialog_buy_button"
 }

@@ -26,12 +26,14 @@ fun TranslationPurchaseBottomSheet(
     shouldDismiss: Boolean,
     onDismiss: () -> Unit,
     onBuyClick: (Activity) -> Unit,
-    onStartClick: () -> Unit
+    onStartClick: () -> Unit,
+    onTryClick: () -> Unit
 ) {
     BasePurchaseBottomSheet(
         onDismiss = onDismiss,
         onBuyClick = { activity?.let { onBuyClick(it) } },
         onStartClick = onStartClick,
+        onTryClick = onTryClick,
         isUnlocked = isUnlocked,
         isPending = isPending,
         isPurchasing = isPurchasing,

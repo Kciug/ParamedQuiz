@@ -1,15 +1,21 @@
 package com.rafalskrzypczyk.translation_mode.presentation
 
+import android.app.Activity
 import android.content.res.Configuration
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -22,6 +28,7 @@ import com.rafalskrzypczyk.core.composables.Loading
 import com.rafalskrzypczyk.core.composables.ReportIssueDialog
 import com.rafalskrzypczyk.core.composables.RotateDevicePrompt
 import com.rafalskrzypczyk.core.utils.QuizSideEffect
+import com.rafalskrzypczyk.translation_mode.presentation.components.TranslationModeTrialFinishedPanel
 import com.rafalskrzypczyk.translation_mode.presentation.components.TranslationQuizContent
 import com.rafalskrzypczyk.translation_mode.presentation.components.TranslationQuizTopPanel
 import kotlinx.coroutines.flow.SharedFlow
@@ -31,8 +38,10 @@ import kotlinx.coroutines.flow.collectLatest
 fun TranslationQuizScreen(
     state: TranslationQuizState,
     effect: SharedFlow<QuizSideEffect>,
+    billingEffect: SharedFlow<TranslationModeSideEffect>,
     onEvent: (TranslationQuizEvents) -> Unit,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onLaunchBilling: (Activity) -> Unit
 ) {
     val context = LocalContext.current
     val successReportMsg = stringResource(com.rafalskrzypczyk.core.R.string.report_issue_success)
@@ -46,6 +55,16 @@ fun TranslationQuizScreen(
             when (sideEffect) {
                 QuizSideEffect.ShowReportSuccess -> {
                     Toast.makeText(context, successReportMsg, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(billingEffect) {
+        billingEffect.collectLatest { sideEffect ->
+            when (sideEffect) {
+                TranslationModeSideEffect.BuyMode -> {
+                    (context as? Activity)?.let { onLaunchBilling(it) }
                 }
             }
         }
@@ -82,26 +101,53 @@ fun TranslationQuizScreen(
              )
         },
     ) { innerPadding, titlePanel ->
-        
+
         AnimatedContent(
-            targetState = state.responseState,
-            transitionSpec = { scaleIn() togetherWith scaleOut() },
-            label = "responseTransition"
-        ) { responseState ->
-            when (responseState) {
-                ResponseState.Idle -> {}
-                ResponseState.Loading -> Loading()
-                is ResponseState.Error -> ErrorDialog(responseState.message) { onNavigateBack() }
-                ResponseState.Success -> {
-                    if (isLandscape) {
-                        RotateDevicePrompt(modifier = Modifier.padding(innerPadding))
-                    } else {
-                        TranslationQuizContent(
-                            paddingValues = innerPadding,
-                            titlePanel = titlePanel,
-                            state = state,
-                            onEvent = onEvent
-                        )
+            targetState = state.showTrialFinishedPanel,
+            transitionSpec = {
+                (fadeIn() + scaleIn(initialScale = 0.9f)) togetherWith (fadeOut() + scaleOut(targetScale = 0.9f))
+            },
+            label = "trialFinishedTransition"
+        ) { isTrialFinished ->
+            if (isTrialFinished) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
+                    contentAlignment = Alignment.Center
+                ) {
+                    TranslationModeTrialFinishedPanel(
+                        onBuyClick = { onEvent(TranslationQuizEvents.BuyMode) },
+                        onExitClick = { onEvent(TranslationQuizEvents.ExitTrial(onNavigateBack)) },
+                        totalQuestions = state.totalTranslationQuestions,
+                        price = state.translationModePrice,
+                        loading = state.isPurchasing,
+                        isPending = state.isPending,
+                        error = state.purchaseError
+                    )
+                }
+            } else {
+                AnimatedContent(
+                    targetState = state.responseState,
+                    transitionSpec = { scaleIn() togetherWith scaleOut() },
+                    label = "responseTransition"
+                ) { responseState ->
+                    when (responseState) {
+                        ResponseState.Idle -> {}
+                        ResponseState.Loading -> Loading()
+                        is ResponseState.Error -> ErrorDialog(responseState.message) { onNavigateBack() }
+                        ResponseState.Success -> {
+                            if (isLandscape) {
+                                RotateDevicePrompt(modifier = Modifier.padding(innerPadding))
+                            } else {
+                                TranslationQuizContent(
+                                    paddingValues = innerPadding,
+                                    titlePanel = titlePanel,
+                                    state = state,
+                                    onEvent = onEvent
+                                )
+                            }
+                        }
                     }
                 }
             }

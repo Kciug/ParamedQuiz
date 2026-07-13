@@ -98,6 +98,8 @@
     <string name="btn_try">Wypróbuj</string>
     <string name="trial_finished_title">Wypróbowałeś tryb swipe!</string>
     <string name="trial_finished_desc">Wyczerpałeś już darmowe pytania. Kup pełną wersję, aby odblokować wszystkie pytania i cieszyć się nauką bez limitów!</string>
+    <string name="trial_finished_translation_title">Wypróbowałeś tryb tłumaczeń!</string>
+    <string name="trial_finished_translation_desc">Wyczerpałeś już darmowe tłumaczenia. Kup pełną wersję, aby odblokować wszystkie pytania i cieszyć się nauką bez limitów!</string>
     <string name="btn_buy_mode">Kup teraz</string>
     <string name="btn_exit_quiz">Wyjdź</string>
     <string name="rating_question_title">Jak oceniasz MediQuiz?</string>

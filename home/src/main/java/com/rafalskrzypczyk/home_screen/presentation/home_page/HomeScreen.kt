@@ -90,7 +90,7 @@ fun HomeScreen(
     onNavigateToDailyExercise: () -> Unit,
     onNavigateToMainMode: () -> Unit,
     onNavigateToSwipeMode: (Boolean) -> Unit,
-    onNavigateToTranslationMode: () -> Unit,
+    onNavigateToTranslationMode: (Boolean) -> Unit,
     onNavigateToCemMode: () -> Unit,
     onNavigateToStore: () -> Unit,
     onNavigateToDevOptions: () -> Unit,
@@ -183,17 +183,22 @@ fun HomeScreen(
             price = state.translationModePrice,
             activity = activity,
             shouldDismiss = isDismissingMode == com.rafalskrzypczyk.billing.domain.BillingIds.ID_TRANSLATION_MODE,
-            onDismiss = { 
+            onDismiss = {
                 onEvent(HomeUIEvents.CloseTranslationModePurchaseSheet)
                 if (isDismissingMode == com.rafalskrzypczyk.billing.domain.BillingIds.ID_TRANSLATION_MODE) {
-                    onNavigateToTranslationMode()
+                    onNavigateToTranslationMode(isTrialMode)
                     isDismissingMode = null
+                    isTrialMode = false
                 }
             },
             onBuyClick = { act -> onEvent(HomeUIEvents.BuyTranslationMode(act)) },
-            onStartClick = { 
+            onStartClick = {
                 isTrialMode = false
-                isDismissingMode = com.rafalskrzypczyk.billing.domain.BillingIds.ID_TRANSLATION_MODE 
+                isDismissingMode = com.rafalskrzypczyk.billing.domain.BillingIds.ID_TRANSLATION_MODE
+            },
+            onTryClick = {
+                isTrialMode = true
+                isDismissingMode = com.rafalskrzypczyk.billing.domain.BillingIds.ID_TRANSLATION_MODE
             }
         )
     }
