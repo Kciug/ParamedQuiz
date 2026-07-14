@@ -58,6 +58,14 @@ class ContentMessagingService : FirebaseMessagingService() {
             NotificationChannels.NEWS_CHANNEL_ID to NotificationIds.NEWS
         }
 
+        // Klientowy gate per-kategoria (foreground / data-only; w tle odcina brak subskrypcji tematu).
+        val categoryEnabled = if (channelId == NotificationChannels.MARKETING_CHANNEL_ID) {
+            deps.sharedPrefs().isMarketingEnabled()
+        } else {
+            deps.sharedPrefs().isNewsEnabled()
+        }
+        if (!categoryEnabled) return
+
         deps.notifier().show(
             notificationId = notificationId,
             title = title,

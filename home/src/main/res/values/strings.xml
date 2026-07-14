@@ -140,10 +140,15 @@
     <string name="settings_category_account">Konto</string>
     <string name="settings_category_app">Aplikacja</string>
     <string name="settings_category_data">Dane</string>
-    <string name="settings_notifications_soon">Powiadomienia (wkrótce)</string>
     <string name="settings_notifications">Powiadomienia</string>
     <string name="settings_reminder_time">Godzina przypomnienia</string>
     <string name="settings_system_notifications">Ustawienia systemowe powiadomień</string>
+
+    <string name="notification_settings_title">Ustawienia powiadomień</string>
+    <string name="notification_category_header">Kategorie</string>
+    <string name="notification_category_reminders">Przypomnienia o nauce</string>
+    <string name="notification_category_news">Nowości i aktualizacje</string>
+    <string name="notification_category_marketing">Promocje i oferty</string>
     <string name="settings_sound">Dźwięk</string>
     <string name="settings_haptic">Wibracje</string>
     <string name="title_reminder_time">Godzina przypomnienia</string>

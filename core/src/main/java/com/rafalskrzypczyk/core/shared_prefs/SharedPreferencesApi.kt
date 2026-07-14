@@ -50,6 +50,15 @@ interface SharedPreferencesApi {
     fun isNotificationsEnabled(): Boolean
     fun setNotificationsEnabled(enabled: Boolean)
 
+    fun isRemindersEnabled(): Boolean
+    fun setRemindersEnabled(enabled: Boolean)
+
+    fun isNewsEnabled(): Boolean
+    fun setNewsEnabled(enabled: Boolean)
+
+    fun isMarketingEnabled(): Boolean
+    fun setMarketingEnabled(enabled: Boolean)
+
     fun isSoundEnabled(): Boolean
     fun setSoundEnabled(enabled: Boolean)
 

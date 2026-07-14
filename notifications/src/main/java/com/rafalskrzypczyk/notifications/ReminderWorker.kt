@@ -50,6 +50,9 @@ class ReminderWorker(
         // Wyłączone w apce — nic nie rób i nie przeplanowuj (anulowanie realizuje scheduler).
         if (!sharedPrefs.isNotificationsEnabled()) return Result.success()
 
+        // Kategoria „Przypomnienia" wyłączona — nie wysyłamy i nie przeplanowujemy (cancel robi scheduler).
+        if (!sharedPrefs.isRemindersEnabled()) return Result.success()
+
         // Zablokowane w systemie — spróbujemy ponownie następnego dnia.
         if (!NotificationPermission.areNotificationsEnabled(applicationContext)) {
             reminderScheduler.schedule()

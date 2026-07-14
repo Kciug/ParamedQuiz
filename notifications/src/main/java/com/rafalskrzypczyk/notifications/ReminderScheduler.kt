@@ -20,9 +20,12 @@ class ReminderScheduler @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val sharedPrefs: SharedPreferencesApi
 ) {
-    /** Planuje przypomnienie, gdy włączone; w przeciwnym razie anuluje. Wołane przy starcie aplikacji. */
+    /**
+     * Planuje przypomnienie, gdy powiadomienia i kategoria „Przypomnienia" są włączone;
+     * w przeciwnym razie anuluje. Wołane przy starcie aplikacji.
+     */
     fun ensureScheduled() {
-        if (sharedPrefs.isNotificationsEnabled()) schedule() else cancel()
+        if (sharedPrefs.isNotificationsEnabled() && sharedPrefs.isRemindersEnabled()) schedule() else cancel()
     }
 
     /** Planuje (lub aktualizuje) unikalne przypomnienie na najbliższą ustawioną godzinę. */
