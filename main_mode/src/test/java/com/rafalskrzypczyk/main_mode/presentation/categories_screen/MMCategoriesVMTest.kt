@@ -5,6 +5,7 @@ import com.rafalskrzypczyk.billing.domain.getCategoryBillingId
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.feedback.NoOpFeedbackManager
 import com.rafalskrzypczyk.core.quiz.models.CategoryUIM
+import com.rafalskrzypczyk.core.utils.ResourceProvider
 import com.rafalskrzypczyk.main_mode.domain.quiz_categories.MMCategoriesUseCases
 import io.mockk.coVerify
 import io.mockk.every
@@ -37,8 +38,10 @@ class MMCategoriesVMTest {
         premiumStatusProvider = mockk(relaxed = true)
         
         every { billingRepository.availableProducts } returns flowOf(emptyList())
-        
-        viewModel = MMCategoriesVM(useCases, billingRepository, premiumStatusProvider, NoOpFeedbackManager)
+
+        val resourceProvider = mockk<ResourceProvider>(relaxed = true)
+
+        viewModel = MMCategoriesVM(useCases, billingRepository, premiumStatusProvider, NoOpFeedbackManager, resourceProvider)
     }
 
     @After
