@@ -131,8 +131,7 @@ fun BasePurchaseBottomSheet(
                 isUnlocked = isUnlocked,
                 isPending = isPending,
                 isPurchasing = isPurchasing,
-                purchaseError = purchaseError,
-                isAlreadyUnlockedOnEntry = isUnlocked
+                purchaseError = purchaseError
             )
         }
     }
@@ -148,9 +147,11 @@ private fun PurchaseBottomSheetContent(
     isUnlocked: Boolean,
     isPending: Boolean,
     isPurchasing: Boolean,
-    purchaseError: String?,
-    isAlreadyUnlockedOnEntry: Boolean
+    purchaseError: String?
 ) {
+    // Zamrożone z wejścia — po zakupie gra SuccessSection zamiast od razu badge'a „Posiadane".
+    val isAlreadyUnlockedOnEntry = remember { isUnlocked }
+
     val scrollState = rememberScrollState()
     val isScrolled by remember { derivedStateOf { scrollState.value > 0 } }
 
@@ -404,8 +405,7 @@ private fun PurchaseSheetContentPreview() {
                 isUnlocked = false,
                 isPending = false,
                 isPurchasing = false,
-                purchaseError = null,
-                isAlreadyUnlockedOnEntry = false
+                purchaseError = null
             )
         }
     }
