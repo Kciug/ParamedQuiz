@@ -103,7 +103,12 @@ fun OnboardingShell(
 
             if (header != null) {
                 Spacer(Modifier.height(Dimens.ELEMENTS_SPACING))
-                header()
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    header()
+                }
             }
 
             HorizontalPager(
