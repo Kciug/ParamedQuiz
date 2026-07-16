@@ -11,7 +11,6 @@ dependencies {
     implementation(project(":score"))
     implementation(project(":firestore"))
 
-    implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.kotlinx.serialization.json)
 
     implementation(platform(libs.firebase.bom))

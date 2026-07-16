@@ -10,7 +10,7 @@ import dagger.hilt.components.SingletonComponent
 
 /**
  * Zależności serwisu wstrzykiwane przez Hilt [EntryPoint] (zamiast @AndroidEntryPoint) — analogicznie
- * do [ReminderWorkerEntryPoint], by agregacja Hilta w :app nie musiała rozwiązywać FirebaseMessagingService
+ * do [ReminderReceiverEntryPoint], by agregacja Hilta w :app nie musiała rozwiązywać FirebaseMessagingService
  * (firebase-messaging jest `implementation` w :notifications). Interfejs celowo top-level.
  */
 @EntryPoint

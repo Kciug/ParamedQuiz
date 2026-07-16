@@ -1,61 +1,69 @@
 package com.rafalskrzypczyk.notifications
 
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.Context
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
+import android.content.Intent
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Calendar
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Planuje lokalne przypomnienia przez WorkManager jako unikalny, samo-przeplanowujący się
- * OneTimeWork ustawiony na najbliższą wybraną godzinę.
+ * Planuje lokalne przypomnienia przez [AlarmManager] jako jednorazowy alarm na najbliższą
+ * wybraną godzinę. AlarmManager (w przeciwieństwie do WorkManagera/JobSchedulera) trzyma alarm
+ * w systemie poza procesem apki i cold-startuje ją przy odpaleniu — dzięki czemu przypomnienie
+ * przeżywa swipe z listy ostatnich na agresywnych OEM-ach (np. Samsung One UI).
+ *
+ * Używamy [AlarmManager.setAndAllowWhileIdle] (przebija Doze, bez uprawnienia exact-alarm);
+ * kosztem dopuszczalnego kilkuminutowego poślizgu względem wybranej godziny. Alarm jest jednorazowy,
+ * więc [ReminderReceiver] po odpaleniu przeplanowuje kolejny (a reboot obsługuje [BootReceiver]).
  */
 @Singleton
 class ReminderScheduler @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val sharedPrefs: SharedPreferencesApi
 ) {
+    private val alarmManager: AlarmManager
+        get() = context.getSystemService(AlarmManager::class.java)
+
     /**
      * Planuje przypomnienie, gdy powiadomienia i kategoria „Przypomnienia" są włączone;
-     * w przeciwnym razie anuluje. Wołane przy starcie aplikacji.
+     * w przeciwnym razie anuluje. Wołane przy starcie aplikacji, po zmianie ustawień i po reboocie.
      */
     fun ensureScheduled() {
         if (sharedPrefs.isNotificationsEnabled() && sharedPrefs.isRemindersEnabled()) schedule() else cancel()
     }
 
-    /** Planuje (lub aktualizuje) unikalne przypomnienie na najbliższą ustawioną godzinę. */
+    /** Planuje (lub aktualizuje) alarm na najbliższą ustawioną godzinę. */
     fun schedule() {
-        val delay = computeInitialDelayMillis(
+        val triggerAtMillis = computeNextTriggerMillis(
             sharedPrefs.getReminderHour(),
             sharedPrefs.getReminderMinute()
         )
-        val request = OneTimeWorkRequestBuilder<ReminderWorker>()
-            .setInitialDelay(delay, TimeUnit.MILLISECONDS)
-            .build()
-
-        WorkManager.getInstance(context).enqueueUniqueWork(
-            WORK_NAME,
-            ExistingWorkPolicy.REPLACE,
-            request
+        alarmManager.setAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            triggerAtMillis,
+            pendingIntent()
         )
     }
 
     fun cancel() {
-        WorkManager.getInstance(context).cancelUniqueWork(WORK_NAME)
+        alarmManager.cancel(pendingIntent())
     }
 
-    /** Debug: uruchamia workera natychmiast (test „oceń i zdecyduj" bez czekania na godzinę). */
-    fun debugRunNow() {
-        val request = OneTimeWorkRequestBuilder<ReminderWorker>().build()
-        WorkManager.getInstance(context).enqueue(request)
+    private fun pendingIntent(): PendingIntent {
+        val intent = Intent(context, ReminderReceiver::class.java).setAction(ReminderReceiver.ACTION_FIRE)
+        return PendingIntent.getBroadcast(
+            context,
+            REQUEST_CODE,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
     }
 
-    private fun computeInitialDelayMillis(hour: Int, minute: Int): Long {
+    private fun computeNextTriggerMillis(hour: Int, minute: Int): Long {
         val now = Calendar.getInstance()
         val target = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, hour)
@@ -64,10 +72,10 @@ class ReminderScheduler @Inject constructor(
             set(Calendar.MILLISECOND, 0)
             if (!after(now)) add(Calendar.DAY_OF_MONTH, 1)
         }
-        return target.timeInMillis - now.timeInMillis
+        return target.timeInMillis
     }
 
     companion object {
-        private const val WORK_NAME = "daily_reminder_work"
+        private const val REQUEST_CODE = 1001
     }
 }
