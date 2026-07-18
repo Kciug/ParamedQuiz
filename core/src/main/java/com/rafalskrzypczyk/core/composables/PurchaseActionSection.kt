@@ -58,6 +58,7 @@ fun PurchaseActionSection(
     onStartClick: () -> Unit,
     modifier: Modifier = Modifier,
     onTryClick: (() -> Unit)? = null,
+    buyButtonModifier: Modifier = Modifier,
 ) {
     Box(
         modifier = modifier
@@ -110,7 +111,8 @@ fun PurchaseActionSection(
                         isPurchasing = isPurchasing,
                         onBuyClick = onBuyClick,
                         onTryClick = onTryClick,
-                        themeColor = themeColor
+                        themeColor = themeColor,
+                        buyButtonModifier = buyButtonModifier
                     )
                 }
             }
@@ -188,7 +190,8 @@ private fun PurchaseSection(
     isPurchasing: Boolean,
     onBuyClick: () -> Unit,
     onTryClick: (() -> Unit)?,
-    themeColor: Color
+    themeColor: Color,
+    buyButtonModifier: Modifier = Modifier
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -212,6 +215,7 @@ private fun PurchaseSection(
         Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
 
         ButtonPrimary(
+            modifier = buyButtonModifier,
             title = stringResource(R.string.btn_buy_for, price ?: "---"),
             onClick = onBuyClick,
             loading = isPurchasing,

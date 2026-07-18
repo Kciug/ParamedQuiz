@@ -14,6 +14,7 @@ import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.feedback.NoOpFeedbackManager
 import com.rafalskrzypczyk.core.testing.TestTags
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
+import com.rafalskrzypczyk.core.utils.ResourceProvider
 import com.rafalskrzypczyk.firestore.domain.models.CategoryDTO
 import com.rafalskrzypczyk.main_mode.domain.quiz_categories.MMCategoriesUseCases
 import com.rafalskrzypczyk.main_mode.presentation.categories_screen.MMCategoriesScreen
@@ -62,6 +63,9 @@ class MainModeCategoryPurchaseHarnessTest {
     @Inject
     lateinit var premiumStatusProvider: PremiumStatusProvider
 
+    @Inject
+    lateinit var resourceProvider: ResourceProvider
+
     private val paidCategoryId = 200L
     private val viewModelStore = ViewModelStore()
 
@@ -81,7 +85,7 @@ class MainModeCategoryPurchaseHarnessTest {
 
     @Test
     fun `clicking locked category opens purchase dialog`() {
-        val viewModel = MMCategoriesVM(useCases, billingRepository, premiumStatusProvider, NoOpFeedbackManager)
+        val viewModel = MMCategoriesVM(useCases, billingRepository, premiumStatusProvider, NoOpFeedbackManager, resourceProvider)
             .also { viewModelStore.put("vm", it) }
 
         composeRule.setContent {

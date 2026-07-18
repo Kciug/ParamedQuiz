@@ -3,6 +3,7 @@ package com.rafalskrzypczyk.home_screen.presentation.home_page
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
+import com.rafalskrzypczyk.core.feedback.NoOpFeedbackManager
 import com.rafalskrzypczyk.home_screen.domain.HomeScreenUseCases
 import com.rafalskrzypczyk.notifications.ContentTopicManager
 import com.rafalskrzypczyk.notifications.ReminderScheduler
@@ -45,7 +46,7 @@ class HomeScreenVMTest {
         every { useCases.getUserData() } returns flowOf(mockk(relaxed = true))
         every { premiumStatusProvider.ownedProductIds } returns flowOf(emptySet())
         
-        viewModel = HomeScreenVM(useCases, premiumStatusProvider, billingRepository, reminderScheduler, contentTopicManager)
+        viewModel = HomeScreenVM(useCases, premiumStatusProvider, billingRepository, reminderScheduler, contentTopicManager, NoOpFeedbackManager)
     }
 
     @After

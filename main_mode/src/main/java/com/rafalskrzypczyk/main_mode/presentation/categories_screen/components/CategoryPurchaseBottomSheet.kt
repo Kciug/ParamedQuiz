@@ -40,6 +40,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -54,6 +55,7 @@ import com.rafalskrzypczyk.core.composables.PurchaseFeature
 import com.rafalskrzypczyk.core.composables.QuestionsBadge
 import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.composables.TextTitle
+import com.rafalskrzypczyk.core.testing.TestTags
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.core.utils.ModeInfoProvider
 import com.rafalskrzypczyk.core.utils.QuizMode
@@ -252,7 +254,8 @@ private fun CategoryPurchaseContent(
             isPending = isPending,
             isAlreadyUnlockedOnEntry = isAlreadyUnlockedOnEntry,
             onBuyClick = onBuyClick,
-            onStartClick = onStartClick
+            onStartClick = onStartClick,
+            buyButtonModifier = Modifier.testTag(TestTags.PURCHASE_DIALOG_BUY_BUTTON)
         )
     }
 }
