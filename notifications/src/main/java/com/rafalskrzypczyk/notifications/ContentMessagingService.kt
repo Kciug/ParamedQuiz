@@ -10,7 +10,7 @@ import dagger.hilt.components.SingletonComponent
 
 /**
  * Zależności serwisu wstrzykiwane przez Hilt [EntryPoint] (zamiast @AndroidEntryPoint) — analogicznie
- * do [ReminderWorkerEntryPoint], by agregacja Hilta w :app nie musiała rozwiązywać FirebaseMessagingService
+ * do [ReminderReceiverEntryPoint], by agregacja Hilta w :app nie musiała rozwiązywać FirebaseMessagingService
  * (firebase-messaging jest `implementation` w :notifications). Interfejs celowo top-level.
  */
 @EntryPoint
@@ -57,6 +57,14 @@ class ContentMessagingService : FirebaseMessagingService() {
         } else {
             NotificationChannels.NEWS_CHANNEL_ID to NotificationIds.NEWS
         }
+
+        // Klientowy gate per-kategoria (foreground / data-only; w tle odcina brak subskrypcji tematu).
+        val categoryEnabled = if (channelId == NotificationChannels.MARKETING_CHANNEL_ID) {
+            deps.sharedPrefs().isMarketingEnabled()
+        } else {
+            deps.sharedPrefs().isNewsEnabled()
+        }
+        if (!categoryEnabled) return
 
         deps.notifier().show(
             notificationId = notificationId,

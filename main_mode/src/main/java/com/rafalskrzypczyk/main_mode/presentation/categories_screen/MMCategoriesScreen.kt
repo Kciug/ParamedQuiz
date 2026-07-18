@@ -19,7 +19,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.rafalskrzypczyk.core.api_response.ResponseState
@@ -29,6 +32,7 @@ import com.rafalskrzypczyk.core.composables.Loading
 import com.rafalskrzypczyk.core.composables.quiz.CategoryCard
 import com.rafalskrzypczyk.core.composables.top_bars.MainTopBarWithNav
 import com.rafalskrzypczyk.core.quiz.models.CategoryUIM
+import com.rafalskrzypczyk.main_mode.presentation.categories_screen.components.CategoryPurchaseBottomSheet
 import com.rafalskrzypczyk.score.domain.StreakState
 
 @Composable
@@ -47,25 +51,30 @@ fun MMCategoriesScreen(
     }
     
     if (state.selectedCategoryForPurchase != null) {
-        val isCategoryUnlocked = state.categories.find { it.id == state.selectedCategoryForPurchase.id }?.unlocked ?: false
-        
-        PurchaseCategoryDialog(
-            category = state.selectedCategoryForPurchase,
+        val category = state.selectedCategoryForPurchase
+        val isCategoryUnlocked = state.categories.find { it.id == category.id }?.unlocked ?: false
+        var isStarting by remember { mutableStateOf(false) }
+
+        CategoryPurchaseBottomSheet(
+            categoryTitle = category.title,
+            categoryDescription = category.description,
+            questionCount = category.questionCount.toIntOrNull() ?: 0,
             price = state.productPrice,
-            loading = state.isPurchasing,
+            isUnlocked = isCategoryUnlocked,
             isPending = state.isPending,
-            error = state.purchaseError,
-            isSuccess = isCategoryUnlocked,
-            onDismiss = { onEvent(MMCategoriesUIEvents.ClosePurchaseDialog) },
-            onConfirm = { 
-                if (activity != null) {
-                    onEvent(MMCategoriesUIEvents.BuyCategory(activity)) 
+            isPurchasing = state.isPurchasing,
+            purchaseError = state.purchaseError,
+            activity = activity,
+            shouldDismiss = isStarting,
+            onDismiss = {
+                onEvent(MMCategoriesUIEvents.ClosePurchaseDialog)
+                if (isStarting) {
+                    onStartCategory(category.id, category.title)
+                    isStarting = false
                 }
             },
-            onSuccessConfirm = {
-                onEvent(MMCategoriesUIEvents.ClosePurchaseDialog)
-                onStartCategory(state.selectedCategoryForPurchase.id, state.selectedCategoryForPurchase.title)
-            }
+            onBuyClick = { onEvent(MMCategoriesUIEvents.BuyCategory(it)) },
+            onStartClick = { isStarting = true }
         )
     }
 

@@ -14,6 +14,8 @@ import com.rafalskrzypczyk.home_screen.presentation.terms_of_service.TermsOfServ
 import com.rafalskrzypczyk.home_screen.presentation.terms_of_service.TermsOfServiceVM
 import com.rafalskrzypczyk.home_screen.presentation.user_page.UserPageScreen
 import com.rafalskrzypczyk.home_screen.presentation.user_page.UserPageVM
+import com.rafalskrzypczyk.home_screen.presentation.notification_settings.NotificationSettingsScreen
+import com.rafalskrzypczyk.home_screen.presentation.notification_settings.NotificationSettingsVM
 import com.rafalskrzypczyk.home_screen.presentation.user_settings.UserSettingsScreen
 import com.rafalskrzypczyk.home_screen.presentation.user_settings.UserSettingsVM
 import androidx.compose.runtime.remember
@@ -160,7 +162,8 @@ fun NavGraphBuilder.userSettingsDestination(
     onNavigateBack: () -> Unit,
     onSignOut: () -> Unit,
     onTermsOfService: () -> Unit,
-    onPrivacyPolicy: () -> Unit
+    onPrivacyPolicy: () -> Unit,
+    onOpenNotificationSettings: () -> Unit
 ) {
     composable<UserSettings> {
         val viewModel = hiltViewModel<UserSettingsVM>()
@@ -172,13 +175,36 @@ fun NavGraphBuilder.userSettingsDestination(
             onNavigateBack = onNavigateBack,
             onSignOut = onSignOut,
             onTermsOfService = onTermsOfService,
-            onPrivacyPolicy = onPrivacyPolicy
+            onPrivacyPolicy = onPrivacyPolicy,
+            onOpenNotificationSettings = onOpenNotificationSettings
         )
     }
 }
 
 fun NavController.navigateToUserSettings() {
     navigate(route = UserSettings)
+}
+
+@Serializable
+object NotificationSettings
+
+fun NavGraphBuilder.notificationSettingsDestination(
+    onNavigateBack: () -> Unit
+) {
+    composable<NotificationSettings> {
+        val viewModel = hiltViewModel<NotificationSettingsVM>()
+        val state = viewModel.state.collectAsStateWithLifecycle()
+
+        NotificationSettingsScreen(
+            state = state.value,
+            onEvent = viewModel::onEvent,
+            onNavigateBack = onNavigateBack
+        )
+    }
+}
+
+fun NavController.navigateToNotificationSettings() {
+    navigate(route = NotificationSettings)
 }
 
 @Serializable

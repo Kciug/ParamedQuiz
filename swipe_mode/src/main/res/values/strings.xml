@@ -57,10 +57,10 @@
     <string name="feedback_perfect_title">Bezbłędna intuicja!</string>
     <string name="feedback_perfect_msg">Nie popełniłeś żadnych błędów decyzyjnych. Gratulacje!</string>
 
-    <string name="SM_ob_page_1_title">Przesuwaj karty</string>
-    <string name="SM_ob_page_1_message">Przesuń w prawo jeśli to prawda, lub w lewo jeśli to fałsz. Intuicyjna nauka w zasięgu kciuka.</string>
-    <string name="SM_ob_page_2_title">Szybkie decyzje</string>
-    <string name="SM_ob_page_2_message">W ratownictwie czas ma znaczenie. Trenuj szybkość podejmowania decyzji pod presją czasu.</string>
-    <string name="SM_ob_page_3_title">Buduj combo</string>
-    <string name="SM_ob_page_3_message">Odpowiadaj poprawnie pod rząd, aby budować serię i zdobywać więcej punktów. Poczuj rytm nauki!</string>
+    <string name="SM_ob_page_1_title">Prawda czy fałsz</string>
+    <string name="SM_ob_page_1_message">Oceniasz krótkie stwierdzenia z ratownictwa. Przesuń w prawo, jeśli zgadzasz się ze stwierdzeniem, w lewo, jeśli jest fałszywe.</string>
+    <string name="SM_ob_page_2_title">Ucz się w biegu</string>
+    <string name="SM_ob_page_2_message">Prosty gest i format prawda/fałsz sprawiają, że szybko przejdziesz przez wiele pytań. Idealne na krótką powtórkę.</string>
+    <string name="SM_ob_page_3_title">Buduj serię</string>
+    <string name="SM_ob_page_3_message">Każda poprawna odpowiedź z rzędu wydłuża Twoją serię. Jeden błąd ją przerywa, więc spróbuj pobić własny rekord.</string>
 </resources>

@@ -1,10 +1,7 @@
 package com.rafalskrzypczyk.home_screen.presentation.user_settings
 
-import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -30,6 +27,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.VolumeUp
 import androidx.compose.material.icons.automirrored.rounded.Logout
 import androidx.compose.material.icons.outlined.Badge
 import androidx.compose.material.icons.outlined.Delete
@@ -38,10 +36,7 @@ import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material.icons.outlined.Schedule
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Vibration
-import androidx.compose.material.icons.outlined.VolumeUp
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -57,10 +52,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.core.content.ContextCompat
 import androidx.core.content.pm.PackageInfoCompat
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LifecycleEventEffect
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.ConfirmationDialog
 import com.rafalskrzypczyk.core.composables.Dimens
@@ -76,13 +68,10 @@ import com.rafalskrzypczyk.core.composables.SettingsSwitchRow
 import com.rafalskrzypczyk.core.composables.TestBuildBanner
 import com.rafalskrzypczyk.core.composables.TextCaption
 import com.rafalskrzypczyk.core.composables.TextPrimary
-import com.rafalskrzypczyk.core.composables.TimePickerDialog
 import com.rafalskrzypczyk.core.composables.top_bars.NavTopBar
 import com.rafalskrzypczyk.core.ui.theme.MQYellow
 import com.rafalskrzypczyk.core.user_management.UserAuthenticationMethod
 import com.rafalskrzypczyk.home.R
-import com.rafalskrzypczyk.notifications.NotificationPermission
-import com.rafalskrzypczyk.notifications.NotificationSettings
 
 @Composable
 fun UserSettingsScreen(
@@ -91,7 +80,8 @@ fun UserSettingsScreen(
     onNavigateBack: () -> Unit,
     onSignOut: () -> Unit,
     onTermsOfService: () -> Unit,
-    onPrivacyPolicy: () -> Unit
+    onPrivacyPolicy: () -> Unit,
+    onOpenNotificationSettings: () -> Unit
 ) {
     val context = LocalContext.current
     val successMsg = stringResource(com.rafalskrzypczyk.core.R.string.desc_success)
@@ -131,7 +121,8 @@ fun UserSettingsScreen(
                         onSignOut = onSignOut,
                         onTermsOfService = onTermsOfService,
                         onPrivacyPolicy = onPrivacyPolicy,
-                        onAbout = { showAboutDialog = true }
+                        onAbout = { showAboutDialog = true },
+                        onOpenNotificationSettings = onOpenNotificationSettings
                     )
                     
                     if (state.responseState == ResponseState.Loading) {
@@ -206,15 +197,6 @@ fun UserSettingsScreen(
         )
     }
 
-    if (state.showTimePickerDialog) {
-        TimePickerDialog(
-            title = stringResource(R.string.title_reminder_time),
-            initialHour = state.reminderHour,
-            initialMinute = state.reminderMinute,
-            onConfirm = { hour, minute -> onEvent(UserSettingsUIEvents.SetReminderTime(hour, minute)) },
-            onDismiss = { onEvent(UserSettingsUIEvents.ToggleTimePickerDialog(false)) }
-        )
-    }
 }
 
 @Composable
@@ -225,43 +207,9 @@ private fun UserSettingsContent(
     onSignOut: () -> Unit,
     onTermsOfService: () -> Unit,
     onPrivacyPolicy: () -> Unit,
-    onAbout: () -> Unit
+    onAbout: () -> Unit,
+    onOpenNotificationSettings: () -> Unit
 ) {
-    val context = LocalContext.current
-    var systemEnabled by remember { mutableStateOf(NotificationPermission.areNotificationsEnabled(context)) }
-
-    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
-        systemEnabled = NotificationPermission.areNotificationsEnabled(context)
-    }
-
-    val notificationPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        systemEnabled = NotificationPermission.areNotificationsEnabled(context)
-        if (granted) onEvent(UserSettingsUIEvents.SetNotificationsEnabled(true))
-    }
-
-    val onNotificationsToggle: (Boolean) -> Unit = { enabled ->
-        if (enabled) {
-            onEvent(UserSettingsUIEvents.SetNotificationsEnabled(true))
-            if (!systemEnabled) {
-                val permissionNotGranted = NotificationPermission.requiresRuntimePermission() &&
-                    ContextCompat.checkSelfPermission(
-                        context,
-                        NotificationPermission.POST_NOTIFICATIONS
-                    ) != PackageManager.PERMISSION_GRANTED
-                if (permissionNotGranted) {
-                    notificationPermissionLauncher.launch(NotificationPermission.POST_NOTIFICATIONS)
-                } else {
-                    // Zablokowane na poziomie systemu — kierujemy do ustawień systemowych.
-                    NotificationSettings.openAppNotificationSettings(context)
-                }
-            }
-        } else {
-            onEvent(UserSettingsUIEvents.SetNotificationsEnabled(false))
-        }
-    }
-
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val scrollState = rememberScrollState()
         Column(
@@ -303,32 +251,15 @@ private fun UserSettingsContent(
                 SettingsCategoryHeader(stringResource(R.string.settings_category_app))
 
                 SettingsCategoryCard {
-                    SettingsSwitchRow(
+                    SettingsItemRow(
                         title = stringResource(R.string.settings_notifications),
                         icon = Icons.Outlined.Notifications,
-                        checked = state.notificationsEnabled && systemEnabled,
-                        onCheckedChange = onNotificationsToggle
-                    )
-
-                    if (state.notificationsEnabled) {
-                        SettingsItemRow(
-                            title = stringResource(R.string.settings_reminder_time),
-                            icon = Icons.Outlined.Schedule,
-                            value = formatReminderTime(state.reminderHour, state.reminderMinute),
-                            showChevron = false,
-                            onClick = { onEvent(UserSettingsUIEvents.ToggleTimePickerDialog(true)) }
-                        )
-                    }
-
-                    SettingsItemRow(
-                        title = stringResource(R.string.settings_system_notifications),
-                        icon = Icons.Outlined.Settings,
-                        onClick = { NotificationSettings.openAppNotificationSettings(context) }
+                        onClick = onOpenNotificationSettings
                     )
 
                     SettingsSwitchRow(
                         title = stringResource(R.string.settings_sound),
-                        icon = Icons.Outlined.VolumeUp,
+                        icon = Icons.AutoMirrored.Outlined.VolumeUp,
                         checked = state.soundEnabled,
                         onCheckedChange = { onEvent(UserSettingsUIEvents.SetSoundEnabled(it)) }
                     )
@@ -406,9 +337,6 @@ private fun UserSettingsContent(
     }
 }
 
-private fun formatReminderTime(hour: Int, minute: Int): String =
-    "%02d:%02d".format(hour, minute)
-
 @Composable
 private fun UserSettingsUserDetails(
     modifier: Modifier = Modifier,
@@ -465,7 +393,8 @@ private fun UserNonPasswordSettingsPreview() {
             onNavigateBack = {},
             onSignOut = {},
             onTermsOfService = {},
-            onPrivacyPolicy = {}
+            onPrivacyPolicy = {},
+            onOpenNotificationSettings = {}
         )
     }
 }
@@ -484,7 +413,8 @@ private fun UserPasswordSettingsPreview() {
             onNavigateBack = {},
             onSignOut = {},
             onTermsOfService = {},
-            onPrivacyPolicy = {}
+            onPrivacyPolicy = {},
+            onOpenNotificationSettings = {}
         )
     }
 }
@@ -503,7 +433,8 @@ private fun UserAnonymousSettingsPreview() {
             onNavigateBack = {},
             onSignOut = {},
             onTermsOfService = {},
-            onPrivacyPolicy = {}
+            onPrivacyPolicy = {},
+            onOpenNotificationSettings = {}
         )
     }
 }

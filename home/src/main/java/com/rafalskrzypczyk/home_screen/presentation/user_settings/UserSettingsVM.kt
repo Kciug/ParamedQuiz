@@ -9,8 +9,6 @@ import com.rafalskrzypczyk.home_screen.domain.use_cases.UserSettingsUseCases
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
-import com.rafalskrzypczyk.notifications.ContentTopicManager
-import com.rafalskrzypczyk.notifications.ReminderScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,16 +21,14 @@ import javax.inject.Inject
 class UserSettingsVM @Inject constructor(
     private val useCases: UserSettingsUseCases,
     private val premiumStatusProvider: PremiumStatusProvider,
-    private val sharedPrefs: SharedPreferencesApi,
-    private val reminderScheduler: ReminderScheduler,
-    private val contentTopicManager: ContentTopicManager
+    private val sharedPrefs: SharedPreferencesApi
 ) : ViewModel() {
     private val _state = MutableStateFlow(UserSettingsState())
     val state = _state.asStateFlow()
 
     init {
         loadUserData()
-        loadNotificationSettings()
+        loadAppSettings()
     }
 
     fun onEvent(event: UserSettingsUIEvents) {
@@ -49,20 +45,14 @@ class UserSettingsVM @Inject constructor(
             is UserSettingsUIEvents.ToggleDeleteProgressDialog -> _state.update { it.copy(showDeleteProgressDialog = event.show) }
             UserSettingsUIEvents.OnSuccessToastShown -> _state.update { it.copy(showSuccessToast = false) }
             UserSettingsUIEvents.DeleteProgress -> deleteProgress()
-            is UserSettingsUIEvents.SetNotificationsEnabled -> setNotificationsEnabled(event.enabled)
-            is UserSettingsUIEvents.SetReminderTime -> setReminderTime(event.hour, event.minute)
-            is UserSettingsUIEvents.ToggleTimePickerDialog -> _state.update { it.copy(showTimePickerDialog = event.show) }
             is UserSettingsUIEvents.SetSoundEnabled -> setSoundEnabled(event.enabled)
             is UserSettingsUIEvents.SetHapticEnabled -> setHapticEnabled(event.enabled)
         }
     }
 
-    private fun loadNotificationSettings() {
+    private fun loadAppSettings() {
         _state.update {
             it.copy(
-                notificationsEnabled = sharedPrefs.isNotificationsEnabled(),
-                reminderHour = sharedPrefs.getReminderHour(),
-                reminderMinute = sharedPrefs.getReminderMinute(),
                 soundEnabled = sharedPrefs.isSoundEnabled(),
                 hapticEnabled = sharedPrefs.isHapticEnabled()
             )
@@ -77,25 +67,6 @@ class UserSettingsVM @Inject constructor(
     private fun setHapticEnabled(enabled: Boolean) {
         sharedPrefs.setHapticEnabled(enabled)
         _state.update { it.copy(hapticEnabled = enabled) }
-    }
-
-    private fun setNotificationsEnabled(enabled: Boolean) {
-        sharedPrefs.setNotificationsEnabled(enabled)
-        _state.update { it.copy(notificationsEnabled = enabled) }
-        if (enabled) reminderScheduler.schedule() else reminderScheduler.cancel()
-        contentTopicManager.ensureSubscription()
-    }
-
-    private fun setReminderTime(hour: Int, minute: Int) {
-        sharedPrefs.setReminderTime(hour, minute)
-        _state.update {
-            it.copy(
-                reminderHour = hour,
-                reminderMinute = minute,
-                showTimePickerDialog = false
-            )
-        }
-        if (state.value.notificationsEnabled) reminderScheduler.schedule()
     }
 
     private fun loadUserData() {

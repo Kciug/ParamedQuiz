@@ -10,7 +10,7 @@ import com.rafalskrzypczyk.notifications.NotificationChannels
 import com.rafalskrzypczyk.notifications.NotificationDestination
 import com.rafalskrzypczyk.notifications.NotificationIds
 import com.rafalskrzypczyk.notifications.Notifier
-import com.rafalskrzypczyk.notifications.ReminderScheduler
+import com.rafalskrzypczyk.notifications.ReminderEvaluator
 import com.rafalskrzypczyk.notifications.config.NotificationConfigRepository
 import com.rafalskrzypczyk.score.domain.QuestionAnnotation
 import com.rafalskrzypczyk.score.domain.ScoreManager
@@ -26,7 +26,7 @@ class DevVM @Inject constructor(
     private val sharedPreferences: SharedPreferencesApi,
     private val billingRepository: BillingRepository,
     private val notifier: Notifier,
-    private val reminderScheduler: ReminderScheduler,
+    private val reminderEvaluator: ReminderEvaluator,
     private val scoreManager: ScoreManager,
     private val notificationConfigRepository: NotificationConfigRepository,
     private val gameplayConfig: GameplayConfigProvider,
@@ -45,7 +45,7 @@ class DevVM @Inject constructor(
             DevOptionsUIEvents.ResetPurchases -> resetPurchases()
             DevOptionsUIEvents.SendTestNotification -> sendTestNotification()
             DevOptionsUIEvents.TriggerNotificationConsent -> triggerNotificationConsent()
-            DevOptionsUIEvents.TriggerReminderNow -> reminderScheduler.debugRunNow()
+            DevOptionsUIEvents.TriggerReminderNow -> runReminderNow()
             DevOptionsUIEvents.SimStreakPending -> simulateStreak(daysAgo = 1, streak = 5)
             DevOptionsUIEvents.SimInactive7 -> simulateStreak(daysAgo = 7, streak = 5)
             DevOptionsUIEvents.SimInactive14 -> simulateStreak(daysAgo = 14, streak = 5)
@@ -70,6 +70,13 @@ class DevVM @Inject constructor(
                 destination = NotificationDestination.HOME,
                 channelId = NotificationChannels.MARKETING_CHANNEL_ID
             )
+        }
+    }
+
+    /** Odpala ocenę „oceń i zdecyduj" natychmiast (bez czekania na alarm). */
+    private fun runReminderNow() {
+        viewModelScope.launch {
+            reminderEvaluator.evaluateAndNotify()
         }
     }
 

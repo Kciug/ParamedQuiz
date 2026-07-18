@@ -11,6 +11,8 @@ import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.composables.rating.RatingPromptState
 import com.rafalskrzypczyk.core.domain.UserFeedback
+import com.rafalskrzypczyk.core.feedback.FeedbackEvent
+import com.rafalskrzypczyk.core.feedback.FeedbackManager
 import com.rafalskrzypczyk.home_screen.domain.HomeScreenUseCases
 import com.rafalskrzypczyk.notifications.ContentTopicManager
 import com.rafalskrzypczyk.notifications.ReminderScheduler
@@ -30,7 +32,8 @@ class HomeScreenVM @Inject constructor(
     private val premiumStatusProvider: PremiumStatusProvider,
     private val billingRepository: BillingRepository,
     private val reminderScheduler: ReminderScheduler,
-    private val contentTopicManager: ContentTopicManager
+    private val contentTopicManager: ContentTopicManager,
+    private val feedbackManager: FeedbackManager
 ): ViewModel() {
     private val _state = MutableStateFlow(HomeScreenState())
     val state = _state.asStateFlow()
@@ -165,9 +168,11 @@ class HomeScreenVM @Inject constructor(
 
                 if (translationUnlocked && pendingPurchaseModeId == BillingIds.ID_TRANSLATION_MODE) {
                     pendingPurchaseModeId = null
+                    feedbackManager.perform(FeedbackEvent.PURCHASE)
                     _effect.emit(HomeSideEffect.PurchaseSuccess(BillingIds.ID_TRANSLATION_MODE))
                 } else if (swipeUnlocked && pendingPurchaseModeId == BillingIds.ID_SWIPE_MODE) {
                     pendingPurchaseModeId = null
+                    feedbackManager.perform(FeedbackEvent.PURCHASE)
                     _effect.emit(HomeSideEffect.PurchaseSuccess(BillingIds.ID_SWIPE_MODE))
                 }
 

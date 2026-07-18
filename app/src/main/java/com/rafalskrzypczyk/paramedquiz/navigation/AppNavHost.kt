@@ -94,7 +94,12 @@ fun AppNavHost(
             onPrivacyPolicy = {
                 val intent = Intent(Intent.ACTION_VIEW, privacyPolicyUrl.toUri())
                 context.startActivity(intent)
-            }
+            },
+            onOpenNotificationSettings = { navController.navigateToNotificationSettings() }
+        )
+
+        notificationSettingsDestination(
+            onNavigateBack = { navController.popBackStack() }
         )
 
         mainModeDestination(

@@ -18,10 +18,6 @@ sealed interface UserSettingsUIEvents {
     data class ToggleChangeUsernameDialog(val show: Boolean) : UserSettingsUIEvents
     data class ToggleDeleteAccountDialog(val show: Boolean) : UserSettingsUIEvents
     data class ToggleDeleteProgressDialog(val show: Boolean) : UserSettingsUIEvents
-    
-    data class SetNotificationsEnabled(val enabled: Boolean) : UserSettingsUIEvents
-    data class SetReminderTime(val hour: Int, val minute: Int) : UserSettingsUIEvents
-    data class ToggleTimePickerDialog(val show: Boolean) : UserSettingsUIEvents
 
     data class SetSoundEnabled(val enabled: Boolean) : UserSettingsUIEvents
     data class SetHapticEnabled(val enabled: Boolean) : UserSettingsUIEvents
