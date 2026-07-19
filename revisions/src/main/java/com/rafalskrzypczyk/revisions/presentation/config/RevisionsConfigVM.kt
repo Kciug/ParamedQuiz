@@ -10,6 +10,7 @@ import com.rafalskrzypczyk.revisions.domain.RevisionsRepository
 import com.rafalskrzypczyk.revisions.domain.use_cases.GetRevisionsQuestionsUC
 import com.rafalskrzypczyk.score.domain.ScoreManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -27,6 +28,12 @@ class RevisionsConfigVM @Inject constructor(
 
     private val _state = MutableStateFlow(RevisionsConfigState())
     val state = _state.asStateFlow()
+
+    /**
+     * Dedykowany job przeliczania puli pytan. Musi byc osobny od korutyn ladujacych tryb,
+     * bo [updateQuestionsCountAndLimits] bywa wolane z ich wnetrza.
+     */
+    private var questionsUpdateJob: Job? = null
 
     init {
         initialLoad()
@@ -183,36 +190,54 @@ class RevisionsConfigVM @Inject constructor(
         }
     }
 
+    /**
+     * Przelicza pule pytan i dostepne limity. Dane sa cache'owane w pamieci, wiec ta operacja
+     * jest praktycznie natychmiastowa - swiadomie nie zapalamy tu [RevisionsConfigState.isQuestionsLoading],
+     * bo loader zdazylby tylko mrugnac.
+     */
     private fun updateQuestionsCountAndLimits() {
-        val currentState = _state.value
-        val mode = currentState.selectedMode
-        val categoryId = currentState.selectedCategory?.id
-        val criterion = currentState.selectedCriterion
+        questionsUpdateJob?.cancel()
 
-        _state.update { it.copy(isQuestionsLoading = true) }
+        val requestState = _state.value
+        val mode = requestState.selectedMode
+        val categoryId = requestState.selectedCategory?.id
+        val criterion = requestState.selectedCriterion
 
-        viewModelScope.launch {
+        questionsUpdateJob = viewModelScope.launch {
             getRevisionsQuestions(mode, categoryId, criterion, limit = null).collectLatest { response ->
-                if (response is Response.Success) {
-                    val count = response.data.size
-                    val limits = calculateAvailableLimits(count)
-                    val newLimit = if (currentState.selectedLimit == null || limits.contains(currentState.selectedLimit)) {
-                        currentState.selectedLimit
-                    } else {
-                        limits.firstOrNull()
-                    }
+                when (response) {
+                    is Response.Success -> {
+                        val count = response.data.size
+                        val limits = calculateAvailableLimits(count)
 
-                    _state.update {
-                        it.copy(
-                            availableQuestionsCount = count,
-                            availableLimits = limits,
-                            selectedLimit = newLimit,
-                            isEmptyState = count == 0,
-                            isQuestionsLoading = false,
-                            isConfigDialogVisible = if (it.loadingMode != null) true else it.isConfigDialogVisible,
-                            loadingMode = null
-                        )
+                        _state.update { current ->
+                            val newLimit = if (current.selectedLimit == null || limits.contains(current.selectedLimit)) {
+                                current.selectedLimit
+                            } else {
+                                limits.firstOrNull()
+                            }
+
+                            current.copy(
+                                availableQuestionsCount = count,
+                                availableLimits = limits,
+                                selectedLimit = newLimit,
+                                isEmptyState = count == 0,
+                                isQuestionsLoading = false,
+                                isConfigDialogVisible = if (current.loadingMode != null) true else current.isConfigDialogVisible,
+                                loadingMode = null
+                            )
+                        }
                     }
+                    is Response.Error -> {
+                        _state.update {
+                            it.copy(
+                                isQuestionsLoading = false,
+                                loadingMode = null,
+                                responseState = ResponseState.Error(response.error)
+                            )
+                        }
+                    }
+                    Response.Loading -> Unit
                 }
             }
         }

@@ -19,7 +19,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.rafalskrzypczyk.core.composables.BaseCustomDialog
 import com.rafalskrzypczyk.core.composables.Dimens
-import com.rafalskrzypczyk.core.composables.Loading
 import com.rafalskrzypczyk.core.composables.TextHeadline
 import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.utils.QuizMode
@@ -123,37 +122,29 @@ fun RevisionConfigDialog(
                         text = stringResource(R.string.revisions_select_limit)
                     )
 
-                    // Sekcja limitów odświeża się po zmianie kryterium/kategorii — trzymamy
-                    // stabilną wysokość i lokalny loader, żeby dialog nie skakał.
+                    // Sekcja limitów odświeża się po zmianie kryterium/kategorii — chipy zostają
+                    // widoczne i aktualizują się w miejscu, bez loadera. Stabilna wysokość
+                    // trzyma dialog w ryzach, żeby nie skakał.
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .heightIn(min = 48.dp),
                         contentAlignment = Alignment.CenterStart
                     ) {
-                        if (state.isQuestionsLoading) {
-                            Box(
-                                modifier = Modifier.fillMaxWidth(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Loading()
-                            }
-                        } else {
-                            FlowRow(
-                                horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL),
-                                verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                state.availableLimits.forEach { limit ->
-                                    val isSelected = state.selectedLimit == limit
-                                    val title =
-                                        limit?.toString() ?: stringResource(R.string.revisions_limit_all, state.availableQuestionsCount)
-                                    RevisionsChoiceChip(
-                                        selected = isSelected,
-                                        title = title,
-                                        onClick = { onEvent(RevisionsConfigUIEvents.SelectLimit(limit)) }
-                                    )
-                                }
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL),
+                            verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            state.availableLimits.forEach { limit ->
+                                val isSelected = state.selectedLimit == limit
+                                val title =
+                                    limit?.toString() ?: stringResource(R.string.revisions_limit_all, state.availableQuestionsCount)
+                                RevisionsChoiceChip(
+                                    selected = isSelected,
+                                    title = title,
+                                    onClick = { onEvent(RevisionsConfigUIEvents.SelectLimit(limit)) }
+                                )
                             }
                         }
                     }
