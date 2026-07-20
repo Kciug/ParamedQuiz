@@ -1,6 +1,6 @@
 package com.rafalskrzypczyk.swipe_mode.presentation
 
-import androidx.compose.foundation.background
+// import androidx.compose.foundation.background // MomentumStrip
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,8 +12,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.runtime.remember
-import androidx.compose.ui.draw.clip
+// import androidx.compose.runtime.remember // MomentumStrip
+// import androidx.compose.ui.draw.clip // MomentumStrip
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.outlined.Timer
@@ -42,7 +42,7 @@ import com.rafalskrzypczyk.core.composables.TextCaption
 import com.rafalskrzypczyk.core.composables.TextHeadline
 import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.ui.theme.MQGreen
-import com.rafalskrzypczyk.core.ui.theme.MQRed
+// import com.rafalskrzypczyk.core.ui.theme.MQRed // MomentumStrip
 import com.rafalskrzypczyk.swipe_mode.R
 import java.util.concurrent.TimeUnit
 
@@ -174,11 +174,17 @@ private fun ComboSection(
         }
 
         if (answerHistory.isNotEmpty()) {
-            MomentumStrip(history = answerHistory)
+            // MomentumStrip tymczasowo wyłączony - do ewentualnego powrotu w przerobionej formie
+            // MomentumStrip(history = answerHistory)
             TextCaption(text = comboNarrativeText(answerHistory))
         }
     }
 }
+
+/*
+Wyłączone - pasek momentum zdjęty z podsumowania, kod zostaje na wypadek powrotu
+w przerobionej formie. Przy odkomentowaniu przywrócić też importy oznaczone
+komentarzem "MomentumStrip" na górze pliku oraz wywołanie w ComboSection.
 
 @Composable
 private fun MomentumStrip(history: List<Boolean>) {
@@ -208,6 +214,7 @@ private fun MomentumStrip(history: List<Boolean>) {
         }
     }
 }
+*/
 
 @Composable
 private fun comboNarrativeText(history: List<Boolean>): String {
