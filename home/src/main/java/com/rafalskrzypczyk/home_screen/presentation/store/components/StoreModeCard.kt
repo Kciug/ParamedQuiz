@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import com.rafalskrzypczyk.core.composables.ButtonPrimary
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.OwnedBadge
+import com.rafalskrzypczyk.core.composables.QuestionsBadge
 import com.rafalskrzypczyk.core.composables.TextCaption
 import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.composables.TextTitle
@@ -49,6 +50,7 @@ fun StoreModeCard(
     isUnlocked: Boolean,
     isPending: Boolean = false,
     isPurchasing: Boolean = false,
+    questionCount: Int? = null,
     onBuyClick: () -> Unit
 ) {
     Column(
@@ -91,6 +93,9 @@ fun StoreModeCard(
                     fontWeight = FontWeight.Bold
                 )
                 TextCaption(text = description)
+                if (questionCount != null && questionCount > 0) {
+                    QuestionsBadge(questionCount = questionCount, themeColor = iconTint)
+                }
             }
         }
         

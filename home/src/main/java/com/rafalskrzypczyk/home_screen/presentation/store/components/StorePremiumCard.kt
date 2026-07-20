@@ -26,6 +26,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Diamond
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -59,6 +60,8 @@ fun StorePremiumCard(
     isUnlocked: Boolean,
     isPending: Boolean = false,
     isPurchasing: Boolean = false,
+    bestValueLabel: String? = null,
+    savingsText: String? = null,
     onBuyClick: () -> Unit
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "GoldenPulse")
@@ -103,6 +106,15 @@ fun StorePremiumCard(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
         ) {
+            if (bestValueLabel != null && !isUnlocked && !isPending) {
+                OwnedBadge(
+                    text = bestValueLabel,
+                    icon = Icons.Default.Star,
+                    backgroundColor = MQYellow.copy(alpha = 0.2f),
+                    contentColor = MQYellow
+                )
+            }
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -191,6 +203,15 @@ fun StorePremiumCard(
                                 color = MQYellow
                             )
                             TextCaption(text = stringResource(com.rafalskrzypczyk.core.R.string.one_time_purchase))
+                            if (savingsText != null) {
+                                Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
+                                OwnedBadge(
+                                    text = stringResource(com.rafalskrzypczyk.home.R.string.store_savings, savingsText),
+                                    icon = null,
+                                    backgroundColor = MQGreen.copy(alpha = 0.2f),
+                                    contentColor = MQGreen
+                                )
+                            }
                             Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING))
                         }
 

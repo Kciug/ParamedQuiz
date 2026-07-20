@@ -33,11 +33,14 @@ class BillingRepositoryImpl @Inject constructor(
     override val availableProducts: Flow<List<AppProduct>> = billingDataSource.availableProducts.map { list ->
         list.map { productDetails ->
             productDetailsCache[productDetails.productId] = productDetails
+            val offer = productDetails.oneTimePurchaseOfferDetails
             AppProduct(
                 id = productDetails.productId,
                 name = productDetails.name,
                 description = productDetails.description,
-                price = productDetails.oneTimePurchaseOfferDetails?.formattedPrice ?: ""
+                price = offer?.formattedPrice ?: "",
+                priceAmountMicros = offer?.priceAmountMicros ?: 0L,
+                priceCurrencyCode = offer?.priceCurrencyCode ?: ""
             )
         }
     }

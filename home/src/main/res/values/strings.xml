@@ -187,4 +187,20 @@
     <string name="store_category_desc">Zyskaj natychmiastowy dostęp do dodatkowej, obszernej bazy pytań.</string>
     <string name="store_btn_purchased">Odblokowano</string>
     <string name="store_btn_loading">Pobieranie…</string>
+
+    <!-- Sklep - nagłówek postępu -->
+    <string name="store_progress_label">Odblokowano</string>
+    <string name="store_progress_title">Odblokuj premium i dodatkowe funkcje</string>
+
+    <!-- Sklep - Premium -->
+    <string name="store_badge_best_value">Najlepsza wartość</string>
+    <string name="store_savings">Oszczędzasz %s</string>
+
+    <!-- Sklep - sekcje -->
+    <string name="store_section_modes">Tryby nauki</string>
+    <string name="store_section_modes_desc">Ucz się tak, jak lubisz najbardziej</string>
+    <string name="store_section_packs">Pakiety pytań</string>
+    <string name="store_section_packs_desc">Odblokuj tematy, których potrzebujesz teraz</string>
+    <string name="store_section_convenience">Wygoda</string>
+    <string name="store_section_convenience_desc">Drobne usprawnienia, duża różnica</string>
 </resources>

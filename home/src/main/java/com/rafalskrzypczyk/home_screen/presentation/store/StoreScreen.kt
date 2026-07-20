@@ -16,7 +16,10 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.LibraryBooks
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.PriorityHigh
 import androidx.compose.material.icons.rounded.Block
 import androidx.compose.material3.HorizontalDivider
@@ -33,7 +36,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.rafalskrzypczyk.billing.domain.BillingIds
-import com.rafalskrzypczyk.billing.domain.getCategoryBillingId
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.InfoDialog
@@ -46,6 +48,8 @@ import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.home.R
 import com.rafalskrzypczyk.home_screen.presentation.store.components.StoreModeCard
 import com.rafalskrzypczyk.home_screen.presentation.store.components.StorePremiumCard
+import com.rafalskrzypczyk.home_screen.presentation.store.components.StoreProgressHeader
+import com.rafalskrzypczyk.home_screen.presentation.store.components.StoreSectionHeader
 
 @Composable
 fun StoreScreen(
@@ -111,6 +115,12 @@ fun StoreScreen(
                         ) {
                             Spacer(Modifier.padding(top = Dimens.SMALL_PADDING))
 
+                            StoreProgressHeader(
+                                modifier = Modifier.padding(horizontal = Dimens.DEFAULT_PADDING),
+                                unlocked = state.unlockedItemsCount,
+                                total = state.totalItemsCount
+                            )
+
                             StorePremiumCard(
                                 modifier = Modifier.padding(horizontal = Dimens.DEFAULT_PADDING),
                                 title = state.fullPackageProduct?.name ?: stringResource(R.string.premium_package_title),
@@ -119,9 +129,19 @@ fun StoreScreen(
                                 isUnlocked = state.isPremium,
                                 isPending = state.isPremiumPending,
                                 isPurchasing = state.isPurchasing && state.pendingPurchaseModeId == BillingIds.ID_FULL_PACKAGE,
+                                bestValueLabel = stringResource(R.string.store_badge_best_value),
+                                savingsText = state.savingsText,
                                 onBuyClick = {
                                     activity?.let { onEvent(StoreUIEvents.BuyProduct(it, BillingIds.ID_FULL_PACKAGE)) }
                                 }
+                            )
+
+                            StoreSectionHeader(
+                                modifier = Modifier.padding(horizontal = Dimens.DEFAULT_PADDING),
+                                title = stringResource(R.string.store_section_modes),
+                                subtitle = stringResource(R.string.store_section_modes_desc),
+                                count = 2,
+                                icon = Icons.Default.Layers
                             )
 
                             StoreModeCard(
@@ -154,20 +174,40 @@ fun StoreScreen(
                                 }
                             )
 
-                            val categoryIdStr = getCategoryBillingId(98226763913716L)
-                            StoreModeCard(
-                                modifier = Modifier.padding(horizontal = Dimens.DEFAULT_PADDING),
-                                title = state.categoryProduct?.name ?: stringResource(R.string.store_category_title),
-                                description = state.categoryProduct?.description ?: stringResource(R.string.store_category_desc),
-                                icon = Icons.AutoMirrored.Filled.List,
-                                iconTint = MQYellow,
-                                price = state.categoryProduct?.price,
-                                isUnlocked = state.isCategoryUnlocked,
-                                isPending = state.isCategoryPending,
-                                isPurchasing = state.isPurchasing && state.pendingPurchaseModeId == categoryIdStr,
-                                onBuyClick = {
-                                    activity?.let { onEvent(StoreUIEvents.BuyProduct(it, categoryIdStr)) }
+                            if (state.categoryPacks.isNotEmpty()) {
+                                StoreSectionHeader(
+                                    modifier = Modifier.padding(horizontal = Dimens.DEFAULT_PADDING),
+                                    title = stringResource(R.string.store_section_packs),
+                                    subtitle = stringResource(R.string.store_section_packs_desc),
+                                    count = state.categoryPacks.size,
+                                    icon = Icons.AutoMirrored.Filled.LibraryBooks
+                                )
+
+                                state.categoryPacks.forEach { pack ->
+                                    StoreModeCard(
+                                        modifier = Modifier.padding(horizontal = Dimens.DEFAULT_PADDING),
+                                        title = pack.title,
+                                        description = pack.description,
+                                        icon = Icons.AutoMirrored.Filled.List,
+                                        iconTint = MQYellow,
+                                        price = pack.price,
+                                        isUnlocked = pack.isUnlocked,
+                                        isPending = pack.isPending,
+                                        isPurchasing = state.isPurchasing && state.pendingPurchaseModeId == pack.sku,
+                                        questionCount = pack.questionCount,
+                                        onBuyClick = {
+                                            activity?.let { onEvent(StoreUIEvents.BuyProduct(it, pack.sku)) }
+                                        }
+                                    )
                                 }
+                            }
+
+                            StoreSectionHeader(
+                                modifier = Modifier.padding(horizontal = Dimens.DEFAULT_PADDING),
+                                title = stringResource(R.string.store_section_convenience),
+                                subtitle = stringResource(R.string.store_section_convenience_desc),
+                                count = 1,
+                                icon = Icons.Default.AutoAwesome
                             )
 
                             StoreModeCard(
