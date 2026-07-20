@@ -9,16 +9,13 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.BaseQuizScreen
@@ -87,6 +84,9 @@ fun TranslationQuizScreen(
         currentQuestionIndex = state.currentQuestionIndex + 1,
         quizFinished = state.isQuizFinished,
         quizFinishedState = state.quizFinishedState,
+        // Panel triala dostaje cały ekran - licznik punktów, zgłaszanie błędu i numer
+        // pytania nie mają na nim sensu, a "Pytanie N" przeczy komunikatowi o końcu triala.
+        showTopBar = !state.showTrialFinishedPanel,
         showBackConfirmation = state.showExitConfirmation,
         onBackAction = { onEvent(TranslationQuizEvents.OnBackPressed) },
         onBackDiscarded = { onEvent(TranslationQuizEvents.OnBackDiscarded) },
@@ -100,7 +100,7 @@ fun TranslationQuizScreen(
                  modifier = Modifier.padding(top = Dimens.DEFAULT_PADDING)
              )
         },
-    ) { innerPadding, titlePanel ->
+    ) { innerPadding, _ ->
 
         AnimatedContent(
             targetState = state.showTrialFinishedPanel,
@@ -110,22 +110,17 @@ fun TranslationQuizScreen(
             label = "trialFinishedTransition"
         ) { isTrialFinished ->
             if (isTrialFinished) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding),
-                    contentAlignment = Alignment.Center
-                ) {
-                    TranslationModeTrialFinishedPanel(
-                        onBuyClick = { onEvent(TranslationQuizEvents.BuyMode) },
-                        onExitClick = { onEvent(TranslationQuizEvents.ExitTrial(onNavigateBack)) },
-                        totalQuestions = state.totalTranslationQuestions,
-                        price = state.translationModePrice,
-                        loading = state.isPurchasing,
-                        isPending = state.isPending,
-                        error = state.purchaseError
-                    )
-                }
+                // Bez innerPadding - panel jest pełnoekranowy i sam obsługuje insety
+                // (pasek statusu w nagłówku, pasek nawigacji w tacy CTA).
+                TranslationModeTrialFinishedPanel(
+                    onBuyClick = { onEvent(TranslationQuizEvents.BuyMode) },
+                    onExitClick = { onEvent(TranslationQuizEvents.ExitTrial(onNavigateBack)) },
+                    totalQuestions = state.totalTranslationQuestions,
+                    price = state.translationModePrice,
+                    loading = state.isPurchasing,
+                    isPending = state.isPending,
+                    error = state.purchaseError
+                )
             } else {
                 AnimatedContent(
                     targetState = state.responseState,
@@ -142,7 +137,6 @@ fun TranslationQuizScreen(
                             } else {
                                 TranslationQuizContent(
                                     paddingValues = innerPadding,
-                                    titlePanel = titlePanel,
                                     state = state,
                                     onEvent = onEvent
                                 )

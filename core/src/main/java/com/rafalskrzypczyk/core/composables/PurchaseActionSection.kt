@@ -58,6 +58,7 @@ fun PurchaseActionSection(
     onStartClick: () -> Unit,
     modifier: Modifier = Modifier,
     onTryClick: (() -> Unit)? = null,
+    secondaryLabel: String? = null,
     buyButtonModifier: Modifier = Modifier,
 ) {
     Box(
@@ -111,6 +112,7 @@ fun PurchaseActionSection(
                         isPurchasing = isPurchasing,
                         onBuyClick = onBuyClick,
                         onTryClick = onTryClick,
+                        secondaryLabel = secondaryLabel,
                         themeColor = themeColor,
                         buyButtonModifier = buyButtonModifier
                     )
@@ -190,6 +192,7 @@ private fun PurchaseSection(
     isPurchasing: Boolean,
     onBuyClick: () -> Unit,
     onTryClick: (() -> Unit)?,
+    secondaryLabel: String?,
     themeColor: Color,
     buyButtonModifier: Modifier = Modifier
 ) {
@@ -226,7 +229,7 @@ private fun PurchaseSection(
 
         onTryClick?.let { click ->
             ButtonSecondary(
-                title = stringResource(R.string.btn_try),
+                title = secondaryLabel ?: stringResource(R.string.btn_try),
                 onClick = click
             )
         }

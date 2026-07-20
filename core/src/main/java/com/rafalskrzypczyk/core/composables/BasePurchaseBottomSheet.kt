@@ -64,8 +64,7 @@ data class PurchaseModeDetails(
     val price: String?,
     val features: List<PurchaseFeature>,
     val icon: ImageVector,
-    val themeColor: Color,
-    val estimatedTime: String = "~5"
+    val themeColor: Color
 )
 
 data class PurchaseFeature(
@@ -345,38 +344,6 @@ fun FeatureItem(feature: PurchaseFeature, themeColor: Color) {
         }
     }
 }
-
-//@Composable
-//private fun StatCard(
-//    modifier: Modifier = Modifier,
-//    value: String,
-//    label: String,
-//    icon: ImageVector,
-//    themeColor: Color
-//) {
-//    Card(
-//        modifier = modifier,
-//        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-//        shape = RoundedCornerShape(Dimens.RADIUS_SMALL)
-//    ) {
-//        Column(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(Dimens.DEFAULT_PADDING),
-//            horizontalAlignment = Alignment.CenterHorizontally,
-//            verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL)
-//        ) {
-//            Icon(
-//                imageVector = icon,
-//                contentDescription = null,
-//                tint = themeColor,
-//                modifier = Modifier.size(24.dp)
-//            )
-//            TextScore(text = value, color = themeColor)
-//            TextCaption(text = label, textAlign = TextAlign.Center)
-//        }
-//    }
-//}
 
 @Preview(name = "Purchase State")
 @Preview(name = "Purchase State Dark", uiMode = Configuration.UI_MODE_NIGHT_YES)

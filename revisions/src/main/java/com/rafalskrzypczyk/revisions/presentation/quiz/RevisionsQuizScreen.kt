@@ -145,7 +145,6 @@ fun RevisionsQuizScreen(
                     } else if (state.mode == QuizMode.TranslationMode) {
                         TranslationQuizContent(
                             paddingValues = innerPadding,
-                            titlePanel = titlePanel,
                             state = translationState,
                             onEvent = { event ->
                                 when (event) {

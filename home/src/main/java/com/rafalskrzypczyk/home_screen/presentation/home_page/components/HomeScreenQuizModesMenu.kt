@@ -36,12 +36,12 @@ fun HomeScreenQuizModesMenu(
         ) { onNavigateToMainMode() }
         QuizModeButton(
             title = stringResource(com.rafalskrzypczyk.core.R.string.title_swipe_mode),
-            description = stringResource(R.string.mode_swipe_desc),
+            description = stringResource(com.rafalskrzypczyk.core.R.string.mode_swipe_desc),
             mode = QuizMode.SwipeMode
         ) { onNavigateToSwipeMode(false) }
         QuizModeButton(
             title = stringResource(com.rafalskrzypczyk.core.R.string.title_translation_mode),
-            description = stringResource(R.string.mode_translation_desc),
+            description = stringResource(com.rafalskrzypczyk.core.R.string.mode_translation_desc),
             mode = QuizMode.TranslationMode
         ) { onNavigateToTranslationMode() }
         QuizModeButton(

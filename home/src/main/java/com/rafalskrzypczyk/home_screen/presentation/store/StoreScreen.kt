@@ -126,8 +126,8 @@ fun StoreScreen(
 
                             StoreModeCard(
                                 modifier = Modifier.padding(horizontal = Dimens.DEFAULT_PADDING),
-                                title = state.translationModeProduct?.name ?: stringResource(R.string.feature_translation_title),
-                                description = state.translationModeProduct?.description ?: stringResource(R.string.mode_translation_desc),
+                                title = state.translationModeProduct?.name ?: stringResource(com.rafalskrzypczyk.core.R.string.feature_translation_title),
+                                description = state.translationModeProduct?.description ?: stringResource(com.rafalskrzypczyk.core.R.string.mode_translation_desc),
                                 icon = ModeInfoProvider.getIcon(QuizMode.TranslationMode),
                                 iconTint = ModeInfoProvider.getColor(QuizMode.TranslationMode),
                                 price = state.translationModeProduct?.price,
@@ -141,8 +141,8 @@ fun StoreScreen(
 
                             StoreModeCard(
                                 modifier = Modifier.padding(horizontal = Dimens.DEFAULT_PADDING),
-                                title = state.swipeModeProduct?.name ?: stringResource(R.string.feature_swipe_title),
-                                description = state.swipeModeProduct?.description ?: stringResource(R.string.mode_swipe_desc),
+                                title = state.swipeModeProduct?.name ?: stringResource(com.rafalskrzypczyk.core.R.string.feature_swipe_title),
+                                description = state.swipeModeProduct?.description ?: stringResource(com.rafalskrzypczyk.core.R.string.mode_swipe_desc),
                                 icon = ModeInfoProvider.getIcon(QuizMode.SwipeMode),
                                 iconTint = ModeInfoProvider.getColor(QuizMode.SwipeMode),
                                 price = state.swipeModeProduct?.price,
