@@ -102,7 +102,9 @@ fun SwipeModeScreen(
         quizFinished = state.isQuizFinished,
         waitingForAd = state.showAd,
         quizFinishedState = state.quizFinishedState,
-        showTopBar = !isLandscape,
+        // Panel triala dostaje cały ekran - licznik punktów, zgłaszanie błędu i numer
+        // pytania nie mają na nim sensu, a "Pytanie N" przeczy komunikatowi o końcu triala.
+        showTopBar = !isLandscape && !state.showTrialFinishedPanel,
         quizFinishedExtras = {
              SwipeModeFinishedExtras(
                  modifier = Modifier.padding(top = Dimens.DEFAULT_PADDING),
@@ -140,16 +142,17 @@ fun SwipeModeScreen(
                     label = "trialFinishedTransition"
                 ) { isTrialFinished ->
                     if (isTrialFinished) {
-                        Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            SwipeModeTrialFinishedPanel(
-                                onBuyClick = { onEvent(SwipeModeUIEvents.BuyMode) },
-                                onExitClick = { onEvent(SwipeModeUIEvents.ExitTrial(onNavigateBack)) },
-                                totalQuestions = state.totalSwipeModeQuestions,                                price = state.swipeModePrice,
-                                loading = state.isPurchasing,
-                                isPending = state.isPending,
-                                error = state.purchaseError
-                            )
-                        }
+                        // Bez paddingValues - panel jest pełnoekranowy i sam obsługuje insety
+                        // (pasek statusu w nagłówku, pasek nawigacji w tacy CTA).
+                        SwipeModeTrialFinishedPanel(
+                            onBuyClick = { onEvent(SwipeModeUIEvents.BuyMode) },
+                            onExitClick = { onEvent(SwipeModeUIEvents.ExitTrial(onNavigateBack)) },
+                            totalQuestions = state.totalSwipeModeQuestions,
+                            price = state.swipeModePrice,
+                            loading = state.isPurchasing,
+                            isPending = state.isPending,
+                            error = state.purchaseError
+                        )
                     } else {
                         AnimatedContent(
                             targetState = state.responseState,

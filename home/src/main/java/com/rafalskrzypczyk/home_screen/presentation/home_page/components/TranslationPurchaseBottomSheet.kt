@@ -1,18 +1,14 @@
 package com.rafalskrzypczyk.home_screen.presentation.home_page.components
 
 import android.app.Activity
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AutoFixHigh
-import androidx.compose.material.icons.filled.HistoryEdu
-import androidx.compose.material.icons.filled.Translate
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.rafalskrzypczyk.core.composables.BasePurchaseBottomSheet
-import com.rafalskrzypczyk.core.composables.PurchaseFeature
 import com.rafalskrzypczyk.core.composables.PurchaseModeDetails
+import com.rafalskrzypczyk.core.composables.modeDescription
+import com.rafalskrzypczyk.core.composables.modeFeatures
 import com.rafalskrzypczyk.core.utils.ModeInfoProvider
 import com.rafalskrzypczyk.core.utils.QuizMode
-import com.rafalskrzypczyk.home.R
 
 @Composable
 fun TranslationPurchaseBottomSheet(
@@ -41,28 +37,12 @@ fun TranslationPurchaseBottomSheet(
         shouldDismiss = shouldDismiss,
         details = PurchaseModeDetails(
             title = stringResource(com.rafalskrzypczyk.core.R.string.title_translation_mode),
-            description = stringResource(R.string.mode_translation_desc),
+            description = modeDescription(QuizMode.TranslationMode),
             questionCount = questionCount,
             price = price,
             icon = ModeInfoProvider.getIcon(QuizMode.TranslationMode),
             themeColor = ModeInfoProvider.getColor(QuizMode.TranslationMode),
-            features = listOf(
-                PurchaseFeature(
-                    title = stringResource(R.string.feature_translation_title),
-                    description = stringResource(R.string.feature_translation_desc),
-                    icon = Icons.Default.Translate
-                ),
-                PurchaseFeature(
-                    title = stringResource(R.string.feature_vocabulary_title),
-                    description = stringResource(R.string.feature_vocabulary_desc),
-                    icon = Icons.Default.HistoryEdu
-                ),
-                PurchaseFeature(
-                    title = stringResource(R.string.feature_auto_fix_title),
-                    description = stringResource(R.string.feature_auto_fix_desc),
-                    icon = Icons.Default.AutoFixHigh
-                )
-            )
+            features = modeFeatures(QuizMode.TranslationMode)
         )
     )
 }
