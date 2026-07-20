@@ -55,17 +55,20 @@ class MockBillingRepository @Inject constructor() : BillingRepository {
 
     override suspend fun queryProducts(productIds: List<String>) {
         val mockProducts = productIds.map { id ->
-            val (name, price) = when (id) {
-                BillingIds.ID_FULL_PACKAGE -> "Full Package" to "29.99 zł"
-                BillingIds.ID_TRANSLATION_MODE -> "Translation Mode" to "9.99 zł"
-                BillingIds.ID_SWIPE_MODE -> "Swipe Mode" to "14.99 zł"
-                else -> "Product $id" to "9.99 zł"
+            val (name, amountMicros) = when (id) {
+                BillingIds.ID_FULL_PACKAGE -> "Full Package" to 49_990_000L
+                BillingIds.ID_TRANSLATION_MODE -> "Translation Mode" to 19_990_000L
+                BillingIds.ID_SWIPE_MODE -> "Swipe Mode" to 19_990_000L
+                BillingIds.ID_AD_FREE -> "Ad Free" to 4_990_000L
+                else -> "Product $id" to 9_990_000L
             }
             AppProduct(
                 id = id,
                 name = name,
                 description = "Mock description for $name",
-                price = price
+                price = "${"%.2f".format(amountMicros / 1_000_000.0)} zł",
+                priceAmountMicros = amountMicros,
+                priceCurrencyCode = "PLN"
             )
         }
         _availableProducts.update { current ->

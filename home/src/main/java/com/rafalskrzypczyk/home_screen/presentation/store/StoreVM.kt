@@ -8,11 +8,16 @@ import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.billing.domain.PurchaseResult
 import com.rafalskrzypczyk.billing.domain.getCategoryBillingId
+import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.feedback.FeedbackEvent
 import com.rafalskrzypczyk.core.feedback.FeedbackManager
+import com.rafalskrzypczyk.main_mode.domain.quiz_categories.GetAllCategoriesUC
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.text.NumberFormat
+import java.util.Currency
+import java.util.Locale
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -26,7 +31,8 @@ import javax.inject.Inject
 class StoreVM @Inject constructor(
     private val premiumStatusProvider: PremiumStatusProvider,
     private val billingRepository: BillingRepository,
-    private val feedbackManager: FeedbackManager
+    private val feedbackManager: FeedbackManager,
+    private val getAllCategories: GetAllCategoriesUC
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(StoreState())
@@ -62,7 +68,8 @@ class StoreVM @Inject constructor(
                         translationModeProduct = translationMode,
                         swipeModeProduct = swipeMode,
                         adFreeProduct = adFree,
-                        categoryProduct = category
+                        categoryProduct = category,
+                        savingsText = calculateSavings(products)
                     )
                     
                     if (products.isNotEmpty() || nextState.responseState is ResponseState.Loading) {
@@ -126,7 +133,14 @@ class StoreVM @Inject constructor(
                     _state.update { it.copy(pendingPurchaseModeId = null) }
                 }
 
-                _state.update { 
+                val unlockedItemsCount = listOf(
+                    translationUnlocked,
+                    swipeUnlocked,
+                    categoryUnlocked,
+                    adFreeUnlocked
+                ).count { it }
+
+                _state.update {
                     it.copy(
                         isPremium = hasFull,
                         isTranslationModeUnlocked = translationUnlocked,
@@ -138,15 +152,58 @@ class StoreVM @Inject constructor(
                         isSwipeModePending = isSwipePending,
                         isCategoryPending = isCategoryPending,
                         isAdFreePending = isAdFreePending,
+                        unlockedItemsCount = unlockedItemsCount,
                         isPurchasing = false,
                         purchaseError = null
-                    ) 
+                    )
+                }
+            }
+        }
+
+        viewModelScope.launch {
+            getAllCategories().collectLatest { response ->
+                if (response is Response.Success) {
+                    val count = response.data.find { it.id == specificCategoryId }?.questionsCount ?: 0
+                    if (count > 0) {
+                        _state.update { it.copy(categoryQuestionCount = count) }
+                    }
                 }
             }
         }
 
         billingRepository.startBillingConnection()
         billingRepository.refreshPurchases()
+    }
+
+    /**
+     * Oszczędność = suma cen pojedynczych pozycji − cena pakietu Premium.
+     * Zwraca sformatowaną kwotę (np. "4,97 zł") gdy jest dodatnia, w przeciwnym razie null.
+     */
+    private fun calculateSavings(products: List<AppProduct>): String? {
+        val fullPackage = products.find { it.id == BillingIds.ID_FULL_PACKAGE } ?: return null
+        val individualIds = listOf(
+            BillingIds.ID_TRANSLATION_MODE,
+            BillingIds.ID_SWIPE_MODE,
+            BillingIds.ID_AD_FREE,
+            getCategoryBillingId(specificCategoryId)
+        )
+        val individuals = individualIds.mapNotNull { id -> products.find { it.id == id } }
+        if (individuals.size < individualIds.size) return null
+        if (fullPackage.priceAmountMicros <= 0L || individuals.any { it.priceAmountMicros <= 0L }) return null
+
+        val savingsMicros = individuals.sumOf { it.priceAmountMicros } - fullPackage.priceAmountMicros
+        if (savingsMicros <= 0L) return null
+
+        val currencyCode = fullPackage.priceCurrencyCode.ifEmpty { individuals.first().priceCurrencyCode }
+        return try {
+            // Aplikacja jest wyłącznie w języku polskim (localeFilters = "pl"), więc formatujemy
+            // oszczędność po polsku (np. "4,97 zł") spójnie z cenami z Google Play.
+            NumberFormat.getCurrencyInstance(Locale("pl", "PL")).apply {
+                if (currencyCode.isNotEmpty()) currency = Currency.getInstance(currencyCode)
+            }.format(savingsMicros / 1_000_000.0)
+        } catch (e: Exception) {
+            null
+        }
     }
 
     fun onEvent(event: StoreUIEvents) {

@@ -30,6 +30,16 @@ data class StoreState(
     val swipeModeProduct: AppProduct? = null,
     val categoryProduct: AppProduct? = null,
     val adFreeProduct: AppProduct? = null,
-    
+
+    // Postęp odblokowań (indywidualne pozycje, bez samego pakietu Premium)
+    val unlockedItemsCount: Int = 0,
+    val totalItemsCount: Int = 4,
+
+    // Oszczędność na pakiecie Premium (sformatowana kwota, np. "4,97 zł"); null = brak/ukryj
+    val savingsText: String? = null,
+
+    // Liczba pytań w pakiecie dodatkowej kategorii
+    val categoryQuestionCount: Int = 0,
+
     val pendingPurchaseModeId: String? = null
 )
