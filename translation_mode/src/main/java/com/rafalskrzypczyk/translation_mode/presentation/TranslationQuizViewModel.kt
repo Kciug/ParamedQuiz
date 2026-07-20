@@ -84,6 +84,12 @@ class TranslationQuizViewModel @Inject constructor(
             setupTrial()
         }
 
+        // Wynik użytkownika nie zależy od stanu triala, więc kolektor zostaje poza loadData() -
+        // inaczej przeładowanie po zakupie uruchamiałoby drugi, równoległy kolektor.
+        useCases.getUserScore().onEach { userScore ->
+            _state.update { it.copy(userScore = userScore.score) }
+        }.launchIn(viewModelScope)
+
         loadData()
     }
 
@@ -133,10 +139,16 @@ class TranslationQuizViewModel @Inject constructor(
                 responseState = ResponseState.Loading
             )
         }
-        loadData()
+        loadData(preserveProgress = true)
     }
 
-    private fun loadData() {
+    /**
+     * @param preserveProgress true przy przeładowaniu po wykupieniu trybu w trakcie triala.
+     * Wtedy nie wolno ruszać pozycji w quizie ani odpowiedzi już udzielonych - nowe pytania
+     * dochodzą do istniejącej kolejki przez [mergeQuestions]. Przy pierwszym wczytaniu
+     * budujemy listę od zera.
+     */
+    private fun loadData(preserveProgress: Boolean = false) {
         loadDataJob?.cancel()
         val questionsFlow = if (isTrialActive) {
             useCases.getTranslationTrialQuestions()
@@ -148,21 +160,26 @@ class TranslationQuizViewModel @Inject constructor(
                 is Response.Loading -> _state.update { it.copy(responseState = ResponseState.Loading) }
                 is Response.Error -> _state.update { it.copy(responseState = ResponseState.Error(response.error)) }
                 is Response.Success -> {
-                    val questions = response.data.shuffled().map { it.toUIM() }
-                    _state.update {
-                        it.copy(
-                            responseState = ResponseState.Success,
-                            questions = questions,
-                            currentQuestionIndex = 0
-                        )
+                    val incoming = response.data.map { it.toUIM() }
+                    _state.update { state ->
+                        if (preserveProgress) {
+                            val merged = mergeQuestions(current = state.questions, incoming = incoming)
+                            state.copy(
+                                responseState = ResponseState.Success,
+                                questions = merged,
+                                currentQuestionIndex = resumeIndex(state.currentQuestionIndex, merged)
+                            )
+                        } else {
+                            state.copy(
+                                responseState = ResponseState.Success,
+                                questions = incoming.shuffled(),
+                                currentQuestionIndex = 0
+                            )
+                        }
                     }
                     attachQuestionsListener()
                 }
             }
-        }.launchIn(viewModelScope)
-
-        useCases.getUserScore().onEach { userScore ->
-            _state.update { it.copy(userScore = userScore.score) }
         }.launchIn(viewModelScope)
     }
 
@@ -174,28 +191,53 @@ class TranslationQuizViewModel @Inject constructor(
             useCases.getUpdatedTranslationQuestions()
         }
         questionsListenerJob = updatesFlow.onEach { newQuestionsDomain ->
-            val currentQuestions = _state.value.questions
-            val newQuestionsUIM = newQuestionsDomain.map { it.toUIM() }
-            
-            val updatedList = currentQuestions.map { currentQ ->
-                val updatedQ = newQuestionsUIM.find { it.id == currentQ.id }
-                updatedQ?.copy(
-                    userAnswer = currentQ.userAnswer,
-                    isAnswered = currentQ.isAnswered,
-                    isCorrect = currentQ.isCorrect
-                )
-                    ?: currentQ
-            }.toMutableList()
-
-            val existingIds = currentQuestions.map { it.id }.toSet()
-            val completelyNewQuestions = newQuestionsUIM.filter { it.id !in existingIds }
-            
-            if (completelyNewQuestions.isNotEmpty()) {
-                updatedList.addAll(completelyNewQuestions)
-            }
-
-            _state.update { it.copy(questions = updatedList) }
+            val merged = mergeQuestions(
+                current = _state.value.questions,
+                incoming = newQuestionsDomain.map { it.toUIM() }
+            )
+            _state.update { it.copy(questions = merged) }
         }.launchIn(viewModelScope)
+    }
+
+    /**
+     * Pozycja, od której wznawiamy quiz po odblokowaniu pełnego trybu.
+     *
+     * Panel trialówki pokazuje się, gdy [nextQuestion] nie miało już dokąd przejść - indeks
+     * stoi wtedy na ostatnim odpowiedzianym pytaniu. Po zakupie trzeba dokończyć to przejście,
+     * inaczej użytkownik wróciłby do pytania, na które właśnie odpowiedział.
+     *
+     * Gdy uprawnienie przychodzi w trakcie quizu (np. zakup pakietu na innym urządzeniu),
+     * bieżące pytanie nie jest jeszcze odpowiedziane i zostajemy na miejscu.
+     */
+    private fun resumeIndex(current: Int, questions: List<TranslationQuestionUIM>): Int {
+        val isCurrentAnswered = questions.getOrNull(current)?.isAnswered == true
+        return if (isCurrentAnswered && current < questions.lastIndex) current + 1 else current
+    }
+
+    /**
+     * Scala nową listę pytań z obecną, zachowując pozycję i odpowiedzi użytkownika.
+     * Pytania dopasowywane są po [TranslationQuestionUIM.id] - treść bierzemy z nowej listy,
+     * stan odpowiedzi ze starej. Pytania o nieznanych id trafiają na koniec kolejki.
+     *
+     * Używane w dwóch miejscach: przy zdalnej aktualizacji treści i przy przeładowaniu
+     * po wykupieniu trybu w trakcie triala.
+     */
+    private fun mergeQuestions(
+        current: List<TranslationQuestionUIM>,
+        incoming: List<TranslationQuestionUIM>
+    ): List<TranslationQuestionUIM> {
+        val refreshed = current.map { currentQ ->
+            incoming.find { it.id == currentQ.id }?.copy(
+                userAnswer = currentQ.userAnswer,
+                isAnswered = currentQ.isAnswered,
+                isCorrect = currentQ.isCorrect
+            ) ?: currentQ
+        }
+
+        val existingIds = current.mapTo(mutableSetOf()) { it.id }
+        // Tasujemy doklejany blok - z Firestore przychodzi w stałej kolejności,
+        // a tryb normalnie prezentuje pytania losowo.
+        return refreshed + incoming.filter { it.id !in existingIds }.shuffled()
     }
 
     fun onEvent(event: TranslationQuizEvents) {
