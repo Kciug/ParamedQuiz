@@ -36,7 +36,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.rafalskrzypczyk.billing.domain.BillingIds
-import com.rafalskrzypczyk.billing.domain.getCategoryBillingId
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.InfoDialog
@@ -175,30 +174,33 @@ fun StoreScreen(
                                 }
                             )
 
-                            StoreSectionHeader(
-                                modifier = Modifier.padding(horizontal = Dimens.DEFAULT_PADDING),
-                                title = stringResource(R.string.store_section_packs),
-                                subtitle = stringResource(R.string.store_section_packs_desc),
-                                count = 1,
-                                icon = Icons.AutoMirrored.Filled.LibraryBooks
-                            )
+                            if (state.categoryPacks.isNotEmpty()) {
+                                StoreSectionHeader(
+                                    modifier = Modifier.padding(horizontal = Dimens.DEFAULT_PADDING),
+                                    title = stringResource(R.string.store_section_packs),
+                                    subtitle = stringResource(R.string.store_section_packs_desc),
+                                    count = state.categoryPacks.size,
+                                    icon = Icons.AutoMirrored.Filled.LibraryBooks
+                                )
 
-                            val categoryIdStr = getCategoryBillingId(98226763913716L)
-                            StoreModeCard(
-                                modifier = Modifier.padding(horizontal = Dimens.DEFAULT_PADDING),
-                                title = state.categoryProduct?.name ?: stringResource(R.string.store_category_title),
-                                description = state.categoryProduct?.description ?: stringResource(R.string.store_category_desc),
-                                icon = Icons.AutoMirrored.Filled.List,
-                                iconTint = MQYellow,
-                                price = state.categoryProduct?.price,
-                                isUnlocked = state.isCategoryUnlocked,
-                                isPending = state.isCategoryPending,
-                                isPurchasing = state.isPurchasing && state.pendingPurchaseModeId == categoryIdStr,
-                                questionCount = state.categoryQuestionCount,
-                                onBuyClick = {
-                                    activity?.let { onEvent(StoreUIEvents.BuyProduct(it, categoryIdStr)) }
+                                state.categoryPacks.forEach { pack ->
+                                    StoreModeCard(
+                                        modifier = Modifier.padding(horizontal = Dimens.DEFAULT_PADDING),
+                                        title = pack.title,
+                                        description = pack.description,
+                                        icon = Icons.AutoMirrored.Filled.List,
+                                        iconTint = MQYellow,
+                                        price = pack.price,
+                                        isUnlocked = pack.isUnlocked,
+                                        isPending = pack.isPending,
+                                        isPurchasing = state.isPurchasing && state.pendingPurchaseModeId == pack.sku,
+                                        questionCount = pack.questionCount,
+                                        onBuyClick = {
+                                            activity?.let { onEvent(StoreUIEvents.BuyProduct(it, pack.sku)) }
+                                        }
+                                    )
                                 }
-                            )
+                            }
 
                             StoreSectionHeader(
                                 modifier = Modifier.padding(horizontal = Dimens.DEFAULT_PADDING),

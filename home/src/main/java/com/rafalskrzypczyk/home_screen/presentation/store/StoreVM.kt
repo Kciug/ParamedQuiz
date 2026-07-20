@@ -13,6 +13,7 @@ import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.feedback.FeedbackEvent
 import com.rafalskrzypczyk.core.feedback.FeedbackManager
+import com.rafalskrzypczyk.main_mode.domain.models.Category
 import com.rafalskrzypczyk.main_mode.domain.quiz_categories.GetAllCategoriesUC
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.NumberFormat
@@ -23,6 +24,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -41,43 +43,25 @@ class StoreVM @Inject constructor(
     private val _effect = MutableSharedFlow<StoreSideEffect>()
     val effect = _effect.asSharedFlow()
 
+    // Surowe źródła danych — łączone w recomputeDerived()
     private var availableProductsCache: List<AppProduct> = emptyList()
-    private val specificCategoryId = 98226763913716L
-    
-    private val storeProductIds = listOf(
+    private var paidCategories: List<Category> = emptyList()
+    private var ownedIds: Set<String> = emptySet()
+    private var pendingIds: Set<String> = emptySet()
+
+    // Stałe produkty sklepu (pakiet + tryby + brak reklam). Kategorie doklejane dynamicznie.
+    private val fixedProductIds = listOf(
         BillingIds.ID_FULL_PACKAGE,
         BillingIds.ID_TRANSLATION_MODE,
         BillingIds.ID_SWIPE_MODE,
-        BillingIds.ID_AD_FREE,
-        getCategoryBillingId(specificCategoryId)
+        BillingIds.ID_AD_FREE
     )
 
     init {
         viewModelScope.launch {
             billingRepository.availableProducts.collectLatest { products ->
                 availableProductsCache = products
-                val fullPackage = products.find { it.id == BillingIds.ID_FULL_PACKAGE }
-                val translationMode = products.find { it.id == BillingIds.ID_TRANSLATION_MODE }
-                val swipeMode = products.find { it.id == BillingIds.ID_SWIPE_MODE }
-                val adFree = products.find { it.id == BillingIds.ID_AD_FREE }
-                val category = products.find { it.id == getCategoryBillingId(specificCategoryId) }
-                
-                _state.update { currentState ->
-                    val nextState = currentState.copy(
-                        fullPackageProduct = fullPackage,
-                        translationModeProduct = translationMode,
-                        swipeModeProduct = swipeMode,
-                        adFreeProduct = adFree,
-                        categoryProduct = category,
-                        savingsText = calculateSavings(products)
-                    )
-                    
-                    if (products.isNotEmpty() || nextState.responseState is ResponseState.Loading) {
-                        nextState.copy(responseState = ResponseState.Success)
-                    } else {
-                        nextState
-                    }
-                }
+                recomputeDerived()
             }
         }
 
@@ -104,69 +88,33 @@ class StoreVM @Inject constructor(
         }
 
         viewModelScope.launch {
-            kotlinx.coroutines.flow.combine(
+            combine(
                 premiumStatusProvider.ownedProductIds,
                 premiumStatusProvider.pendingProductIds
-            ) { ownedIds, pendingIds ->
-                ownedIds to pendingIds
-            }.collectLatest { (ownedIds, pendingIds) ->
-                val hasFull = ownedIds.contains(BillingIds.ID_FULL_PACKAGE)
-                val translationUnlocked = hasFull || ownedIds.contains(BillingIds.ID_TRANSLATION_MODE)
-                val swipeUnlocked = hasFull || ownedIds.contains(BillingIds.ID_SWIPE_MODE)
-                val categoryUnlocked = hasFull || ownedIds.contains(getCategoryBillingId(specificCategoryId))
-                val adFreeUnlocked = hasFull || ownedIds.contains(BillingIds.ID_AD_FREE)
-
-                val isPremiumPending = pendingIds.contains(BillingIds.ID_FULL_PACKAGE)
-                val isTranslationPending = pendingIds.contains(BillingIds.ID_TRANSLATION_MODE)
-                val isSwipePending = pendingIds.contains(BillingIds.ID_SWIPE_MODE)
-                val isCategoryPending = pendingIds.contains(getCategoryBillingId(specificCategoryId))
-                val isAdFreePending = pendingIds.contains(BillingIds.ID_AD_FREE)
+            ) { owned, pending ->
+                owned to pending
+            }.collectLatest { (owned, pending) ->
+                ownedIds = owned
+                pendingIds = pending
 
                 val pendingId = _state.value.pendingPurchaseModeId
-                if (pendingId != null && ownedIds.contains(pendingId)) {
-                    feedbackManager.perform(FeedbackEvent.PURCHASE)
-                    _effect.emit(StoreSideEffect.PurchaseSuccess(pendingId))
-                    _state.update { it.copy(pendingPurchaseModeId = null) }
-                } else if (pendingId == BillingIds.ID_FULL_PACKAGE && hasFull) {
+                if (pendingId != null && owned.contains(pendingId)) {
                     feedbackManager.perform(FeedbackEvent.PURCHASE)
                     _effect.emit(StoreSideEffect.PurchaseSuccess(pendingId))
                     _state.update { it.copy(pendingPurchaseModeId = null) }
                 }
 
-                val unlockedItemsCount = listOf(
-                    translationUnlocked,
-                    swipeUnlocked,
-                    categoryUnlocked,
-                    adFreeUnlocked
-                ).count { it }
-
-                _state.update {
-                    it.copy(
-                        isPremium = hasFull,
-                        isTranslationModeUnlocked = translationUnlocked,
-                        isSwipeModeUnlocked = swipeUnlocked,
-                        isCategoryUnlocked = categoryUnlocked,
-                        isAdFreeUnlocked = adFreeUnlocked,
-                        isPremiumPending = isPremiumPending,
-                        isTranslationModePending = isTranslationPending,
-                        isSwipeModePending = isSwipePending,
-                        isCategoryPending = isCategoryPending,
-                        isAdFreePending = isAdFreePending,
-                        unlockedItemsCount = unlockedItemsCount,
-                        isPurchasing = false,
-                        purchaseError = null
-                    )
-                }
+                _state.update { it.copy(isPurchasing = false, purchaseError = null) }
+                recomputeDerived()
             }
         }
 
         viewModelScope.launch {
             getAllCategories().collectLatest { response ->
                 if (response is Response.Success) {
-                    val count = response.data.find { it.id == specificCategoryId }?.questionsCount ?: 0
-                    if (count > 0) {
-                        _state.update { it.copy(categoryQuestionCount = count) }
-                    }
+                    paidCategories = response.data.filter { !it.unlocked }
+                    queryAllProducts()
+                    recomputeDerived()
                 }
             }
         }
@@ -176,27 +124,86 @@ class StoreVM @Inject constructor(
     }
 
     /**
-     * Oszczędność = suma cen pojedynczych pozycji − cena pakietu Premium.
-     * Zwraca sformatowaną kwotę (np. "4,97 zł") gdy jest dodatnia, w przeciwnym razie null.
+     * Jedno źródło prawdy dla pól pochodnych stanu. Łączy: dostępne produkty (ceny),
+     * płatne kategorie (Firestore) oraz statusy własności/przetwarzania.
      */
-    private fun calculateSavings(products: List<AppProduct>): String? {
+    private fun recomputeDerived() {
+        val products = availableProductsCache
+        val hasFull = ownedIds.contains(BillingIds.ID_FULL_PACKAGE)
+
+        val translationUnlocked = hasFull || ownedIds.contains(BillingIds.ID_TRANSLATION_MODE)
+        val swipeUnlocked = hasFull || ownedIds.contains(BillingIds.ID_SWIPE_MODE)
+        val adFreeUnlocked = hasFull || ownedIds.contains(BillingIds.ID_AD_FREE)
+
+        val packs = paidCategories.map { category ->
+            val sku = getCategoryBillingId(category.id)
+            StoreCategoryPack(
+                id = category.id,
+                sku = sku,
+                title = category.title,
+                description = category.subtitle,
+                questionCount = category.questionsCount,
+                price = products.find { it.id == sku }?.price,
+                isUnlocked = hasFull || ownedIds.contains(sku),
+                isPending = pendingIds.contains(sku)
+            )
+        }
+
+        val unlockedItemsCount =
+            listOf(translationUnlocked, swipeUnlocked, adFreeUnlocked).count { it } +
+                    packs.count { it.isUnlocked }
+        // Pozycje indywidualne: tłumaczenia + swipe + brak reklam + N kategorii (bez pakietu Premium)
+        val totalItemsCount = 3 + packs.size
+
+        _state.update {
+            it.copy(
+                fullPackageProduct = products.find { p -> p.id == BillingIds.ID_FULL_PACKAGE },
+                translationModeProduct = products.find { p -> p.id == BillingIds.ID_TRANSLATION_MODE },
+                swipeModeProduct = products.find { p -> p.id == BillingIds.ID_SWIPE_MODE },
+                adFreeProduct = products.find { p -> p.id == BillingIds.ID_AD_FREE },
+                categoryPacks = packs,
+                isPremium = hasFull,
+                isTranslationModeUnlocked = translationUnlocked,
+                isSwipeModeUnlocked = swipeUnlocked,
+                isAdFreeUnlocked = adFreeUnlocked,
+                isPremiumPending = pendingIds.contains(BillingIds.ID_FULL_PACKAGE),
+                isTranslationModePending = pendingIds.contains(BillingIds.ID_TRANSLATION_MODE),
+                isSwipeModePending = pendingIds.contains(BillingIds.ID_SWIPE_MODE),
+                isAdFreePending = pendingIds.contains(BillingIds.ID_AD_FREE),
+                unlockedItemsCount = unlockedItemsCount,
+                totalItemsCount = totalItemsCount,
+                savingsText = calculateSavings(products, packs.map { p -> p.sku }),
+                responseState = if (products.isNotEmpty()) ResponseState.Success else it.responseState
+            )
+        }
+    }
+
+    /**
+     * Oszczędność = suma cen dostępnych pozycji indywidualnych (tryby + brak reklam + płatne
+     * kategorie) − cena pakietu Premium. Odporna na brakujący/źle skonfigurowany SKU (sumuje
+     * tylko obecne z ceną). Zwraca sformatowaną kwotę (np. "4,97 zł") gdy dodatnia, inaczej null.
+     */
+    private fun calculateSavings(products: List<AppProduct>, categorySkus: List<String>): String? {
         val fullPackage = products.find { it.id == BillingIds.ID_FULL_PACKAGE } ?: return null
+        if (fullPackage.priceAmountMicros <= 0L) return null
+
         val individualIds = listOf(
             BillingIds.ID_TRANSLATION_MODE,
             BillingIds.ID_SWIPE_MODE,
-            BillingIds.ID_AD_FREE,
-            getCategoryBillingId(specificCategoryId)
-        )
-        val individuals = individualIds.mapNotNull { id -> products.find { it.id == id } }
-        if (individuals.size < individualIds.size) return null
-        if (fullPackage.priceAmountMicros <= 0L || individuals.any { it.priceAmountMicros <= 0L }) return null
+            BillingIds.ID_AD_FREE
+        ) + categorySkus
 
-        val savingsMicros = individuals.sumOf { it.priceAmountMicros } - fullPackage.priceAmountMicros
+        val sumMicros = individualIds
+            .mapNotNull { id -> products.find { it.id == id } }
+            .filter { it.priceAmountMicros > 0L }
+            .sumOf { it.priceAmountMicros }
+
+        val savingsMicros = sumMicros - fullPackage.priceAmountMicros
         if (savingsMicros <= 0L) return null
 
-        val currencyCode = fullPackage.priceCurrencyCode.ifEmpty { individuals.first().priceCurrencyCode }
+        val currencyCode = fullPackage.priceCurrencyCode
         return try {
-            // Aplikacja jest wyłącznie w języku polskim (localeFilters = "pl"), więc formatujemy
+            // Aplikacja jest wyłącznie po polsku (localeFilters = "pl"), więc formatujemy
             // oszczędność po polsku (np. "4,97 zł") spójnie z cenami z Google Play.
             NumberFormat.getCurrencyInstance(Locale("pl", "PL")).apply {
                 if (currencyCode.isNotEmpty()) currency = Currency.getInstance(currencyCode)
@@ -216,9 +223,15 @@ class StoreVM @Inject constructor(
 
     private fun loadPrices() {
         _state.update { it.copy(responseState = ResponseState.Loading) }
+        queryAllProducts()
+    }
+
+    /** Jedno łączone zapytanie: stałe produkty + wszystkie SKU płatnych kategorii. */
+    private fun queryAllProducts() {
+        val ids = fixedProductIds + paidCategories.map { getCategoryBillingId(it.id) }
         viewModelScope.launch {
             try {
-                billingRepository.queryProducts(storeProductIds)
+                billingRepository.queryProducts(ids)
                 _state.update { currentState ->
                     if (currentState.responseState is ResponseState.Loading) {
                         currentState.copy(responseState = ResponseState.Success)
