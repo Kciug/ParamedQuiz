@@ -10,12 +10,12 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.padding
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.BaseQuizScreen
@@ -100,7 +100,7 @@ fun TranslationQuizScreen(
                  modifier = Modifier.padding(top = Dimens.DEFAULT_PADDING)
              )
         },
-    ) { innerPadding, titlePanel ->
+    ) { innerPadding, _ ->
 
         AnimatedContent(
             targetState = state.showTrialFinishedPanel,
@@ -137,7 +137,6 @@ fun TranslationQuizScreen(
                             } else {
                                 TranslationQuizContent(
                                     paddingValues = innerPadding,
-                                    titlePanel = titlePanel,
                                     state = state,
                                     onEvent = onEvent
                                 )

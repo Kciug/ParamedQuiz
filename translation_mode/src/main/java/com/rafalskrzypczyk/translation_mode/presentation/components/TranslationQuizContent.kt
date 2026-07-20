@@ -44,10 +44,14 @@ import com.rafalskrzypczyk.translation_mode.R
 import com.rafalskrzypczyk.translation_mode.presentation.TranslationQuizEvents
 import com.rafalskrzypczyk.translation_mode.presentation.TranslationQuizState
 
+/**
+ * Panel tytułowy z numerem pytania celowo NIE jest tu konsumowany - dzięki temu
+ * [BaseQuizScreen] renderuje go w górnym pasku, poza [AnimatedContent], i numer
+ * nie jedzie razem z animacją treści. Tak samo robi tryb główny w portrecie.
+ */
 @Composable
 fun TranslationQuizContent(
     paddingValues: PaddingValues,
-    titlePanel: @Composable () -> Unit,
     state: TranslationQuizState,
     onEvent: (TranslationQuizEvents) -> Unit
 ) {
@@ -82,10 +86,6 @@ fun TranslationQuizContent(
                     .padding(horizontal = Dimens.DEFAULT_PADDING),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    titlePanel()
-                }
-
                 Spacer(modifier = Modifier.height(Dimens.LARGE_PADDING))
 
                 Card(
