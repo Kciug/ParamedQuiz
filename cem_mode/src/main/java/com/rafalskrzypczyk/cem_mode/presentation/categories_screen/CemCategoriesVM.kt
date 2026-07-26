@@ -91,7 +91,7 @@ class CemCategoriesVM @Inject constructor(
                             _state.update { it.copy(categories = result, isPending = isPending) }
                         }
                     }
-                    is Response.Error -> _state.update { it.copy(categories = Response.Error(response.error)) }
+                    is Response.Error -> _state.update { it.copy(categories = response) }
                     Response.Loading -> _state.update { it.copy(categories = Response.Loading) }
                 }
             }

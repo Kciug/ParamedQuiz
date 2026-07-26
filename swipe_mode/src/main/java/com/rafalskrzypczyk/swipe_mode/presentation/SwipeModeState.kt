@@ -3,6 +3,7 @@ package com.rafalskrzypczyk.swipe_mode.presentation
 import androidx.compose.runtime.Immutable
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedState
+import com.rafalskrzypczyk.core.error.AppError
 
 @Immutable
 data class SwipeModeState(
@@ -41,5 +42,5 @@ data class SwipeModeState(
     val totalSwipeModeQuestions: Int = 0,
     val isPurchasing: Boolean = false,
     val isPending: Boolean = false,
-    val purchaseError: String? = null
+    val purchaseError: AppError? = null
 )

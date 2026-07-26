@@ -2,6 +2,7 @@ package com.rafalskrzypczyk.revisions.presentation.config
 
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
+import com.rafalskrzypczyk.core.error.AppError
 import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.main_mode.domain.models.Answer
 import com.rafalskrzypczyk.main_mode.domain.models.Question
@@ -131,7 +132,7 @@ class RevisionsConfigVMTest {
     @Test
     fun `should clear loading state and surface error when questions request fails`() = runTest {
         every { getRevisionsQuestions(any(), any(), any(), null) } returns
-                flowOf(Response.Error("Brak polaczenia"))
+                flowOf(Response.Error(AppError.NoNetwork))
 
         val viewModel = createViewModel()
         advanceUntilIdle()

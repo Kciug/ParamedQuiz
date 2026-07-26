@@ -130,7 +130,7 @@ fun TranslationQuizScreen(
                     when (responseState) {
                         ResponseState.Idle -> {}
                         ResponseState.Loading -> Loading()
-                        is ResponseState.Error -> ErrorDialog(responseState.message) { onNavigateBack() }
+                        is ResponseState.Error -> ErrorDialog(responseState.error) { onNavigateBack() }
                         ResponseState.Success -> {
                             if (isLandscape) {
                                 RotateDevicePrompt(modifier = Modifier.padding(innerPadding))

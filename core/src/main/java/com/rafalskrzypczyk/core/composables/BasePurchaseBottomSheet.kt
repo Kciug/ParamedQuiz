@@ -2,6 +2,7 @@ package com.rafalskrzypczyk.core.composables
 
 import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
+import com.rafalskrzypczyk.core.error.AppError
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -84,7 +85,7 @@ fun BasePurchaseBottomSheet(
     isUnlocked: Boolean = false,
     isPending: Boolean = false,
     isPurchasing: Boolean = false,
-    purchaseError: String? = null,
+    purchaseError: AppError? = null,
     shouldDismiss: Boolean = false
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -146,7 +147,7 @@ private fun PurchaseBottomSheetContent(
     isUnlocked: Boolean,
     isPending: Boolean,
     isPurchasing: Boolean,
-    purchaseError: String?
+    purchaseError: AppError?
 ) {
     // Zamrożone z wejścia — po zakupie gra SuccessSection zamiast od razu badge'a „Posiadane".
     val isAlreadyUnlockedOnEntry = remember { isUnlocked }

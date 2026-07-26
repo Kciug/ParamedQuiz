@@ -2,6 +2,7 @@ package com.rafalskrzypczyk.home_screen.presentation.user_page
 
 import androidx.compose.runtime.Immutable
 import com.rafalskrzypczyk.core.api_response.ResponseState
+import com.rafalskrzypczyk.core.error.AppError
 import com.rafalskrzypczyk.home_screen.presentation.user_page.statistics.BestWorstQuestionsUIM
 import com.rafalskrzypczyk.score.domain.StreakState
 
@@ -9,7 +10,7 @@ import com.rafalskrzypczyk.score.domain.StreakState
 data class UserPageState (
     val isUserLoggedIn: Boolean = false,
     val isPremium: Boolean = false,
-    val error: String? = null,
+    val error: AppError? = null,
     val userName: String = "",
     val userEmail: String = "",
     val userScore: Int = 0,

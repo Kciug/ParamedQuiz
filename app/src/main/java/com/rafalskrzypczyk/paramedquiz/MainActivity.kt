@@ -24,6 +24,7 @@ import com.rafalskrzypczyk.core.ads.AdManager
 import com.rafalskrzypczyk.core.feedback.FeedbackManager
 import com.rafalskrzypczyk.core.feedback.LocalFeedbackManager
 import com.rafalskrzypczyk.core.composables.ErrorDialog
+import com.rafalskrzypczyk.core.error.AppError
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.notifications.NotificationDestination
@@ -78,25 +79,18 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val state = viewModel.state.collectAsState().value
-                    var showErrorDialog by remember { mutableStateOf(false) }
-                    var errorMessage by remember { mutableStateOf("") }
+                    var error by remember { mutableStateOf<AppError?>(null) }
 
                     LaunchedEffect(Unit) {
-                        scoreManager.errorFlow.collect { msg ->
-                            errorMessage = msg
-                            showErrorDialog = true
-                        }
+                        scoreManager.errorFlow.collect { error = it }
                     }
 
                     if (!state.isLoading && state.startDestination != null) {
                         Navigation(state.startDestination)
                     }
 
-                    if (showErrorDialog) {
-                        ErrorDialog(errorMessage) {
-                            showErrorDialog = false
-                            errorMessage = ""
-                        }
+                    error?.let { currentError ->
+                        ErrorDialog(currentError) { error = null }
                     }
                 }
                 }

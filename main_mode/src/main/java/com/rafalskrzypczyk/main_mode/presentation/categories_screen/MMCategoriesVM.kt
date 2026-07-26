@@ -12,10 +12,11 @@ import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.feedback.FeedbackEvent
+import com.rafalskrzypczyk.core.error.AppError
+import com.rafalskrzypczyk.core.error.ErrorLogger
+import com.rafalskrzypczyk.core.error.report
 import com.rafalskrzypczyk.core.feedback.FeedbackManager
 import com.rafalskrzypczyk.core.quiz.models.CategoryUIM
-import com.rafalskrzypczyk.core.utils.ResourceProvider
-import com.rafalskrzypczyk.main_mode.R
 import com.rafalskrzypczyk.main_mode.domain.quiz_categories.MMCategoriesUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -28,13 +29,15 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+private const val ORIGIN_BUY_CATEGORY = "MMCategoriesVM.buyCategory"
+
 @HiltViewModel
 class MMCategoriesVM @Inject constructor(
     private val useCases: MMCategoriesUseCases,
     private val billingRepository: BillingRepository,
     private val premiumStatusProvider: PremiumStatusProvider,
     private val feedbackManager: FeedbackManager,
-    private val resourceProvider: ResourceProvider
+    private val errorLogger: ErrorLogger
 ): ViewModel() {
     private val _state = MutableStateFlow(MMCategoriesState())
     val state = _state.asStateFlow()
@@ -65,7 +68,7 @@ class MMCategoriesVM @Inject constructor(
                     }
 
                     is PurchaseResult.Error -> {
-                        _state.update { it.copy(isPurchasing = false, purchaseError = result.message, pendingPurchaseCategoryId = null) }
+                        _state.update { it.copy(isPurchasing = false, purchaseError = result.error, pendingPurchaseCategoryId = null) }
                     }
                 }
             }
@@ -221,7 +224,7 @@ class MMCategoriesVM @Inject constructor(
             _state.update { it.copy(isPurchasing = true, purchaseError = null, pendingPurchaseCategoryId = category.id) }
             billingRepository.launchBillingFlow(activity, productDetails)
         } else {
-            _state.update { it.copy(purchaseError = resourceProvider.getString(R.string.purchase_error_no_details)) }
+            _state.update { it.copy(purchaseError = errorLogger.report(ORIGIN_BUY_CATEGORY, AppError.Billing.ProductDetailsMissing)) }
         }
     }
     

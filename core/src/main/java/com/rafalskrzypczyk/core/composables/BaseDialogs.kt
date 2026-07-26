@@ -40,6 +40,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.rafalskrzypczyk.core.R
+import com.rafalskrzypczyk.core.error.AppError
+import com.rafalskrzypczyk.core.error.asMessage
 import com.rafalskrzypczyk.core.feedback.FeedbackEvent
 import com.rafalskrzypczyk.core.feedback.LocalFeedbackManager
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
@@ -153,7 +155,7 @@ fun BaseCustomDialog(
 
 @Composable
 fun ErrorDialog(
-    errorMessage: String,
+    error: AppError,
     onInteraction: () -> Unit
 ) {
     val feedbackManager = LocalFeedbackManager.current
@@ -168,7 +170,7 @@ fun ErrorDialog(
         headerContentColor = MaterialTheme.colorScheme.onError,
         content = {
             TextPrimary(
-                text = errorMessage,
+                text = error.asMessage(),
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
             )
@@ -267,7 +269,7 @@ fun InfoDialog(
 private fun ErrorDialogPreview() {
     ParamedQuizTheme {
         Surface {
-            ErrorDialog("Przykładowy błąd") { }
+            ErrorDialog(AppError.Data.Unavailable) { }
         }
     }
 }

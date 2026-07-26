@@ -19,7 +19,7 @@ class CemRepositoryImpl @Inject constructor(
         firestoreApi.getCemCategories().map { response ->
             when (response) {
                 is Response.Success -> Response.Success(response.data.map { it.toDomain() })
-                is Response.Error -> Response.Error(response.error)
+                is Response.Error -> response
                 Response.Loading -> Response.Loading
             }
         }
@@ -33,7 +33,7 @@ class CemRepositoryImpl @Inject constructor(
         firestoreApi.getCemQuestions().map { response ->
             when (response) {
                 is Response.Success -> Response.Success(response.data.map { it.toDomain() })
-                is Response.Error -> Response.Error(response.error)
+                is Response.Error -> response
                 Response.Loading -> Response.Loading
             }
         }

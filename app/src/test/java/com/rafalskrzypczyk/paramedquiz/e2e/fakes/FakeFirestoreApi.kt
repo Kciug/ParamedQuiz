@@ -1,6 +1,7 @@
 package com.rafalskrzypczyk.paramedquiz.e2e.fakes
 
 import com.rafalskrzypczyk.core.api_response.Response
+import com.rafalskrzypczyk.core.error.AppError
 import com.rafalskrzypczyk.firestore.domain.FirestoreApi
 import com.rafalskrzypczyk.firestore.domain.models.CategoryDTO
 import com.rafalskrzypczyk.firestore.domain.models.CemCategoryDTO
@@ -42,7 +43,12 @@ class FakeFirestoreApi : FirestoreApi {
     var cemQuestions: List<QuestionDTO> = emptyList()
     var newsBanners: List<NewsBannerDTO> = emptyList()
 
-    override fun getUserData(userId: String): Flow<Response<UserDataDTO>> = emptyFlow()
+    var userData: UserDataDTO = UserDataDTO(id = "test-user", name = "Tester")
+    var userScore: ScoreDTO = ScoreDTO()
+    var userDataError: AppError? = null
+
+    override fun getUserData(userId: String): Flow<Response<UserDataDTO>> =
+        userDataError?.let { flowOf(Response.Error(it)) } ?: flowOf(Response.Success(userData))
     override fun updateUserData(userData: UserDataDTO): Flow<Response<Unit>> = flowOf(Response.Success(Unit))
     override fun deleteUserData(userId: String): Flow<Response<Unit>> = flowOf(Response.Success(Unit))
 
@@ -63,7 +69,7 @@ class FakeFirestoreApi : FirestoreApi {
     override fun getCemQuestions(): Flow<Response<List<QuestionDTO>>> = flowOf(Response.Success(cemQuestions))
     override fun getUpdatedCemQuestions(): Flow<List<QuestionDTO>> = flowOf(cemQuestions)
 
-    override fun getUserScore(userId: String): Flow<Response<ScoreDTO>> = emptyFlow()
+    override fun getUserScore(userId: String): Flow<Response<ScoreDTO>> = flowOf(Response.Success(userScore))
     override fun updateUserScore(userId: String, score: ScoreDTO): Flow<Response<Unit>> = flowOf(Response.Success(Unit))
     override fun deleteUserScore(userId: String): Flow<Response<Unit>> = flowOf(Response.Success(Unit))
 

@@ -25,7 +25,7 @@ class ScoreRepositoryImpl @Inject constructor(
             firestore.getUserScore(user.id).map {
                 when (it) {
                     is Response.Success -> Response.Success(it.data.toDomain())
-                    is Response.Error -> Response.Error(it.error)
+                    is Response.Error -> it
                     Response.Loading -> Response.Loading
                 }
             }

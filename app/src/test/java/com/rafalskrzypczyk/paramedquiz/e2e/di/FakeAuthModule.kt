@@ -1,6 +1,7 @@
 package com.rafalskrzypczyk.paramedquiz.e2e.di
 
 import com.rafalskrzypczyk.auth.di.AuthModule
+import com.rafalskrzypczyk.auth.di.AuthModuleBinds
 import com.rafalskrzypczyk.auth.domain.AuthRepository
 import com.rafalskrzypczyk.paramedquiz.e2e.fakes.FakeAuthRepository
 import dagger.Module
@@ -11,12 +12,11 @@ import javax.inject.Singleton
 
 /**
  * Podmienia moduły auth (Firebase Auth) na [FakeAuthRepository].
- * `FirestoreModuleBinds` to nazwa klasy bindującej `AuthRepository` w pakiecie auth.di.
  */
 @Module
 @TestInstallIn(
     components = [SingletonComponent::class],
-    replaces = [AuthModule::class, com.rafalskrzypczyk.auth.di.FirestoreModuleBinds::class]
+    replaces = [AuthModule::class, AuthModuleBinds::class]
 )
 object FakeAuthModule {
 

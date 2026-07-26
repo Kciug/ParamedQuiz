@@ -46,6 +46,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import com.rafalskrzypczyk.core.error.asMessage
 import com.rafalskrzypczyk.core.testing.TestTags
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -445,7 +446,7 @@ fun HomeScreen(
     if(state.feedbackErrorMessage != null) {
         InfoDialog(
             title = stringResource(id = com.rafalskrzypczyk.core.R.string.desc_error),
-            message = state.feedbackErrorMessage,
+            message = state.feedbackErrorMessage.asMessage(),
             icon = Icons.Default.PriorityHigh,
             headerColor = MQRed,
             onDismiss = {

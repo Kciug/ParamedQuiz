@@ -20,7 +20,7 @@ class GetTranslationModeResultUC @Inject constructor(
         return translationRepository.getTranslationQuestions().map { response ->
             when(response) {
                 is Response.Loading -> Response.Loading
-                is Response.Error -> Response.Error(response.error)
+                is Response.Error -> response
                 is Response.Success -> {
                     val questions = response.data
                     val filteredScore = score.seenQuestions.filter { it.questionId in questions.map { it.id } }

@@ -19,3 +19,8 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Diagnostyka bledow: nazwy wariantow AppError trafiaja do logow przez toString().
+# Bez tego wpisy w logcat z buildow release i staging sa nieczytelne.
+-keepnames class com.rafalskrzypczyk.core.error.AppError
+-keepnames class com.rafalskrzypczyk.core.error.AppError$**

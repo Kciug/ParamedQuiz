@@ -76,7 +76,7 @@ class HomeScreenVM @Inject constructor(
                     }
 
                     is PurchaseResult.Error -> {
-                        _state.update { it.copy(isPurchasing = false, purchaseError = result.message) }
+                        _state.update { it.copy(isPurchasing = false, purchaseError = result.error) }
                         pendingPurchaseModeId = null
                     }
                 }

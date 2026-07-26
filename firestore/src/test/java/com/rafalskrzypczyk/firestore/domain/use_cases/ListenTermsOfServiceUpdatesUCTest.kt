@@ -2,6 +2,7 @@ package com.rafalskrzypczyk.firestore.domain.use_cases
 
 import app.cash.turbine.test
 import com.rafalskrzypczyk.core.api_response.Response
+import com.rafalskrzypczyk.core.error.AppError
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
 import com.rafalskrzypczyk.firestore.domain.FirestoreApi
 import com.rafalskrzypczyk.firestore.domain.models.TermsOfServiceDTO
@@ -47,11 +48,11 @@ class ListenTermsOfServiceUpdatesUCTest {
     @Test
     fun `when error fetching and no previous version then emit Error`() = runTest {
         every { sharedPrefs.getAcceptedTermsVersion() } returns -1
-        every { firestoreApi.getTermsOfServiceUpdates() } returns flowOf(Response.Loading, Response.Error("Network error"))
+        every { firestoreApi.getTermsOfServiceUpdates() } returns flowOf(Response.Loading, Response.Error(AppError.Data.Unavailable))
 
         useCase.invoke().test {
             assertEquals(TermsOfServiceStatus.Loading, awaitItem())
-            assertEquals(TermsOfServiceStatus.Error("Network error"), awaitItem())
+            assertEquals(TermsOfServiceStatus.Error(AppError.Data.Unavailable), awaitItem())
             awaitComplete()
         }
     }
