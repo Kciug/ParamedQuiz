@@ -10,6 +10,7 @@ import com.rafalskrzypczyk.core.domain.config.GameplayConfigProvider
 class FakeGameplayConfigProvider(
     var config: GameplayConfig = GameplayConfig.DEFAULT
 ) : GameplayConfigProvider {
+    override fun adsEnabled(): Boolean = config.adsEnabled
     override fun adFrequency(): Int = config.adFrequency
     override fun exitAdThreshold(): Int = config.exitAdThreshold
     override fun correctPoints(): Int = config.correctPoints

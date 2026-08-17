@@ -347,8 +347,10 @@ fun NavGraphBuilder.devDestination(
 ) {
     composable<Dev> {
         val viewModel = hiltViewModel<DevVM>()
+        val state = viewModel.state.collectAsStateWithLifecycle()
 
         DevOptionsScreen(
+            state = state.value,
             onEvent = viewModel::onEvent,
             onNavigateBack = navigateBack
         )

@@ -220,6 +220,9 @@ fun StoreScreen(
                                 isUnlocked = state.isAdFreeUnlocked,
                                 isPending = state.isAdFreePending,
                                 isPurchasing = state.isPurchasing && state.pendingPurchaseModeId == BillingIds.ID_AD_FREE,
+                                note = if (state.areAdsGloballyDisabled && !state.isAdFreeUnlocked) {
+                                    stringResource(R.string.ad_free_promo_note)
+                                } else null,
                                 onBuyClick = {
                                     activity?.let { onEvent(StoreUIEvents.BuyProduct(it, BillingIds.ID_AD_FREE)) }
                                 }

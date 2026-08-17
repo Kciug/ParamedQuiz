@@ -15,7 +15,10 @@ import com.rafalskrzypczyk.notifications.config.NotificationConfigRepository
 import com.rafalskrzypczyk.score.domain.QuestionAnnotation
 import com.rafalskrzypczyk.score.domain.ScoreManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
@@ -32,6 +35,17 @@ class DevVM @Inject constructor(
     private val gameplayConfig: GameplayConfigProvider,
     private val adManager: AdManager
 ): ViewModel() {
+
+    private val _state = MutableStateFlow(DevOptionsState())
+    val state = _state.asStateFlow()
+
+    init {
+        readAdsFlag()
+    }
+
+    private fun readAdsFlag() {
+        _state.update { it.copy(areAdsEnabled = gameplayConfig.adsEnabled()) }
+    }
 
     fun onEvent(event: DevOptionsUIEvents) {
         when(event) {
@@ -55,6 +69,7 @@ class DevVM @Inject constructor(
             }
             DevOptionsUIEvents.ForceGameplayConfigRefresh -> viewModelScope.launch {
                 gameplayConfig.refresh(force = true)
+                readAdsFlag()
             }
             DevOptionsUIEvents.SimulateNewsNotification -> notifier.show(
                 notificationId = NotificationIds.NEWS,
