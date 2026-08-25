@@ -43,6 +43,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.rafalskrzypczyk.core.composables.ButtonPrimary
 import com.rafalskrzypczyk.core.composables.Dimens
+import com.rafalskrzypczyk.core.composables.MultipleChoiceBadge
 import com.rafalskrzypczyk.core.composables.PreviewContainer
 import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.feedback.FeedbackEvent
@@ -62,6 +63,11 @@ fun QuizGameContent(
 ) {
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+    // Oznaczenie siedzi przy odpowiedziach, a nie w naglowku - dotyczy sposobu odpowiadania.
+    // Zostaje widoczne rowniez po zatwierdzeniu: to cecha pytania, a nie stanu odpowiedzi,
+    // a chowanie go powodowaloby skok ukladu w momencie wjazdu QuizSubmittedSection.
+    val isMultipleChoice = question.correctAnswerIds.size > 1
 
     Box(
         modifier = modifier.fillMaxSize(),
@@ -97,6 +103,11 @@ fun QuizGameContent(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.SpaceBetween
                 ) {
+                    if (isMultipleChoice) {
+                        MultipleChoiceBadge(
+                            modifier = Modifier.padding(bottom = Dimens.ELEMENTS_SPACING_SMALL)
+                        )
+                    }
                     AnswersListSection(
                         modifier = Modifier
                             .weight(1f)
@@ -157,6 +168,11 @@ fun QuizGameContent(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
+                                if (isMultipleChoice) {
+                                    MultipleChoiceBadge(
+                                        modifier = Modifier.padding(bottom = Dimens.ELEMENTS_SPACING_SMALL)
+                                    )
+                                }
                                 AnswersListSection(
                                     answers = question.answers,
                                     onAnswerSelected = onAnswerSelected,
@@ -303,7 +319,8 @@ private fun QuizGameContentPreview() {
                 answers = answers,
                 isAnswerSubmitted = submitted,
                 isAnswerCorrect = false,
-                correctAnswers = listOf("A", "B")
+                correctAnswers = listOf("A", "B"),
+                correctAnswerIds = listOf(1L, 2L)
             ),
             onAnswerSelected = { id ->
                 answers = answers.map { answer ->

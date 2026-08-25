@@ -40,6 +40,7 @@ Sesja quizu to przejście przez **listę pytań** (zwykle potasowaną). W trakci
 ## 3. Ocena odpowiedzi (quiz wielokrotnego wyboru)
 
 - Pytanie może mieć **jedną lub wiele** poprawnych odpowiedzi.
+- Pytanie z **więcej niż jedną** poprawną odpowiedzią jest oznaczone indykatorem **nad listą odpowiedzi** — jednakowo w trybie głównym, [CEM](09-tryb-cem.md) i [powtórkach](10-tryb-powtorek.md), bo wszystkie trzy korzystają z tej samej zawartości quizu.
 - Odpowiedź jest **poprawna** tylko wtedy, gdy zaznaczony zbiór odpowiedzi **dokładnie** odpowiada zbiorowi poprawnych (wszystkie poprawne zaznaczone i **żadna** błędna).
 - **Precyzja** (metryka jakościowa per pytanie): stosunek trafnie zaznaczonych do sumy (zaznaczone ∪ poprawne), wyrażony w procentach. Dla sesji liczona jest **średnia precyzja**.
   - Przykład: 2 poprawne, użytkownik zaznaczył 1 poprawną i 1 błędną → precyzja = 1/3 ≈ 33%, mimo że całe pytanie liczone jest jako błędne.

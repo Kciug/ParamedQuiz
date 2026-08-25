@@ -19,18 +19,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DoneAll
 import androidx.compose.material.icons.rounded.OutlinedFlag
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -55,7 +51,6 @@ fun BaseQuizScreen(
     title: String,
     quizTopPanel: @Composable () -> Unit = {},
     currentQuestionIndex: Int = 0,
-    isMultipleChoice: Boolean = false,
     quizFinished: Boolean,
     waitingForAd: Boolean = false,
     quizFinishedState: QuizFinishedState,
@@ -78,7 +73,6 @@ fun BaseQuizScreen(
         BaseQuizTitlePanel(
             title = title,
             currentQuestionIndex = currentQuestionIndex,
-            isMultipleChoice = isMultipleChoice,
             customBadgeText = customBadgeText,
             progress = progress,
             range = range
@@ -164,7 +158,6 @@ fun BaseQuizScreen(
 fun BaseQuizTitlePanel(
     title: String,
     currentQuestionIndex: Int,
-    isMultipleChoice: Boolean = false,
     customBadgeText: String? = null,
     progress: Int = 0,
     range: Int = 0
@@ -218,87 +211,27 @@ fun BaseQuizTitlePanel(
                     progressColor = progressColor,
                     modifier = Modifier.weight(1f)
                 )
-                
-                if (isMultipleChoice) {
-                    MultipleChoiceBadge()
-                }
             }
         } else {
             if (customBadgeText != null) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Surface(
-                        shape = RoundedCornerShape(Dimens.RADIUS_SMALL),
-                        color = MaterialTheme.colorScheme.error.copy(alpha = 0.15f)
-                    ) {
-                        TextPrimary(
-                            text = customBadgeText,
-                            color = MaterialTheme.colorScheme.error,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                            fontSize = 12.sp
-                        )
-                    }
-                    if (isMultipleChoice) {
-                        Spacer(modifier = Modifier.weight(1f))
-                        MultipleChoiceBadge()
-                    }
-                }
-            } else if (currentQuestionIndex > 0) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                Surface(
+                    shape = RoundedCornerShape(Dimens.RADIUS_SMALL),
+                    color = MaterialTheme.colorScheme.error.copy(alpha = 0.15f)
                 ) {
                     TextPrimary(
-                        text = stringResource(R.string.base_quiz_question_number, currentQuestionIndex),
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+                        text = customBadgeText,
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                        fontSize = 12.sp
                     )
-                    if (isMultipleChoice) {
-                        Spacer(modifier = Modifier.weight(1f))
-                        MultipleChoiceBadge()
-                    }
                 }
+            } else if (currentQuestionIndex > 0) {
+                TextPrimary(
+                    text = stringResource(R.string.base_quiz_question_number, currentQuestionIndex),
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+                )
             }
-        }
-    }
-}
-
-private object MultipleChoiceBadgeDefaults {
-    val HorizontalPadding = 6.dp
-    val VerticalPadding = 1.dp
-    val Spacing = 4.dp
-    val IconSize = 10.dp
-    val Shape = RoundedCornerShape(Dimens.RADIUS_SMALL)
-    const val BackgroundAlpha = 0.15f
-}
-
-@Composable
-private fun MultipleChoiceBadge() {
-    Surface(
-        color = MaterialTheme.colorScheme.tertiary.copy(alpha = MultipleChoiceBadgeDefaults.BackgroundAlpha),
-        shape = MultipleChoiceBadgeDefaults.Shape
-    ) {
-        Row(
-            modifier = Modifier.padding(
-                horizontal = MultipleChoiceBadgeDefaults.HorizontalPadding,
-                vertical = MultipleChoiceBadgeDefaults.VerticalPadding
-            ),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(MultipleChoiceBadgeDefaults.Spacing)
-        ) {
-            Icon(
-                imageVector = Icons.Default.DoneAll,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.tertiary,
-                modifier = Modifier.size(MultipleChoiceBadgeDefaults.IconSize)
-            )
-            TextCaption(
-                text = stringResource(R.string.badge_multiple_choice),
-                color = MaterialTheme.colorScheme.tertiary,
-                fontWeight = FontWeight.Bold
-            )
         }
     }
 }
@@ -332,7 +265,6 @@ private fun BaseQuizScreenPreview() {
             quizFinished = false,
             quizFinishedState = QuizFinishedState(),
             showBackConfirmation = false,
-            isMultipleChoice = true,
             onBackAction = {},
             onBackDiscarded = {},
             onBackConfirmed = {},
