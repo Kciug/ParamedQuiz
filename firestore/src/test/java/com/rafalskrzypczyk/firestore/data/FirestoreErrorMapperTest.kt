@@ -3,6 +3,8 @@ package com.rafalskrzypczyk.firestore.data
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.rafalskrzypczyk.core.error.AppError
 import com.rafalskrzypczyk.core.error.ErrorLogger
+import com.rafalskrzypczyk.core.network.NetworkMonitor
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.Assert.assertEquals
@@ -15,7 +17,8 @@ private const val ORIGIN = "Test.origin"
 class FirestoreErrorMapperTest {
 
     private val errorLogger: ErrorLogger = mockk(relaxed = true)
-    private val mapper = FirestoreErrorMapper(errorLogger)
+    private val networkMonitor: NetworkMonitor = mockk<NetworkMonitor>().also { every { it.isOnline() } returns true }
+    private val mapper = FirestoreErrorMapper(errorLogger, networkMonitor)
 
     private fun firestoreException(code: FirebaseFirestoreException.Code) =
         FirebaseFirestoreException("boom", code)
@@ -64,6 +67,44 @@ class FirestoreErrorMapperTest {
         val error = mapper.toAppError(ORIGIN, raw)
 
         assertEquals(AppError.Data.Unknown("FS:RuntimeException"), error)
+    }
+
+    @Test
+    fun `reports lack of connectivity instead of a service outage when the device is offline`() {
+        every { networkMonitor.isOnline() } returns false
+
+        assertEquals(
+            AppError.NoNetwork,
+            mapper.toAppError(ORIGIN, firestoreException(FirebaseFirestoreException.Code.UNAVAILABLE))
+        )
+        assertEquals(
+            AppError.NoNetwork,
+            mapper.toAppError(ORIGIN, firestoreException(FirebaseFirestoreException.Code.DEADLINE_EXCEEDED))
+        )
+    }
+
+    @Test
+    fun `keeps the service outage message when the device is online`() {
+        every { networkMonitor.isOnline() } returns true
+
+        assertEquals(
+            AppError.Data.Unavailable,
+            mapper.toAppError(ORIGIN, firestoreException(FirebaseFirestoreException.Code.UNAVAILABLE))
+        )
+        assertEquals(
+            AppError.Data.DeadlineExceeded,
+            mapper.toAppError(ORIGIN, firestoreException(FirebaseFirestoreException.Code.DEADLINE_EXCEEDED))
+        )
+    }
+
+    @Test
+    fun `does not mask a permission failure as a connectivity problem`() {
+        every { networkMonitor.isOnline() } returns false
+
+        assertEquals(
+            AppError.Data.PermissionDenied,
+            mapper.toAppError(ORIGIN, firestoreException(FirebaseFirestoreException.Code.PERMISSION_DENIED))
+        )
     }
 
     @Test

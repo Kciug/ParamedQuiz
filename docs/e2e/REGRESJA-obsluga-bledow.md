@@ -9,12 +9,14 @@
 
 ## Dla kogo jest ta lista
 
-| Blok | Kto wykonuje | Czas |
-|---|---|---|
-| 0–5 | tester, samo urządzenie | ~60 min |
-| 6 | deweloper, wymaga `adb` | ~15 min |
+| Blok | Kto wykonuje | Build | Czas |
+|---|---|---|---|
+| 0–5 | tester, samo urządzenie | **staging** | ~60 min |
+| 6.1–6.5 | deweloper, wymaga `adb` | debug wystarczy | ~10 min |
+| 6.6 | deweloper, wymaga `adb` | **tylko staging** | ~5 min |
+| 7 | tester + deweloper | staging | ~10 min |
 
-**Build do testów: `staging`, nie `debug`.** Tylko staging jest minifikowany przez R8, a to właśnie w takim buildzie pojawiały się dotychczas problemy niewidoczne u dewelopera. Testowanie na debugu ominie połowę ryzyka.
+**Tester dostaje build `staging`, nie `debug`.** Tylko staging jest minifikowany przez R8, a to właśnie w takim buildzie pojawiały się dotychczas problemy niewidoczne u dewelopera. Testowanie na debugu ominie połowę ryzyka.
 
 ---
 
@@ -170,6 +172,10 @@ Cały sens tej zmiany to możliwość zdiagnozowania awarii. Bez tego kroku nie 
 adb logcat -c && adb logcat -s AppError
 ```
 
+**Do punktów 6.1–6.5 wystarczy build `debug`** i jest wygodniejszy: szybciej się buduje, nie wymaga keystore, łatwiej iterować. Sama logika logowania błędów jest identyczna w obu wariantach, więc nic na tym nie tracisz.
+
+**Punkt 6.6 wymaga builda `staging`.** W debugu minifikacja jest wyłączona, więc nazwy są czytelne z definicji i test przeszedłby pusto, niczego nie dowodząc.
+
 | # | Scenariusz | Oczekiwany wpis |
 |---|---|---|
 | 6.1 | Błędne hasło | `AuthRepository.loginWithEmailAndPassword \| Auth.*` |
@@ -178,9 +184,11 @@ adb logcat -c && adb logcat -s AppError
 | 6.4 | Tryb samolotowy + wejście w tryb quizowy | `FirestoreService.* \| NoNetwork` lub `Data.Unavailable` |
 | 6.5 | Dowolny błąd danych podczas logowania | **dokładnie jeden** wpis, nie trzy |
 
-### 6.6 Czytelność po minifikacji — najważniejszy punkt tego bloku
+### 6.6 Czytelność po minifikacji — jedyny punkt wymagający staging
 
-Powtórz 6.1 na buildzie **staging**. W logu ma być czytelna nazwa, np. `Auth.WrongPassword`.
+Zbuduj `./gradlew assembleStaging`, zainstaluj i powtórz scenariusz 6.1. W logu ma być czytelna nazwa, np. `Auth.WrongPassword`.
+
+`adb logcat` działa na buildzie staging mimo `isDebuggable = false` — logcat jest systemowy i nie zależy od tej flagi. Wywołania `Log.e` nie są usuwane przez R8, bo nie mamy reguły `-assumenosideeffects`.
 **Jeśli zobaczysz `a$b` albo podobny skrót — reguła `-keepnames` nie zadziałała** i cały zysk diagnostyczny przepada w buildach, które dostają testerzy.
 
 ---

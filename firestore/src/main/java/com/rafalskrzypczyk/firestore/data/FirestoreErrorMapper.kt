@@ -5,6 +5,7 @@ import com.google.firebase.firestore.FirebaseFirestoreException
 import com.rafalskrzypczyk.core.error.AppError
 import com.rafalskrzypczyk.core.error.ErrorLogger
 import com.rafalskrzypczyk.core.error.report
+import com.rafalskrzypczyk.core.network.NetworkMonitor
 import java.io.IOException
 import javax.inject.Inject
 
@@ -16,7 +17,8 @@ import javax.inject.Inject
  * odporne na obfuskację i nie miesza przestrzeni kodów Firestore z kodami Firebase Auth.
  */
 class FirestoreErrorMapper @Inject constructor(
-    private val errorLogger: ErrorLogger
+    private val errorLogger: ErrorLogger,
+    private val networkMonitor: NetworkMonitor
 ) {
     fun toAppError(origin: String, throwable: Throwable): AppError {
         val error = map(throwable)
@@ -35,13 +37,16 @@ class FirestoreErrorMapper @Inject constructor(
 
     private fun fromCode(code: FirebaseFirestoreException.Code): AppError = when (code) {
         FirebaseFirestoreException.Code.PERMISSION_DENIED -> AppError.Data.PermissionDenied
-        FirebaseFirestoreException.Code.UNAVAILABLE -> AppError.Data.Unavailable
+        FirebaseFirestoreException.Code.UNAVAILABLE -> whenOnline(AppError.Data.Unavailable)
         FirebaseFirestoreException.Code.ABORTED -> AppError.Data.Aborted
         FirebaseFirestoreException.Code.NOT_FOUND -> AppError.Data.NotFound
-        FirebaseFirestoreException.Code.DEADLINE_EXCEEDED -> AppError.Data.DeadlineExceeded
+        FirebaseFirestoreException.Code.DEADLINE_EXCEEDED -> whenOnline(AppError.Data.DeadlineExceeded)
         FirebaseFirestoreException.Code.UNAUTHENTICATED -> AppError.Auth.UserNotLoggedIn
         else -> AppError.Data.Unknown(PREFIX + code.name)
     }
+
+    private fun whenOnline(error: AppError): AppError =
+        if (networkMonitor.isOnline()) error else AppError.NoNetwork
 
     private companion object {
         const val PREFIX = "FS:"

@@ -153,9 +153,20 @@ fun BaseCustomDialog(
     }
 }
 
+/**
+ * Modalny dialog bledu. Podanie [onRetry] dodaje drugi przycisk ponawiajacy operacje.
+ *
+ * Dialog nie reaguje na przycisk wstecz ani tapniecie poza nim, wiec [onInteraction] musi
+ * zawsze byc droga wyjscia z biezacego stanu. Podpiecie tam ponawiania zamyka uzytkownika
+ * w petli, z ktorej nie da sie wyjsc.
+ *
+ * [onInteraction] jest ostatnim parametrem celowo, zeby skladnia trailing lambda wiazala sie
+ * z akcja wyjscia, a nie z ponawianiem.
+ */
 @Composable
 fun ErrorDialog(
     error: AppError,
+    onRetry: (() -> Unit)? = null,
     onInteraction: () -> Unit
 ) {
     val feedbackManager = LocalFeedbackManager.current
@@ -176,8 +187,16 @@ fun ErrorDialog(
             )
         },
         buttons = {
+            if (onRetry != null) {
+                TextButton(onClick = rememberDebouncedClick(onClick = onRetry)) {
+                    TextPrimary(text = stringResource(R.string.btn_retry), color = MaterialTheme.colorScheme.primary)
+                }
+            }
             TextButton(onClick = rememberDebouncedClick(onClick = onInteraction)) {
-                TextPrimary(text = stringResource(R.string.btn_confirm_OK), color = MaterialTheme.colorScheme.primary)
+                TextPrimary(
+                    text = stringResource(if (onRetry != null) R.string.btn_back else R.string.btn_confirm_OK),
+                    color = MaterialTheme.colorScheme.primary
+                )
             }
         }
     )

@@ -21,6 +21,7 @@ import com.rafalskrzypczyk.firestore.domain.models.SwipeQuestionDTO
 import com.rafalskrzypczyk.firestore.domain.models.TermsOfServiceDTO
 import com.rafalskrzypczyk.firestore.domain.models.TranslationQuestionDTO
 import com.rafalskrzypczyk.firestore.domain.models.UserDataDTO
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -47,6 +48,13 @@ private const val ORIGIN_SAVE_FEEDBACK = "FirestoreService.saveFeedback"
 private const val ORIGIN_GET_TERMS_OF_SERVICE = "FirestoreService.getTermsOfService"
 private const val ORIGIN_GET_TERMS_OF_SERVICE_UPDATES = "FirestoreService.getTermsOfServiceUpdates"
 private const val ORIGIN_GET_QUESTIONS_COUNT_UPDATES = "FirestoreService.getQuestionsCountUpdates"
+private const val ORIGIN_GET_UPDATED_CATEGORIES = "FirestoreService.getUpdatedCategories"
+private const val ORIGIN_GET_UPDATED_QUESTIONS = "FirestoreService.getUpdatedQuestions"
+private const val ORIGIN_GET_UPDATED_SWIPE_QUESTIONS = "FirestoreService.getUpdatedSwipeQuestions"
+private const val ORIGIN_GET_UPDATED_TRANSLATION_QUESTIONS = "FirestoreService.getUpdatedTranslationQuestions"
+private const val ORIGIN_GET_UPDATED_CEM_CATEGORIES = "FirestoreService.getUpdatedCemCategories"
+private const val ORIGIN_GET_UPDATED_CEM_QUESTIONS = "FirestoreService.getUpdatedCemQuestions"
+private const val ORIGIN_GET_NEWS_BANNER_UPDATES = "FirestoreService.getNewsBannerUpdates"
 private const val ORIGIN_GET_NEWS_BANNERS = "FirestoreService.getNewsBanners"
 private const val ORIGIN_GET_NOTIFICATION_CONFIG = "FirestoreService.getNotificationConfig"
 private const val ORIGIN_GET_NOTIFICATION_TEMPLATES = "FirestoreService.getNotificationTemplates"
@@ -85,9 +93,11 @@ class FirestoreService @Inject constructor(
 
     override fun getUpdatedCategories(): Flow<List<CategoryDTO>> = attachFirestoreListener(FirestoreCollections.QUIZ_MODE_CATEGORIES)
         .map { it.toObjects(CategoryDTO::class.java) }
+        .logErrors(ORIGIN_GET_UPDATED_CATEGORIES)
 
     override fun getUpdatedQuestions(): Flow<List<QuestionDTO>> = attachFirestoreListener(FirestoreCollections.QUIZ_MODE_QUESTIONS)
         .map { it.toObjects(QuestionDTO::class.java) }
+        .logErrors(ORIGIN_GET_UPDATED_QUESTIONS)
 
     override fun getSwipeQuestions(): Flow<Response<List<SwipeQuestionDTO>>> = flow {
         emit(Response.Loading)
@@ -97,6 +107,7 @@ class FirestoreService @Inject constructor(
 
     override fun getUpdatedSwipeQuestions(): Flow<List<SwipeQuestionDTO>> = attachFirestoreListener(FirestoreCollections.SWIPE_QUESTIONS)
         .map { it.toObjects(SwipeQuestionDTO::class.java) }
+        .logErrors(ORIGIN_GET_UPDATED_SWIPE_QUESTIONS)
 
     override fun getTranslationQuestions(): Flow<Response<List<TranslationQuestionDTO>>> = flow {
         emit(Response.Loading)
@@ -106,6 +117,7 @@ class FirestoreService @Inject constructor(
 
     override fun getUpdatedTranslationQuestions(): Flow<List<TranslationQuestionDTO>> = attachFirestoreListener(FirestoreCollections.TRANSLATION_QUESTIONS)
         .map { it.toObjects(TranslationQuestionDTO::class.java) }
+        .logErrors(ORIGIN_GET_UPDATED_TRANSLATION_QUESTIONS)
 
     override fun getCemCategories(): Flow<Response<List<CemCategoryDTO>>> = flow {
         emit(Response.Loading)
@@ -115,6 +127,7 @@ class FirestoreService @Inject constructor(
 
     override fun getUpdatedCemCategories(): Flow<List<CemCategoryDTO>> = attachFirestoreListener(FirestoreCollections.CEM_CATEGORIES)
         .map { it.toObjects(CemCategoryDTO::class.java) }
+        .logErrors(ORIGIN_GET_UPDATED_CEM_CATEGORIES)
 
     override fun getCemQuestions(): Flow<Response<List<QuestionDTO>>> = flow {
         emit(Response.Loading)
@@ -123,7 +136,8 @@ class FirestoreService @Inject constructor(
     }.mapErrors(ORIGIN_GET_CEM_QUESTIONS)
 
     override fun getUpdatedCemQuestions(): Flow<List<QuestionDTO>> = attachFirestoreListener(FirestoreCollections.CEM_QUESTIONS)
-    .map { it.toObjects(QuestionDTO::class.java) }
+        .map { it.toObjects(QuestionDTO::class.java) }
+        .logErrors(ORIGIN_GET_UPDATED_CEM_QUESTIONS)
 
     override fun getUserScore(userId: String): Flow<Response<ScoreDTO>> = flow {
         emit(Response.Loading)
@@ -199,6 +213,7 @@ class FirestoreService @Inject constructor(
 
     override fun getNewsBannerUpdates(): Flow<List<NewsBannerDTO>> = attachFirestoreListener(FirestoreCollections.NEWS_BANNERS)
         .map { it.toObjects(NewsBannerDTO::class.java).filter { banner -> banner.isActive } }
+        .logErrors(ORIGIN_GET_NEWS_BANNER_UPDATES)
 
     override fun getNotificationConfig(): Flow<Response<NotificationConfigDTO>> = flow {
         emit(Response.Loading)
@@ -222,12 +237,17 @@ class FirestoreService @Inject constructor(
     private fun <T> Flow<Response<T>>.mapErrors(origin: String): Flow<Response<T>> =
         catch { emit(Response.Error(errorMapper.toAppError(origin, it))) }
 
+    private fun <T> Flow<T>.logErrors(origin: String): Flow<T> =
+        catch { errorMapper.toAppError(origin, it) }
+
     private suspend fun getFirestoreDocumentData(collection: String, documentId: String): DocumentSnapshot? {
         return try {
             firestore.collection(collection).document(documentId)
                 .get(Source.CACHE)
                 .await()
                 .takeIf { it.exists() }
+        } catch (e: CancellationException) {
+            throw e
         } catch (_: Exception) {
             null
         } ?: firestore.collection(collection).document(documentId).get(Source.SERVER).await()
@@ -277,6 +297,8 @@ class FirestoreService @Inject constructor(
                 .set(data, SetOptions.merge())
                 .await()
             Response.Success(Unit)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Response.Error(errorMapper.toAppError(origin, e))
         }
@@ -293,6 +315,8 @@ class FirestoreService @Inject constructor(
                 .delete()
                 .await()
             Response.Success(Unit)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Response.Error(errorMapper.toAppError(origin, e))
         }

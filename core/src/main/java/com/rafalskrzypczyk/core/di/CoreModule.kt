@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.rafalskrzypczyk.core.feedback.FeedbackManager
 import com.rafalskrzypczyk.core.feedback.FeedbackManagerImpl
+import com.rafalskrzypczyk.core.network.ConnectivityNetworkMonitor
+import com.rafalskrzypczyk.core.network.NetworkMonitor
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesService
 import com.rafalskrzypczyk.core.user_management.UserManager
@@ -56,4 +58,8 @@ abstract class CoreModuleBinds {
     @Binds
     @Singleton
     abstract fun bindFeedbackManager(feedbackManager: FeedbackManagerImpl): FeedbackManager
+
+    @Binds
+    @Singleton
+    abstract fun bindNetworkMonitor(networkMonitor: ConnectivityNetworkMonitor): NetworkMonitor
 }

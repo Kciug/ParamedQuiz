@@ -55,6 +55,7 @@
 
     <string name="finish_title">Ukończyłeś quiz!</string>
     <string name="btn_back">Wróć</string>
+    <string name="btn_retry">Ponów</string>
     <string name="btn_next">Dalej</string>
     <string name="btn_finish">Zakończ</string>
     <string name="btn_skip">Pomiń</string>

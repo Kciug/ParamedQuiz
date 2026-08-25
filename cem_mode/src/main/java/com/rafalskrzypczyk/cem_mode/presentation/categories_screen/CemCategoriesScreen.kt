@@ -50,7 +50,8 @@ fun CemCategoriesScreen(
             is Response.Loading -> Loading(modifier = Modifier.fillMaxSize())
             is Response.Error -> ErrorDialog(
                 error = response.error,
-                onInteraction = { onEvent(CemCategoriesUIEvents.OnRetry) }
+                onInteraction = onNavigateBack,
+                onRetry = { onEvent(CemCategoriesUIEvents.OnRetry) }
             )
             is Response.Success -> {
                 LazyColumn(

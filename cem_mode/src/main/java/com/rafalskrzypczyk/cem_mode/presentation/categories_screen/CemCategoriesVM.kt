@@ -14,6 +14,7 @@ import com.rafalskrzypczyk.cem_mode.navigation.CemCategoriesRoute
 import com.rafalskrzypczyk.score.domain.use_cases.GetStreakStateUC
 import com.rafalskrzypczyk.score.domain.use_cases.GetUserScoreUC
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -39,6 +40,9 @@ class CemCategoriesVM @Inject constructor(
     private val _state = MutableStateFlow(CemCategoriesState(title = categoryTitle))
     val state = _state.asStateFlow()
 
+    private var categoriesJob: Job? = null
+    private var parentCategoryJob: Job? = null
+
     init {
         loadCategories()
         loadParentCategory()
@@ -59,7 +63,8 @@ class CemCategoriesVM @Inject constructor(
     private fun loadParentCategory() {
         if (parentId == 0L) return
 
-        viewModelScope.launch {
+        parentCategoryJob?.cancel()
+        parentCategoryJob = viewModelScope.launch {
             useCases.getCemCategory(parentId).collectLatest { response ->
                 if (response is Response.Success) {
                     _state.update { it.copy(parentCategory = response.data.toUIM()) }
@@ -69,7 +74,8 @@ class CemCategoriesVM @Inject constructor(
     }
 
     private fun loadCategories() {
-        viewModelScope.launch {
+        categoriesJob?.cancel()
+        categoriesJob = viewModelScope.launch {
             useCases.getCemCategories(parentId).collectLatest { response ->
                 when (response) {
                     is Response.Success -> {
