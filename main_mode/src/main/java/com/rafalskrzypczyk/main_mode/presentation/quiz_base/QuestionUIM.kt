@@ -30,3 +30,19 @@ fun QuestionUIM.submitAnswer(answeredCorrectly: Boolean, precision: Int) : Quest
 )
 
 fun QuestionUIM.updateAnswers(answers: List<AnswerUIM>) : QuestionUIM = copy(answers = answers)
+
+val QuestionUIM.isMultipleChoice: Boolean
+    get() = correctAnswerIds.size > 1
+
+fun QuestionUIM.toggleAnswerSelection(answerId: Long, enforceSingleSelection: Boolean) : QuestionUIM {
+    val clickedAnswer = answers.firstOrNull { it.id == answerId } ?: return this
+    val shouldDeselectOthers = enforceSingleSelection && !isMultipleChoice && !clickedAnswer.isSelected
+    val updatedAnswers = answers.map { answer ->
+        when {
+            answer.id == answerId -> if (answer.isSelected) answer.makeDeselected() else answer.makeSelected()
+            shouldDeselectOthers -> answer.makeDeselected()
+            else -> answer
+        }
+    }
+    return updateAnswers(updatedAnswers)
+}

@@ -62,7 +62,7 @@ Dane „Given" opisują stan, który ustawia się przez seed fake'ów i preferen
 | [06-cwiczenie-dnia.md](06-cwiczenie-dnia.md) | Ćwiczenie dnia | 1 | 1 | 2 | 1 |
 | [07-tryb-swipe.md](07-tryb-swipe.md) | Tryb Swipe | 1 | 3 | 2 | 1 |
 | [08-tryb-tlumaczen.md](08-tryb-tlumaczen.md) | Tryb Tłumaczeń | 1 | 2 | 2 | 0 |
-| [09-tryb-cem.md](09-tryb-cem.md) | Tryb CEM | 1 | 2 | 1 | 0 |
+| [09-tryb-cem.md](09-tryb-cem.md) | Tryb CEM | 1 | 4 | 1 | 0 |
 | [10-tryb-powtorek.md](10-tryb-powtorek.md) | Powtórki | 1 | 3 | 2 | 1 |
 | [12-profil-i-statystyki.md](12-profil-i-statystyki.md) | Profil/statystyki | 0 | 2 | 2 | 0 |
 | [13-ustawienia-konta.md](13-ustawienia-konta.md) | Ustawienia konta | 1 | 3 | 2 | 0 |

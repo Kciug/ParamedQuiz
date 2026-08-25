@@ -66,6 +66,7 @@ Dobór opiera się na **skuteczności** danego pytania u użytkownika (stosunek 
 ### 4.4 Rodzaje pytań w sesji
 - Dla trybów **głównego** i **CEM** — pytania wyboru (jak w [mechanice wspólnej](00-mechanika-quizu.md); poprawność = 100% precyzji).
 - Dla trybu **tłumaczeń** — wpisanie tłumaczenia (ocena jak w [trybie Tłumaczeń](08-tryb-tlumaczen.md)).
+- Sposób zaznaczania dziedziczy regułę trybu źródłowego: w powtórce pytań **CEM** pytanie z jedną poprawną odpowiedzią pozwala trzymać zaznaczoną tylko jedną odpowiedź naraz (patrz [CEM](09-tryb-cem.md)). W powtórce trybu **głównego** zaznaczanie pozostaje bez ograniczeń.
 
 ### 4.5 Postęp i podsumowanie
 - Postęp rozróżnia **pierwsze przejście** i **fazę korekty** powtarzanych pytań.

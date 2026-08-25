@@ -44,6 +44,7 @@ Tryb CEM to quiz pytań w formule zbliżonej do egzaminu **CEM** (Centrum Egzami
 
 ## 4. Reguły biznesowe (specyficzne dla trybu)
 
+- **Jednokrotny wybór:** pytanie z jedną poprawną odpowiedzią pozwala zaznaczyć tylko jedną odpowiedź naraz — wybór kolejnej przenosi zaznaczenie, ponowne kliknięcie zaznaczonej odpowiedzi ją odznacza. Pytania z wieloma poprawnymi odpowiedziami (oznaczone indykatorem nad listą) nadal przyjmują dowolną liczbę zaznaczeń. Reguła obowiązuje również w [powtórkach](10-tryb-powtorek.md) pytań CEM.
 - **Struktura hierarchiczna:** kategorie mają relację nadrzędna–podrzędna (kategoria → podkategorie → pytania).
 - **Dostęp:** kategoria darmowa albo pełny pakiet; brak zakupów pojedynczych kategorii.
 - **Stan „oczekujący" (pending)** pełnego pakietu jest rozróżniany — dostęp aktywuje się po zatwierdzeniu płatności.

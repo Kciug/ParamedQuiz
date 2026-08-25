@@ -14,7 +14,7 @@ import com.rafalskrzypczyk.firestore.domain.models.TranslationQuestionDTO
 import com.rafalskrzypczyk.firestore.domain.use_cases.ReportIssueUC
 import com.rafalskrzypczyk.main_mode.presentation.quiz_base.submitAnswer
 import com.rafalskrzypczyk.main_mode.presentation.quiz_base.toUIM
-import com.rafalskrzypczyk.main_mode.presentation.quiz_base.updateAnswers
+import com.rafalskrzypczyk.main_mode.presentation.quiz_base.toggleAnswerSelection
 import com.rafalskrzypczyk.revisions.domain.engine.RevisionsSessionEngine
 import com.rafalskrzypczyk.revisions.domain.models.RevisionCriterion
 import com.rafalskrzypczyk.revisions.domain.models.RevisionQuestion
@@ -188,13 +188,9 @@ class RevisionsQuizVM @Inject constructor(
 
     private fun onAnswerSelected(answerId: Long) {
         val currentQ = _state.value.currentQuestionUIM ?: return
-        val updatedAnswers = currentQ.answers.map { answer ->
-            if (answer.id == answerId) answer.copy(isSelected = !answer.isSelected)
-            else answer
-        }
         _state.update {
             it.copy(
-                mcQuestions = listOf(currentQ.updateAnswers(updatedAnswers))
+                mcQuestions = listOf(currentQ.toggleAnswerSelection(answerId, mode == QuizMode.CemMode))
             )
         }
     }

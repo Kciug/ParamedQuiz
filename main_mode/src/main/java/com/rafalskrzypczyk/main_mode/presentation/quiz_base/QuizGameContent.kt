@@ -67,7 +67,7 @@ fun QuizGameContent(
     // Oznaczenie siedzi przy odpowiedziach, a nie w naglowku - dotyczy sposobu odpowiadania.
     // Zostaje widoczne rowniez po zatwierdzeniu: to cecha pytania, a nie stanu odpowiedzi,
     // a chowanie go powodowaloby skok ukladu w momencie wjazdu QuizSubmittedSection.
-    val isMultipleChoice = question.correctAnswerIds.size > 1
+    val isMultipleChoice = question.isMultipleChoice
 
     Box(
         modifier = modifier.fillMaxSize(),

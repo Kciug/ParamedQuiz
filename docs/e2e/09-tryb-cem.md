@@ -29,3 +29,17 @@
 - **Given:** backend zwraca błąd dla kategorii CEM.
 - **When:** użytkownik wchodzi w tryb CEM.
 - **Then:** ekran pokazuje stan błędu z możliwością ponowienia.
+
+### E2E-CEM-05 — jednokrotny wybór blokuje drugie zaznaczenie
+- **Priorytet:** P1
+- **Status:** ☐ manualny
+- **Given:** pytanie CEM z jedną poprawną odpowiedzią (brak indykatora wielokrotnego wyboru nad listą).
+- **When:** użytkownik zaznacza odpowiedź A, następnie odpowiedź B.
+- **Then:** zaznaczona pozostaje wyłącznie odpowiedź B; ponowne kliknięcie B odznacza ją.
+
+### E2E-CEM-06 — pytanie wielokrotnego wyboru bez blokady
+- **Priorytet:** P1
+- **Status:** ☐ manualny
+- **Given:** pytanie CEM z indykatorem wielokrotnego wyboru.
+- **When:** użytkownik zaznacza odpowiedź A, następnie odpowiedź B.
+- **Then:** obie odpowiedzi pozostają zaznaczone.
