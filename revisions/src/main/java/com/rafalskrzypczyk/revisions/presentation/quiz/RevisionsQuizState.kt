@@ -27,6 +27,11 @@ data class RevisionsQuizState(
     val currentQuestionNumber: Int = 1,
     val totalQuestions: Int = 0,
     val correctAnswersCount: Int = 0,
+    /**
+     * Ile pytan zaliczono za pierwszym podejsciem, bez korekt. Wypelniane dopiero w finishQuiz()
+     * razem z [attemptedQuestionIds] - w trakcie sesji obie wartosci nie sa miarodajne.
+     */
+    val firstAttemptCorrectCount: Int = 0,
     val userScore: Int = 0,
     val isCorrection: Boolean = false,
     val showReportDialog: Boolean = false,
@@ -36,6 +41,17 @@ data class RevisionsQuizState(
     val errorCounts: Map<Long, Int> = emptyMap(),
     val showAd: Boolean = false
 ) {
+    /**
+     * Skutecznosc pierwszego podejscia w procentach. Liczona po pytaniach faktycznie podjetych,
+     * wiec wczesniejsze wyjscie z sesji nie zaniza wyniku o pytania, ktorych uzytkownik nie widzial.
+     */
+    val firstAttemptAccuracy: Int
+        get() = if (attemptedQuestionIds.isEmpty()) {
+            0
+        } else {
+            ((firstAttemptCorrectCount.toFloat() / attemptedQuestionIds.size) * 100).toInt()
+        }
+
     val currentQuestionUIM: QuestionUIM?
         get() = mcQuestions.getOrNull(currentMcQuestionIndex)
 

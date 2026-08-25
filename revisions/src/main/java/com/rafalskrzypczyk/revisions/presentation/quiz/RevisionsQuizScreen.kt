@@ -122,9 +122,8 @@ fun RevisionsQuizScreen(
         quizFinishedExtras = {
             RevisionsQuizFinishedExtras(
                 modeName = modeTitle,
-                questions = state.originalQuestions,
-                attemptedQuestionIds = state.attemptedQuestionIds,
-                correctCount = state.quizFinishedState.correctAnswers,
+                accuracy = state.firstAttemptAccuracy,
+                hasReviewableQuestions = state.attemptedQuestionIds.isNotEmpty(),
                 onReviewClick = { onEvent(RevisionsQuizUIEvents.ToggleReviewDialog(true)) },
                 modifier = Modifier.padding(top = Dimens.DEFAULT_PADDING)
             )

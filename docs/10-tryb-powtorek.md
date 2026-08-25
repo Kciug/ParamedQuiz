@@ -70,6 +70,8 @@ Dobór opiera się na **skuteczności** danego pytania u użytkownika (stosunek 
 ### 4.5 Postęp i podsumowanie
 - Postęp rozróżnia **pierwsze przejście** i **fazę korekty** powtarzanych pytań.
 - Ekran wyniku pokazuje m.in. liczbę pytań, poprawne odpowiedzi, pytania **niezaliczone** (3 błędy) oraz umożliwia **przegląd** odpowiedzi.
+- **Skuteczność pierwszego podejścia** liczy wyłącznie pytania zaliczone **za pierwszym razem** — korekty jej nie podnoszą, analogicznie do reguły punktowej z 4.3. Pytanie poprawione po błędzie nadal liczy się jako **poprawna odpowiedź** (jest zaliczone), ale nie wchodzi do tej skuteczności.
+- Liczniki podsumowania obejmują pytania **podjęte**, a nie całą skonfigurowaną pulę — po wyjściu w trakcie sesji podsumowanie nie liczy pytań, których użytkownik nie widział.
 - Reklamy — zgodnie z [mechaniką wspólną](00-mechanika-quizu.md).
 
 ---
