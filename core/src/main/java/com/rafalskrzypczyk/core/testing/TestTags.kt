@@ -25,4 +25,11 @@ object TestTags {
 
     // Dialog zakupu (wspólny — kategorie, tryby)
     const val PURCHASE_DIALOG_BUY_BUTTON = "purchase_dialog_buy_button"
+
+    // Powtórki — konfiguracja sesji
+    const val REVISIONS_EMPTY_STATE = "revisions_empty_state"
+    const val REVISIONS_START_BUTTON = "revisions_start_button"
+
+    /** Tag chipa kryterium; [criterion] to nazwa wartości `RevisionCriterion`. */
+    fun revisionsCriterionChip(criterion: String) = "revisions_criterion_chip_$criterion"
 }

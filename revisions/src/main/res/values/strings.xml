@@ -11,10 +11,12 @@
     <string name="revisions_select_criterion">Kryterium doboru pytań</string>
     <string name="revisions_select_limit">Liczba pytań</string>
     <string name="revisions_start_btn">Rozpocznij powtórkę</string>
+    <string name="revisions_mode_unavailable_title">Tryb niedostępny</string>
     <string name="revisions_mode_not_enough_answers">Musisz najpierw udzielić co najmniej 10 odpowiedzi w tym trybie.</string>
     <string name="revisions_category_not_enough_answers">Udzielono %1$d/10 odpowiedzi. Rozwiąż więcej pytań.</string>
-    <string name="revisions_empty_state_title">Brak materiału do powtórek</string>
-    <string name="revisions_empty_state_msg">Nie masz jeszcze materiału do powtórek dla wybranej konfiguracji. Rozwiąż najpierw standardowe quizy, aby zebrać odpowiedzi.</string>
+    <string name="revisions_empty_state_title">Brak pytań dla tych ustawień</string>
+    <string name="revisions_empty_state_msg">Zmień kryterium albo kategorię.</string>
+    <string name="revisions_empty_state_msg_no_category">Zmień kryterium.</string>
     <string name="revisions_criterion_worst">Najgorsze (rosnąco od najniższej poprawności)</string>
     <string name="revisions_criterion_best">Najlepsze (malejąco od najwyższej poprawności)</string>
     <string name="revisions_criterion_under_50">Poniżej 50% trafności</string>

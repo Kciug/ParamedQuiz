@@ -145,4 +145,71 @@ class RevisionsConfigVMTest {
         assertNull(state.loadingMode)
         assertTrue(state.responseState is ResponseState.Error)
     }
+
+    @Test
+    fun `should keep mode eligible when only the current configuration is empty`() = runTest {
+        every { getRevisionsQuestions(any(), any(), RevisionCriterion.WORST, null) } returns
+                flowOf(Response.Success(questions(120)))
+        every { getRevisionsQuestions(any(), any(), RevisionCriterion.UNDER_50, null) } returns
+                flowOf(Response.Success(emptyList()))
+
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.onEvent(RevisionsConfigUIEvents.SelectCriterion(RevisionCriterion.UNDER_50))
+        advanceUntilIdle()
+
+        val state = viewModel.state.value
+        // MQ-20-B: pusta pula to nie to samo, co niedostepny tryb. Kryterium zostaje wybrane,
+        // tryb pozostaje kwalifikowany - dialog ma na tej podstawie zostawic kontrolki widoczne.
+        assertTrue(state.isEmptyState)
+        assertTrue(state.isModeEligible)
+        assertEquals(RevisionCriterion.UNDER_50, state.selectedCriterion)
+    }
+
+    @Test
+    fun `should restore previously chosen limit after pool recovers from empty`() = runTest {
+        every { getRevisionsQuestions(any(), any(), RevisionCriterion.WORST, null) } returns
+                flowOf(Response.Success(questions(120)))
+        every { getRevisionsQuestions(any(), any(), RevisionCriterion.UNDER_50, null) } returns
+                flowOf(Response.Success(emptyList()))
+
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.onEvent(RevisionsConfigUIEvents.SelectLimit(20))
+        advanceUntilIdle()
+        assertEquals(20, viewModel.state.value.selectedLimit)
+
+        // Pusta pula zostawia wylacznie opcje "wszystkie", wiec 20 nie ma jak przetrwac...
+        viewModel.onEvent(RevisionsConfigUIEvents.SelectCriterion(RevisionCriterion.UNDER_50))
+        advanceUntilIdle()
+        assertTrue(viewModel.state.value.isEmptyState)
+        assertEquals(listOf(null), viewModel.state.value.availableLimits)
+        assertNull(viewModel.state.value.selectedLimit)
+
+        // ...ale musi wrocic, gdy pula znow na niego pozwala.
+        viewModel.onEvent(RevisionsConfigUIEvents.SelectCriterion(RevisionCriterion.WORST))
+        advanceUntilIdle()
+        assertEquals(20, viewModel.state.value.selectedLimit)
+    }
+
+    @Test
+    fun `should block start while pool is being recalculated`() = runTest {
+        every { getRevisionsQuestions(any(), any(), any(), null) } returns
+                flowOf(Response.Success(questions(120)))
+
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+        assertFalse(viewModel.state.value.isRecalculatingPool)
+
+        viewModel.onEvent(RevisionsConfigUIEvents.SelectCriterion(RevisionCriterion.UNDER_50))
+
+        // Kadr tuz po kliknieciu: korutyna jeszcze nie ruszyla, wiec isEmptyState jest nieaktualne.
+        // Bez tej flagi dalo sie w tym oknie wystartowac sesje na zerowej puli.
+        assertTrue(viewModel.state.value.isRecalculatingPool)
+
+        advanceUntilIdle()
+        assertFalse(viewModel.state.value.isRecalculatingPool)
+    }
 }
