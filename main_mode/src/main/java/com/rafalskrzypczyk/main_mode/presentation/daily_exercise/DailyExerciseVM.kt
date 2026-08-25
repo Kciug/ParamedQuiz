@@ -18,6 +18,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+private const val GAME_MODE_NAME = "Daily Exercise"
+
 @HiltViewModel
 class DailyExerciseVM @Inject constructor(
     private val useCases: DailyExerciseUseCases,
@@ -29,7 +31,8 @@ class DailyExerciseVM @Inject constructor(
 ): BaseQuizVM(
     useCases = useCases.base,
     adHandler = adHandler,
-    feedbackManager = feedbackManager
+    feedbackManager = feedbackManager,
+    gameMode = GAME_MODE_NAME
 ) {
     init {
         viewModelScope.launch { loadQuestions() }

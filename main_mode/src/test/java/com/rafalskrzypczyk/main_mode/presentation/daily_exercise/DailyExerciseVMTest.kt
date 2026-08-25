@@ -1,16 +1,18 @@
-package com.rafalskrzypczyk.main_mode.presentation.quiz_screen
+package com.rafalskrzypczyk.main_mode.presentation.daily_exercise
 
-import androidx.lifecycle.SavedStateHandle
 import com.rafalskrzypczyk.core.ads.QuizAdHandler
 import com.rafalskrzypczyk.core.api_response.Response
+import com.rafalskrzypczyk.core.domain.config.GameplayConfigProvider
 import com.rafalskrzypczyk.core.feedback.NoOpFeedbackManager
 import com.rafalskrzypczyk.core.report_issues.IssueReport
+import com.rafalskrzypczyk.core.utils.ResourceProvider
+import com.rafalskrzypczyk.main_mode.domain.daily_exercise.DailyExerciseUseCases
 import com.rafalskrzypczyk.main_mode.domain.models.Answer
 import com.rafalskrzypczyk.main_mode.domain.models.Question
-import com.rafalskrzypczyk.main_mode.domain.quiz.MMQuizUseCases
 import com.rafalskrzypczyk.main_mode.domain.quiz_base.BaseQuizUseCases
 import com.rafalskrzypczyk.main_mode.presentation.quiz_base.MMQuizUIEvents
 import com.rafalskrzypczyk.score.domain.Score
+import com.rafalskrzypczyk.score.domain.ScoreManager
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -24,16 +26,19 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class MMQuizVMTest {
+class DailyExerciseVMTest {
 
     private lateinit var baseUseCases: BaseQuizUseCases
-    private lateinit var useCases: MMQuizUseCases
+    private lateinit var useCases: DailyExerciseUseCases
+    private lateinit var resourceProvider: ResourceProvider
+    private lateinit var scoreManager: ScoreManager
+    private lateinit var gameplayConfig: GameplayConfigProvider
     private lateinit var adHandler: QuizAdHandler
-    private lateinit var savedStateHandle: SavedStateHandle
 
     @Before
     fun setup() {
@@ -41,25 +46,11 @@ class MMQuizVMTest {
 
         baseUseCases = mockk(relaxed = true)
         useCases = mockk(relaxed = true)
+        resourceProvider = mockk(relaxed = true)
+        scoreManager = mockk(relaxed = true)
+        gameplayConfig = mockk(relaxed = true)
         adHandler = mockk(relaxed = true)
-        savedStateHandle = SavedStateHandle(
-            mapOf(
-                "categoryId" to 1L,
-                "categoryTitle" to "Kategoria"
-            )
-        )
 
-        every { useCases.base } returns baseUseCases
-        every { baseUseCases.getUserScore() } returns flowOf(Score.empty())
-        every { useCases.getUpdatedQuestions() } returns emptyFlow()
-    }
-
-    @After
-    fun tearDown() {
-        Dispatchers.resetMain()
-    }
-
-    private fun createViewModel(): MMQuizVM {
         val question = Question(
             id = 100L,
             questionText = "Pytanie",
@@ -68,14 +59,39 @@ class MMQuizVMTest {
                 Answer(id = 2L, answerText = "B", isCorrect = false)
             )
         )
-        every { useCases.getQuestionsForCategory(1L) } returns flowOf(Response.Success(listOf(question)))
 
-        return MMQuizVM(
-            savedStateHandle = savedStateHandle,
-            useCases = useCases,
-            adHandler = adHandler,
-            feedbackManager = NoOpFeedbackManager
-        )
+        every { useCases.base } returns baseUseCases
+        every { baseUseCases.getUserScore() } returns flowOf(Score.empty())
+        every { useCases.getQuestions() } returns flowOf(Response.Success(listOf(question)))
+        every { useCases.getUpdatedQuestions() } returns emptyFlow()
+        every { gameplayConfig.dailyExerciseQuestionsAmount() } returns 10
+        every { resourceProvider.getString(any()) } returns "Ćwiczenie dnia"
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
+
+    private fun createViewModel() = DailyExerciseVM(
+        useCases = useCases,
+        resourceProvider = resourceProvider,
+        scoreManager = scoreManager,
+        gameplayConfig = gameplayConfig,
+        adHandler = adHandler,
+        feedbackManager = NoOpFeedbackManager
+    )
+
+    @Test
+    fun `reported issue carries daily exercise game mode`() = runTest {
+        val reportSlot = slot<IssueReport>()
+        every { baseUseCases.reportIssue(capture(reportSlot)) } returns flowOf(Response.Success(Unit))
+
+        val viewModel = createViewModel()
+        viewModel.onEvent(MMQuizUIEvents.OnReportIssue)
+
+        assertEquals("Daily Exercise", reportSlot.captured.gameMode)
+        assertEquals(100L, reportSlot.captured.questionId)
     }
 
     @Test
@@ -87,16 +103,6 @@ class MMQuizVMTest {
 
         val selectedIds = viewModel.state.value.question.answers.filter { it.isSelected }.map { it.id }
         assertEquals(listOf(1L, 2L), selectedIds)
-    }
-
-    @Test
-    fun `reported issue carries main mode game mode`() = runTest {
-        val reportSlot = slot<IssueReport>()
-        every { baseUseCases.reportIssue(capture(reportSlot)) } returns flowOf(Response.Success(Unit))
-
-        val viewModel = createViewModel()
-        viewModel.onEvent(MMQuizUIEvents.OnReportIssue)
-
-        assertEquals("Main Mode", reportSlot.captured.gameMode)
+        assertTrue(viewModel.state.value.isDailyExercise)
     }
 }

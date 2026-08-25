@@ -5,6 +5,7 @@ import com.rafalskrzypczyk.cem_mode.domain.use_cases.CemQuestionsUseCases
 import com.rafalskrzypczyk.core.ads.QuizAdHandler
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.feedback.NoOpFeedbackManager
+import com.rafalskrzypczyk.core.report_issues.IssueReport
 import com.rafalskrzypczyk.main_mode.domain.models.Answer
 import com.rafalskrzypczyk.main_mode.domain.models.Question
 import com.rafalskrzypczyk.main_mode.domain.quiz_base.BaseQuizUseCases
@@ -12,6 +13,7 @@ import com.rafalskrzypczyk.main_mode.presentation.quiz_base.MMQuizUIEvents
 import com.rafalskrzypczyk.score.domain.Score
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.emptyFlow
@@ -98,6 +100,18 @@ class CemQuizVMTest {
         viewModel.onEvent(MMQuizUIEvents.OnAnswerClicked(3L))
 
         assertEquals(emptyList<Long>(), viewModel.selectedIds())
+    }
+
+    @Test
+    fun `reported issue carries cem game mode`() = runTest {
+        val reportSlot = slot<IssueReport>()
+        every { baseUseCases.reportIssue(capture(reportSlot)) } returns flowOf(Response.Success(Unit))
+
+        val viewModel = createViewModel(questionWith(1L))
+        viewModel.onEvent(MMQuizUIEvents.OnReportIssue)
+
+        assertEquals("CEM Mode", reportSlot.captured.gameMode)
+        assertEquals(100L, reportSlot.captured.questionId)
     }
 
     @Test

@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+private const val GAME_MODE_NAME = "Main Mode"
+
 @HiltViewModel
 class MMQuizVM @Inject constructor(
     savedStateHandle: SavedStateHandle,
@@ -24,7 +26,8 @@ class MMQuizVM @Inject constructor(
 ): BaseQuizVM(
     useCases = useCases.base,
     adHandler = adHandler,
-    feedbackManager = feedbackManager
+    feedbackManager = feedbackManager,
+    gameMode = GAME_MODE_NAME
 ) {
     private val categoryId: Long = savedStateHandle.get<Long>("categoryId") ?: -1
     private val categoryTitle: String = savedStateHandle.get<String>("categoryTitle") ?: ""

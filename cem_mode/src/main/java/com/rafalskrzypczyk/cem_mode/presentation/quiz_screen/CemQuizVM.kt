@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+private const val GAME_MODE_NAME = "CEM Mode"
+
 @HiltViewModel
 class CemQuizVM @Inject constructor(
     savedStateHandle: SavedStateHandle,
@@ -25,6 +27,7 @@ class CemQuizVM @Inject constructor(
     useCases = useCases.base,
     adHandler = adHandler,
     feedbackManager = feedbackManager,
+    gameMode = GAME_MODE_NAME,
     enforceSingleSelection = true
 ) {
     private val categoryId: Long = savedStateHandle.get<Long>("categoryId") ?: -1

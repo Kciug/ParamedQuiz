@@ -26,6 +26,7 @@ abstract class BaseQuizVM (
     private val useCases: BaseQuizUseCases,
     protected val adHandler: QuizAdHandler,
     protected val feedbackManager: FeedbackManager,
+    private val gameMode: String,
     private val enforceSingleSelection: Boolean = false
 ): ViewModel() {
     @Suppress("PropertyName")
@@ -94,7 +95,7 @@ abstract class BaseQuizVM (
             questionId = currentQ.id,
             questionContent = currentQ.questionText,
             description = description,
-            gameMode = "Main Mode"
+            gameMode = gameMode
         )
         viewModelScope.launch {
             useCases.reportIssue(report).collectLatest { response ->
