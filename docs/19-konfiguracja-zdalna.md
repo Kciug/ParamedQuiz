@@ -22,6 +22,7 @@ Konfiguracja zdalna pozwala **zmieniać zachowanie i treści** aplikacji **bez w
 ### 2.1 Parametry rozgrywki (gameplay config)
 | Parametr | Domyślnie | Wpływ |
 |----------|-----------|-------|
+| Reklamy włączone | włączone | Globalny wyłącznik reklam — pozwala wyłączyć je wszystkim na czas akcji promocyjnej (patrz [Reklamy](15-reklamy.md)). |
 | Częstotliwość reklam | 20 | Co ile odpowiedzi reklama (patrz [Reklamy](15-reklamy.md)). |
 | Próg reklamy zakończeniowej | 10 | Min. odpowiedzi do reklamy na wyjściu. |
 | Punkty za poprawną | 100 | Punkty za poprawną odpowiedź. |
@@ -41,6 +42,7 @@ Konfiguracja zdalna pozwala **zmieniać zachowanie i treści** aplikacji **bez w
 
 - **Fallback:** przy braku parametru / offline / błędzie stosowane są wbudowane wartości domyślne.
 - **Sanity-limity:** wartości parametrów rozgrywki są ograniczane do rozsądnych zakresów — błędnie wpisana wartość w konsoli nie „zepsuje" aplikacji (parametry trafiają do użytkowników bez dodatkowej weryfikacji).
+- **Wyłącznik reklam działa „fail-open":** reklamy zostają wyłączone wyłącznie przy jawnej wartości wyłączającej. Literówka, zły typ czy pusta wartość zostawiają reklamy włączone — pomyłka w konsoli nie może po cichu odciąć monetyzacji.
 - **Odświeżanie:** konfiguracja parametrów jest cache'owana i odświeżana z określonym interwałem (domyślnie ok. raz na dobę); dane treściowe (pytania/kategorie/nowości) mogą być aktualizowane na bieżąco i propagować się także **w trakcie sesji**.
 - **Wersjonowanie regulaminu:** zmiana wersji wymusza ponowną akceptację (patrz [Regulamin](02-regulamin.md)).
 - **Transparentność:** zmiany konfiguracji są dla użytkownika niewidoczne wprost — objawiają się zmianą zachowania/treści.
@@ -54,6 +56,7 @@ Konfiguracja zdalna pozwala **zmieniać zachowanie i treści** aplikacji **bez w
 | Brak sieci / błąd pobrania | Użycie wartości domyślnych / ostatnich znanych. |
 | Brak konkretnego parametru | Wartość domyślna dla tego parametru. |
 | Wartość poza rozsądnym zakresem | Przycięcie do dozwolonego zakresu (sanity-limit). |
+| Błędna wartość wyłącznika reklam | Reklamy pozostają włączone (fail-open). |
 | Aktualizacja treści w trakcie sesji | Odświeżenie widocznych pytań/danych bez restartu. |
 | Nowa wersja regulaminu | Wymuszenie ponownej akceptacji. |
 

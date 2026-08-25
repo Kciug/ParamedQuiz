@@ -30,7 +30,7 @@ class QuizAdHandler @Inject constructor(
         isQuizFinished: Boolean,
         ignoreThreshold: Boolean = false
     ): Boolean {
-        if (isAdsFree) return false
+        if (isAdsFree || !gameplayConfig.adsEnabled()) return false
 
         val questionsSinceLastAd = answeredCount - lastAdAnsweredCount
 

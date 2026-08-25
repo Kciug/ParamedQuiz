@@ -21,6 +21,7 @@ Reklamy pełnoekranowe (interstitial) to element monetyzacji dla użytkowników 
 
 - Reklamy widzą użytkownicy **bez** aktywnego wyłączenia reklam.
 - Reklamy są **wyłączone**, gdy użytkownik posiada **pełny pakiet** lub produkt **„brak reklam"** (patrz [Sklep i zakupy](14-sklep-i-zakupy.md)).
+- Reklamy są **wyłączone globalnie wszystkim**, gdy [konfiguracja zdalna](19-konfiguracja-zdalna.md) ma wyłączony parametr reklam — służy to akcjom promocyjnym („na jakiś czas bez reklam") bez wydawania nowej wersji aplikacji.
 - [Tryb Tłumaczeń](08-tryb-tlumaczen.md) **nie** wyświetla reklam niezależnie od statusu.
 
 ---
@@ -49,6 +50,7 @@ Zasady:
 ## 5. Reguły biznesowe
 
 - **Zależność od zakupów:** pełny pakiet lub „brak reklam" trwale wyłącza reklamy.
+- **Globalny wyłącznik:** wyłączenie reklam w konfiguracji zdalnej ma pierwszeństwo przed wszystkim poza zakupami — nie jest wysyłane żadne żądanie reklamy. Po ponownym włączeniu reklamy wracają bez aktualizacji aplikacji.
 - **Sterowanie zdalne:** częstotliwość i próg zakończenia można zmieniać bez aktualizacji aplikacji (z sanity-limitami wartości).
 - **Wyjątki trybów:** tryb tłumaczeń bez reklam; ćwiczenie dnia bez progu zakończenia.
 - **Ciągłość rozgrywki:** wyświetlenie i zamknięcie reklamy nie przerywa logiki sesji (kontynuacja albo finalizacja).
@@ -60,6 +62,8 @@ Zasady:
 | Sytuacja | Oczekiwane zachowanie |
 |----------|-----------------------|
 | Użytkownik premium / „brak reklam" | Reklamy nie są wyświetlane. |
+| Reklamy wyłączone globalnie (promocja) | Reklamy nie są wyświetlane nikomu; rozgrywka płynie bez przerw i bez ekranu oczekiwania. W [sklepie](14-sklep-i-zakupy.md) kafelek „brak reklam" pozostaje dostępny, z informacją o trwającej promocji. |
+| Zmiana wyłącznika w trakcie sesji | Wyłączenie działa natychmiast. Włączenie może wymagać jednej reklamy „na sucho" lub restartu, zanim pojawi się pierwsza. |
 | Reklama niezaładowana / niedostępna | Rozgrywka kontynuuje bez reklamy. |
 | Krótka sesja poniżej progów | Brak reklamy zakończeniowej. |
 | Ćwiczenie dnia | Próg zakończenia ignorowany. |

@@ -42,6 +42,7 @@ import com.rafalskrzypczyk.notifications.NotificationPermission
 
 @Composable
 fun DevOptionsScreen(
+    state: DevOptionsState,
     onEvent: (DevOptionsUIEvents) -> Unit,
     onNavigateBack: () -> Unit
 ) {
@@ -235,7 +236,8 @@ fun DevOptionsScreen(
                             title = "Wymuś odświeżenie gameplay configu",
                             icon = Icons.Outlined.CloudSync,
                             info = "Pobiera parametry rozgrywki z Remote Config (reklamy, zadanie dnia, " +
-                                "punktacja, streak) — wymaga internetu.",
+                                "punktacja, streak) — wymaga internetu. Reklamy globalnie: " +
+                                if (state.areAdsEnabled) "WŁĄCZONE." else "WYŁĄCZONE.",
                             onClick = { onEvent(DevOptionsUIEvents.ForceGameplayConfigRefresh) }
                         )
                     }
@@ -280,6 +282,6 @@ private fun ColumnScope.DevActionRow(
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 private fun DevOptionsScreenPreview() {
     PreviewContainer {
-        DevOptionsScreen(onEvent = {}, onNavigateBack = {})
+        DevOptionsScreen(state = DevOptionsState(), onEvent = {}, onNavigateBack = {})
     }
 }

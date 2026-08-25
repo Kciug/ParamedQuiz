@@ -5,9 +5,20 @@ import com.google.firebase.remoteconfig.remoteConfig
 import com.google.firebase.remoteconfig.remoteConfigSettings
 import com.rafalskrzypczyk.core.domain.config.GameplayConfig
 import com.rafalskrzypczyk.core.domain.config.GameplayConfigProvider
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
+
+private val ADS_DISABLED_VALUES = setOf("false", "0", "no", "n", "off")
+
+/**
+ * Sanity-limit dla flagi reklam: wyłączamy je tylko przy jawnej wartości wyłączającej.
+ * Literówka, zły typ, pusty string czy brak parametru zostawiają reklamy włączone —
+ * odwrotnie niż `getBoolean()`, które dla wszystkiego nierozpoznanego zwraca `false`.
+ */
+internal fun parseAdsEnabledFlag(raw: String): Boolean =
+    raw.trim().lowercase() !in ADS_DISABLED_VALUES
 
 /**
  * Gameplay config oparty o Firebase Remote Config. RC SDK sam trzyma cache, bramkę TTL
@@ -24,6 +35,7 @@ class RemoteConfigGameplayProvider @Inject constructor() : GameplayConfigProvide
         )
         setDefaultsAsync(
             mapOf(
+                KEY_ADS_ENABLED to GameplayConfig.DEFAULT.adsEnabled,
                 KEY_AD_FREQUENCY to GameplayConfig.DEFAULT.adFrequency.toLong(),
                 KEY_EXIT_AD_THRESHOLD to GameplayConfig.DEFAULT.exitAdThreshold.toLong(),
                 KEY_CORRECT_POINTS to GameplayConfig.DEFAULT.correctPoints.toLong(),
@@ -33,6 +45,9 @@ class RemoteConfigGameplayProvider @Inject constructor() : GameplayConfigProvide
             )
         )
     }
+
+    override fun adsEnabled(): Boolean =
+        parseAdsEnabledFlag(remoteConfig.getString(KEY_ADS_ENABLED))
 
     override fun adFrequency(): Int =
         remoteConfig.getLong(KEY_AD_FREQUENCY).toInt().coerceIn(1, 500)
@@ -53,17 +68,24 @@ class RemoteConfigGameplayProvider @Inject constructor() : GameplayConfigProvide
         remoteConfig.getLong(KEY_DAILY_QUESTIONS).toInt().coerceIn(1, 100)
 
     override suspend fun refresh(force: Boolean) {
-        if (force) {
-            remoteConfig.fetch(0).await()
-            remoteConfig.activate().await()
-        } else {
-            remoteConfig.fetchAndActivate().await()
+        try {
+            if (force) {
+                remoteConfig.fetch(0).await()
+                remoteConfig.activate().await()
+            } else {
+                remoteConfig.fetchAndActivate().await()
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            // Offline / throttling / timeout — zostają ostatnie aktywowane wartości (lub defaulty).
         }
     }
 
     companion object {
         private const val REFRESH_INTERVAL_SECONDS = 24L * 60 * 60
 
+        private const val KEY_ADS_ENABLED = "ads_enabled"
         private const val KEY_AD_FREQUENCY = "adFrequency"
         private const val KEY_EXIT_AD_THRESHOLD = "exitAdThreshold"
         private const val KEY_CORRECT_POINTS = "correctPoints"

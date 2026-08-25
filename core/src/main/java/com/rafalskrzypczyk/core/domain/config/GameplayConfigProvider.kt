@@ -6,6 +6,9 @@ package com.rafalskrzypczyk.core.domain.config
  * nie może zależeć od modułów firebase, a konsumenci (m.in. QuizAdHandler) są w `core`.
  */
 interface GameplayConfigProvider {
+    /** Globalny wyłącznik reklam (akcje promocyjne). Domyślnie `true` — brak configu nie wyłącza reklam. */
+    fun adsEnabled(): Boolean
+
     fun adFrequency(): Int
     fun exitAdThreshold(): Int
     fun correctPoints(): Int

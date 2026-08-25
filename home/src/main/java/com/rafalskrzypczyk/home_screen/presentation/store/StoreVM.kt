@@ -11,6 +11,7 @@ import com.rafalskrzypczyk.billing.domain.getCategoryBillingId
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
+import com.rafalskrzypczyk.core.domain.config.GameplayConfigProvider
 import com.rafalskrzypczyk.core.error.AppError
 import com.rafalskrzypczyk.core.error.ErrorLogger
 import com.rafalskrzypczyk.core.error.report
@@ -41,7 +42,8 @@ class StoreVM @Inject constructor(
     private val premiumStatusProvider: PremiumStatusProvider,
     private val billingRepository: BillingRepository,
     private val feedbackManager: FeedbackManager,
-    private val getAllCategories: GetAllCategoriesUC
+    private val getAllCategories: GetAllCategoriesUC,
+    private val gameplayConfig: GameplayConfigProvider
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(StoreState())
@@ -173,6 +175,7 @@ class StoreVM @Inject constructor(
                 isTranslationModeUnlocked = translationUnlocked,
                 isSwipeModeUnlocked = swipeUnlocked,
                 isAdFreeUnlocked = adFreeUnlocked,
+                areAdsGloballyDisabled = !gameplayConfig.adsEnabled(),
                 isPremiumPending = pendingIds.contains(BillingIds.ID_FULL_PACKAGE),
                 isTranslationModePending = pendingIds.contains(BillingIds.ID_TRANSLATION_MODE),
                 isSwipeModePending = pendingIds.contains(BillingIds.ID_SWIPE_MODE),

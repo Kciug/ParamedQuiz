@@ -17,6 +17,9 @@ data class StoreState(
     val isSwipeModeUnlocked: Boolean = false,
     val isAdFreeUnlocked: Boolean = false,
 
+    // Reklamy wyłączone globalnie z Remote Config (akcja promocyjna) — tylko informacja w karcie ad-free
+    val areAdsGloballyDisabled: Boolean = false,
+
     // Statusy przetwarzania
     val isPremiumPending: Boolean = false,
     val isTranslationModePending: Boolean = false,

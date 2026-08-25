@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -51,6 +53,7 @@ fun StoreModeCard(
     isPending: Boolean = false,
     isPurchasing: Boolean = false,
     questionCount: Int? = null,
+    note: String? = null,
     onBuyClick: () -> Unit
 ) {
     Column(
@@ -95,6 +98,14 @@ fun StoreModeCard(
                 TextCaption(text = description)
                 if (questionCount != null && questionCount > 0) {
                     QuestionsBadge(questionCount = questionCount, themeColor = iconTint)
+                }
+                if (note != null) {
+                    OwnedBadge(
+                        text = note,
+                        icon = Icons.Outlined.Info,
+                        backgroundColor = iconTint.copy(alpha = 0.2f),
+                        contentColor = iconTint
+                    )
                 }
             }
         }

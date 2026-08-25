@@ -21,6 +21,7 @@ class QuizAdHandlerTest {
         every { isAdsFree } returns isAdsFreeFlow
     }
     private val gameplayConfig = mockk<GameplayConfigProvider> {
+        every { adsEnabled() } returns true
         every { adFrequency() } returns 20
         every { exitAdThreshold() } returns 10
     }
@@ -88,6 +89,24 @@ class QuizAdHandlerTest {
         assertFalse(sut.shouldShowAd(answeredCount = 20, isQuizFinished = false))
         assertFalse(sut.shouldShowAd(answeredCount = 10, isQuizFinished = true))
         assertFalse(sut.shouldShowAd(answeredCount = 3, isQuizFinished = true, ignoreThreshold = true))
+    }
+
+    @Test
+    fun `should never show ads when globally disabled by remote config`() {
+        every { gameplayConfig.adsEnabled() } returns false
+
+        assertFalse(sut.shouldShowAd(answeredCount = 20, isQuizFinished = false))
+        assertFalse(sut.shouldShowAd(answeredCount = 10, isQuizFinished = true))
+        assertFalse(sut.shouldShowAd(answeredCount = 3, isQuizFinished = true, ignoreThreshold = true))
+    }
+
+    @Test
+    fun `should show ads again when remote config re-enables them`() {
+        every { gameplayConfig.adsEnabled() } returns false
+        assertFalse(sut.shouldShowAd(answeredCount = 20, isQuizFinished = false))
+
+        every { gameplayConfig.adsEnabled() } returns true
+        assertTrue(sut.shouldShowAd(answeredCount = 20, isQuizFinished = false))
     }
 
     @Test
