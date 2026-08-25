@@ -9,45 +9,49 @@ import com.rafalskrzypczyk.score.domain.ScoreStorage
 import com.rafalskrzypczyk.score.domain.toDTO
 import com.rafalskrzypczyk.score.domain.toDomain
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
+/**
+ * Tozsamosc uzytkownika jest rozwiazywana w momencie kolekcji, nie budowy strumienia.
+ * Odczyt przy budowie oznaczalby, ze operacja wykonana po wyczyszczeniu sesji trafia
+ * do bufora goscia zamiast na konto.
+ */
 class ScoreRepositoryImpl @Inject constructor(
     private val firestore: FirestoreApi,
     private val userManager: UserManager,
     private val scoreStorage: ScoreStorage
 ) : ScoreRepository {
-    override fun getUserScore(): Flow<Response<Score>> {
+    override fun getUserScore(): Flow<Response<Score>> = flow {
         val user = userManager.getCurrentLoggedUser()
 
-        return if(user != null) {
-            firestore.getUserScore(user.id).map {
-                when (it) {
-                    is Response.Success -> Response.Success(it.data.toDomain())
-                    is Response.Error -> it
-                    Response.Loading -> Response.Loading
+        if (user != null) {
+            emitAll(
+                firestore.getUserScore(user.id).map {
+                    when (it) {
+                        is Response.Success -> Response.Success(it.data.toDomain())
+                        is Response.Error -> it
+                        Response.Loading -> Response.Loading
+                    }
                 }
-            }
+            )
         } else {
-            flow {
-                emit(Response.Success(scoreStorage.getScore()))
-            }
+            emit(Response.Success(scoreStorage.getScore()))
         }
     }
 
     override fun saveUserScore(
         score: Score,
-    ): Flow<Response<Unit>> {
+    ): Flow<Response<Unit>> = flow {
         val user = userManager.getCurrentLoggedUser()
 
-        return if(user != null) {
-            firestore.updateUserScore(user.id, score.toDTO())
+        if (user != null) {
+            emitAll(firestore.updateUserScore(user.id, score.toDTO()))
         } else {
-            flow {
-                scoreStorage.saveScore(score)
-                emit(Response.Success(Unit))
-            }
+            scoreStorage.saveScore(score)
+            emit(Response.Success(Unit))
         }
     }
 
@@ -55,16 +59,14 @@ class ScoreRepositoryImpl @Inject constructor(
         scoreStorage.clearScore()
     }
 
-    override fun deleteUserScore(): Flow<Response<Unit>> {
+    override fun deleteUserScore(): Flow<Response<Unit>> = flow {
         val user = userManager.getCurrentLoggedUser()
 
-        return if(user != null) {
-            firestore.deleteUserScore(user.id)
+        if (user != null) {
+            emitAll(firestore.deleteUserScore(user.id))
         } else {
-            flow {
-                scoreStorage.clearScore()
-                emit(Response.Success(Unit))
-            }
+            scoreStorage.clearScore()
+            emit(Response.Success(Unit))
         }
     }
 }

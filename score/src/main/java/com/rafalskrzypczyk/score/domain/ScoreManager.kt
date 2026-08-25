@@ -83,6 +83,15 @@ class ScoreManager @Inject constructor(
         }
     }
 
+    /**
+     * Wariant [forceSync], na ktory da sie poczekac. Wymagany przy wylogowaniu i usuwaniu
+     * konta, bo tam synchronizacja musi zakonczyc sie zanim zniknie tozsamosc uzytkownika.
+     */
+    suspend fun syncNow() {
+        syncJob?.cancel()
+        if (isDirty) syncScore()
+    }
+
     fun onUserRegister() {
         ioScope.launch {
             repository.saveUserScore(score.value).collectLatest {
@@ -98,16 +107,19 @@ class ScoreManager @Inject constructor(
         fetchUserScore()
     }
 
-    fun onUserLogOut() {
-        forceSync()
+    suspend fun onUserLogOut() {
+        syncNow()
         clearScore()
     }
 
+    /**
+     * Czysci wylacznie stan lokalny. Zdalne dokumenty kasuje warstwa auth, razem z kontem.
+     * Zalegla synchronizacja jest anulowana, zeby nie odtworzyla dopiero co skasowanego wyniku.
+     */
     fun onUserDelete() {
-        ioScope.launch {
-            repository.deleteUserScore().collectLatest {
-                if (it is Response.Success) clearScore()
-            }
-        }
+        syncJob?.cancel()
+        isDirty = false
+        clearScore()
+        repository.clearLocalScoreData()
     }
 }

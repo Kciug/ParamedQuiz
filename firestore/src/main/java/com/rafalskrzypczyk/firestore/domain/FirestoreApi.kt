@@ -19,7 +19,12 @@ import kotlinx.coroutines.flow.Flow
 interface FirestoreApi {
     fun getUserData(userId: String) : Flow<Response<UserDataDTO>>
     fun updateUserData(userData: UserDataDTO) : Flow<Response<Unit>>
-    fun deleteUserData(userId: String) : Flow<Response<Unit>>
+    /**
+     * Kasuje atomowo dokumenty uzytkownika w user_data i user_score. Musi wykonac sie
+     * przed usunieciem konta z Firebase Auth, bo usuniecie konta uniewaznia token ID
+     * i klient traci uprawnienia do sprzatniecia tych dokumentow.
+     */
+    fun deleteUserAccountData(userId: String) : Flow<Response<Unit>>
     fun getQuizCategories() : Flow<Response<List<CategoryDTO>>>
     fun getQuizQuestions() : Flow<Response<List<QuestionDTO>>>
     fun getUpdatedCategories() : Flow<List<CategoryDTO>>

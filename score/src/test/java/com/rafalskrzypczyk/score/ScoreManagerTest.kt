@@ -114,4 +114,73 @@ class ScoreManagerTest {
             cancelAndIgnoreRemainingEvents()
         }
     }
+
+    @Test
+    fun `onUserLogOut syncs the pending score before clearing it`() = testScope.runTest {
+        val pending = Score(42, 3, null, null, emptyList())
+        coEvery { repository.saveUserScore(any()) } returns flowOf(Response.Success(Unit))
+
+        scoreManager.updateScore(pending)
+        scoreManager.onUserLogOut()
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) { repository.saveUserScore(pending) }
+        assertEquals(Score.empty(), scoreManager.getScore())
+    }
+
+    @Test
+    fun `onUserLogOut does not sync when nothing changed`() = testScope.runTest {
+        scoreManager.onUserLogOut()
+        advanceUntilIdle()
+
+        coVerify(exactly = 0) { repository.saveUserScore(any()) }
+    }
+
+    @Test
+    fun `onUserLogOut cancels the debounced sync so the score is written once`() = testScope.runTest {
+        coEvery { repository.saveUserScore(any()) } returns flowOf(Response.Success(Unit))
+
+        scoreManager.updateScore(Score(7, 0, null, null, emptyList()))
+        scoreManager.onUserLogOut()
+        advanceTimeBy(30000)
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) { repository.saveUserScore(any()) }
+    }
+
+    @Test
+    fun `onUserDelete clears local state without touching the remote score`() = testScope.runTest {
+        scoreManager.updateScore(Score(15, 1, null, null, emptyList()))
+
+        scoreManager.onUserDelete()
+        advanceUntilIdle()
+
+        coVerify(exactly = 0) { repository.deleteUserScore() }
+        coVerify(exactly = 1) { repository.clearLocalScoreData() }
+        assertEquals(Score.empty(), scoreManager.getScore())
+    }
+
+    @Test
+    fun `onUserDelete stops a pending sync from resurrecting the score`() = testScope.runTest {
+        coEvery { repository.saveUserScore(any()) } returns flowOf(Response.Success(Unit))
+
+        scoreManager.updateScore(Score(15, 1, null, null, emptyList()))
+        scoreManager.onUserDelete()
+        advanceTimeBy(30000)
+        advanceUntilIdle()
+
+        coVerify(exactly = 0) { repository.saveUserScore(any()) }
+    }
+
+    @Test
+    fun `forceSync after onUserDelete writes nothing`() = testScope.runTest {
+        coEvery { repository.saveUserScore(any()) } returns flowOf(Response.Success(Unit))
+
+        scoreManager.updateScore(Score(15, 1, null, null, emptyList()))
+        scoreManager.onUserDelete()
+        scoreManager.forceSync()
+        advanceUntilIdle()
+
+        coVerify(exactly = 0) { repository.saveUserScore(any()) }
+    }
 }

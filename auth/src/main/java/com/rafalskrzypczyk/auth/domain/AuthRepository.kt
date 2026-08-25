@@ -9,7 +9,11 @@ interface AuthRepository {
     fun isUserLoggedIn() : Boolean
     fun loginWithEmailAndPassword(email: String, password: String) : Flow<Response<UserData>>
     fun registerWithEmailAndPassword(email: String, password: String, userName: String) : Flow<Response<UserData>>
-    fun signOut()
+    /**
+     * Konczy sesje. Zawiesza sie do czasu zsynchronizowania zaleglego postepu, bo po
+     * wyczyszczeniu tozsamosci zapis trafilby do bufora goscia zamiast na konto.
+     */
+    suspend fun signOut()
     fun sendPasswordResetToEmail(email: String) : Flow<Response<Unit>>
     fun reauthenticateWithPassword(email: String, password: String) : Flow<Response<Unit>>
     fun reauthenticateWithProvider(context: Context) : Flow<Response<Unit>>

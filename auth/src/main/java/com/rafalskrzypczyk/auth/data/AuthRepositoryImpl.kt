@@ -18,8 +18,9 @@ import com.rafalskrzypczyk.firestore.domain.FirestoreApi
 import com.rafalskrzypczyk.score.domain.ScoreManager
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -32,10 +33,13 @@ private const val ORIGIN_CHANGE_PASSWORD = "AuthRepository.changePassword"
 private const val ORIGIN_CHANGE_USER_NAME = "AuthRepository.changeUserName"
 private const val ORIGIN_DELETE_USER = "AuthRepository.deleteUser"
 private const val ORIGIN_SIGN_IN_WITH_GOOGLE = "AuthRepository.signInWithGoogle"
-private const val ORIGIN_REGISTER_USER = "AuthRepository.registerUser"
 private const val ORIGIN_LOGIN_USER = "AuthRepository.loginUser"
+private const val ORIGIN_RESOLVE_AUTH_METHOD = "AuthRepository.authenticationMethodOf"
 
-private const val PROVIDER_ID_PASSWORD = "password"
+private const val PROVIDER_ID_FIREBASE = "firebase"
+private const val CODE_NO_PROVIDER_DATA = "AUTH:NO_PROVIDER_DATA"
+private const val EMAIL_LOCAL_PART_DELIMITER = '@'
+private const val DEFAULT_STRING_VALUE = ""
 
 class AuthRepositoryImpl @Inject constructor(
     private val firebaseAuth: FirebaseAuth,
@@ -98,10 +102,10 @@ class AuthRepositoryImpl @Inject constructor(
         registerUser(user, email, userName).collect { emit(it) }
     }
 
-    override fun signOut() {
+    override suspend fun signOut() {
+        scoreManager.onUserLogOut()
         firebaseAuth.signOut()
         userManager.clearUserDataLocal()
-        scoreManager.onUserLogOut()
     }
 
     override fun sendPasswordResetToEmail(email: String): Flow<Response<Unit>> = flow {
@@ -213,30 +217,34 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun deleteUser(): Flow<Response<Unit>> = channelFlow {
-        send(Response.Loading)
+    override fun deleteUser(): Flow<Response<Unit>> = flow {
+        emit(Response.Loading)
 
-        firebaseAuth.currentUser?.delete()?.addOnFailureListener {
-            trySend(Response.Error(authErrorMapper.toAppError(ORIGIN_DELETE_USER, it)))
+        val user = firebaseAuth.currentUser
+        if (user == null) {
+            emit(Response.Error(authErrorMapper.report(ORIGIN_DELETE_USER, AppError.Auth.UserNotLoggedIn)))
+            return@flow
         }
 
-        val userId = userManager.getCurrentLoggedUser()?.id
-        if (userId == null) {
-            send(Response.Error(authErrorMapper.report(ORIGIN_DELETE_USER, AppError.Auth.UserNotLoggedIn)))
-            return@channelFlow
+        scoreManager.onUserDelete()
+
+        val dataRemoval = firestoreApi.deleteUserAccountData(user.uid).last()
+        if (dataRemoval is Response.Error) {
+            emit(dataRemoval)
+            return@flow
         }
 
-        firestoreApi.deleteUserData(userId).collect {
-            when (it) {
-                is Response.Error -> send(it)
-                Response.Loading -> send(Response.Loading)
-                is Response.Success -> {
-                    userManager.clearUserDataLocal()
-                    scoreManager.onUserDelete()
-                    send(Response.Success(Unit))
-                }
-            }
+        try {
+            user.delete().await()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            emit(Response.Error(authErrorMapper.toAppError(ORIGIN_DELETE_USER, e)))
+            return@flow
         }
+
+        userManager.clearUserDataLocal()
+        emit(Response.Success(Unit))
     }
 
     override fun signInWithGoogle(context: Context): Flow<Response<UserData>> = flow {
@@ -273,25 +281,18 @@ class AuthRepositoryImpl @Inject constructor(
         }
 
         if (authResult.additionalUserInfo?.isNewUser ?: true) {
-            registerUser(user, user.email.orEmpty(), user.displayName.orEmpty()).collect { emit(it) }
+            registerUser(user, user.email.orEmpty(), displayNameOf(user)).collect { emit(it) }
         } else {
             loginUser(user).collect { emit(it) }
         }
     }
 
     private fun registerUser(user: FirebaseUser, email: String, userName: String): Flow<Response<UserData>> = flow {
-        val authMethod = try {
-            user.providerData[1].providerId
-        } catch (e: Exception) {
-            emit(Response.Error(authErrorMapper.toAppError(ORIGIN_REGISTER_USER, e)))
-            return@flow
-        }
-
         val newUser = UserData(
             user.uid,
             email,
             userName,
-            authenticationMethod = authenticationMethodOf(authMethod)
+            authenticationMethod = authenticationMethodOf(user)
         )
 
         firestoreApi.updateUserData(newUser.toDTO()).collect {
@@ -308,31 +309,69 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     private fun loginUser(user: FirebaseUser): Flow<Response<UserData>> = flow {
-        val authMethod = try {
-            user.providerData[1].providerId
-        } catch (e: Exception) {
-            emit(Response.Error(authErrorMapper.toAppError(ORIGIN_LOGIN_USER, e)))
-            return@flow
-        }
+        val authMethod = authenticationMethodOf(user)
 
-        firestoreApi.getUserData(user.uid).collect {
-            when (it) {
-                is Response.Error -> emit(it)
-                is Response.Loading -> emit(it)
+        firestoreApi.getUserData(user.uid).collect { response ->
+            when (response) {
+                is Response.Loading -> emit(Response.Loading)
                 is Response.Success -> {
-                    val userData = it.data.toDomain(
+                    val userData = response.data.toDomain(
                         email = user.email.orEmpty(),
-                        authMethod = authenticationMethodOf(authMethod)
+                        authMethod = authMethod
                     )
                     userManager.saveUserDataInLocal(userData)
                     scoreManager.onUserLogIn()
                     emit(Response.Success(userData))
                 }
+                is Response.Error -> {
+                    if (response.error == AppError.Data.NoData) emitAll(restoreUserProfile(user, authMethod))
+                    else emit(response)
+                }
             }
         }
     }
 
-    private fun authenticationMethodOf(providerId: String): UserAuthenticationMethod =
-        if (providerId == PROVIDER_ID_PASSWORD) UserAuthenticationMethod.PASSWORD
+    private fun restoreUserProfile(
+        user: FirebaseUser,
+        authMethod: UserAuthenticationMethod
+    ): Flow<Response<UserData>> = flow {
+        val restoredUser = UserData(
+            id = user.uid,
+            email = user.email.orEmpty(),
+            name = displayNameOf(user),
+            authenticationMethod = authMethod
+        )
+
+        firestoreApi.updateUserData(restoredUser.toDTO()).collect { response ->
+            when (response) {
+                is Response.Loading -> emit(Response.Loading)
+                is Response.Error -> emit(
+                    Response.Error(authErrorMapper.report(ORIGIN_LOGIN_USER, AppError.Auth.ProfileRestoreFailed))
+                )
+                is Response.Success -> {
+                    userManager.saveUserDataInLocal(restoredUser)
+                    scoreManager.onUserLogIn()
+                    emit(Response.Success(restoredUser))
+                }
+            }
+        }
+    }
+
+    private fun authenticationMethodOf(user: FirebaseUser): UserAuthenticationMethod {
+        val providers = user.providerData
+            .map { it.providerId }
+            .filterNot { it == PROVIDER_ID_FIREBASE }
+
+        if (providers.isEmpty()) {
+            authErrorMapper.report(ORIGIN_RESOLVE_AUTH_METHOD, AppError.Auth.Unknown(CODE_NO_PROVIDER_DATA))
+        }
+
+        return if (providers.contains(EmailAuthProvider.PROVIDER_ID)) UserAuthenticationMethod.PASSWORD
         else UserAuthenticationMethod.NONPASSWORD
+    }
+
+    private fun displayNameOf(user: FirebaseUser): String =
+        user.displayName?.takeIf { it.isNotBlank() }
+            ?: user.email?.substringBefore(EMAIL_LOCAL_PART_DELIMITER)?.takeIf { it.isNotBlank() }
+            ?: DEFAULT_STRING_VALUE
 }

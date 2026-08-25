@@ -50,7 +50,7 @@ class FakeFirestoreApi : FirestoreApi {
     override fun getUserData(userId: String): Flow<Response<UserDataDTO>> =
         userDataError?.let { flowOf(Response.Error(it)) } ?: flowOf(Response.Success(userData))
     override fun updateUserData(userData: UserDataDTO): Flow<Response<Unit>> = flowOf(Response.Success(Unit))
-    override fun deleteUserData(userId: String): Flow<Response<Unit>> = flowOf(Response.Success(Unit))
+    override fun deleteUserAccountData(userId: String): Flow<Response<Unit>> = flowOf(Response.Success(Unit))
 
     override fun getQuizCategories(): Flow<Response<List<CategoryDTO>>> = flowOf(Response.Success(quizCategories))
     override fun getQuizQuestions(): Flow<Response<List<QuestionDTO>>> = flowOf(Response.Success(quizQuestions))

@@ -180,7 +180,9 @@ class UserSettingsVM @Inject constructor(
 
     private fun signOut() {
         viewModelScope.launch {
-            useCases.signOut()
+            useCases.signOut().collectLatest { response ->
+                handleResponse(response, UserSettingsConfirmAction.NAVIGATE_OUT)
+            }
         }
     }
 

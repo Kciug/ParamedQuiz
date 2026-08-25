@@ -22,6 +22,7 @@ sealed interface AppError {
         data object UserNotLoggedIn : Auth
         data object ReauthContextMissing : Auth
         data object SignInIncomplete : Auth
+        data object ProfileRestoreFailed : Auth
         data class Unknown(val code: String) : Auth
     }
 
