@@ -20,7 +20,7 @@ class GetSwipeModeResultUC @Inject constructor(
         return swipeModeRepository.getSwipeQuestions().map { response ->
             when(response) {
                 is Response.Loading -> Response.Loading
-                is Response.Error -> Response.Error(response.error)
+                is Response.Error -> response
                 is Response.Success -> {
                     val questions = response.data
                     val filteredScore =

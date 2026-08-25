@@ -24,28 +24,28 @@ class GetQuestionsForModeUC @Inject constructor(
         return when(mode) {
             QuizMode.MainMode -> mainModeRepository.getAllQuestions().map { response ->
                 when(response) {
-                    is Response.Error -> Response.Error(response.error)
+                    is Response.Error -> response
                     Response.Loading -> Response.Loading
                     is Response.Success -> Response.Success(response.data.map { it.toSimpleQuestion() })
                 }
             }.flowOn(Dispatchers.Default)
             QuizMode.SwipeMode -> swipeModeRepository.getSwipeQuestions().map { response ->
                 when (response) {
-                    is Response.Error -> Response.Error(response.error)
+                    is Response.Error -> response
                     Response.Loading -> Response.Loading
                     is Response.Success -> Response.Success(response.data.map { it.toSimpleQuestion() })
                 }
             }.flowOn(Dispatchers.Default)
             QuizMode.TranslationMode -> translationRepository.getTranslationQuestions().map { response ->
                 when (response) {
-                    is Response.Error -> Response.Error(response.error)
+                    is Response.Error -> response
                     Response.Loading -> Response.Loading
                     is Response.Success -> Response.Success(response.data.map { it.toSimpleQuestion() })
                 }
             }.flowOn(Dispatchers.Default)
             QuizMode.CemMode -> cemRepository.getAllCemQuestions().map { response ->
                 when (response) {
-                    is Response.Error -> Response.Error(response.error)
+                    is Response.Error -> response
                     Response.Loading -> Response.Loading
                     is Response.Success -> Response.Success(response.data.map { it.toSimpleQuestion() })
                 }

@@ -23,7 +23,7 @@ class FakeMainModeRepository @Inject constructor(
         firestore.getQuizCategories().map { resp ->
             when (resp) {
                 is Response.Success -> Response.Success(resp.data.map { it.toDomain() })
-                is Response.Error -> Response.Error(resp.error)
+                is Response.Error -> resp
                 Response.Loading -> Response.Loading
             }
         }
@@ -32,7 +32,7 @@ class FakeMainModeRepository @Inject constructor(
         firestore.getQuizQuestions().map { resp ->
             when (resp) {
                 is Response.Success -> Response.Success(resp.data.map { it.toDomain() })
-                is Response.Error -> Response.Error(resp.error)
+                is Response.Error -> resp
                 Response.Loading -> Response.Loading
             }
         }

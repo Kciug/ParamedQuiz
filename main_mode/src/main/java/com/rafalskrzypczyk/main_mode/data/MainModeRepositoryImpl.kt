@@ -31,7 +31,7 @@ class MainModeRepositoryImpl @Inject constructor(
                             categories = it.data.map { dto -> dto.toDomain() }
                             Response.Success(categories!!)
                         }
-                        is Response.Error -> Response.Error(it.error)
+                        is Response.Error -> it
                         is Response.Loading -> Response.Loading
                     }
                 }
@@ -51,7 +51,7 @@ class MainModeRepositoryImpl @Inject constructor(
                             questions = it.data.map { dto -> dto.toDomain() }
                             Response.Success(questions!!)
                         }
-                        is Response.Error -> Response.Error(it.error)
+                        is Response.Error -> it
                         is Response.Loading -> Response.Loading
                     }
                 }

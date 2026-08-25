@@ -1,5 +1,6 @@
 package com.rafalskrzypczyk.core.composables
 
+import com.rafalskrzypczyk.core.error.AppError
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -62,7 +63,7 @@ fun TrialFinishedPanel(
     modifier: Modifier = Modifier,
     isPurchasing: Boolean = false,
     isPending: Boolean = false,
-    purchaseError: String? = null,
+    purchaseError: AppError? = null,
     buyButtonModifier: Modifier = Modifier
 ) {
     val themeColor = ModeInfoProvider.getColor(mode)

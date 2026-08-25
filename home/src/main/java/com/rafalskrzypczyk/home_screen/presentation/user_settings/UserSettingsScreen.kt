@@ -112,7 +112,7 @@ fun UserSettingsScreen(
             .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
 
         when(state.responseState) {
-            is ResponseState.Error -> ErrorDialog(state.responseState.message) { onEvent(UserSettingsUIEvents.ClearState) }
+            is ResponseState.Error -> ErrorDialog(state.responseState.error) { onEvent(UserSettingsUIEvents.ClearState) }
             else -> {
                 Box(modifier = modifier.fillMaxSize()) {
                     UserSettingsContent(

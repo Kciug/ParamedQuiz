@@ -11,6 +11,9 @@ import com.rafalskrzypczyk.billing.domain.getCategoryBillingId
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
+import com.rafalskrzypczyk.core.error.AppError
+import com.rafalskrzypczyk.core.error.ErrorLogger
+import com.rafalskrzypczyk.core.error.report
 import com.rafalskrzypczyk.core.feedback.FeedbackEvent
 import com.rafalskrzypczyk.core.feedback.FeedbackManager
 import com.rafalskrzypczyk.main_mode.domain.models.Category
@@ -29,8 +32,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+private const val ORIGIN_LOAD_PRODUCTS = "StoreVM.loadProducts"
+private const val ORIGIN_BUY_MODE = "StoreVM.buyMode"
+
 @HiltViewModel
 class StoreVM @Inject constructor(
+    private val errorLogger: ErrorLogger,
     private val premiumStatusProvider: PremiumStatusProvider,
     private val billingRepository: BillingRepository,
     private val feedbackManager: FeedbackManager,
@@ -81,7 +88,7 @@ class StoreVM @Inject constructor(
                     }
 
                     is PurchaseResult.Error -> {
-                        _state.update { it.copy(isPurchasing = false, purchaseError = result.message, pendingPurchaseModeId = null) }
+                        _state.update { it.copy(isPurchasing = false, purchaseError = result.error, pendingPurchaseModeId = null) }
                     }
                 }
             }
@@ -238,7 +245,8 @@ class StoreVM @Inject constructor(
                     } else currentState
                 }
             } catch (e: Exception) {
-                _state.update { it.copy(responseState = ResponseState.Error(e.message ?: "Unknown error")) }
+                errorLogger.log(ORIGIN_LOAD_PRODUCTS, AppError.Unexpected, e)
+                _state.update { it.copy(responseState = ResponseState.Error(AppError.Unexpected)) }
             }
         }
     }
@@ -249,7 +257,7 @@ class StoreVM @Inject constructor(
             _state.update { it.copy(isPurchasing = true, purchaseError = null, pendingPurchaseModeId = productId) }
             billingRepository.launchBillingFlow(activity, details)
         } else {
-            _state.update { it.copy(purchaseError = "Product details not found.") }
+            _state.update { it.copy(purchaseError = errorLogger.report(ORIGIN_BUY_MODE, AppError.Billing.ProductDetailsMissing)) }
             loadPrices()
         }
     }

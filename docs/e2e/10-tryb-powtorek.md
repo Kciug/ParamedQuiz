@@ -39,7 +39,24 @@
 
 ### E2E-REV-06 — brak kwalifikujących się pytań → stan pusty
 - **Priorytet:** P2
-- **Status:** ☐ manualny
+- **Status:** ✅ zautomatyzowany — `app/src/test/.../e2e/RevisionsEmptyStateHarnessTest`
 - **Given:** konfiguracja, dla której nie ma kwalifikujących się pytań.
 - **When:** użytkownik ustawia taką konfigurację.
-- **Then:** prezentowany stan pusty; sesji nie da się rozpocząć.
+- **Then:** prezentowany stan pusty; sesji nie da się rozpocząć. Kontrolki kryterium i kategorii
+  **pozostają dostępne**, więc zmiana kryterium przywraca konfigurowalną pulę — stan pusty nie jest
+  ślepą uliczką (MQ-20-B). Wyjątkiem jest niekwalifikowany tryb źródłowy (REV-05), gdzie nie ma czego
+  konfigurować i jedynym wyjściem jest Anuluj.
+
+### E2E-REV-07 — korekta nie podnosi skuteczności pierwszego podejścia
+- **Priorytet:** P1
+- **Status:** ✅ zautomatyzowany — `revisions/src/test/.../presentation/quiz/RevisionsQuizVMTest`
+- **Given:** sesja z dwoma pytaniami.
+- **When:** pierwsze pytanie zostaje pomylone i poprawione w fazie korekty, drugie zaliczone za pierwszym razem.
+- **Then:** skuteczność pierwszego podejścia wynosi 50%, a licznik poprawnych odpowiedzi pokazuje 2 — pytanie poprawione jest zaliczone, ale nie liczy się do skuteczności.
+
+### E2E-REV-08 — wyjście w trakcie sesji liczy tylko pytania podjęte
+- **Priorytet:** P2
+- **Status:** ✅ zautomatyzowany — `revisions/src/test/.../presentation/quiz/RevisionsQuizVMTest`
+- **Given:** sesja skonfigurowana na wiele pytań.
+- **When:** użytkownik odpowiada na część z nich i wychodzi z sesji, potwierdzając wyjście.
+- **Then:** podsumowanie liczy pytania podjęte, a nie całą skonfigurowaną pulę.

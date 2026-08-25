@@ -1,6 +1,7 @@
 package com.rafalskrzypczyk.score.domain
 
 import com.rafalskrzypczyk.core.api_response.Response
+import com.rafalskrzypczyk.core.error.AppError
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -12,6 +13,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 
 class ScoreManager @Inject constructor(
     private val repository: ScoreRepository,
@@ -19,8 +21,8 @@ class ScoreManager @Inject constructor(
 ) {
     private var score = MutableStateFlow(Score.empty())
 
-    private val _errorFlow = MutableSharedFlow<String>(extraBufferCapacity = 1)
-    val errorFlow: SharedFlow<String> = _errorFlow.asSharedFlow()
+    private val _errorFlow = MutableSharedFlow<AppError>(extraBufferCapacity = 1)
+    val errorFlow: SharedFlow<AppError> = _errorFlow.asSharedFlow()
 
     private var syncJob: Job? = null
     private val syncJobDebounce = 30000L
@@ -53,7 +55,7 @@ class ScoreManager @Inject constructor(
     private fun syncDebounced() {
         syncJob?.cancel()
         syncJob = ioScope.launch {
-            delay(syncJobDebounce)
+            delay(syncJobDebounce.milliseconds)
             syncScore()
         }
     }

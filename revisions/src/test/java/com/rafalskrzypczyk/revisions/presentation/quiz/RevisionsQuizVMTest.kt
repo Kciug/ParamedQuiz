@@ -229,4 +229,89 @@ class RevisionsQuizVMTest {
         assertEquals(10, stateAfterNext.quizFinishedState.earnedPoints)
         coVerify(exactly = 1) { streakManager.increaseStreak() }
     }
+
+    @Test
+    fun `should exclude corrected answers from first attempt accuracy`() = runTest {
+        val questions = listOf(
+            RevisionQuestion.Main(question(101L)),
+            RevisionQuestion.Main(question(102L))
+        )
+
+        every { getRevisionsQuestions(any(), any(), any(), any()) } returns flowOf(Response.Success(questions))
+        every { updateScoreWithQuestion(any(), any()) } returns 10
+
+        viewModel = createViewModel()
+
+        // q1 blednie - wraca na koniec kolejki, wiec kolejne jest q2.
+        answerCurrentQuestion(correct = false)
+        // q2 poprawnie za pierwszym razem.
+        answerCurrentQuestion(correct = true)
+        // q1 poprawnie, ale dopiero w korekcie - to nie moze podniesc skutecznosci.
+        answerCurrentQuestion(correct = true)
+
+        val state = viewModel.state.value
+        assertTrue(state.quizFinished)
+        assertEquals("Oba pytania zaliczone lacznie", 2, state.quizFinishedState.correctAnswers)
+        assertEquals("Tylko q2 za pierwszym podejsciem", 1, state.firstAttemptCorrectCount)
+        assertEquals("1 z 2 podjetych pytan", 50, state.firstAttemptAccuracy)
+    }
+
+    @Test
+    fun `should count only attempted questions when session is exited early`() = runTest {
+        val questions = listOf(
+            RevisionQuestion.Main(question(101L)),
+            RevisionQuestion.Main(question(102L)),
+            RevisionQuestion.Main(question(103L))
+        )
+
+        every { getRevisionsQuestions(any(), any(), any(), any()) } returns flowOf(Response.Success(questions))
+        every { updateScoreWithQuestion(any(), any()) } returns 10
+
+        viewModel = createViewModel()
+
+        answerCurrentQuestion(correct = true)
+
+        viewModel.onEvent(RevisionsQuizUIEvents.OnBackPressed)
+        viewModel.onEvent(RevisionsQuizUIEvents.OnBackConfirmed)
+
+        val state = viewModel.state.value
+        assertTrue(state.quizFinished)
+        assertEquals("Podsumowanie liczy podjete pytania, nie cala pule", 1, state.quizFinishedState.seenQuestions)
+        assertEquals(1, state.quizFinishedState.correctAnswers)
+        assertEquals(100, state.firstAttemptAccuracy)
+    }
+
+    private fun question(id: Long) = Question(
+        id = id,
+        questionText = "Question $id",
+        answers = listOf(
+            Answer(id = CORRECT_ANSWER_ID, answerText = "A1", isCorrect = true),
+            Answer(id = WRONG_ANSWER_ID, answerText = "A2", isCorrect = false)
+        )
+    )
+
+    private fun createViewModel() = RevisionsQuizVM(
+        savedStateHandle = savedStateHandle,
+        getRevisionsQuestions = getRevisionsQuestions,
+        updateScoreWithQuestion = updateScoreWithQuestion,
+        scoreManager = scoreManager,
+        streakManager = streakManager,
+        reportIssueUC = reportIssueUC,
+        adHandler = adHandler,
+        feedbackManager = NoOpFeedbackManager
+    )
+
+    /** Zatwierdza odpowiedz na biezace pytanie i przechodzi dalej. */
+    private fun answerCurrentQuestion(correct: Boolean) {
+        viewModel.onEvent(
+            RevisionsQuizUIEvents.OnAnswerSelected(if (correct) CORRECT_ANSWER_ID else WRONG_ANSWER_ID)
+        )
+        viewModel.onEvent(RevisionsQuizUIEvents.OnSubmitAnswer)
+        viewModel.onEvent(RevisionsQuizUIEvents.OnNextQuestion)
+    }
+
+    private companion object {
+        const val CORRECT_ANSWER_ID = 1L
+        const val WRONG_ANSWER_ID = 2L
+    }
 }

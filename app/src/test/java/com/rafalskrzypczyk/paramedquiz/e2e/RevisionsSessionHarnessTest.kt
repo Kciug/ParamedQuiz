@@ -48,6 +48,9 @@ import javax.inject.Inject
  * Powtórki działają wyłącznie na pytaniach już odpowiadanych (historia `seenQuestions`). Test seeduje
  * pytanie + historię (kryterium „najsłabsze"), buduje sesję powtórki (tryb główny, WORST, bez limitu)
  * i rozgrywa ją do ekranu wyniku. Reużywa test-tagów quizu (submit/next/finish).
+ *
+ * Pilnuje też oznaczenia pytań wielokrotnego wyboru (MQ-21-B) — w powtórkach nie było go wcale,
+ * bo badge wisiał na parametrze nagłówka, którego ten ekran nigdy nie przekazywał.
  */
 @HiltAndroidTest
 @RunWith(RobolectricTestRunner::class)
@@ -115,7 +118,55 @@ class RevisionsSessionHarnessTest {
 
     @Test
     fun `revision session loads eligible questions and plays to finish`() {
-        // Pytanie „widziane" (historia) → kwalifikuje się do powtórki (kryterium najsłabsze).
+        val viewModel = startSession()
+
+        // Sesja załadowała zakwalifikowane pytanie → rozgrywka do ekranu wyniku.
+        waitForText("ODP_POPRAWNA")
+
+        // Pytanie ma jedną poprawną odpowiedź — badge nie ma prawa się pojawić. Bez tej asercji
+        // test poniżej przechodziłby także dla komponentu renderowanego bezwarunkowo.
+        composeRule.onNodeWithTag(TestTags.QUIZ_MULTIPLE_CHOICE_BADGE).assertDoesNotExist()
+
+        composeRule.onNodeWithText("ODP_POPRAWNA").performClick()
+        composeRule.onNodeWithTag(TestTags.QUIZ_SUBMIT_BUTTON).performClick()
+        waitForTag(TestTags.QUIZ_NEXT_BUTTON)
+        composeRule.onNodeWithTag(TestTags.QUIZ_NEXT_BUTTON).performClick()
+        waitForTag(TestTags.QUIZ_FINISHED_ROOT)
+
+        assertTrue("Sesja powtórki powinna się zakończyć", viewModel.state.value.quizFinished)
+        assertEquals("Jedna poprawna odpowiedź", 1, viewModel.state.value.quizFinishedState.correctAnswers)
+    }
+
+    @Test
+    fun `multiple choice question is marked with a badge in a revision session`() {
+        // To samo id pytania, więc seed historii dalej kwalifikuje je do powtórki — zmienia się
+        // wyłącznie liczba poprawnych odpowiedzi.
+        fakeFirestore.quizQuestions = listOf(
+            QuestionDTO(
+                id = questionId,
+                questionText = "PYTANIE_WIELOKROTNE",
+                categoryIDs = listOf(100),
+                answers = listOf(
+                    AnswerDTO(id = 1, answerText = "ODP_POPRAWNA_A", isCorrect = true),
+                    AnswerDTO(id = 2, answerText = "ODP_POPRAWNA_B", isCorrect = true),
+                    AnswerDTO(id = 3, answerText = "ODP_BLEDNA", isCorrect = false)
+                )
+            )
+        )
+
+        startSession()
+
+        waitForText("ODP_POPRAWNA_A")
+        composeRule.onNodeWithTag(TestTags.QUIZ_MULTIPLE_CHOICE_BADGE).assertExists()
+    }
+
+    @After
+    fun tearDown() {
+        viewModelStore.clear()
+    }
+
+    /** Historia „widzianych" pytań kwalifikuje je do powtórki (kryterium najsłabsze). */
+    private fun startSession(): RevisionsQuizVM {
         scoreManager.updateScore(seededScore)
 
         val viewModel = RevisionsQuizVM(
@@ -140,21 +191,7 @@ class RevisionsSessionHarnessTest {
             }
         }
 
-        // Sesja załadowała zakwalifikowane pytanie → rozgrywka do ekranu wyniku.
-        waitForText("ODP_POPRAWNA")
-        composeRule.onNodeWithText("ODP_POPRAWNA").performClick()
-        composeRule.onNodeWithTag(TestTags.QUIZ_SUBMIT_BUTTON).performClick()
-        waitForTag(TestTags.QUIZ_NEXT_BUTTON)
-        composeRule.onNodeWithTag(TestTags.QUIZ_NEXT_BUTTON).performClick()
-        waitForTag(TestTags.QUIZ_FINISHED_ROOT)
-
-        assertTrue("Sesja powtórki powinna się zakończyć", viewModel.state.value.quizFinished)
-        assertEquals("Jedna poprawna odpowiedź", 1, viewModel.state.value.quizFinishedState.correctAnswers)
-    }
-
-    @After
-    fun tearDown() {
-        viewModelStore.clear()
+        return viewModel
     }
 
     private fun waitForText(text: String) {

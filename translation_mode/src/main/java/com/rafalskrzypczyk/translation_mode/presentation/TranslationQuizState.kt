@@ -2,6 +2,7 @@ package com.rafalskrzypczyk.translation_mode.presentation
 
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedState
+import com.rafalskrzypczyk.core.error.AppError
 import com.rafalskrzypczyk.translation_mode.domain.TranslationQuestionUIM
 
 data class TranslationQuizState(
@@ -22,7 +23,7 @@ data class TranslationQuizState(
     val totalTranslationQuestions: Int = 0,
     val isPurchasing: Boolean = false,
     val isPending: Boolean = false,
-    val purchaseError: String? = null
+    val purchaseError: AppError? = null
 ) {
     val currentQuestion: TranslationQuestionUIM?
         get() = questions.getOrNull(currentQuestionIndex)

@@ -40,6 +40,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.rafalskrzypczyk.core.R
+import com.rafalskrzypczyk.core.error.AppError
+import com.rafalskrzypczyk.core.error.asMessage
 import com.rafalskrzypczyk.core.feedback.FeedbackEvent
 import com.rafalskrzypczyk.core.feedback.LocalFeedbackManager
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
@@ -151,9 +153,20 @@ fun BaseCustomDialog(
     }
 }
 
+/**
+ * Modalny dialog bledu. Podanie [onRetry] dodaje drugi przycisk ponawiajacy operacje.
+ *
+ * Dialog nie reaguje na przycisk wstecz ani tapniecie poza nim, wiec [onInteraction] musi
+ * zawsze byc droga wyjscia z biezacego stanu. Podpiecie tam ponawiania zamyka uzytkownika
+ * w petli, z ktorej nie da sie wyjsc.
+ *
+ * [onInteraction] jest ostatnim parametrem celowo, zeby skladnia trailing lambda wiazala sie
+ * z akcja wyjscia, a nie z ponawianiem.
+ */
 @Composable
 fun ErrorDialog(
-    errorMessage: String,
+    error: AppError,
+    onRetry: (() -> Unit)? = null,
     onInteraction: () -> Unit
 ) {
     val feedbackManager = LocalFeedbackManager.current
@@ -168,14 +181,22 @@ fun ErrorDialog(
         headerContentColor = MaterialTheme.colorScheme.onError,
         content = {
             TextPrimary(
-                text = errorMessage,
+                text = error.asMessage(),
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center
             )
         },
         buttons = {
+            if (onRetry != null) {
+                TextButton(onClick = rememberDebouncedClick(onClick = onRetry)) {
+                    TextPrimary(text = stringResource(R.string.btn_retry), color = MaterialTheme.colorScheme.primary)
+                }
+            }
             TextButton(onClick = rememberDebouncedClick(onClick = onInteraction)) {
-                TextPrimary(text = stringResource(R.string.btn_confirm_OK), color = MaterialTheme.colorScheme.primary)
+                TextPrimary(
+                    text = stringResource(if (onRetry != null) R.string.btn_back else R.string.btn_confirm_OK),
+                    color = MaterialTheme.colorScheme.primary
+                )
             }
         }
     )
@@ -267,7 +288,7 @@ fun InfoDialog(
 private fun ErrorDialogPreview() {
     ParamedQuizTheme {
         Surface {
-            ErrorDialog("Przykładowy błąd") { }
+            ErrorDialog(AppError.Data.Unavailable) { }
         }
     }
 }

@@ -21,13 +21,15 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 private const val TAG = "BillingDataSource"
+private const val ORIGIN_PURCHASE_UPDATE = "BillingDataSource.onPurchasesUpdated"
+private const val ORIGIN_LAUNCH_PURCHASE = "BillingDataSource.launchPurchaseFlow"
 
 @Singleton
 class BillingDataSource @Inject constructor(
     @ApplicationContext context: Context,
     private val externalScope: CoroutineScope,
     private val billingClientProvider: BillingClientProvider,
-    private val billingError: BillingError
+    private val billingErrorMapper: BillingErrorMapper
 ) : PurchasesUpdatedListener, BillingClientStateListener {
 
     private val _isBillingSetupFinished = MutableStateFlow(false)
@@ -95,12 +97,12 @@ class BillingDataSource @Inject constructor(
         } else if (billingResult.responseCode == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED) {
             refreshPurchases()
             externalScope.launch {
-                _purchaseResult.emit(PurchaseResult.Error(billingError.localizedError(billingResult.responseCode)))
+                _purchaseResult.emit(PurchaseResult.Error(billingErrorMapper.toAppError(ORIGIN_PURCHASE_UPDATE, billingResult.responseCode)))
             }
         } else {
             Log.e(TAG, "Purchase update failed: ${billingResult.debugMessage} (code: ${billingResult.responseCode})")
             externalScope.launch {
-                _purchaseResult.emit(PurchaseResult.Error(billingError.localizedError(billingResult.responseCode)))
+                _purchaseResult.emit(PurchaseResult.Error(billingErrorMapper.toAppError(ORIGIN_PURCHASE_UPDATE, billingResult.responseCode)))
             }
         }
     }
@@ -120,7 +122,7 @@ class BillingDataSource @Inject constructor(
             refreshPurchases()
         } else if (result.responseCode != BillingClient.BillingResponseCode.OK) {
             externalScope.launch {
-                _purchaseResult.emit(PurchaseResult.Error(billingError.localizedError(result.responseCode)))
+                _purchaseResult.emit(PurchaseResult.Error(billingErrorMapper.toAppError(ORIGIN_LAUNCH_PURCHASE, result.responseCode)))
             }
         }
     }

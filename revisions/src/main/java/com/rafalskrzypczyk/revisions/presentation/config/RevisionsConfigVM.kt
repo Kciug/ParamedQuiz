@@ -76,7 +76,7 @@ class RevisionsConfigVM @Inject constructor(
                 updateQuestionsCountAndLimits()
             }
             is RevisionsConfigUIEvents.SelectLimit -> {
-                _state.update { it.copy(selectedLimit = event.limit) }
+                _state.update { it.copy(selectedLimit = event.limit, preferredLimit = event.limit) }
             }
         }
     }
@@ -197,6 +197,7 @@ class RevisionsConfigVM @Inject constructor(
      */
     private fun updateQuestionsCountAndLimits() {
         questionsUpdateJob?.cancel()
+        _state.update { it.copy(isRecalculatingPool = true) }
 
         val requestState = _state.value
         val mode = requestState.selectedMode
@@ -211,8 +212,11 @@ class RevisionsConfigVM @Inject constructor(
                         val limits = calculateAvailableLimits(count)
 
                         _state.update { current ->
-                            val newLimit = if (current.selectedLimit == null || limits.contains(current.selectedLimit)) {
-                                current.selectedLimit
+                            // Limit odtwarzamy z deklaracji uzytkownika, nie z poprzednio wyliczonej
+                            // wartosci - inaczej przejscie przez pusta pule (gdzie jedyna opcja jest
+                            // "wszystkie") kasowaloby wybor na stale.
+                            val newLimit = if (limits.contains(current.preferredLimit)) {
+                                current.preferredLimit
                             } else {
                                 limits.firstOrNull()
                             }
@@ -223,6 +227,7 @@ class RevisionsConfigVM @Inject constructor(
                                 selectedLimit = newLimit,
                                 isEmptyState = count == 0,
                                 isQuestionsLoading = false,
+                                isRecalculatingPool = false,
                                 isConfigDialogVisible = if (current.loadingMode != null) true else current.isConfigDialogVisible,
                                 loadingMode = null
                             )
@@ -232,6 +237,7 @@ class RevisionsConfigVM @Inject constructor(
                         _state.update {
                             it.copy(
                                 isQuestionsLoading = false,
+                                isRecalculatingPool = false,
                                 loadingMode = null,
                                 responseState = ResponseState.Error(response.error)
                             )

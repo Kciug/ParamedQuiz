@@ -15,12 +15,14 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.rafalskrzypczyk.core.composables.BaseCustomDialog
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.TextHeadline
 import com.rafalskrzypczyk.core.composables.TextPrimary
+import com.rafalskrzypczyk.core.testing.TestTags
 import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.core.utils.ModeInfoProvider
 import com.rafalskrzypczyk.core.utils.rememberDebouncedClick
@@ -41,7 +43,12 @@ fun RevisionConfigDialog(
 ) {
     val isLoading = state.isQuestionsLoading || state.isCategoriesLoading
 
-    val isEmptyContent = !state.isModeEligible || state.isEmptyState
+    // Niedostępny tryb i pusta pula to dwa różne stany. Pierwszy nie ma czego konfigurować.
+    // Drugi ma — i musi zostawić kontrolki widoczne, bo inaczej użytkownik, który zawęzi filtr
+    // do zera pytań, nie ma jak z tego wyjść bez opuszczenia całych powtórek.
+    val isModeUnavailable = !state.isModeEligible
+    val isEmptyPool = state.isModeEligible && state.isEmptyState
+    val hasCategoryPicker = state.selectedMode != QuizMode.TranslationMode
 
     val title = when (state.selectedMode) {
         QuizMode.MainMode -> stringResource(R.string.revisions_mode_main)
@@ -64,25 +71,26 @@ fun RevisionConfigDialog(
                 modifier = modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING)
             ) {
-                if (isEmptyContent) {
-                    val emptyTitle = if (!state.isModeEligible) {
-                        "Tryb niedostępny"
-                    } else {
-                        stringResource(R.string.revisions_empty_state_title)
-                    }
-
-                    val msg = if (!state.isModeEligible) {
-                        stringResource(R.string.revisions_mode_not_enough_answers)
-                    } else {
-                        stringResource(R.string.revisions_empty_state_msg)
-                    }
-
+                if (isModeUnavailable) {
                     EmptyStateCard(
-                        title = emptyTitle,
-                        message = msg
+                        title = stringResource(R.string.revisions_mode_unavailable_title),
+                        message = stringResource(R.string.revisions_mode_not_enough_answers),
+                        modifier = Modifier.testTag(TestTags.REVISIONS_EMPTY_STATE)
                     )
                 } else {
-                    if (state.selectedMode != QuizMode.TranslationMode) {
+                    if (isEmptyPool) {
+                        EmptyStateCard(
+                            title = stringResource(R.string.revisions_empty_state_title),
+                            message = if (hasCategoryPicker) {
+                                stringResource(R.string.revisions_empty_state_msg)
+                            } else {
+                                stringResource(R.string.revisions_empty_state_msg_no_category)
+                            },
+                            modifier = Modifier.testTag(TestTags.REVISIONS_EMPTY_STATE)
+                        )
+                    }
+
+                    if (hasCategoryPicker) {
                         Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
                         TextHeadline(
                             text = stringResource(R.string.revisions_select_pool)
@@ -112,39 +120,43 @@ fun RevisionConfigDialog(
                                     RevisionCriterion.BEST -> "Najlepsze"
                                     RevisionCriterion.UNDER_50 -> "Poniżej 50% trafności"
                                 },
-                                onClick = { onEvent(RevisionsConfigUIEvents.SelectCriterion(criterion)) }
+                                onClick = { onEvent(RevisionsConfigUIEvents.SelectCriterion(criterion)) },
+                                modifier = Modifier.testTag(TestTags.revisionsCriterionChip(criterion.name))
                             )
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
-                    TextHeadline(
-                        text = stringResource(R.string.revisions_select_limit)
-                    )
+                    // Przy pustej puli jedyną opcją byłoby "Wszystkie (0)" — sekcja nic nie wnosi.
+                    if (!isEmptyPool) {
+                        Spacer(modifier = Modifier.height(Dimens.ELEMENTS_SPACING_SMALL))
+                        TextHeadline(
+                            text = stringResource(R.string.revisions_select_limit)
+                        )
 
-                    // Sekcja limitów odświeża się po zmianie kryterium/kategorii — chipy zostają
-                    // widoczne i aktualizują się w miejscu, bez loadera. Stabilna wysokość
-                    // trzyma dialog w ryzach, żeby nie skakał.
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 48.dp),
-                        contentAlignment = Alignment.CenterStart
-                    ) {
-                        FlowRow(
-                            horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL),
-                            verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL),
-                            modifier = Modifier.fillMaxWidth()
+                        // Sekcja limitów odświeża się po zmianie kryterium/kategorii — chipy zostają
+                        // widoczne i aktualizują się w miejscu, bez loadera. Stabilna wysokość
+                        // trzyma dialog w ryzach, żeby nie skakał.
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(min = 48.dp),
+                            contentAlignment = Alignment.CenterStart
                         ) {
-                            state.availableLimits.forEach { limit ->
-                                val isSelected = state.selectedLimit == limit
-                                val title =
-                                    limit?.toString() ?: stringResource(R.string.revisions_limit_all, state.availableQuestionsCount)
-                                RevisionsChoiceChip(
-                                    selected = isSelected,
-                                    title = title,
-                                    onClick = { onEvent(RevisionsConfigUIEvents.SelectLimit(limit)) }
-                                )
+                            FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL),
+                                verticalArrangement = Arrangement.spacedBy(Dimens.ELEMENTS_SPACING_SMALL),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                state.availableLimits.forEach { limit ->
+                                    val isSelected = state.selectedLimit == limit
+                                    val title =
+                                        limit?.toString() ?: stringResource(R.string.revisions_limit_all, state.availableQuestionsCount)
+                                    RevisionsChoiceChip(
+                                        selected = isSelected,
+                                        title = title,
+                                        onClick = { onEvent(RevisionsConfigUIEvents.SelectLimit(limit)) }
+                                    )
+                                }
                             }
                         }
                     }
@@ -152,7 +164,10 @@ fun RevisionConfigDialog(
             }
         },
         buttons = {
-            val isStartEnabled = !isLoading && !state.isEmptyState && state.isModeEligible &&
+            // isRecalculatingPool zamyka wyścig: zanim przeliczenie się rozwiąże, isEmptyState jest
+            // jeszcze nieaktualnie false i dawało się wystartować sesję na zerowej puli.
+            val isStartEnabled = !isLoading && !state.isRecalculatingPool && !state.isEmptyState &&
+                    state.isModeEligible &&
                     (state.selectedMode == QuizMode.TranslationMode || (state.selectedCategory != null && state.selectedCategory.isEligible))
 
             TextButton(onClick = rememberDebouncedClick(onClick = onDismiss)) {
@@ -172,7 +187,8 @@ fun RevisionConfigDialog(
                         state.selectedLimit
                     )
                 },
-                enabled = isStartEnabled
+                enabled = isStartEnabled,
+                modifier = Modifier.testTag(TestTags.REVISIONS_START_BUTTON)
             ) {
                 TextPrimary(
                     text = stringResource(R.string.revisions_start_btn),

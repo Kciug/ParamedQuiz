@@ -13,7 +13,7 @@ class UpdateUsernameUC @Inject constructor(
         return authRepository.changeUserName(newUsername).map { response ->
             when (response) {
                 is Response.Success -> Response.Success(Unit)
-                is Response.Error -> Response.Error(response.error)
+                is Response.Error -> response
                 Response.Loading -> Response.Loading
             }
         }

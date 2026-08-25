@@ -19,20 +19,15 @@ import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.ui.theme.MQGreen
 import com.rafalskrzypczyk.core.ui.theme.MQRed
 import com.rafalskrzypczyk.revisions.R
-import com.rafalskrzypczyk.revisions.domain.models.RevisionQuestion
 
 @Composable
 fun RevisionsQuizFinishedExtras(
     modeName: String,
-    questions: List<RevisionQuestion>,
-    attemptedQuestionIds: Set<Long>,
-    correctCount: Int,
+    accuracy: Int,
+    hasReviewableQuestions: Boolean,
     onReviewClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val attemptedCount = questions.count { attemptedQuestionIds.contains(it.id) }
-    val accuracy = if (attemptedCount > 0) ((correctCount.toFloat() / attemptedCount) * 100).toInt() else 0
-
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(Dimens.RADIUS_DEFAULT),
@@ -56,7 +51,7 @@ fun RevisionsQuizFinishedExtras(
                 color = if (accuracy >= 50) MQGreen else MQRed
             )
 
-            if (attemptedCount > 0) {
+            if (hasReviewableQuestions) {
                 Button(
                     onClick = onReviewClick,
                     modifier = Modifier.fillMaxWidth(),

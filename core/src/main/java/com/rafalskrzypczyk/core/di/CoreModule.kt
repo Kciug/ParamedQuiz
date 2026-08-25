@@ -4,11 +4,12 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.rafalskrzypczyk.core.feedback.FeedbackManager
 import com.rafalskrzypczyk.core.feedback.FeedbackManagerImpl
+import com.rafalskrzypczyk.core.network.ConnectivityNetworkMonitor
+import com.rafalskrzypczyk.core.network.NetworkMonitor
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesService
 import com.rafalskrzypczyk.core.user_management.UserManager
 import com.rafalskrzypczyk.core.user_management.UserManagerImpl
-import com.rafalskrzypczyk.core.utils.FirebaseError
 import com.rafalskrzypczyk.core.utils.ResourceProvider
 import dagger.Binds
 import dagger.Module
@@ -28,11 +29,6 @@ class CoreModule {
     @Singleton
     fun provideResourceProvider(@ApplicationContext context: Context): ResourceProvider =
         ResourceProvider(context)
-
-    @Provides
-    @Singleton
-    fun provideFirebaseErrorHandler(resourceProvider: ResourceProvider): FirebaseError =
-        FirebaseError(resourceProvider)
 
     @Provides
     @Singleton
@@ -62,4 +58,8 @@ abstract class CoreModuleBinds {
     @Binds
     @Singleton
     abstract fun bindFeedbackManager(feedbackManager: FeedbackManagerImpl): FeedbackManager
+
+    @Binds
+    @Singleton
+    abstract fun bindNetworkMonitor(networkMonitor: ConnectivityNetworkMonitor): NetworkMonitor
 }

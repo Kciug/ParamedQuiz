@@ -122,9 +122,8 @@ fun RevisionsQuizScreen(
         quizFinishedExtras = {
             RevisionsQuizFinishedExtras(
                 modeName = modeTitle,
-                questions = state.originalQuestions,
-                attemptedQuestionIds = state.attemptedQuestionIds,
-                correctCount = state.quizFinishedState.correctAnswers,
+                accuracy = state.firstAttemptAccuracy,
+                hasReviewableQuestions = state.attemptedQuestionIds.isNotEmpty(),
                 onReviewClick = { onEvent(RevisionsQuizUIEvents.ToggleReviewDialog(true)) },
                 modifier = Modifier.padding(top = Dimens.DEFAULT_PADDING)
             )
@@ -138,7 +137,7 @@ fun RevisionsQuizScreen(
         ) { responseState ->
             when (responseState) {
                 ResponseState.Idle, ResponseState.Loading -> Loading()
-                is ResponseState.Error -> ErrorDialog(responseState.message) { onNavigateBack() }
+                is ResponseState.Error -> ErrorDialog(responseState.error) { onNavigateBack() }
                 ResponseState.Success -> {
                     if (isLandscape && state.mode == QuizMode.TranslationMode) {
                         RotateDevicePrompt(modifier = Modifier.padding(innerPadding))

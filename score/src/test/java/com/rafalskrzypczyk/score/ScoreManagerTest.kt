@@ -2,6 +2,7 @@ package com.rafalskrzypczyk.score
 
 import app.cash.turbine.test
 import com.rafalskrzypczyk.core.api_response.Response
+import com.rafalskrzypczyk.core.error.AppError
 import com.rafalskrzypczyk.score.domain.Score
 import com.rafalskrzypczyk.score.domain.ScoreManager
 import com.rafalskrzypczyk.score.domain.ScoreRepository
@@ -22,6 +23,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ScoreManagerTest {
@@ -56,7 +58,7 @@ class ScoreManagerTest {
 
     @Test
     fun `fetchUserScore emits error`() = testScope.runTest {
-        val error = "Network Error"
+        val error = AppError.Data.Unavailable
         coEvery { repository.getUserScore() } returns flowOf(Response.Error(error))
 
         scoreManager.errorFlow.test {
@@ -73,7 +75,7 @@ class ScoreManagerTest {
         val updatedScore = Score(5, 0, null, null, emptyList())
         scoreManager.updateScore(updatedScore)
 
-        advanceTimeBy(30000)
+        advanceTimeBy(30000.milliseconds)
         advanceUntilIdle()
 
         assertEquals(updatedScore, scoreManager.getScore())
@@ -101,7 +103,7 @@ class ScoreManagerTest {
 
     @Test
     fun `syncScore emits error`() = testScope.runTest {
-        val error = "Write failed"
+        val error = AppError.Data.PermissionDenied
         coEvery { repository.saveUserScore(any()) } returns flowOf(Response.Error(error))
 
         scoreManager.updateScore(Score(1, 0, null, null, emptyList()))

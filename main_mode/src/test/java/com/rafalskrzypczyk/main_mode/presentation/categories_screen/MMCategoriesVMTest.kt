@@ -3,9 +3,9 @@ package com.rafalskrzypczyk.main_mode.presentation.categories_screen
 import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.billing.domain.getCategoryBillingId
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
+import com.rafalskrzypczyk.core.error.ErrorLogger
 import com.rafalskrzypczyk.core.feedback.NoOpFeedbackManager
 import com.rafalskrzypczyk.core.quiz.models.CategoryUIM
-import com.rafalskrzypczyk.core.utils.ResourceProvider
 import com.rafalskrzypczyk.main_mode.domain.quiz_categories.MMCategoriesUseCases
 import io.mockk.coVerify
 import io.mockk.every
@@ -39,9 +39,9 @@ class MMCategoriesVMTest {
         
         every { billingRepository.availableProducts } returns flowOf(emptyList())
 
-        val resourceProvider = mockk<ResourceProvider>(relaxed = true)
+        val errorLogger = mockk<ErrorLogger>(relaxed = true)
 
-        viewModel = MMCategoriesVM(useCases, billingRepository, premiumStatusProvider, NoOpFeedbackManager, resourceProvider)
+        viewModel = MMCategoriesVM(useCases, billingRepository, premiumStatusProvider, NoOpFeedbackManager, errorLogger)
     }
 
     @After
