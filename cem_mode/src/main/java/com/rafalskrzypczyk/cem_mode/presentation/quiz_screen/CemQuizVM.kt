@@ -24,7 +24,8 @@ class CemQuizVM @Inject constructor(
 ): BaseQuizVM(
     useCases = useCases.base,
     adHandler = adHandler,
-    feedbackManager = feedbackManager
+    feedbackManager = feedbackManager,
+    enforceSingleSelection = true
 ) {
     private val categoryId: Long = savedStateHandle.get<Long>("categoryId") ?: -1
     private val categoryTitle: String = savedStateHandle.get<String>("categoryTitle") ?: ""

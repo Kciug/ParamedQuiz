@@ -290,8 +290,80 @@ class RevisionsQuizVMTest {
         )
     )
 
-    private fun createViewModel() = RevisionsQuizVM(
-        savedStateHandle = savedStateHandle,
+    @Test
+    fun `cem session keeps only one answer selected for single correct answer question`() = runTest {
+        val question = singleCorrectAnswerQuestion()
+        every { getRevisionsQuestions(any(), any(), any(), any()) } returns
+            flowOf(Response.Success(listOf(RevisionQuestion.Cem(question))))
+
+        viewModel = createViewModel(cemSavedStateHandle())
+
+        viewModel.onEvent(RevisionsQuizUIEvents.OnAnswerSelected(CORRECT_ANSWER_ID))
+        viewModel.onEvent(RevisionsQuizUIEvents.OnAnswerSelected(WRONG_ANSWER_ID))
+
+        assertEquals(listOf(WRONG_ANSWER_ID), viewModel.selectedAnswerIds())
+    }
+
+    @Test
+    fun `cem session allows many selected answers for multiple correct answers question`() = runTest {
+        val question = multipleCorrectAnswersQuestion()
+        every { getRevisionsQuestions(any(), any(), any(), any()) } returns
+            flowOf(Response.Success(listOf(RevisionQuestion.Cem(question))))
+
+        viewModel = createViewModel(cemSavedStateHandle())
+
+        viewModel.onEvent(RevisionsQuizUIEvents.OnAnswerSelected(CORRECT_ANSWER_ID))
+        viewModel.onEvent(RevisionsQuizUIEvents.OnAnswerSelected(WRONG_ANSWER_ID))
+
+        assertEquals(listOf(CORRECT_ANSWER_ID, WRONG_ANSWER_ID), viewModel.selectedAnswerIds())
+    }
+
+    @Test
+    fun `main mode session allows many selected answers for single correct answer question`() = runTest {
+        val question = singleCorrectAnswerQuestion()
+        every { getRevisionsQuestions(any(), any(), any(), any()) } returns
+            flowOf(Response.Success(listOf(RevisionQuestion.Main(question))))
+
+        viewModel = createViewModel()
+
+        viewModel.onEvent(RevisionsQuizUIEvents.OnAnswerSelected(CORRECT_ANSWER_ID))
+        viewModel.onEvent(RevisionsQuizUIEvents.OnAnswerSelected(WRONG_ANSWER_ID))
+
+        assertEquals(listOf(CORRECT_ANSWER_ID, WRONG_ANSWER_ID), viewModel.selectedAnswerIds())
+    }
+
+    private fun cemSavedStateHandle() = SavedStateHandle(
+        mapOf(
+            "mode" to QuizMode.CemMode.name,
+            "categoryId" to 1L,
+            "criterion" to RevisionCriterion.WORST.name,
+            "limit" to 10
+        )
+    )
+
+    private fun singleCorrectAnswerQuestion() = Question(
+        id = 301L,
+        questionText = "Pytanie jednokrotnego wyboru",
+        answers = listOf(
+            Answer(id = CORRECT_ANSWER_ID, answerText = "A1", isCorrect = true),
+            Answer(id = WRONG_ANSWER_ID, answerText = "A2", isCorrect = false)
+        )
+    )
+
+    private fun multipleCorrectAnswersQuestion() = Question(
+        id = 302L,
+        questionText = "Pytanie wielokrotnego wyboru",
+        answers = listOf(
+            Answer(id = CORRECT_ANSWER_ID, answerText = "A1", isCorrect = true),
+            Answer(id = WRONG_ANSWER_ID, answerText = "A2", isCorrect = true)
+        )
+    )
+
+    private fun RevisionsQuizVM.selectedAnswerIds() =
+        state.value.currentQuestionUIM?.answers.orEmpty().filter { it.isSelected }.map { it.id }
+
+    private fun createViewModel(handle: SavedStateHandle = savedStateHandle) = RevisionsQuizVM(
+        savedStateHandle = handle,
         getRevisionsQuestions = getRevisionsQuestions,
         updateScoreWithQuestion = updateScoreWithQuestion,
         scoreManager = scoreManager,

@@ -25,7 +25,8 @@ import kotlinx.coroutines.flow.asSharedFlow
 abstract class BaseQuizVM (
     private val useCases: BaseQuizUseCases,
     protected val adHandler: QuizAdHandler,
-    protected val feedbackManager: FeedbackManager
+    protected val feedbackManager: FeedbackManager,
+    private val enforceSingleSelection: Boolean = false
 ): ViewModel() {
     @Suppress("PropertyName")
     protected val _state = MutableStateFlow(QuizState())
@@ -118,11 +119,7 @@ abstract class BaseQuizVM (
     }
 
     private fun onAnswerClicked(answerId: Long) {
-        val updatedAnswers = state.value.question.answers.map { answer ->
-            if (answer.id == answerId) answer.copy(isSelected = !answer.isSelected)
-            else answer
-        }
-        _state.update { it.copy(question = it.question.updateAnswers(updatedAnswers)) }
+        _state.update { it.copy(question = it.question.toggleAnswerSelection(answerId, enforceSingleSelection)) }
     }
 
     protected open fun submitAnswer() {

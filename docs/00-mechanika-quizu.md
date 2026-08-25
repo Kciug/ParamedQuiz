@@ -29,6 +29,7 @@ Sesja quizu to przejście przez **listę pytań** (zwykle potasowaną). W trakci
 
 1. **Wyświetlenie pytania** — pokazywane jest pytanie z odpowiedziami; uruchamiany jest pomiar czasu.
 2. **Wybór odpowiedzi** — użytkownik zaznacza jedną lub więcej odpowiedzi (zaznaczenie można przełączać).
+   - W trybie [CEM](09-tryb-cem.md) — także w [powtórkach](10-tryb-powtorek.md) pytań CEM — pytanie z **jedną** poprawną odpowiedzią pozwala trzymać zaznaczoną tylko jedną odpowiedź naraz: wybór innej przenosi zaznaczenie, a ponowne kliknięcie zaznaczonej odpowiedzi ją odznacza. Pytania wielokrotnego wyboru przyjmują dowolną liczbę zaznaczeń.
 3. **Zatwierdzenie** — po zatwierdzeniu odpowiedź jest oceniana; pokazywana jest informacja zwrotna (co było poprawne/błędne), naliczane są punkty i aktualizowane liczniki.
 4. **Następne pytanie** — użytkownik przechodzi dalej; może pojawić się reklama (patrz sekcja 6).
 5. **Zakończenie** — po ostatnim pytaniu prezentowany jest **ekran wyniku**.
