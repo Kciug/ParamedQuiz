@@ -50,9 +50,9 @@ class RevisionsRepositoryImpl @Inject constructor(
                         }
                         Response.Success(mapped)
                     } else if (categoriesResp is Response.Error) {
-                        Response.Error(categoriesResp.error)
+                        categoriesResp
                     } else if (questionsResp is Response.Error) {
-                        Response.Error(questionsResp.error)
+                        questionsResp
                     } else {
                         Response.Loading
                     }
@@ -82,9 +82,9 @@ class RevisionsRepositoryImpl @Inject constructor(
                         }
                         Response.Success(mapped)
                     } else if (categoriesResp is Response.Error) {
-                        Response.Error(categoriesResp.error)
+                        categoriesResp
                     } else if (questionsResp is Response.Error) {
-                        Response.Error(questionsResp.error)
+                        questionsResp
                     } else {
                         Response.Loading
                     }
@@ -107,7 +107,7 @@ class RevisionsRepositoryImpl @Inject constructor(
                             }
                             Response.Success(filtered.map { RevisionQuestion.Main(it) })
                         }
-                        is Response.Error -> Response.Error(resp.error)
+                        is Response.Error -> resp
                         Response.Loading -> Response.Loading
                     }
                 }
@@ -131,9 +131,9 @@ class RevisionsRepositoryImpl @Inject constructor(
                         }
                         Response.Success(filtered.map { RevisionQuestion.Cem(it) })
                     } else if (categoriesResp is Response.Error) {
-                        Response.Error(categoriesResp.error)
+                        categoriesResp
                     } else if (questionsResp is Response.Error) {
-                        Response.Error(questionsResp.error)
+                        questionsResp
                     } else {
                         Response.Loading
                     }
@@ -145,7 +145,7 @@ class RevisionsRepositoryImpl @Inject constructor(
                         is Response.Success -> {
                             Response.Success(resp.data.map { RevisionQuestion.Translation(it) })
                         }
-                        is Response.Error -> Response.Error(resp.error)
+                        is Response.Error -> resp
                         Response.Loading -> Response.Loading
                     }
                 }

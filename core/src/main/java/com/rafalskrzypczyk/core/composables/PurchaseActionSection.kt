@@ -1,5 +1,7 @@
 package com.rafalskrzypczyk.core.composables
 
+import com.rafalskrzypczyk.core.error.AppError
+import com.rafalskrzypczyk.core.error.asMessage
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
@@ -49,7 +51,7 @@ import com.rafalskrzypczyk.core.ui.theme.MQGreen
 fun PurchaseActionSection(
     themeColor: Color,
     price: String?,
-    purchaseError: String?,
+    purchaseError: AppError?,
     isPurchasing: Boolean,
     isUnlocked: Boolean,
     isPending: Boolean,
@@ -188,7 +190,7 @@ private fun SuccessSection(onStartClick: () -> Unit) {
 @Composable
 private fun PurchaseSection(
     price: String?,
-    purchaseError: String?,
+    purchaseError: AppError?,
     isPurchasing: Boolean,
     onBuyClick: () -> Unit,
     onTryClick: (() -> Unit)?,
@@ -208,7 +210,7 @@ private fun PurchaseSection(
 
         if (purchaseError != null) {
             TextPrimary(
-                text = purchaseError,
+                text = purchaseError.asMessage(),
                 color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.padding(top = Dimens.ELEMENTS_SPACING_SMALL),
                 textAlign = TextAlign.Center

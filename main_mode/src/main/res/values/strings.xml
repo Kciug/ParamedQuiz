@@ -24,7 +24,6 @@
     <string name="categories_header_subtitle">Co dzisiaj ćwiczymy?</string>
     <string name="categories_list_header">Kategorie</string>
 
-    <string name="purchase_error_no_details">Nie udało się pobrać szczegółów produktu. Spróbuj ponownie.</string>
 
     <string name="daily_exercise_finished_title">Zadanie dnia zakończone!</string>
     <string name="daily_exercise_finished_msg">Świetna robota! Wróć jutro po kolejne wyzwanie.</string>

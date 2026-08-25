@@ -8,6 +8,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.rafalskrzypczyk.core.R
 import com.rafalskrzypczyk.core.composables.PreviewContainer
 import com.rafalskrzypczyk.core.composables.TrialFinishedPanel
+import com.rafalskrzypczyk.core.error.AppError
 import com.rafalskrzypczyk.core.testing.TestTags
 import com.rafalskrzypczyk.core.utils.QuizMode
 
@@ -20,7 +21,7 @@ fun SwipeModeTrialFinishedPanel(
     modifier: Modifier = Modifier,
     loading: Boolean = false,
     isPending: Boolean = false,
-    error: String? = null
+    error: AppError? = null
 ) {
     TrialFinishedPanel(
         mode = QuizMode.SwipeMode,

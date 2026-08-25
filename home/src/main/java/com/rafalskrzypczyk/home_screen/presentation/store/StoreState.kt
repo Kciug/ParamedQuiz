@@ -3,12 +3,13 @@ package com.rafalskrzypczyk.home_screen.presentation.store
 import androidx.compose.runtime.Immutable
 import com.rafalskrzypczyk.billing.domain.AppProduct
 import com.rafalskrzypczyk.core.api_response.ResponseState
+import com.rafalskrzypczyk.core.error.AppError
 
 @Immutable
 data class StoreState(
     val responseState: ResponseState = ResponseState.Idle,
     val isPurchasing: Boolean = false,
-    val purchaseError: String? = null,
+    val purchaseError: AppError? = null,
     
     // Statusy odblokowania
     val isPremium: Boolean = false,

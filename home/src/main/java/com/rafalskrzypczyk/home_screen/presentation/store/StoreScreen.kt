@@ -41,6 +41,7 @@ import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.InfoDialog
 import com.rafalskrzypczyk.core.composables.Loading
 import com.rafalskrzypczyk.core.composables.top_bars.NavTopBar
+import com.rafalskrzypczyk.core.error.asMessage
 import com.rafalskrzypczyk.core.ui.theme.MQRed
 import com.rafalskrzypczyk.core.ui.theme.MQYellow
 import com.rafalskrzypczyk.core.utils.ModeInfoProvider
@@ -102,7 +103,7 @@ fun StoreScreen(
                     }
                     is ResponseState.Error -> {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text(text = "Error loading store: ${state.responseState.message}")
+                            Text(text = state.responseState.error.asMessage())
                         }
                     }
                     is ResponseState.Success -> {
@@ -238,7 +239,7 @@ fun StoreScreen(
         if (state.purchaseError != null) {
             InfoDialog(
                 title = stringResource(id = com.rafalskrzypczyk.core.R.string.desc_error),
-                message = state.purchaseError,
+                message = state.purchaseError.asMessage(),
                 icon = Icons.Default.PriorityHigh,
                 headerColor = MQRed,
                 onDismiss = { onEvent(StoreUIEvents.ConsumeError) }

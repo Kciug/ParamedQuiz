@@ -31,7 +31,7 @@ class SwipeModeRepositoryImpl @Inject constructor(
                             swipeQuestions = domainQuestions
                             Response.Success(domainQuestions)
                         }
-                        is Response.Error -> Response.Error(it.error)
+                        is Response.Error -> it
                         is Response.Loading -> Response.Loading
                     }
                 }

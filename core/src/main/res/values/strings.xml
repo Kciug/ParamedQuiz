@@ -4,6 +4,11 @@
 
     <string name="error_unknown">Wystąpił nieznany błąd. Spróbuj później</string>
     <string name="error_no_data">Nie znaleziono danych.</string>
+    <string name="error_try_later">Coś poszło nie tak. Spróbuj później</string>
+    <string name="error_reauth_required">Weryfikacja nieudana. Wyloguj się i spróbuj po ponownym zalogowaniu</string>
+    <string name="error_no_network">Brak połączenia z internetem. Sprawdź sieć i spróbuj ponownie.</string>
+    <string name="error_google_no_account">Nie znaleziono konta Google na tym urządzeniu. Dodaj konto i spróbuj ponownie.</string>
+    <string name="error_google_signin_failed">Logowanie przez Google nie powiodło się. Spróbuj ponownie.</string>
 
     <string name="desc_user_avatar">Awatar użytkownika</string>
     <string name="desc_settings">Ustawienia</string>
@@ -50,6 +55,7 @@
 
     <string name="finish_title">Ukończyłeś quiz!</string>
     <string name="btn_back">Wróć</string>
+    <string name="btn_retry">Ponów</string>
     <string name="btn_next">Dalej</string>
     <string name="btn_finish">Zakończ</string>
     <string name="btn_skip">Pomiń</string>
@@ -154,4 +160,5 @@
     <string name="billing_error_developer_error">Wystąpił problem techniczny podczas zakupu. Spróbuj ponownie później.</string>
     <string name="billing_error_generic">Transakcja nie mogła zostać ukończona. Sprawdź środki na koncie lub metodę płatności i spróbuj ponownie.</string>
     <string name="billing_error_user_cancelled">Płatność została anulowana.</string>
+    <string name="purchase_error_no_details">Nie udało się pobrać szczegółów produktu. Spróbuj ponownie.</string>
 </resources>

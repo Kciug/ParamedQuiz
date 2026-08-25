@@ -14,7 +14,7 @@ class GetCemCategoriesUseCase @Inject constructor(
         repository.getCemCategories().map { response ->
             when (response) {
                 is Response.Success -> Response.Success(response.data.filter { it.parentCategoryID == parentId })
-                is Response.Error -> Response.Error(response.error)
+                is Response.Error -> response
                 Response.Loading -> Response.Loading
             }
         }

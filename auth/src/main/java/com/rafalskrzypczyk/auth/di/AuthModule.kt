@@ -4,7 +4,9 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.rafalskrzypczyk.auth.data.AuthRepositoryImpl
+import com.rafalskrzypczyk.auth.data.GoogleCredentialsProviderImpl
 import com.rafalskrzypczyk.auth.domain.AuthRepository
+import com.rafalskrzypczyk.auth.domain.GoogleCredentialsProvider
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -22,8 +24,12 @@ class AuthModule {
 
 @InstallIn(SingletonComponent::class)
 @Module
-abstract class FirestoreModuleBinds {
+abstract class AuthModuleBinds {
     @Singleton
     @Binds
     abstract fun bindAuthApi(authImpl: AuthRepositoryImpl): AuthRepository
+
+    @Singleton
+    @Binds
+    abstract fun bindGoogleCredentialsProvider(provider: GoogleCredentialsProviderImpl): GoogleCredentialsProvider
 }

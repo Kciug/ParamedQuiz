@@ -33,6 +33,12 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                     targetCompatibility = JavaVersion.VERSION_11
                 }
 
+                // Konstruktory wyjatkow Firebase wolaja android.text.TextUtils - bez tego
+                // testy mapperow bledow wywalaja sie na "not mocked". Tak samo ma modul app.
+                testOptions {
+                    unitTests.isReturnDefaultValues = true
+                }
+
                 buildTypes {
                     getByName("release") {
                         isMinifyEnabled = false

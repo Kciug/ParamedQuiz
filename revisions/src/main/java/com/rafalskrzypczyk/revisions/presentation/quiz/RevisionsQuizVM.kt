@@ -347,8 +347,14 @@ class RevisionsQuizVM @Inject constructor(
                 attemptedQuestionIds = engine.getAttemptedQuestionIds(),
                 remainingQueueIds = engine.getQueueIds(),
                 errorCounts = engine.getErrorCounts(),
+                // Skutecznosc liczy wylacznie pytania zaliczone za pierwszym razem - korekty jej
+                // nie podnosza, tak samo jak nie daja punktow ani nie odnawiaja serii.
+                firstAttemptCorrectCount = engine.getFirstInteractionCorrectCount(),
                 quizFinishedState = QuizFinishedState(
-                    seenQuestions = engine.getPlayedQuestions().size,
+                    // Pytania podjete, nie cala pula: wyjscie w trakcie sesji prowadzi tu wprost,
+                    // wiec inaczej podsumowanie liczyloby pytania, ktorych uzytkownik nie widzial.
+                    seenQuestions = engine.getAttemptedQuestionIds().size,
+                    // Bez zmian - zielony licznik to pytania zaliczone lacznie, z korektami.
                     correctAnswers = engine.getCorrectAnswersCount(),
                     points = scoreManager.getScore().score,
                     earnedPoints = engine.getTotalPointsEarned(),

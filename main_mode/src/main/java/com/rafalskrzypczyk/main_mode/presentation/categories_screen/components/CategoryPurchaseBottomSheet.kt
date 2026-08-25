@@ -55,6 +55,7 @@ import com.rafalskrzypczyk.core.composables.PurchaseFeature
 import com.rafalskrzypczyk.core.composables.QuestionsBadge
 import com.rafalskrzypczyk.core.composables.TextPrimary
 import com.rafalskrzypczyk.core.composables.TextTitle
+import com.rafalskrzypczyk.core.error.AppError
 import com.rafalskrzypczyk.core.testing.TestTags
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.core.utils.ModeInfoProvider
@@ -77,7 +78,7 @@ fun CategoryPurchaseBottomSheet(
     isUnlocked: Boolean,
     isPending: Boolean,
     isPurchasing: Boolean,
-    purchaseError: String?,
+    purchaseError: AppError?,
     activity: Activity?,
     shouldDismiss: Boolean,
     onDismiss: () -> Unit,
@@ -142,7 +143,7 @@ private fun CategoryPurchaseContent(
     isUnlocked: Boolean,
     isPending: Boolean,
     isPurchasing: Boolean,
-    purchaseError: String?,
+    purchaseError: AppError?,
     onDismiss: () -> Unit,
     onBuyClick: () -> Unit,
     onStartClick: () -> Unit

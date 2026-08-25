@@ -75,7 +75,7 @@ class TranslationQuizViewModel @Inject constructor(
                     is PurchaseResult.Success -> _state.update { it.copy(isPurchasing = false) }
                     is PurchaseResult.Pending -> _state.update { it.copy(isPurchasing = false) }
                     PurchaseResult.Cancelled -> _state.update { it.copy(isPurchasing = false) }
-                    is PurchaseResult.Error -> _state.update { it.copy(isPurchasing = false, purchaseError = result.message) }
+                    is PurchaseResult.Error -> _state.update { it.copy(isPurchasing = false, purchaseError = result.error) }
                 }
             }
         }

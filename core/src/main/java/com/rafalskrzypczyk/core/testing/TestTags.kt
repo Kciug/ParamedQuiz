@@ -16,6 +16,7 @@ object TestTags {
     const val QUIZ_SUBMIT_BUTTON = "quiz_submit_button"
     const val QUIZ_NEXT_BUTTON = "quiz_next_button"
     const val QUIZ_FINISHED_ROOT = "quiz_finished_root"
+    const val QUIZ_MULTIPLE_CHOICE_BADGE = "quiz_multiple_choice_badge"
 
     // Tryb Swipe
     const val SWIPE_TRIAL_BUY_BUTTON = "swipe_trial_buy_button"
@@ -25,4 +26,11 @@ object TestTags {
 
     // Dialog zakupu (wspólny — kategorie, tryby)
     const val PURCHASE_DIALOG_BUY_BUTTON = "purchase_dialog_buy_button"
+
+    // Powtórki — konfiguracja sesji
+    const val REVISIONS_EMPTY_STATE = "revisions_empty_state"
+    const val REVISIONS_START_BUTTON = "revisions_start_button"
+
+    /** Tag chipa kryterium; [criterion] to nazwa wartości `RevisionCriterion`. */
+    fun revisionsCriterionChip(criterion: String) = "revisions_criterion_chip_$criterion"
 }

@@ -7,6 +7,7 @@ import com.rafalskrzypczyk.core.composables.BasePurchaseBottomSheet
 import com.rafalskrzypczyk.core.composables.PurchaseModeDetails
 import com.rafalskrzypczyk.core.composables.modeDescription
 import com.rafalskrzypczyk.core.composables.modeFeatures
+import com.rafalskrzypczyk.core.error.AppError
 import com.rafalskrzypczyk.core.utils.ModeInfoProvider
 import com.rafalskrzypczyk.core.utils.QuizMode
 
@@ -15,7 +16,7 @@ fun SwipePurchaseBottomSheet(
     isUnlocked: Boolean,
     isPending: Boolean = false,
     isPurchasing: Boolean,
-    purchaseError: String?,
+    purchaseError: AppError?,
     questionCount: Int,
     price: String?,
     activity: Activity?,

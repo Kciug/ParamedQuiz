@@ -56,7 +56,7 @@ class GetRevisionsQuestionsUC @Inject constructor(
 
                     Response.Success(limited)
                 }
-                is Response.Error -> Response.Error(response.error)
+                is Response.Error -> response
                 Response.Loading -> Response.Loading
             }
         }

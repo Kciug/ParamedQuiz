@@ -102,7 +102,7 @@ fun MMCategoriesScreen(
         ) { responseState ->
             when (responseState) {
                 ResponseState.Idle, ResponseState.Loading -> Loading()
-                is ResponseState.Error -> ErrorDialog(responseState.message) {
+                is ResponseState.Error -> ErrorDialog(responseState.error) {
                     onNavigateBack()
                 }
                 ResponseState.Success -> MMCategoriesScreenContent(
