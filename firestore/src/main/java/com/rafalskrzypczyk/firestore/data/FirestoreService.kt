@@ -33,7 +33,7 @@ import javax.inject.Inject
 
 private const val ORIGIN_GET_USER_DATA = "FirestoreService.getUserData"
 private const val ORIGIN_UPDATE_USER_DATA = "FirestoreService.updateUserData"
-private const val ORIGIN_DELETE_USER_DATA = "FirestoreService.deleteUserData"
+private const val ORIGIN_DELETE_USER_ACCOUNT_DATA = "FirestoreService.deleteUserAccountData"
 private const val ORIGIN_GET_QUIZ_CATEGORIES = "FirestoreService.getQuizCategories"
 private const val ORIGIN_GET_QUIZ_QUESTIONS = "FirestoreService.getQuizQuestions"
 private const val ORIGIN_GET_SWIPE_QUESTIONS = "FirestoreService.getSwipeQuestions"
@@ -74,9 +74,9 @@ class FirestoreService @Inject constructor(
         emit(modifyFirestoreDocument(userData.id, userData, FirestoreCollections.USER_DATA_COLLECTION, ORIGIN_UPDATE_USER_DATA))
     }
 
-    override fun deleteUserData(userId: String): Flow<Response<Unit>> = flow {
+    override fun deleteUserAccountData(userId: String): Flow<Response<Unit>> = flow {
         emit(Response.Loading)
-        emit(deleteFirestoreDocument(userId, FirestoreCollections.USER_DATA_COLLECTION, ORIGIN_DELETE_USER_DATA))
+        emit(deleteUserDocumentsAtomically(userId))
     }
 
     override fun getQuizCategories(): Flow<Response<List<CategoryDTO>>> = flow {
@@ -233,6 +233,21 @@ class FirestoreService @Inject constructor(
             .toObjects(NotificationTemplateDTO::class.java)
         emit(Response.Success(templates))
     }.mapErrors(ORIGIN_GET_NOTIFICATION_TEMPLATES)
+
+    private suspend fun deleteUserDocumentsAtomically(userId: String): Response<Unit> {
+        return try {
+            firestore.batch()
+                .delete(firestore.collection(FirestoreCollections.USER_SCORE).document(userId))
+                .delete(firestore.collection(FirestoreCollections.USER_DATA_COLLECTION).document(userId))
+                .commit()
+                .await()
+            Response.Success(Unit)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Response.Error(errorMapper.toAppError(ORIGIN_DELETE_USER_ACCOUNT_DATA, e))
+        }
+    }
 
     private fun <T> Flow<Response<T>>.mapErrors(origin: String): Flow<Response<T>> =
         catch { emit(Response.Error(errorMapper.toAppError(origin, it))) }

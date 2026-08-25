@@ -27,6 +27,11 @@ import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import io.mockk.verify
+import com.rafalskrzypczyk.core.user_management.UserData
+import com.rafalskrzypczyk.core.user_management.UserAuthenticationMethod
+import io.mockk.verifyOrder
+import io.mockk.coVerifyOrder
+import io.mockk.coVerify
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -149,24 +154,249 @@ class AuthRepositoryImplTest {
     }
 
     @Test
-    fun `signInWithGoogle surfaces a typed error instead of crashing on incomplete provider data`() = runTest {
+    fun `signInWithGoogle registers a non password account when provider data has no real provider`() = runTest {
         coEvery { googleCredentialsProvider.getGoogleIdToken(context) } returns TEST_ID_TOKEN
         every { firebaseAuth.signInWithCredential(any()) } returns
                 completedTask(authResult(user = firebaseUser(providerData = listOf(userInfo("firebase"))), isNewUser = true))
+        every { firestoreApi.updateUserData(any()) } returns flowOf(Response.Success(Unit))
 
         repository.signInWithGoogle(context).test {
             assertEquals(Response.Loading, awaitItem())
-            val error = awaitItem()
-            assertTrue(error is Response.Error)
-            assertEquals(AppError.Auth.Unknown("AUTH:IndexOutOfBoundsException"), (error as Response.Error).error)
+            val success = awaitItem()
+            assertTrue(success is Response.Success)
+            assertEquals(UserAuthenticationMethod.NONPASSWORD, (success as Response.Success).data.authenticationMethod)
+            awaitComplete()
+        }
+
+        verify { errorLogger.log(any(), AppError.Auth.Unknown("AUTH:NO_PROVIDER_DATA"), any()) }
+    }
+
+    @Test
+    fun `resolves a password account regardless of provider order`() = runTest {
+        val layouts = listOf(
+            listOf(userInfo("firebase"), userInfo("password")),
+            listOf(userInfo("firebase"), userInfo("google.com"), userInfo("password")),
+            listOf(userInfo("firebase"), userInfo("password"), userInfo("google.com"))
+        )
+
+        layouts.forEach { providers ->
+            assertEquals(UserAuthenticationMethod.PASSWORD, loadedUserFor(providers).authenticationMethod)
+        }
+    }
+
+    @Test
+    fun `resolves a non password account for a google only user`() = runTest {
+        assertEquals(
+            UserAuthenticationMethod.NONPASSWORD,
+            loadedUserFor(listOf(userInfo("firebase"), userInfo("google.com"))).authenticationMethod
+        )
+    }
+
+    @Test
+    fun `does not fail on an empty provider list`() = runTest {
+        assertEquals(UserAuthenticationMethod.NONPASSWORD, loadedUserFor(emptyList()).authenticationMethod)
+    }
+
+    @Test
+    fun `loginUser recreates missing user data and completes`() = runTest {
+        every { firebaseAuth.signInWithEmailAndPassword(any(), any()) } returns
+                completedTask(authResult(user = firebaseUser()))
+        every { firestoreApi.getUserData(TEST_UID) } returns flowOf(Response.Error(AppError.Data.NoData))
+        every { firestoreApi.updateUserData(any()) } returns flowOf(Response.Success(Unit))
+
+        repository.loginWithEmailAndPassword(TEST_EMAIL, "secret").test {
+            assertEquals(Response.Loading, awaitItem())
+            val success = awaitItem()
+            assertTrue(success is Response.Success)
+            assertEquals(TEST_NAME, (success as Response.Success).data.name)
+            awaitComplete()
+        }
+
+        verify(exactly = 1) { firestoreApi.updateUserData(UserDataDTO(id = TEST_UID, name = TEST_NAME)) }
+        verify(exactly = 1) { scoreManager.onUserLogIn() }
+    }
+
+    @Test
+    fun `loginUser derives the name from the email local part when display name is blank`() = runTest {
+        val user = firebaseUser().also { every { it.displayName } returns "" }
+        every { firebaseAuth.signInWithEmailAndPassword(any(), any()) } returns completedTask(authResult(user = user))
+        every { firestoreApi.getUserData(TEST_UID) } returns flowOf(Response.Error(AppError.Data.NoData))
+        every { firestoreApi.updateUserData(any()) } returns flowOf(Response.Success(Unit))
+
+        repository.loginWithEmailAndPassword(TEST_EMAIL, "secret").test {
+            assertEquals(Response.Loading, awaitItem())
+            val success = awaitItem()
+            assertEquals("tester", (success as Response.Success).data.name)
             awaitComplete()
         }
     }
 
     @Test
-    fun `loginWithEmailAndPassword passes a data layer error through without logging it again`() = runTest {
+    fun `loginUser does not recreate user data on any error other than a missing document`() = runTest {
+        val blockingErrors = listOf(
+            AppError.Data.PermissionDenied,
+            AppError.NoNetwork,
+            AppError.Data.Unavailable
+        )
+
+        blockingErrors.forEach { error ->
+            every { firebaseAuth.signInWithEmailAndPassword(any(), any()) } returns
+                    completedTask(authResult(user = firebaseUser()))
+            every { firestoreApi.getUserData(TEST_UID) } returns flowOf(Response.Error(error))
+
+            repository.loginWithEmailAndPassword(TEST_EMAIL, "secret").test {
+                assertEquals(Response.Loading, awaitItem())
+                assertEquals(Response.Error(error), awaitItem())
+                awaitComplete()
+            }
+        }
+
+        verify(exactly = 0) { firestoreApi.updateUserData(any()) }
+    }
+
+    @Test
+    fun `loginUser reports a retry later error when recreating user data fails`() = runTest {
         every { firebaseAuth.signInWithEmailAndPassword(any(), any()) } returns
                 completedTask(authResult(user = firebaseUser()))
+        every { firestoreApi.getUserData(TEST_UID) } returns flowOf(Response.Error(AppError.Data.NoData))
+        every { firestoreApi.updateUserData(any()) } returns flowOf(Response.Error(AppError.NoNetwork))
+
+        repository.loginWithEmailAndPassword(TEST_EMAIL, "secret").test {
+            assertEquals(Response.Loading, awaitItem())
+            assertEquals(Response.Error(AppError.Auth.ProfileRestoreFailed), awaitItem())
+            awaitComplete()
+        }
+
+        verify(exactly = 0) { userManager.saveUserDataInLocal(any()) }
+        verify(exactly = 0) { scoreManager.onUserLogIn() }
+    }
+
+    @Test
+    fun `signInWithGoogle recreates missing user data for a returning user`() = runTest {
+        coEvery { googleCredentialsProvider.getGoogleIdToken(context) } returns TEST_ID_TOKEN
+        every { firebaseAuth.signInWithCredential(any()) } returns
+                completedTask(authResult(user = firebaseUser(), isNewUser = false))
+        every { firestoreApi.getUserData(TEST_UID) } returns flowOf(Response.Error(AppError.Data.NoData))
+        every { firestoreApi.updateUserData(any()) } returns flowOf(Response.Success(Unit))
+
+        repository.signInWithGoogle(context).test {
+            assertEquals(Response.Loading, awaitItem())
+            assertTrue(awaitItem() is Response.Success)
+            awaitComplete()
+        }
+    }
+
+    @Test
+    fun `deleteUser removes firestore data before deleting the auth account`() = runTest {
+        val user = firebaseUser()
+        every { firebaseAuth.currentUser } returns user
+        every { user.delete() } returns completedTask(null)
+        every { firestoreApi.deleteUserAccountData(TEST_UID) } returns flowOf(Response.Success(Unit))
+
+        repository.deleteUser().test {
+            assertEquals(Response.Loading, awaitItem())
+            assertEquals(Response.Success(Unit), awaitItem())
+            awaitComplete()
+        }
+
+        verifyOrder {
+            scoreManager.onUserDelete()
+            firestoreApi.deleteUserAccountData(TEST_UID)
+            user.delete()
+            userManager.clearUserDataLocal()
+        }
+    }
+
+    @Test
+    fun `deleteUser aborts before touching auth when firestore removal fails`() = runTest {
+        val user = firebaseUser()
+        every { firebaseAuth.currentUser } returns user
+        every { firestoreApi.deleteUserAccountData(TEST_UID) } returns
+                flowOf(Response.Error(AppError.Data.PermissionDenied))
+
+        repository.deleteUser().test {
+            assertEquals(Response.Loading, awaitItem())
+            assertEquals(Response.Error(AppError.Data.PermissionDenied), awaitItem())
+            awaitComplete()
+        }
+
+        verify(exactly = 0) { user.delete() }
+        verify(exactly = 0) { userManager.clearUserDataLocal() }
+    }
+
+    @Test
+    fun `deleteUser keeps the local session when the auth account cannot be deleted`() = runTest {
+        val user = firebaseUser()
+        every { firebaseAuth.currentUser } returns user
+        every { firestoreApi.deleteUserAccountData(TEST_UID) } returns flowOf(Response.Success(Unit))
+        every { user.delete() } returns failedTask(authException("ERROR_REQUIRES_RECENT_LOGIN"))
+
+        repository.deleteUser().test {
+            assertEquals(Response.Loading, awaitItem())
+            assertEquals(Response.Error(AppError.Auth.RecentLoginRequired), awaitItem())
+            awaitComplete()
+        }
+
+        verify(exactly = 0) { userManager.clearUserDataLocal() }
+    }
+
+    @Test
+    fun `deleteUser uses the firebase uid instead of the cached profile`() = runTest {
+        val user = firebaseUser()
+        every { firebaseAuth.currentUser } returns user
+        every { userManager.getCurrentLoggedUser() } returns null
+        every { user.delete() } returns completedTask(null)
+        every { firestoreApi.deleteUserAccountData(TEST_UID) } returns flowOf(Response.Success(Unit))
+
+        repository.deleteUser().test {
+            assertEquals(Response.Loading, awaitItem())
+            assertEquals(Response.Success(Unit), awaitItem())
+            awaitComplete()
+        }
+
+        verify { firestoreApi.deleteUserAccountData(TEST_UID) }
+    }
+
+    @Test
+    fun `deleteUser reports a missing session when there is no firebase user`() = runTest {
+        every { firebaseAuth.currentUser } returns null
+
+        repository.deleteUser().test {
+            assertEquals(Response.Loading, awaitItem())
+            assertEquals(Response.Error(AppError.Auth.UserNotLoggedIn), awaitItem())
+            awaitComplete()
+        }
+
+        verify(exactly = 0) { firestoreApi.deleteUserAccountData(any()) }
+    }
+
+    @Test
+    fun `signOut syncs the score before ending the session`() = runTest {
+        repository.signOut()
+
+        coVerifyOrder {
+            scoreManager.onUserLogOut()
+            firebaseAuth.signOut()
+            userManager.clearUserDataLocal()
+        }
+    }
+
+    @Test
+    fun `signOut does not clear the session while the sync is still running`() = runTest {
+        coEvery { scoreManager.onUserLogOut() } coAnswers {
+            verify(exactly = 0) { firebaseAuth.signOut() }
+            verify(exactly = 0) { userManager.clearUserDataLocal() }
+        }
+
+        repository.signOut()
+
+        coVerify(exactly = 1) { scoreManager.onUserLogOut() }
+    }
+
+    @Test
+    fun `loginWithEmailAndPassword passes a data layer error through without logging it again`() = runTest {
+        every { firebaseAuth.signInWithEmailAndPassword(any(), any()) } returns
+                completedTask(authResult(user = firebaseUser(providerData = passwordProviders())))
         every { firestoreApi.getUserData(TEST_UID) } returns flowOf(Response.Error(AppError.Data.PermissionDenied))
 
         repository.loginWithEmailAndPassword(TEST_EMAIL, "secret").test {
@@ -181,7 +411,7 @@ class AuthRepositoryImplTest {
     @Test
     fun `loginWithEmailAndPassword loads user data and completes`() = runTest {
         every { firebaseAuth.signInWithEmailAndPassword(any(), any()) } returns
-                completedTask(authResult(user = firebaseUser()))
+                completedTask(authResult(user = firebaseUser(providerData = passwordProviders())))
         every { firestoreApi.getUserData(TEST_UID) } returns
                 flowOf(Response.Success(UserDataDTO(id = TEST_UID, name = TEST_NAME)))
 
@@ -190,6 +420,7 @@ class AuthRepositoryImplTest {
             val success = awaitItem()
             assertTrue(success is Response.Success)
             assertEquals(TEST_NAME, (success as Response.Success).data.name)
+            assertEquals(UserAuthenticationMethod.PASSWORD, success.data.authenticationMethod)
             awaitComplete()
         }
 
@@ -217,6 +448,23 @@ class AuthRepositoryImplTest {
             assertEquals(Response.Error(AppError.Auth.InvalidEmail), awaitItem())
             awaitComplete()
         }
+    }
+
+    private fun passwordProviders(): List<UserInfo> = listOf(userInfo("firebase"), userInfo("password"))
+
+    private suspend fun loadedUserFor(providers: List<UserInfo>): UserData {
+        every { firebaseAuth.signInWithEmailAndPassword(any(), any()) } returns
+                completedTask(authResult(user = firebaseUser(providerData = providers)))
+        every { firestoreApi.getUserData(TEST_UID) } returns
+                flowOf(Response.Success(UserDataDTO(id = TEST_UID, name = TEST_NAME)))
+
+        var loaded: UserData? = null
+        repository.loginWithEmailAndPassword(TEST_EMAIL, "secret").test {
+            skipItems(1)
+            loaded = (awaitItem() as Response.Success).data
+            awaitComplete()
+        }
+        return loaded!!
     }
 
     private fun authException(code: String): FirebaseAuthException =

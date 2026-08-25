@@ -25,6 +25,7 @@ fun AppError.messageRes(): Int = when (this) {
     AppError.Auth.UserNotLoggedIn -> R.string.error_reauth_required
     AppError.Auth.ReauthContextMissing -> R.string.error_try_later
     AppError.Auth.SignInIncomplete -> R.string.error_try_later
+    AppError.Auth.ProfileRestoreFailed -> R.string.error_try_later
     is AppError.Auth.Unknown -> R.string.error_unknown
 
     AppError.Google.Cancelled -> R.string.error_try_later

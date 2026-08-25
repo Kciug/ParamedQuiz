@@ -45,7 +45,7 @@ class FakeAuthRepository : AuthRepository {
         return flowOf(Response.Success(currentUser.copy(email = email, name = userName)))
     }
 
-    override fun signOut() {
+    override suspend fun signOut() {
         loggedIn = false
     }
 

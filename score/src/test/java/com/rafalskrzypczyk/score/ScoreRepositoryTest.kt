@@ -127,7 +127,7 @@ class ScoreRepositoryTest {
     }
 
     @Test
-    fun `deleteUserScore clears local storage when user not logged in`() = runTest {
+    fun `deleteUserScore clears the guest buffer when nobody is logged in`() = runTest {
         every { userManager.getCurrentLoggedUser() } returns null
         every { scoreStorage.clearScore() } just Runs
 
@@ -142,5 +142,31 @@ class ScoreRepositoryTest {
         repository.clearLocalScoreData()
 
         verify { scoreStorage.clearScore() }
+    }
+
+    @Test
+    fun `deleteUserScore resolves the user at collection time`() = runTest {
+        val user = UserData("uid-1", "tester@example.com", "Tester", UserAuthenticationMethod.NONPASSWORD)
+        every { userManager.getCurrentLoggedUser() } returns null
+        coEvery { firestore.deleteUserScore(user.id) } returns flowOf(Response.Success(Unit))
+
+        val stream = repository.deleteUserScore()
+        every { userManager.getCurrentLoggedUser() } returns user
+        stream.first()
+
+        coVerify { firestore.deleteUserScore(user.id) }
+    }
+
+    @Test
+    fun `saveUserScore resolves the user at collection time`() = runTest {
+        val user = UserData("uid-1", "tester@example.com", "Tester", UserAuthenticationMethod.NONPASSWORD)
+        every { userManager.getCurrentLoggedUser() } returns null
+        coEvery { firestore.updateUserScore(any(), any()) } returns flowOf(Response.Success(Unit))
+
+        val stream = repository.saveUserScore(Score.empty())
+        every { userManager.getCurrentLoggedUser() } returns user
+        stream.first()
+
+        coVerify { firestore.updateUserScore(user.id, any()) }
     }
 }

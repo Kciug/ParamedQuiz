@@ -313,10 +313,7 @@ private fun UserSettingsContent(
                         SettingsItemRow(
                             title = stringResource(R.string.btn_logout),
                             icon = Icons.AutoMirrored.Rounded.Logout,
-                            onClick = {
-                                onEvent.invoke(UserSettingsUIEvents.SignOut)
-                                onSignOut()
-                            }
+                            onClick = { onEvent.invoke(UserSettingsUIEvents.SignOut) }
                         )
                     }
                 }
