@@ -2,6 +2,7 @@ package com.rafalskrzypczyk.home_screen.presentation.user_page
 
 import androidx.compose.runtime.Immutable
 import com.rafalskrzypczyk.core.api_response.ResponseState
+import com.rafalskrzypczyk.core.domain.config.GameplayConfig
 import com.rafalskrzypczyk.core.error.AppError
 import com.rafalskrzypczyk.home_screen.presentation.user_page.statistics.BestWorstQuestionsUIM
 import com.rafalskrzypczyk.score.domain.StreakState
@@ -14,6 +15,8 @@ data class UserPageState (
     val userName: String = "",
     val userEmail: String = "",
     val userScore: Int = 0,
+    val firstCorrectPoints: Int = GameplayConfig.DEFAULT.firstCorrectPoints,
+    val correctPoints: Int = GameplayConfig.DEFAULT.correctPoints,
     val userStreak: Int = 0,
     val userStreakState: StreakState = StreakState.MISSED,
     val overallResultAvailable: Boolean = false,

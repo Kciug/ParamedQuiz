@@ -117,7 +117,9 @@ fun UserPageScreen(
 
                 PointsTile(
                     modifier = Modifier.padding(horizontal = Dimens.DEFAULT_PADDING),
-                    points = state.userScore
+                    points = state.userScore,
+                    firstCorrectPoints = state.firstCorrectPoints,
+                    correctPoints = state.correctPoints
                 )
                 
                 StreakTile(

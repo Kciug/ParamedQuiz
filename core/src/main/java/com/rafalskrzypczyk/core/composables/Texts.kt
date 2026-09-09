@@ -4,7 +4,9 @@ import android.content.Intent
 import android.content.res.Configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -23,6 +25,9 @@ import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import com.rafalskrzypczyk.core.ui.theme.Link
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
+
+// OpenType tabular figures: every digit takes the same width, so numbers stay aligned
+private const val TABULAR_FIGURES = "tnum"
 
 @Composable
 fun TextPrimary(
@@ -152,6 +157,7 @@ fun TextScore(
         modifier = modifier,
         text = text,
         color = color,
+        style = LocalTextStyle.current.copy(fontFeatureSettings = TABULAR_FIGURES),
         fontWeight = FontWeight.Bold,
         fontSize = 18.sp,
         autoSize = autoSize
@@ -164,9 +170,15 @@ fun TextScore(
 private fun TextPrimaryPreview() {
     ParamedQuizTheme {
         Surface {
-            TextPrimary(
-                text = "Placeholder",
-            )
+            Column {
+                TextPrimary(
+                    text = "Placeholder",
+                )
+                TextScore(
+                    text = "300",
+                    color = Color.Yellow
+                )
+            }
         }
     }
 }

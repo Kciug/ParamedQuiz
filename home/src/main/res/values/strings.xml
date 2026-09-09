@@ -136,6 +136,11 @@
     <string name="btn_register_login">Zarejestruj się / Zaloguj</string>
     <string name="user_anonymous">Anonimowy użytkownik</string>
 
+    <string name="points_for_what">Za co dostajesz punkty?</string>
+    <string name="points_for_first_answer">Za pierwszą poprawną odpowiedź na dane pytanie</string>
+    <string name="points_for_next_answer">Za każdą następną poprawną odpowiedź na to samo pytanie</string>
+    <string name="points_value">+%1$d</string>
+
     <string name="settings_category_account">Konto</string>
     <string name="settings_category_app">Aplikacja</string>
     <string name="settings_category_data">Dane</string>

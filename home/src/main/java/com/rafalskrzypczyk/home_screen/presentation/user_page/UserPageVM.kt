@@ -12,6 +12,7 @@ import com.rafalskrzypczyk.home_screen.domain.user_page.UserPageUseCases
 import com.rafalskrzypczyk.home_screen.presentation.user_page.statistics.BestWorstQuestionsUIM
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
+import com.rafalskrzypczyk.core.domain.config.GameplayConfigProvider
 import com.rafalskrzypczyk.core.utils.toDateOnly
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -28,7 +29,8 @@ import javax.inject.Inject
 @HiltViewModel
 class UserPageVM @Inject constructor(
     private val useCases: UserPageUseCases,
-    private val premiumStatusProvider: PremiumStatusProvider
+    private val premiumStatusProvider: PremiumStatusProvider,
+    private val gameplayConfig: GameplayConfigProvider
 ) : ViewModel() {
     companion object {
         private const val QUESTIONS_TO_SHOW = 5
@@ -48,6 +50,13 @@ class UserPageVM @Inject constructor(
     }
 
     private fun getUserData() {
+        _state.update {
+            it.copy(
+                firstCorrectPoints = gameplayConfig.firstCorrectPoints(),
+                correctPoints = gameplayConfig.correctPoints()
+            )
+        }
+
         val user = useCases.getUser()
         if (user != null) {
             _state.update {
