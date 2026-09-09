@@ -1,11 +1,13 @@
 package com.rafalskrzypczyk.paramedquiz.analytics
 
+import android.content.SharedPreferences
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
 import com.rafalskrzypczyk.core.analytics.AnalyticsUserProperty
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.domain.config.GameplayConfigProvider
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
+import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesService
 import com.rafalskrzypczyk.core.user_management.UserManager
 import com.rafalskrzypczyk.score.domain.ScoreManager
 import kotlinx.coroutines.CoroutineScope
@@ -29,11 +31,28 @@ class UserPropertySync @Inject constructor(
     private val gameplayConfig: GameplayConfigProvider,
     private val userManager: UserManager,
     private val sharedPreferences: SharedPreferencesApi,
+    private val rawSharedPreferences: SharedPreferences,
     private val scoreManager: ScoreManager,
     private val externalScope: CoroutineScope,
 ) {
+    /**
+     * Trzymany w polu, bo [SharedPreferences] przechowuje listenery przez slabe referencje —
+     * lokalna zmienna zostalaby zebrana i wlasciwosci znow by sie zestarzaly.
+     */
+    private val preferencesListener =
+        SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == SharedPreferencesService.KEY_CURRENT_USER ||
+                key == SharedPreferencesService.KEY_NOTIFICATIONS_ENABLED
+            ) {
+                refreshLocalState()
+            }
+        }
+
     fun start() {
         refreshLocalState()
+        // Logowanie, wylogowanie i przelacznik powiadomien nie maja flow — obserwujemy wiec
+        // ich magazyn, inaczej obie wlasciwosci zamarzalyby na stanie ze startu procesu.
+        rawSharedPreferences.registerOnSharedPreferenceChangeListener(preferencesListener)
 
         externalScope.launch {
             premiumStatusProvider.ownedProductIds

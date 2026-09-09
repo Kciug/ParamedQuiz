@@ -380,6 +380,10 @@ class RevisionsQuizVM @Inject constructor(
 
     /** Logowane przed bramka reklamy, zeby interstitial nie wliczal sie w duration_sec. */
     private fun logQuizFinishedOnce() {
+        // Wyjscie z ekranu, zanim pytania sie zaladuja, tez trafia tutaj (indeks silnika jest
+        // wtedy zerowy). Bez tej bramki lecialby quiz_finished bez pasujacego quiz_started,
+        // zawyzajac early_exit u uzytkownikow ze slabym polaczeniem.
+        if (!hasLoggedQuizStarted) return
         if (hasLoggedQuizFinished) return
         hasLoggedQuizFinished = true
 
@@ -437,6 +441,9 @@ class RevisionsQuizVM @Inject constructor(
         viewModelScope.launch {
             reportIssueUC(report).collectLatest { response ->
                 if (response is Response.Success) {
+                    analyticsLogger.log(
+                        AnalyticsEvent.IssueReported(QuizMode.RevisionsMode.analyticsName())
+                    )
                     _state.update {
                         it.copy(
                             showReportDialog = false,

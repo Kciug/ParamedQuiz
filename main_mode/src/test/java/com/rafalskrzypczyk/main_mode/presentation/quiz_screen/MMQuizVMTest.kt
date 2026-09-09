@@ -87,6 +87,27 @@ class MMQuizVMTest {
     }
 
     @Test
+    fun `leaving while the questions are still loading closes nothing`() = runTest {
+        // Back dziala juz nad spinnerem, a indeks silnika jest wtedy zerowy — bez bramki
+        // startu polecialby quiz_finished bez pasujacego quiz_started.
+        every { useCases.getQuestionsForCategory(1L) } returns flowOf(Response.Loading)
+
+        val viewModel = MMQuizVM(
+            savedStateHandle = savedStateHandle,
+            useCases = useCases,
+            adHandler = adHandler,
+            feedbackManager = NoOpFeedbackManager,
+            analyticsLogger = analyticsLogger
+        )
+
+        viewModel.onEvent(MMQuizUIEvents.OnBackPressed)
+        viewModel.onEvent(MMQuizUIEvents.OnBackConfirmed {})
+
+        assertEquals(0, analyticsLogger.eventsOfType<AnalyticsEvent.QuizStarted>().size)
+        assertEquals(0, analyticsLogger.eventsOfType<AnalyticsEvent.QuizFinished>().size)
+    }
+
+    @Test
     fun `quiz start is reported once with mode and source`() = runTest {
         createViewModel()
 

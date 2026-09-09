@@ -117,6 +117,7 @@ abstract class BaseQuizVM (
                         showReportDialog = false, 
                         reportIssueDescription = ""
                     ) }
+                    analyticsLogger.log(AnalyticsEvent.IssueReported(quizMode.analyticsName()))
                     feedbackManager.perform(FeedbackEvent.SUCCESS)
                     _effect.emit(QuizSideEffect.ShowReportSuccess)
                 }
@@ -219,6 +220,10 @@ abstract class BaseQuizVM (
      * ubiciu aplikacji w trakcie reklamy, a jej czas wliczyłby się w duration_sec.
      */
     private fun logQuizFinishedOnce() {
+        // Wyjscie z ekranu, zanim pytania sie zaladuja, tez trafia tutaj (indeks silnika jest
+        // wtedy zerowy). Bez tej bramki lecialby quiz_finished bez pasujacego quiz_started,
+        // zawyzajac early_exit u uzytkownikow ze slabym polaczeniem.
+        if (!hasLoggedQuizStarted) return
         if (hasLoggedQuizFinished) return
         hasLoggedQuizFinished = true
 

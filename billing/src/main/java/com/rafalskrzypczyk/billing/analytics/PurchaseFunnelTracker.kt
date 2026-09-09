@@ -74,7 +74,10 @@ class PurchaseFunnelTracker @Inject constructor(
             is PurchaseResult.Success -> handleSuccess(result.productId)
 
             is PurchaseResult.Pending -> {
-                val started = consumeStarted(result.productId)
+                // Pending nie jest wynikiem terminalnym — zakup moze sie jeszcze domknac, wiec
+                // slot musi przetrwac, inaczej pozniejszy purchase_completed straci surface
+                // i cene, a standardowy `purchase` w ogóle by nie poleciał.
+                val started = peekStarted(result.productId)
                 analyticsLogger.log(
                     AnalyticsEvent.PurchasePending(started.surface(), result.productId)
                 )
@@ -130,6 +133,13 @@ class PurchaseFunnelTracker @Inject constructor(
         if (value != null && value > 0.0 && currency.isNotEmpty()) {
             analyticsLogger.log(AnalyticsEvent.PurchaseStandard(productId, value, currency))
         }
+    }
+
+    /** Odczyt bez konsumpcji — dla wyników nieterminalnych (Pending). */
+    private fun peekStarted(productId: String): StartedPurchase? {
+        val started = startedPurchase ?: return null
+        if (timeProvider.now().time - started.atMillis > ATTRIBUTION_WINDOW_MS) return null
+        return started.takeIf { it.product.id == productId }
     }
 
     /**

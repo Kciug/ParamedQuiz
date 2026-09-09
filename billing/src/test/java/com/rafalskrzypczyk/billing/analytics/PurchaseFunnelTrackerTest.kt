@@ -61,6 +61,18 @@ class PurchaseFunnelTrackerTest {
     }
 
     @Test
+    fun `pending keeps the attribution so the later success still carries revenue`() {
+        tracker.onPurchaseStarted(PurchaseSurface.STORE, swipeMode)
+        emit(PurchaseResult.Pending(BillingIds.ID_SWIPE_MODE))
+        emit(PurchaseResult.Success(BillingIds.ID_SWIPE_MODE))
+
+        val completed = analytics.eventsOfType<AnalyticsEvent.PurchaseCompleted>().single()
+        assertEquals(PurchaseSurface.STORE, completed.surface)
+        assertEquals(9.99, completed.value, 0.001)
+        assertEquals(1, analytics.eventsOfType<AnalyticsEvent.PurchaseStandard>().size)
+    }
+
+    @Test
     fun `purchase start is logged with the surface and price of the product`() {
         tracker.onPurchaseStarted(PurchaseSurface.TRIAL_END, swipeMode)
 

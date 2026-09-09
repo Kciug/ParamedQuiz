@@ -125,6 +125,10 @@ class MainActivity : ComponentActivity() {
         val destination = NotificationDestination.fromExtra(
             intent?.getStringExtra(NotificationDestination.EXTRA_DESTINATION)
         ) ?: return
+
+        // Po `?: return`: bez extra (zwykly start z launchera albo odtworzenie Activity ze
+        // skonsumowanym intentem) nie ma tapniecia w powiadomienie.
+        analyticsLogger.log(AnalyticsEvent.NotificationOpened(destination.name.lowercase()))
         deepLinkDestination.value = destination
         // Konsumujemy extra, żeby zachowany intent nie odpalił deep-linku ponownie
         // przy kolejnym odtworzeniu Activity.

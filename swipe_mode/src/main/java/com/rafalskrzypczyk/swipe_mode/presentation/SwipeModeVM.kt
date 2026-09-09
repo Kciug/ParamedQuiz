@@ -350,6 +350,7 @@ class SwipeModeVM @Inject constructor(
                             showReportDialog = false, 
                             reportIssueDescription = ""
                         ) }
+                        analyticsLogger.log(AnalyticsEvent.IssueReported(SWIPE_MODE))
                         feedbackManager.perform(FeedbackEvent.SUCCESS)
                         _quizEffect.emit(QuizSideEffect.ShowReportSuccess)
                     }
@@ -481,6 +482,10 @@ class SwipeModeVM @Inject constructor(
 
     /** Logowane przed bramka reklamy, zeby interstitial nie wliczal sie w duration_sec. */
     private fun logQuizFinishedOnce() {
+        // Wyjscie z ekranu, zanim pytania sie zaladuja, tez trafia tutaj (indeks silnika jest
+        // wtedy zerowy). Bez tej bramki lecialby quiz_finished bez pasujacego quiz_started,
+        // zawyzajac early_exit u uzytkownikow ze slabym polaczeniem.
+        if (quizStartTime == 0L) return
         if (hasLoggedQuizFinished) return
         hasLoggedQuizFinished = true
 

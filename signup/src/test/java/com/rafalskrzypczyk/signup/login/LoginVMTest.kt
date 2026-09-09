@@ -8,6 +8,7 @@ import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.error.AppError
 import com.rafalskrzypczyk.core.user_management.UserAuthenticationMethod
 import com.rafalskrzypczyk.core.user_management.UserData
+import com.rafalskrzypczyk.core.testing.RecordingAnalyticsLogger
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
@@ -35,7 +36,7 @@ class LoginVMTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
-        viewModel = LoginVM(authRepository)
+        viewModel = LoginVM(authRepository, RecordingAnalyticsLogger())
     }
 
     @After

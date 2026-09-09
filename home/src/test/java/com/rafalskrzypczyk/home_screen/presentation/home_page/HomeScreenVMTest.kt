@@ -6,6 +6,7 @@ import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
 import com.rafalskrzypczyk.core.analytics.HomeAddon
 import com.rafalskrzypczyk.core.analytics.PurchaseSurface
+import com.rafalskrzypczyk.core.analytics.RatingAction
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.testing.RecordingAnalyticsLogger
 import com.rafalskrzypczyk.core.feedback.NoOpFeedbackManager
@@ -73,6 +74,43 @@ class HomeScreenVMTest {
     @After
     fun tearDown() {
         Dispatchers.resetMain()
+    }
+
+    @Test
+    fun `rating funnel reports the prompt and the chosen action`() = runTest {
+        every { useCases.checkAppRatingEligibility() } returns true
+
+        viewModel.onEvent(HomeUIEvents.GetData)
+        viewModel.onEvent(HomeUIEvents.OnRatingSelected(5))
+        viewModel.onEvent(HomeUIEvents.OnRateStore)
+
+        assertEquals(1, analyticsLogger.eventsOfType<AnalyticsEvent.RatingPromptShown>().size)
+        val answered = analyticsLogger.eventsOfType<AnalyticsEvent.RatingPromptAnswered>().single()
+        assertEquals(5, answered.rating)
+        assertEquals(RatingAction.STORE, answered.action)
+    }
+
+    @Test
+    fun `rating prompt is reported once even though the check runs on every home entry`() = runTest {
+        every { useCases.checkAppRatingEligibility() } returns true
+
+        viewModel.onEvent(HomeUIEvents.GetData)
+        viewModel.onEvent(HomeUIEvents.GetData)
+
+        assertEquals(1, analyticsLogger.eventsOfType<AnalyticsEvent.RatingPromptShown>().size)
+    }
+
+    @Test
+    fun `dismissing the rating card reports only the closing decision`() = runTest {
+        every { useCases.checkAppRatingEligibility() } returns true
+        viewModel.onEvent(HomeUIEvents.GetData)
+
+        // Pierwsze odrzucenie otwiera opcje zamkniecia, dopiero drugie zamyka karte.
+        viewModel.onEvent(HomeUIEvents.OnDismissRating)
+        viewModel.onEvent(HomeUIEvents.OnDismissRating)
+
+        val answered = analyticsLogger.eventsOfType<AnalyticsEvent.RatingPromptAnswered>().single()
+        assertEquals(RatingAction.DISMISS, answered.action)
     }
 
     @Test
