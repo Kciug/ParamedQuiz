@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+        Uprawnienia wymagane przez FirebaseAnalytics i Crashlytics. Do scalonego manifestu aplikacji
+        trafiaja i tak z manifestow bibliotek Firebase (play-services-measurement), wiec deklaracja
+        tutaj nie zmienia zawartosci APK - jest potrzebna, zeby lint analizujacy ten modul w izolacji
+        widzial uprawnienia dla wolan z AnalyticsModule.
+    -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+</manifest>

@@ -21,6 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.rememberNavController
 import com.rafalskrzypczyk.core.ads.AdManager
+import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
+import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
 import com.rafalskrzypczyk.core.feedback.FeedbackManager
 import com.rafalskrzypczyk.core.feedback.LocalFeedbackManager
 import com.rafalskrzypczyk.core.composables.ErrorDialog
@@ -28,6 +30,7 @@ import com.rafalskrzypczyk.core.error.AppError
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.notifications.NotificationDestination
+import com.rafalskrzypczyk.paramedquiz.analytics.ScreenNames
 import com.rafalskrzypczyk.paramedquiz.navigation.AppNavHost
 import com.rafalskrzypczyk.paramedquiz.navigation.navigateToMainMenu
 import com.rafalskrzypczyk.paramedquiz.navigation.navigateToRevisionsMode
@@ -49,6 +52,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var feedbackManager: FeedbackManager
+
+    @Inject
+    lateinit var analyticsLogger: AnalyticsLogger
 
     private val viewModel: MainActivityVM by viewModels()
 
@@ -131,6 +137,21 @@ class MainActivity : ComponentActivity() {
     @Composable
     private fun Navigation(startDestination: Any) {
         val navController = rememberNavController()
+
+        // Ręczne raportowanie ekranów. Automatyczne jest wyłączone w manifeście — aplikacja ma
+        // jedno Activity, więc raportowałoby wyłącznie MainActivity. Zagnieżdżone NavHosty trybów
+        // mają własne kontrolery i tu nie trafiają (pokrywają je jawne zdarzenia sesji quizu).
+        LaunchedEffect(navController) {
+            navController.currentBackStackEntryFlow.collect { entry ->
+                val route = entry.destination.route
+                analyticsLogger.log(
+                    AnalyticsEvent.ScreenView(
+                        screenName = ScreenNames.screenNameFor(route),
+                        screenClass = ScreenNames.screenClassFor(route),
+                    )
+                )
+            }
+        }
 
         LaunchedEffect(Unit) {
             viewModel.navigationEvent.collect { destination ->

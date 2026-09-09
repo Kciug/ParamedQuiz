@@ -39,6 +39,7 @@
 | 17 | Ocena aplikacji (in-app rating) | `17-ocena-aplikacji.md` | ✅ |
 | 18 | Zgłaszanie błędów / feedback | `18-zglaszanie-bledow.md` | ✅ |
 | 19 | Konfiguracja zdalna (Remote Config) | `19-konfiguracja-zdalna.md` | ✅ |
+| 20 | Analityka i pomiar (kontrakt pomiarowy, techniczny) | `20-analityka-i-pomiar.md` | 🚧 |
 
 Legenda statusu: ✅ gotowe · 🚧 w toku · ⏳ zaplanowane
 

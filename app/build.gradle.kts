@@ -3,6 +3,7 @@ plugins {
     id("paramedquiz.android.compose")
     id("paramedquiz.android.hilt")
     alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
     alias(libs.plugins.kotlin.serialization)
 }
 
@@ -63,6 +64,7 @@ dependencies {
     implementation(project(":firestore"))
     implementation(project(":revisions"))
     implementation(project(":notifications"))
+    implementation(project(":analytics"))
 
 
     implementation(libs.androidx.core.splashscreen)
@@ -82,7 +84,6 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
-    implementation(libs.firebase.analytics)
 }
     
     

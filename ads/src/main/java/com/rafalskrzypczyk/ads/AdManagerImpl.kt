@@ -10,6 +10,7 @@ import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.rafalskrzypczyk.core.ads.AdManager
+import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.domain.config.GameplayConfigProvider
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -23,6 +24,8 @@ class AdManagerImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val premiumStatusProvider: PremiumStatusProvider,
     private val gameplayConfig: GameplayConfigProvider,
+    private val analyticsLogger: AnalyticsLogger,
+    private val tcfConsentReader: TcfConsentReader,
     externalScope: CoroutineScope
 ) : AdManager {
 
@@ -56,6 +59,10 @@ class AdManagerImpl @Inject constructor(
         // Zgodę zbieramy zawsze — dzięki temu po zakończeniu promocji reklamy wracają
         // od razu, bez czekania na kolejny start aplikacji.
         consentManager.gatherConsent(activity) { _ ->
+            // Jedyny moment, w którym zgoda jest ustalona. Ustawiamy ją poza gałęzią poniżej,
+            // żeby propagacja objęła też użytkowników premium i okres wyłączonych reklam.
+            analyticsLogger.setConsent(tcfConsentReader.read(consentManager.canRequestAds))
+
             if (consentManager.canRequestAds && !areAdsBlocked()) {
                 ensureMobileAdsInitialized()
                 loadInterstitial()

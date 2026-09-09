@@ -17,6 +17,26 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ParamedQuiz"
         tools:targetApi="31">
+
+        <!-- Aplikacja jest single-Activity, wiec automatyczny screen_view raportowalby
+             wylacznie MainActivity. Ekrany logujemy recznie z glownego NavHosta. -->
+        <meta-data
+            android:name="google_analytics_automatic_screen_reporting_enabled"
+            android:value="false" />
+
+        <!-- Consent Mode: domyslnie odmowa, zanim UMP ustali zgode (odbiorca to EOG). -->
+        <meta-data
+            android:name="google_analytics_default_allow_analytics_storage"
+            android:value="false" />
+        <meta-data
+            android:name="google_analytics_default_allow_ad_storage"
+            android:value="false" />
+        <meta-data
+            android:name="google_analytics_default_allow_ad_user_data"
+            android:value="false" />
+        <meta-data
+            android:name="google_analytics_default_allow_ad_personalization_signals"
+            android:value="false" />
         <activity
             android:name="com.rafalskrzypczyk.paramedquiz.MainActivity"
             android:exported="true"
