@@ -3,6 +3,7 @@ package com.rafalskrzypczyk.home_screen.presentation.store
 import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rafalskrzypczyk.billing.analytics.PurchaseFunnelTracker
 import com.rafalskrzypczyk.billing.domain.AppProduct
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.billing.domain.BillingRepository
@@ -10,6 +11,9 @@ import com.rafalskrzypczyk.billing.domain.PurchaseResult
 import com.rafalskrzypczyk.billing.domain.getCategoryBillingId
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
+import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
+import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
+import com.rafalskrzypczyk.core.analytics.PurchaseSurface
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.domain.config.GameplayConfigProvider
 import com.rafalskrzypczyk.core.error.AppError
@@ -43,7 +47,9 @@ class StoreVM @Inject constructor(
     private val billingRepository: BillingRepository,
     private val feedbackManager: FeedbackManager,
     private val getAllCategories: GetAllCategoriesUC,
-    private val gameplayConfig: GameplayConfigProvider
+    private val gameplayConfig: GameplayConfigProvider,
+    private val analyticsLogger: AnalyticsLogger,
+    private val purchaseFunnelTracker: PurchaseFunnelTracker
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(StoreState())
@@ -57,6 +63,7 @@ class StoreVM @Inject constructor(
     private var paidCategories: List<Category> = emptyList()
     private var ownedIds: Set<String> = emptySet()
     private var pendingIds: Set<String> = emptySet()
+    private var hasLoggedPaywall = false
 
     // Stałe produkty sklepu (pakiet + tryby + brak reklam). Kategorie doklejane dynamicznie.
     private val fixedProductIds = listOf(
@@ -186,6 +193,24 @@ class StoreVM @Inject constructor(
                 responseState = if (products.isNotEmpty()) ResponseState.Success else it.responseState
             )
         }
+
+        logPaywallShownOnce(products)
+    }
+
+    /**
+     * Ekran sklepu sam w sobie jest ofertą — nie ma osobnej flagi widoczności. Logujemy jedno
+     * wyświetlenie po dojściu cen; recomputeDerived leci na każdej emisji produktów i własności.
+     */
+    private fun logPaywallShownOnce(products: List<AppProduct>) {
+        if (hasLoggedPaywall || products.isEmpty()) return
+        hasLoggedPaywall = true
+        analyticsLogger.log(
+            AnalyticsEvent.PaywallShown(
+                surface = PurchaseSurface.STORE,
+                productId = BillingIds.ID_FULL_PACKAGE,
+                hasPrice = products.any { it.id == BillingIds.ID_FULL_PACKAGE },
+            )
+        )
     }
 
     /**
@@ -258,8 +283,10 @@ class StoreVM @Inject constructor(
         val details = availableProductsCache.find { it.id == productId }
         if (details != null) {
             _state.update { it.copy(isPurchasing = true, purchaseError = null, pendingPurchaseModeId = productId) }
+            purchaseFunnelTracker.onPurchaseStarted(PurchaseSurface.STORE, details)
             billingRepository.launchBillingFlow(activity, details)
         } else {
+            analyticsLogger.log(AnalyticsEvent.PaywallPriceMissing(PurchaseSurface.STORE, productId))
             _state.update { it.copy(purchaseError = errorLogger.report(ORIGIN_BUY_MODE, AppError.Billing.ProductDetailsMissing)) }
             loadPrices()
         }

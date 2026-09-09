@@ -5,10 +5,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModelStore
+import com.rafalskrzypczyk.billing.analytics.PurchaseFunnelTracker
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.feedback.NoOpFeedbackManager
+import com.rafalskrzypczyk.core.testing.RecordingAnalyticsLogger
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.firestore.domain.models.TranslationQuestionDTO
 import com.rafalskrzypczyk.paramedquiz.e2e.fakes.FakeFirestoreApi
@@ -64,6 +66,12 @@ class TranslationModeTrialHarnessTest {
     @Inject
     lateinit var fakePremium: FakePremiumStatusProvider
 
+    @Inject
+    lateinit var analyticsLogger: RecordingAnalyticsLogger
+
+    @Inject
+    lateinit var purchaseFunnelTracker: PurchaseFunnelTracker
+
     private val viewModelStore = ViewModelStore()
 
     @Before
@@ -92,6 +100,8 @@ class TranslationModeTrialHarnessTest {
             billingRepository,
             fakePremium as PremiumStatusProvider,
             NoOpFeedbackManager,
+            analyticsLogger,
+            purchaseFunnelTracker,
             SavedStateHandle(mapOf("isTrial" to true))
         ).also { viewModelStore.put("vm", it) }
 

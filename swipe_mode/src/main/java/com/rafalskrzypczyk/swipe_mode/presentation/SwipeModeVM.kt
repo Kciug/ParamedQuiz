@@ -4,11 +4,16 @@ import android.app.Activity
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rafalskrzypczyk.billing.analytics.PurchaseFunnelTracker
 import com.rafalskrzypczyk.billing.domain.AppProduct
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.billing.domain.PurchaseResult
 import com.rafalskrzypczyk.core.ads.QuizAdHandler
+import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
+import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
+import com.rafalskrzypczyk.core.analytics.PurchaseSurface
+import com.rafalskrzypczyk.core.analytics.analyticsName
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
@@ -16,6 +21,7 @@ import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedState
 import com.rafalskrzypczyk.core.feedback.FeedbackEvent
 import com.rafalskrzypczyk.core.feedback.FeedbackManager
 import com.rafalskrzypczyk.core.report_issues.IssueReport
+import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.firestore.data.FirestoreCollections
 import com.rafalskrzypczyk.swipe_mode.domain.SwipeModeUseCases
 import com.rafalskrzypczyk.swipe_mode.domain.SwipeQuestion
@@ -32,6 +38,8 @@ import javax.inject.Inject
 
 import com.rafalskrzypczyk.core.utils.QuizSideEffect
 
+private val SWIPE_MODE = QuizMode.SwipeMode.analyticsName()
+
 sealed interface SwipeModeSideEffect {
     object BuyMode : SwipeModeSideEffect
 }
@@ -43,6 +51,8 @@ class SwipeModeVM @Inject constructor(
     private val billingRepository: BillingRepository,
     private val premiumStatusProvider: PremiumStatusProvider,
     private val feedbackManager: FeedbackManager,
+    private val analyticsLogger: AnalyticsLogger,
+    private val purchaseFunnelTracker: PurchaseFunnelTracker,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     private val _state = MutableStateFlow(SwipeModeState())
@@ -56,6 +66,7 @@ class SwipeModeVM @Inject constructor(
 
     private var isTrialActive: Boolean = savedStateHandle.get<Boolean>("isTrial") ?: false
     private var swipeModeProductDetails: AppProduct? = null
+    private var hasLoggedTrialWall = false
 
     private var questions: List<SwipeQuestion> = emptyList()
     private var currentQuestionIndex: Int = 0
@@ -120,6 +131,7 @@ class SwipeModeVM @Inject constructor(
         
         if (isTrialActive) {
             setupTrial()
+            analyticsLogger.log(AnalyticsEvent.TrialStarted(SWIPE_MODE))
         }
 
         loadQuestions()
@@ -243,17 +255,45 @@ class SwipeModeVM @Inject constructor(
         }
     }
 
+    /**
+     * Sciana triala ma dwie sciezki (ponowne wejscie w displayQuestion i normalne zakonczenie
+     * ostatniego pytania), a listener Firestore potrafi je powtorzyc — stad flaga.
+     */
+    private fun showTrialWall() {
+        _state.update { it.copy(showTrialFinishedPanel = true) }
+        if (hasLoggedTrialWall) return
+        hasLoggedTrialWall = true
+
+        analyticsLogger.log(AnalyticsEvent.TrialWallReached(SWIPE_MODE, currentQuestionIndex))
+        analyticsLogger.log(
+            AnalyticsEvent.PaywallShown(
+                surface = PurchaseSurface.TRIAL_END,
+                productId = BillingIds.ID_SWIPE_MODE,
+                hasPrice = swipeModeProductDetails != null,
+            )
+        )
+    }
+
     private fun buySwipeMode() {
         if (swipeModeProductDetails != null) {
             _state.update { it.copy(isPurchasing = true, purchaseError = null) }
             viewModelScope.launch {
                 _effect.emit(SwipeModeSideEffect.BuyMode)
             }
+        } else {
+            analyticsLogger.log(
+                AnalyticsEvent.PaywallPriceMissing(PurchaseSurface.TRIAL_END, BillingIds.ID_SWIPE_MODE)
+            )
         }
     }
 
+    /**
+     * Wolane z NavHosta po side effekcie — dopiero tutaj zakup realnie trafia do Google Play,
+     * wiec tu (a nie w [buySwipeMode]) jest start lejka.
+     */
     fun launchBillingFlow(activity: Activity) {
         swipeModeProductDetails?.let {
+            purchaseFunnelTracker.onPurchaseStarted(PurchaseSurface.TRIAL_END, it)
             billingRepository.launchBillingFlow(activity, it)
         }
     }
@@ -305,7 +345,7 @@ class SwipeModeVM @Inject constructor(
     private fun displayQuestion() {
         if(questions.indices.contains(currentQuestionIndex).not()) {
             if (isTrialActive && questions.isNotEmpty()) {
-                _state.update { it.copy(showTrialFinishedPanel = true) }
+                showTrialWall()
             } else {
                 setFinishedState()
             }
@@ -347,7 +387,7 @@ class SwipeModeVM @Inject constructor(
             answerResult = SwipeModeAnswerResult(result = SwipeQuizResult.NONE)
         ) }
         if (isTrialActive && questions.isNotEmpty()) {
-            _state.update { it.copy(showTrialFinishedPanel = true) }
+            showTrialWall()
         } else {
             setFinishedState()
         }

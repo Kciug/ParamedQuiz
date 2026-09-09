@@ -2,6 +2,7 @@ package com.rafalskrzypczyk.paramedquiz
 
 import android.app.Application
 import com.rafalskrzypczyk.ads.TcfConsentReader
+import com.rafalskrzypczyk.billing.analytics.PurchaseFunnelTracker
 import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
 import com.rafalskrzypczyk.core.domain.config.GameplayConfigProvider
 import com.rafalskrzypczyk.notifications.ContentTopicManager
@@ -35,6 +36,9 @@ class ParamedQuizApplication : Application() {
     @Inject
     lateinit var userPropertySync: UserPropertySync
 
+    @Inject
+    lateinit var purchaseFunnelTracker: PurchaseFunnelTracker
+
     override fun onCreate() {
         super.onCreate()
 
@@ -42,6 +46,9 @@ class ParamedQuizApplication : Application() {
         // (o ile jest wymagany) doprecyzuje ją przy starcie MainActivity.
         analyticsLogger.setConsent(tcfConsentReader.read(canRequestAds = false))
         userPropertySync.start()
+        // Musi wystartowac tutaj: purchaseResult nie ma replay, wiec wynik zakupu
+        // wyemitowany przed subskrypcja przepada.
+        purchaseFunnelTracker.start()
 
         NotificationChannels.ensureCreated(this)
         reminderScheduler.ensureScheduled()

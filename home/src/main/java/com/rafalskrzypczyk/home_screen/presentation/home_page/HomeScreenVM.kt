@@ -3,11 +3,15 @@ package com.rafalskrzypczyk.home_screen.presentation.home_page
 import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rafalskrzypczyk.billing.analytics.PurchaseFunnelTracker
 import com.rafalskrzypczyk.billing.domain.AppProduct
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.billing.domain.PurchaseResult
 import com.rafalskrzypczyk.core.api_response.Response
+import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
+import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
+import com.rafalskrzypczyk.core.analytics.PurchaseSurface
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.composables.rating.RatingPromptState
 import com.rafalskrzypczyk.core.domain.UserFeedback
@@ -33,7 +37,9 @@ class HomeScreenVM @Inject constructor(
     private val billingRepository: BillingRepository,
     private val reminderScheduler: ReminderScheduler,
     private val contentTopicManager: ContentTopicManager,
-    private val feedbackManager: FeedbackManager
+    private val feedbackManager: FeedbackManager,
+    private val analyticsLogger: AnalyticsLogger,
+    private val purchaseFunnelTracker: PurchaseFunnelTracker
 ): ViewModel() {
     private val _state = MutableStateFlow(HomeScreenState())
     val state = _state.asStateFlow()
@@ -314,6 +320,13 @@ class HomeScreenVM @Inject constructor(
             }
             base.copy(purchaseError = null, isPurchasing = false)
         }
+        analyticsLogger.log(
+            AnalyticsEvent.PaywallShown(
+                surface = PurchaseSurface.HOME_SHEET,
+                productId = modeId,
+                hasPrice = productDetailsFor(modeId) != null,
+            )
+        )
         viewModelScope.launch {
             billingRepository.queryProducts(listOf(modeId))
         }
@@ -331,16 +344,25 @@ class HomeScreenVM @Inject constructor(
     }
 
     private fun buyMode(activity: Activity, modeId: String) {
-        val details = when(modeId) {
-            BillingIds.ID_TRANSLATION_MODE -> translationModeProductDetails
-            BillingIds.ID_SWIPE_MODE -> swipeModeProductDetails
-            else -> null
-        }
+        val details = productDetailsFor(modeId)
         if (details != null) {
             pendingPurchaseModeId = modeId
             _state.update { it.copy(isPurchasing = true, purchaseError = null) }
+            purchaseFunnelTracker.onPurchaseStarted(PurchaseSurface.HOME_SHEET, details)
             billingRepository.launchBillingFlow(activity, details)
+        } else {
+            // Bez tego klikniecie "Kup" bez cen w cache jest cicha utrata przychodu:
+            // metoda po prostu wychodzi, a UI nie pokazuje bledu.
+            analyticsLogger.log(
+                AnalyticsEvent.PaywallPriceMissing(PurchaseSurface.HOME_SHEET, modeId)
+            )
         }
+    }
+
+    private fun productDetailsFor(modeId: String): AppProduct? = when (modeId) {
+        BillingIds.ID_TRANSLATION_MODE -> translationModeProductDetails
+        BillingIds.ID_SWIPE_MODE -> swipeModeProductDetails
+        else -> null
     }
 
     private fun consumeNavigation() {

@@ -1,8 +1,10 @@
 package com.rafalskrzypczyk.home_screen.presentation.home_page
 
+import com.rafalskrzypczyk.billing.analytics.PurchaseFunnelTracker
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
+import com.rafalskrzypczyk.core.testing.RecordingAnalyticsLogger
 import com.rafalskrzypczyk.core.feedback.NoOpFeedbackManager
 import com.rafalskrzypczyk.home_screen.domain.HomeScreenUseCases
 import com.rafalskrzypczyk.notifications.ContentTopicManager
@@ -29,6 +31,8 @@ class HomeScreenVMTest {
     private lateinit var billingRepository: BillingRepository
     private lateinit var reminderScheduler: ReminderScheduler
     private lateinit var contentTopicManager: ContentTopicManager
+    private lateinit var analyticsLogger: RecordingAnalyticsLogger
+    private lateinit var purchaseFunnelTracker: PurchaseFunnelTracker
     private lateinit var viewModel: HomeScreenVM
 
     @Before
@@ -40,13 +44,24 @@ class HomeScreenVMTest {
         billingRepository = mockk(relaxed = true)
         reminderScheduler = mockk(relaxed = true)
         contentTopicManager = mockk(relaxed = true)
+        analyticsLogger = RecordingAnalyticsLogger()
+        purchaseFunnelTracker = mockk(relaxed = true)
 
         every { billingRepository.availableProducts } returns flowOf(emptyList())
         every { useCases.getUserScore() } returns flowOf(mockk(relaxed = true))
         every { useCases.getUserData() } returns flowOf(mockk(relaxed = true))
         every { premiumStatusProvider.ownedProductIds } returns flowOf(emptySet())
         
-        viewModel = HomeScreenVM(useCases, premiumStatusProvider, billingRepository, reminderScheduler, contentTopicManager, NoOpFeedbackManager)
+        viewModel = HomeScreenVM(
+            useCases,
+            premiumStatusProvider,
+            billingRepository,
+            reminderScheduler,
+            contentTopicManager,
+            NoOpFeedbackManager,
+            analyticsLogger,
+            purchaseFunnelTracker,
+        )
     }
 
     @After

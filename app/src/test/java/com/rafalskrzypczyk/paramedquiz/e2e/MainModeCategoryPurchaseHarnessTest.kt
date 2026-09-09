@@ -9,9 +9,11 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.lifecycle.ViewModelStore
+import com.rafalskrzypczyk.billing.analytics.PurchaseFunnelTracker
 import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.feedback.NoOpFeedbackManager
+import com.rafalskrzypczyk.core.testing.RecordingAnalyticsLogger
 import com.rafalskrzypczyk.core.testing.TestTags
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.core.error.ErrorLogger
@@ -66,6 +68,12 @@ class MainModeCategoryPurchaseHarnessTest {
     @Inject
     lateinit var errorLogger: ErrorLogger
 
+    @Inject
+    lateinit var analyticsLogger: RecordingAnalyticsLogger
+
+    @Inject
+    lateinit var purchaseFunnelTracker: PurchaseFunnelTracker
+
     private val paidCategoryId = 200L
     private val viewModelStore = ViewModelStore()
 
@@ -85,7 +93,15 @@ class MainModeCategoryPurchaseHarnessTest {
 
     @Test
     fun `clicking locked category opens purchase dialog`() {
-        val viewModel = MMCategoriesVM(useCases, billingRepository, premiumStatusProvider, NoOpFeedbackManager, errorLogger)
+        val viewModel = MMCategoriesVM(
+            useCases,
+            billingRepository,
+            premiumStatusProvider,
+            NoOpFeedbackManager,
+            errorLogger,
+            analyticsLogger,
+            purchaseFunnelTracker,
+        )
             .also { viewModelStore.put("vm", it) }
 
         composeRule.setContent {

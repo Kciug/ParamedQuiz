@@ -8,10 +8,12 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModelStore
+import com.rafalskrzypczyk.billing.analytics.PurchaseFunnelTracker
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.core.ads.QuizAdHandler
 import com.rafalskrzypczyk.core.feedback.NoOpFeedbackManager
+import com.rafalskrzypczyk.core.testing.RecordingAnalyticsLogger
 import com.rafalskrzypczyk.core.testing.TestTags
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.firestore.domain.models.SwipeQuestionDTO
@@ -71,6 +73,12 @@ class SwipeModeTrialHarnessTest {
     @Inject
     lateinit var fakePremium: FakePremiumStatusProvider
 
+    @Inject
+    lateinit var analyticsLogger: RecordingAnalyticsLogger
+
+    @Inject
+    lateinit var purchaseFunnelTracker: PurchaseFunnelTracker
+
     private val viewModelStore = ViewModelStore()
 
     @Before
@@ -90,6 +98,8 @@ class SwipeModeTrialHarnessTest {
             billingRepository,
             fakePremium,
             NoOpFeedbackManager,
+            analyticsLogger,
+            purchaseFunnelTracker,
             SavedStateHandle(mapOf("isTrial" to true))
         ).also { viewModelStore.put("vm", it) }
 

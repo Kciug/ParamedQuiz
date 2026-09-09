@@ -4,16 +4,22 @@ import android.app.Activity
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rafalskrzypczyk.billing.analytics.PurchaseFunnelTracker
 import com.rafalskrzypczyk.billing.domain.AppProduct
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.billing.domain.PurchaseResult
+import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
+import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
+import com.rafalskrzypczyk.core.analytics.PurchaseSurface
+import com.rafalskrzypczyk.core.analytics.analyticsName
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedState
 import com.rafalskrzypczyk.core.feedback.FeedbackEvent
 import com.rafalskrzypczyk.core.feedback.FeedbackManager
+import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.firestore.data.FirestoreCollections
 import com.rafalskrzypczyk.firestore.domain.models.IssueReportDTO
 import com.rafalskrzypczyk.firestore.domain.models.TranslationQuestionDTO
@@ -35,6 +41,8 @@ import javax.inject.Inject
 
 import com.rafalskrzypczyk.core.utils.QuizSideEffect
 
+private val TRANSLATION_MODE = QuizMode.TranslationMode.analyticsName()
+
 sealed interface TranslationModeSideEffect {
     object BuyMode : TranslationModeSideEffect
 }
@@ -45,6 +53,8 @@ class TranslationQuizViewModel @Inject constructor(
     private val billingRepository: BillingRepository,
     private val premiumStatusProvider: PremiumStatusProvider,
     private val feedbackManager: FeedbackManager,
+    private val analyticsLogger: AnalyticsLogger,
+    private val purchaseFunnelTracker: PurchaseFunnelTracker,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -59,6 +69,7 @@ class TranslationQuizViewModel @Inject constructor(
 
     private var isTrialActive: Boolean = savedStateHandle.get<Boolean>("isTrial") ?: false
     private var translationModeProductDetails: AppProduct? = null
+    private var hasLoggedTrialWall = false
 
     private var loadDataJob: Job? = null
     private var questionsListenerJob: Job? = null
@@ -82,6 +93,7 @@ class TranslationQuizViewModel @Inject constructor(
 
         if (isTrialActive) {
             setupTrial()
+            analyticsLogger.log(AnalyticsEvent.TrialStarted(TRANSLATION_MODE))
         }
 
         // Wynik użytkownika nie zależy od stanu triala, więc kolektor zostaje poza loadData() -
@@ -267,17 +279,46 @@ class TranslationQuizViewModel @Inject constructor(
         }
     }
 
+    /** Listener Firestore potrafi ponowic sciezke konca puli — stad flaga jednorazowosci. */
+    private fun showTrialWall() {
+        _state.update { it.copy(showTrialFinishedPanel = true) }
+        if (hasLoggedTrialWall) return
+        hasLoggedTrialWall = true
+
+        val answered = _state.value.questions.count { it.isAnswered }
+        analyticsLogger.log(AnalyticsEvent.TrialWallReached(TRANSLATION_MODE, answered))
+        analyticsLogger.log(
+            AnalyticsEvent.PaywallShown(
+                surface = PurchaseSurface.TRIAL_END,
+                productId = BillingIds.ID_TRANSLATION_MODE,
+                hasPrice = translationModeProductDetails != null,
+            )
+        )
+    }
+
     private fun buyMode() {
         if (translationModeProductDetails != null) {
             _state.update { it.copy(isPurchasing = true, purchaseError = null) }
             viewModelScope.launch {
                 _billingEffect.emit(TranslationModeSideEffect.BuyMode)
             }
+        } else {
+            analyticsLogger.log(
+                AnalyticsEvent.PaywallPriceMissing(
+                    PurchaseSurface.TRIAL_END,
+                    BillingIds.ID_TRANSLATION_MODE,
+                )
+            )
         }
     }
 
+    /**
+     * Wolane z NavHosta po side effekcie — dopiero tutaj zakup realnie trafia do Google Play,
+     * wiec tu (a nie w [buyMode]) jest start lejka.
+     */
     fun launchBillingFlow(activity: Activity) {
         translationModeProductDetails?.let {
+            purchaseFunnelTracker.onPurchaseStarted(PurchaseSurface.TRIAL_END, it)
             billingRepository.launchBillingFlow(activity, it)
         }
     }
@@ -339,7 +380,7 @@ class TranslationQuizViewModel @Inject constructor(
         if (nextIndex < currentState.questions.size) {
             _state.update { it.copy(currentQuestionIndex = nextIndex) }
         } else if (isTrialActive && currentState.questions.isNotEmpty()) {
-            _state.update { it.copy(showTrialFinishedPanel = true) }
+            showTrialWall()
         } else {
             finishQuiz()
         }
