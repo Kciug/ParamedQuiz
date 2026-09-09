@@ -12,6 +12,8 @@ import com.rafalskrzypczyk.billing.domain.PurchaseResult
 import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
 import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
 import com.rafalskrzypczyk.core.analytics.PurchaseSurface
+import com.rafalskrzypczyk.core.analytics.QuizCompletion
+import com.rafalskrzypczyk.core.analytics.QuizSource
 import com.rafalskrzypczyk.core.analytics.analyticsName
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
@@ -70,6 +72,10 @@ class TranslationQuizViewModel @Inject constructor(
     private var isTrialActive: Boolean = savedStateHandle.get<Boolean>("isTrial") ?: false
     private var translationModeProductDetails: AppProduct? = null
     private var hasLoggedTrialWall = false
+    private var sessionStartTime = 0L
+    private var hasLoggedQuizStarted = false
+    private var hasLoggedQuizFinished = false
+    private var exitedEarly = false
 
     private var loadDataJob: Job? = null
     private var questionsListenerJob: Job? = null
@@ -189,6 +195,7 @@ class TranslationQuizViewModel @Inject constructor(
                             )
                         }
                     }
+                    logQuizStartedOnce(_state.value.questions.size)
                     attachQuestionsListener()
                 }
             }
@@ -328,11 +335,50 @@ class TranslationQuizViewModel @Inject constructor(
         val state = _state.value
         val isStarted = state.currentQuestionIndex > 0 || state.questions.getOrNull(0)?.isAnswered == true
         
+        exitedEarly = true
         if (!isStarted) {
+            // Bez tego wyjscie przed pierwsza odpowiedzia zostawialoby quiz_started bez terminala.
+            logQuizFinishedOnce()
             navigateBack()
         } else {
             finishQuiz()
         }
+    }
+
+    /**
+     * loadData() leci dwa razy przy konwersji trialu na pelny tryb (przeladowanie z zachowaniem
+     * postepu), a listener Firestore potrafi ja powtorzyc — stad flaga.
+     */
+    private fun logQuizStartedOnce(questionsCount: Int) {
+        if (hasLoggedQuizStarted) return
+        hasLoggedQuizStarted = true
+        sessionStartTime = System.currentTimeMillis()
+
+        analyticsLogger.log(
+            AnalyticsEvent.QuizStarted(
+                mode = TRANSLATION_MODE,
+                source = QuizSource.HOME,
+                questionsCount = questionsCount,
+                isTrial = isTrialActive,
+            )
+        )
+    }
+
+    private fun logQuizFinishedOnce() {
+        if (hasLoggedQuizFinished) return
+        hasLoggedQuizFinished = true
+
+        val state = _state.value
+        analyticsLogger.log(
+            AnalyticsEvent.QuizFinished(
+                mode = TRANSLATION_MODE,
+                completion = if (exitedEarly) QuizCompletion.EARLY_EXIT else QuizCompletion.COMPLETED,
+                questionsAnswered = state.questions.count { it.isAnswered },
+                correctAnswers = state.correctAnswersCount,
+                durationSec = if (sessionStartTime == 0L) 0L else (System.currentTimeMillis() - sessionStartTime) / 1000,
+                isTrial = isTrialActive,
+            )
+        )
     }
 
     private fun submitAnswer() {
@@ -387,6 +433,7 @@ class TranslationQuizViewModel @Inject constructor(
     }
 
     private fun finishQuiz() {
+        logQuizFinishedOnce()
         useCases.incrementCompletedQuizzes()
         feedbackManager.perform(FeedbackEvent.QUIZ_COMPLETED)
         _state.update {

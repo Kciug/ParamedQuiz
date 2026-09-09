@@ -4,6 +4,7 @@ import com.rafalskrzypczyk.core.ads.QuizAdHandler
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.domain.config.GameplayConfigProvider
 import com.rafalskrzypczyk.core.feedback.NoOpFeedbackManager
+import com.rafalskrzypczyk.core.testing.RecordingAnalyticsLogger
 import com.rafalskrzypczyk.core.report_issues.IssueReport
 import com.rafalskrzypczyk.core.utils.ResourceProvider
 import com.rafalskrzypczyk.main_mode.domain.daily_exercise.DailyExerciseUseCases
@@ -79,7 +80,8 @@ class DailyExerciseVMTest {
         scoreManager = scoreManager,
         gameplayConfig = gameplayConfig,
         adHandler = adHandler,
-        feedbackManager = NoOpFeedbackManager
+        feedbackManager = NoOpFeedbackManager,
+        analyticsLogger = RecordingAnalyticsLogger()
     )
 
     @Test

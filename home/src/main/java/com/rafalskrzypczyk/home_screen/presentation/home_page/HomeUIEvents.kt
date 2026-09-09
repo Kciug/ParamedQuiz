@@ -1,6 +1,8 @@
 package com.rafalskrzypczyk.home_screen.presentation.home_page
 
 import android.app.Activity
+import com.rafalskrzypczyk.core.analytics.HomeAddon
+import com.rafalskrzypczyk.core.utils.QuizMode
 
 sealed interface HomeUIEvents {
     data object GetData : HomeUIEvents
@@ -11,6 +13,11 @@ sealed interface HomeUIEvents {
     class BuyTranslationMode(val activity: Activity) : HomeUIEvents
     class BuySwipeMode(val activity: Activity) : HomeUIEvents
     data object NavigationConsumed : HomeUIEvents
+
+    /** Tap w kafel trybu. Menu nie zna stanu blokady, wiec przychodzi ona z ekranu. */
+    data class ModeSelected(val mode: QuizMode, val locked: Boolean) : HomeUIEvents
+
+    data class AddonTapped(val addon: HomeAddon, val available: Boolean) : HomeUIEvents
 
     data class OnRatingSelected(val rating: Int) : HomeUIEvents
     data object OnDismissRating : HomeUIEvents

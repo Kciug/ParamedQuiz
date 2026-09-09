@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelStore
 import com.rafalskrzypczyk.core.ads.QuizAdHandler
 import com.rafalskrzypczyk.core.feedback.NoOpFeedbackManager
 import com.rafalskrzypczyk.core.testing.TestTags
+import com.rafalskrzypczyk.core.testing.RecordingAnalyticsLogger
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.firestore.domain.models.AnswerDTO
 import com.rafalskrzypczyk.firestore.domain.models.QuestionDTO
@@ -62,6 +63,9 @@ class MainModeQuizHarnessTest {
     lateinit var adHandler: QuizAdHandler
 
     private val categoryId = 100L
+    @Inject
+    lateinit var analyticsLogger: RecordingAnalyticsLogger
+
     private val viewModelStore = ViewModelStore()
     private lateinit var viewModel: MMQuizVM
 
@@ -87,7 +91,8 @@ class MainModeQuizHarnessTest {
             SavedStateHandle(mapOf("categoryId" to categoryId, "categoryTitle" to "KATEGORIA")),
             useCases,
             adHandler,
-            NoOpFeedbackManager
+            NoOpFeedbackManager,
+            analyticsLogger
         ).also { viewModelStore.put("vm", it) }
 
         composeRule.setContent {

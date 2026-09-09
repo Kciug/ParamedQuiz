@@ -2,11 +2,14 @@ package com.rafalskrzypczyk.main_mode.presentation.daily_exercise
 
 import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.core.ads.QuizAdHandler
+import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
+import com.rafalskrzypczyk.core.analytics.QuizSource
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.domain.config.GameplayConfigProvider
 import com.rafalskrzypczyk.core.feedback.FeedbackEvent
 import com.rafalskrzypczyk.core.feedback.FeedbackManager
+import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.core.utils.ResourceProvider
 import com.rafalskrzypczyk.main_mode.R
 import com.rafalskrzypczyk.main_mode.domain.daily_exercise.DailyExerciseUseCases
@@ -27,11 +30,15 @@ class DailyExerciseVM @Inject constructor(
     private val scoreManager: ScoreManager,
     private val gameplayConfig: GameplayConfigProvider,
     adHandler: QuizAdHandler,
-    feedbackManager: FeedbackManager
+    feedbackManager: FeedbackManager,
+    analyticsLogger: AnalyticsLogger
 ): BaseQuizVM(
     useCases = useCases.base,
     adHandler = adHandler,
     feedbackManager = feedbackManager,
+    analyticsLogger = analyticsLogger,
+    quizMode = QuizMode.MainMode,
+    analyticsSource = QuizSource.DAILY_EXERCISE,
     gameMode = GAME_MODE_NAME
 ) {
     init {

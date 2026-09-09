@@ -3,12 +3,18 @@ package com.rafalskrzypczyk.main_mode.presentation.quiz_base
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.core.ads.QuizAdHandler
+import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
+import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
+import com.rafalskrzypczyk.core.analytics.QuizCompletion
+import com.rafalskrzypczyk.core.analytics.QuizSource
+import com.rafalskrzypczyk.core.analytics.analyticsName
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedState
 import com.rafalskrzypczyk.core.feedback.FeedbackEvent
 import com.rafalskrzypczyk.core.feedback.FeedbackManager
 import com.rafalskrzypczyk.core.report_issues.IssueReport
+import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.main_mode.domain.models.Question
 import com.rafalskrzypczyk.main_mode.domain.quiz_base.BaseQuizUseCases
 import com.rafalskrzypczyk.main_mode.domain.quiz_base.QuizEngine
@@ -26,6 +32,9 @@ abstract class BaseQuizVM (
     private val useCases: BaseQuizUseCases,
     protected val adHandler: QuizAdHandler,
     protected val feedbackManager: FeedbackManager,
+    private val analyticsLogger: AnalyticsLogger,
+    private val quizMode: QuizMode,
+    private val analyticsSource: QuizSource,
     private val gameMode: String,
     private val enforceSingleSelection: Boolean = false
 ): ViewModel() {
@@ -43,6 +52,10 @@ abstract class BaseQuizVM (
     
     // Timing
     private var currentQuestionStartTime: Long = 0L
+
+    private var hasLoggedQuizStarted = false
+    private var hasLoggedQuizFinished = false
+    private var exitedEarly = false
 
     init {
         loadUserScore()
@@ -178,7 +191,48 @@ abstract class BaseQuizVM (
                 quizStartTime = System.currentTimeMillis()
             )
         }
+        logQuizStartedOnce()
         displayQuestion()
+    }
+
+    /**
+     * [initializeQuiz] siedzi w collectLatest na flow z Firestore — kolejna emisja Success
+     * reinicjalizuje sesję, więc bez flagi start poleciałby wielokrotnie na jedną sesję.
+     */
+    private fun logQuizStartedOnce() {
+        if (hasLoggedQuizStarted) return
+        hasLoggedQuizStarted = true
+
+        analyticsLogger.log(
+            AnalyticsEvent.QuizStarted(
+                mode = quizMode.analyticsName(),
+                source = analyticsSource,
+                questionsCount = quizEngine.getQuestionsCount(),
+                isTrial = false,
+            )
+        )
+    }
+
+    /**
+     * Logujemy na logicznym końcu sesji ([setFinishedState]), a nie w [finishQuiz]: w czterech
+     * z pięciu trybów finalizację potrafi opóźnić interstitial, więc zdarzenie przepadłoby przy
+     * ubiciu aplikacji w trakcie reklamy, a jej czas wliczyłby się w duration_sec.
+     */
+    private fun logQuizFinishedOnce() {
+        if (hasLoggedQuizFinished) return
+        hasLoggedQuizFinished = true
+
+        val startTime = _state.value.quizStartTime
+        analyticsLogger.log(
+            AnalyticsEvent.QuizFinished(
+                mode = quizMode.analyticsName(),
+                completion = if (exitedEarly) QuizCompletion.EARLY_EXIT else QuizCompletion.COMPLETED,
+                questionsAnswered = quizEngine.getAnsweredQuestions(),
+                correctAnswers = quizEngine.getCorrectAnswers(),
+                durationSec = if (startTime == 0L) 0L else (System.currentTimeMillis() - startTime) / 1000,
+                isTrial = false,
+            )
+        )
     }
 
     protected fun updateQuizData(questions: List<Question>) {
@@ -216,6 +270,7 @@ abstract class BaseQuizVM (
 
     protected open fun displayNextQuestion() {
         val next = quizEngine.nextQuestion()
+        if (next == null) logQuizFinishedOnce()
         if (adHandler.shouldShowAd(
                 answeredCount = state.value.answeredQuestions.size,
                 isQuizFinished = next == null,
@@ -230,11 +285,18 @@ abstract class BaseQuizVM (
 
     protected open fun handleExitQuiz(navigateBack: () -> Unit) {
         _state.update { it.copy(showExitConfirmation = false) }
-        if(quizEngine.getCurrentQuestionIndex() == 0) navigateBack()
+        exitedEarly = true
+        if(quizEngine.getCurrentQuestionIndex() == 0) {
+            // Wyjście przed pierwszą odpowiedzią nie finalizuje sesji, więc bez tego
+            // quiz_started nie miałby zdarzenia terminalnego i lejek pokazywałby odpływ.
+            logQuizFinishedOnce()
+            navigateBack()
+        }
         else setFinishedState()
     }
 
     protected open fun setFinishedState() {
+        logQuizFinishedOnce()
         if (adHandler.shouldShowAd(
                 answeredCount = state.value.answeredQuestions.size,
                 isQuizFinished = true,
@@ -248,6 +310,7 @@ abstract class BaseQuizVM (
     }
 
     protected open fun finishQuiz() {
+        logQuizFinishedOnce()
         useCases.incrementCompletedQuizzes()
         feedbackManager.perform(FeedbackEvent.QUIZ_COMPLETED)
         _state.update { it.copy(

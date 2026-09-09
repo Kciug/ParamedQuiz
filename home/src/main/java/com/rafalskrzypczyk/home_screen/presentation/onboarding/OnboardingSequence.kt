@@ -64,7 +64,7 @@ fun OnboardingSequence(
     state: OnboardingState,
     onBackToWelcomePage: () -> Unit,
     navigateToLogin: () -> Unit,
-    onFinish: () -> Unit,
+    onFinish: (skipped: Boolean, lastPage: Int) -> Unit,
 ) {
     val pages = listOf<@Composable () -> Unit>(
         {

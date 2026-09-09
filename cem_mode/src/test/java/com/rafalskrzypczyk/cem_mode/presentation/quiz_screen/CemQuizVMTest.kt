@@ -5,6 +5,7 @@ import com.rafalskrzypczyk.cem_mode.domain.use_cases.CemQuestionsUseCases
 import com.rafalskrzypczyk.core.ads.QuizAdHandler
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.feedback.NoOpFeedbackManager
+import com.rafalskrzypczyk.core.testing.RecordingAnalyticsLogger
 import com.rafalskrzypczyk.core.report_issues.IssueReport
 import com.rafalskrzypczyk.main_mode.domain.models.Answer
 import com.rafalskrzypczyk.main_mode.domain.models.Question
@@ -66,7 +67,8 @@ class CemQuizVMTest {
             savedStateHandle = savedStateHandle,
             useCases = useCases,
             adHandler = adHandler,
-            feedbackManager = NoOpFeedbackManager
+            feedbackManager = NoOpFeedbackManager,
+            analyticsLogger = RecordingAnalyticsLogger()
         )
     }
 

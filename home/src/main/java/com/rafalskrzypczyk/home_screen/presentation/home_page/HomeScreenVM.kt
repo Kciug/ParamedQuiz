@@ -12,6 +12,7 @@ import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
 import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
 import com.rafalskrzypczyk.core.analytics.PurchaseSurface
+import com.rafalskrzypczyk.core.analytics.analyticsName
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.composables.rating.RatingPromptState
 import com.rafalskrzypczyk.core.domain.UserFeedback
@@ -106,6 +107,12 @@ class HomeScreenVM @Inject constructor(
             is HomeUIEvents.BuyTranslationMode -> buyMode(event.activity, BillingIds.ID_TRANSLATION_MODE)
             is HomeUIEvents.BuySwipeMode -> buyMode(event.activity, BillingIds.ID_SWIPE_MODE)
             HomeUIEvents.NavigationConsumed -> consumeNavigation()
+            is HomeUIEvents.ModeSelected -> analyticsLogger.log(
+                AnalyticsEvent.ModeSelected(event.mode.analyticsName(), event.locked)
+            )
+            is HomeUIEvents.AddonTapped -> analyticsLogger.log(
+                AnalyticsEvent.AddonTapped(event.addon, event.available)
+            )
             is HomeUIEvents.OnRatingSelected -> handleRatingSelected(event.rating)
             HomeUIEvents.OnDismissRating -> dismissRating()
             HomeUIEvents.OnRateStore -> rateStore()

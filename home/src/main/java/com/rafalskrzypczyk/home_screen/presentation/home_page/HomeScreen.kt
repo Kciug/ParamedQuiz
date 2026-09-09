@@ -55,6 +55,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
+import com.rafalskrzypczyk.core.analytics.HomeAddon
+import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.core.composables.Dimens
 import com.rafalskrzypczyk.core.composables.InfoDialog
 import com.rafalskrzypczyk.core.composables.TextHeadline
@@ -123,6 +125,7 @@ fun HomeScreen(
             highlighted = state.isNewDailyExerciseAvailable,
             isAvailable = state.isNewDailyExerciseAvailable
         ) {
+            onEvent(HomeUIEvents.AddonTapped(HomeAddon.DAILY, state.isNewDailyExerciseAvailable))
             if (state.isNewDailyExerciseAvailable) {
                 onNavigateToDailyExercise()
             } else {
@@ -134,14 +137,20 @@ fun HomeScreen(
             icon = Icons.Rounded.History,
             iconBackgroundColor = MQBlue,
             isAvailable = true,
-        ) { onNavigateToRevisionsMode() },
+        ) {
+            onEvent(HomeUIEvents.AddonTapped(HomeAddon.REVISIONS, available = true))
+            onNavigateToRevisionsMode()
+        },
         Addon(
             title = stringResource(R.string.title_store),
             icon = Icons.Default.Diamond,
             iconBackgroundColor = MQYellow,
             highlighted = false,
             isAvailable = true
-        ) { onNavigateToStore() },
+        ) {
+            onEvent(HomeUIEvents.AddonTapped(HomeAddon.STORE, available = true))
+            onNavigateToStore()
+        },
     )
 
     LaunchedEffect(Unit) {
@@ -396,14 +405,22 @@ fun HomeScreen(
             HomeScreenQuizModesMenu(
                 isTranslationModeUnlocked = state.isTranslationModeUnlocked,
                 isSwipeModeUnlocked = state.isSwipeModeUnlocked,
-                onNavigateToMainMode = onNavigateToMainMode,
+                onNavigateToMainMode = {
+                    onEvent(HomeUIEvents.ModeSelected(QuizMode.MainMode, locked = false))
+                    onNavigateToMainMode()
+                },
                 onNavigateToSwipeMode = {
+                    onEvent(HomeUIEvents.ModeSelected(QuizMode.SwipeMode, !state.isSwipeModeUnlocked))
                     onEvent(HomeUIEvents.OpenSwipeModePurchaseSheet)
                 },
                 onNavigateToTranslationMode = {
+                    onEvent(HomeUIEvents.ModeSelected(QuizMode.TranslationMode, !state.isTranslationModeUnlocked))
                     onEvent(HomeUIEvents.OpenTranslationModePurchaseSheet)
                 },
-                onNavigateToCemMode = onNavigateToCemMode
+                onNavigateToCemMode = {
+                    onEvent(HomeUIEvents.ModeSelected(QuizMode.CemMode, locked = false))
+                    onNavigateToCemMode()
+                }
             )
 
             Spacer(modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom)))

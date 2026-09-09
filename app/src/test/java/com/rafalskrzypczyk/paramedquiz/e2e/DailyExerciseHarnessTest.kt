@@ -12,6 +12,7 @@ import com.rafalskrzypczyk.core.ads.QuizAdHandler
 import com.rafalskrzypczyk.core.domain.config.GameplayConfigProvider
 import com.rafalskrzypczyk.core.feedback.NoOpFeedbackManager
 import com.rafalskrzypczyk.core.testing.TestTags
+import com.rafalskrzypczyk.core.testing.RecordingAnalyticsLogger
 import com.rafalskrzypczyk.core.ui.theme.ParamedQuizTheme
 import com.rafalskrzypczyk.core.utils.ResourceProvider
 import com.rafalskrzypczyk.firestore.domain.models.AnswerDTO
@@ -82,6 +83,9 @@ class DailyExerciseHarnessTest {
     @Inject
     lateinit var checkDailyAvailability: CheckDailyExerciseAvailabilityUC
 
+    @Inject
+    lateinit var analyticsLogger: RecordingAnalyticsLogger
+
     private val viewModelStore = ViewModelStore()
 
     @Before
@@ -120,7 +124,8 @@ class DailyExerciseHarnessTest {
             scoreManager,
             gameplayConfig,
             adHandler,
-            NoOpFeedbackManager
+            NoOpFeedbackManager,
+            analyticsLogger
         ).also { viewModelStore.put("vm", it) }
 
         composeRule.setContent {

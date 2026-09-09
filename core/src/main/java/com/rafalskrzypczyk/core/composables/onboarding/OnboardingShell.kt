@@ -44,7 +44,8 @@ import com.rafalskrzypczyk.core.utils.rememberDebouncedClick
 @Composable
 fun OnboardingShell(
     pages: List<@Composable () -> Unit>,
-    onFinish: () -> Unit,
+    /** [onFinish] dostaje informacje, czy uzytkownik pominal sekwencje i na ktorej stronie skonczyl. */
+    onFinish: (skipped: Boolean, lastPage: Int) -> Unit,
     onBack: () -> Unit,
     skipButtonText: String = stringResource(R.string.btn_skip),
     nextButtonText: String = stringResource(R.string.btn_next),
@@ -57,7 +58,7 @@ fun OnboardingShell(
 
     val onClickNext = {
         if (pagerState.currentPage == pages.size - 1) {
-            onFinish()
+            onFinish(false, pagerState.currentPage)
         } else {
             coroutineScope.launch {
                 pagerState.animateScrollToPage(pagerState.currentPage + 1)
@@ -94,7 +95,7 @@ fun OnboardingShell(
                 if (showSkipButton(pagerState.currentPage)) {
                     ButtonTertiary(
                         title = skipButtonText,
-                        onClick = { onFinish() },
+                        onClick = { onFinish(true, pagerState.currentPage) },
                         fillMaxWidth = false,
                         modifier = Modifier.align(Alignment.CenterEnd)
                     )

@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.feedback.NoOpFeedbackManager
+import com.rafalskrzypczyk.core.testing.RecordingAnalyticsLogger
 import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.firestore.domain.models.TranslationQuestionDTO
 import com.rafalskrzypczyk.firestore.domain.use_cases.ReportIssueUC
@@ -94,7 +95,8 @@ class RevisionsQuizVMTest {
             streakManager = streakManager,
             reportIssueUC = reportIssueUC,
             adHandler = adHandler,
-            feedbackManager = NoOpFeedbackManager
+            feedbackManager = NoOpFeedbackManager,
+            analyticsLogger = RecordingAnalyticsLogger()
         )
 
         val state = viewModel.state.value
@@ -126,7 +128,8 @@ class RevisionsQuizVMTest {
             streakManager = streakManager,
             reportIssueUC = reportIssueUC,
             adHandler = adHandler,
-            feedbackManager = NoOpFeedbackManager
+            feedbackManager = NoOpFeedbackManager,
+            analyticsLogger = RecordingAnalyticsLogger()
         )
 
         viewModel.onEvent(RevisionsQuizUIEvents.OnAnswerSelected(1L))
@@ -166,7 +169,8 @@ class RevisionsQuizVMTest {
             streakManager = streakManager,
             reportIssueUC = reportIssueUC,
             adHandler = adHandler,
-            feedbackManager = NoOpFeedbackManager
+            feedbackManager = NoOpFeedbackManager,
+            analyticsLogger = RecordingAnalyticsLogger()
         )
 
         viewModel.onEvent(RevisionsQuizUIEvents.OnAnswerSelected(2L))
@@ -212,7 +216,8 @@ class RevisionsQuizVMTest {
             streakManager = streakManager,
             reportIssueUC = reportIssueUC,
             adHandler = adHandler,
-            feedbackManager = NoOpFeedbackManager
+            feedbackManager = NoOpFeedbackManager,
+            analyticsLogger = RecordingAnalyticsLogger()
         )
 
         viewModel.onEvent(RevisionsQuizUIEvents.OnTranslationAnswerChanged("Jabłko"))
@@ -370,7 +375,8 @@ class RevisionsQuizVMTest {
         streakManager = streakManager,
         reportIssueUC = reportIssueUC,
         adHandler = adHandler,
-        feedbackManager = NoOpFeedbackManager
+        feedbackManager = NoOpFeedbackManager,
+        analyticsLogger = RecordingAnalyticsLogger()
     )
 
     /** Zatwierdza odpowiedz na biezace pytanie i przechodzi dalej. */

@@ -13,6 +13,8 @@ import com.rafalskrzypczyk.core.ads.QuizAdHandler
 import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
 import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
 import com.rafalskrzypczyk.core.analytics.PurchaseSurface
+import com.rafalskrzypczyk.core.analytics.QuizCompletion
+import com.rafalskrzypczyk.core.analytics.QuizSource
 import com.rafalskrzypczyk.core.analytics.analyticsName
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
@@ -67,6 +69,8 @@ class SwipeModeVM @Inject constructor(
     private var isTrialActive: Boolean = savedStateHandle.get<Boolean>("isTrial") ?: false
     private var swipeModeProductDetails: AppProduct? = null
     private var hasLoggedTrialWall = false
+    private var hasLoggedQuizFinished = false
+    private var exitedEarly = false
 
     private var questions: List<SwipeQuestion> = emptyList()
     private var currentQuestionIndex: Int = 0
@@ -206,7 +210,19 @@ class SwipeModeVM @Inject constructor(
                                 isLastAnswerFeedbackVisible = false
                             )
                         }
-                        if (quizStartTime == 0L) quizStartTime = System.currentTimeMillis()
+                        if (quizStartTime == 0L) {
+                            // Ten sam warunek trzyma jednorazowosc startu sesji: loadQuestions()
+                            // leci ponownie po zakupie w trialu (unlockFullMode).
+                            quizStartTime = System.currentTimeMillis()
+                            analyticsLogger.log(
+                                AnalyticsEvent.QuizStarted(
+                                    mode = SWIPE_MODE,
+                                    source = QuizSource.HOME,
+                                    questionsCount = questions.size,
+                                    isTrial = isTrialActive,
+                                )
+                            )
+                        }
                         displayQuestion()
                         attachQuestionsListener()
                     }
@@ -453,11 +469,35 @@ class SwipeModeVM @Inject constructor(
 
     private fun handleExitQuiz(navigateBack: () -> Unit) {
         _state.update { it.copy(showExitConfirmation = false) }
-        if(currentQuestionIndex == 0) navigateBack()
+        exitedEarly = true
+        if(currentQuestionIndex == 0) {
+            // Wyjscie bez zadnej odpowiedzi nie finalizuje sesji, wiec bez tego quiz_started
+            // nie mialby zdarzenia terminalnego.
+            logQuizFinishedOnce()
+            navigateBack()
+        }
         else setFinishedState()
     }
 
+    /** Logowane przed bramka reklamy, zeby interstitial nie wliczal sie w duration_sec. */
+    private fun logQuizFinishedOnce() {
+        if (hasLoggedQuizFinished) return
+        hasLoggedQuizFinished = true
+
+        analyticsLogger.log(
+            AnalyticsEvent.QuizFinished(
+                mode = SWIPE_MODE,
+                completion = if (exitedEarly) QuizCompletion.EARLY_EXIT else QuizCompletion.COMPLETED,
+                questionsAnswered = currentQuestionIndex,
+                correctAnswers = correctAnswers,
+                durationSec = if (quizStartTime == 0L) 0L else (System.currentTimeMillis() - quizStartTime) / 1000,
+                isTrial = isTrialActive,
+            )
+        )
+    }
+
     private fun finishQuiz() {
+        logQuizFinishedOnce()
         val isNewComboRecord = bestStreak > initialBestCombo
 
         feedbackManager.perform(if (isNewComboRecord) FeedbackEvent.NEW_RECORD else FeedbackEvent.QUIZ_COMPLETED)
@@ -495,6 +535,7 @@ class SwipeModeVM @Inject constructor(
     }
 
     private fun setFinishedState() {
+        logQuizFinishedOnce()
         if (adHandler.shouldShowAd(
                 answeredCount = currentQuestionIndex,
                 isQuizFinished = true

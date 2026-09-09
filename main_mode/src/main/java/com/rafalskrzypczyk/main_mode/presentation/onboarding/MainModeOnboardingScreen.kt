@@ -64,7 +64,7 @@ fun MainModeOnboardingScreen(
 
     OnboardingShell(
         pages = pages,
-        onFinish = onFinishOnboarding,
+        onFinish = { _, _ -> onFinishOnboarding() },
         onBack = onNavigateBack,
         header = {
             OnboardingHeader(
