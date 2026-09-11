@@ -113,6 +113,7 @@ fun HomeScreen(
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
+        onEvent(HomeUIEvents.OnSystemNotificationPermissionResult(granted))
         if (granted) onEvent(HomeUIEvents.OnNotificationConsentAccepted)
         else onEvent(HomeUIEvents.OnNotificationConsentDenied)
     }

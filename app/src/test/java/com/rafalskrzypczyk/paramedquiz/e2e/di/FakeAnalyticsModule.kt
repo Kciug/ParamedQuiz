@@ -1,6 +1,7 @@
 package com.rafalskrzypczyk.paramedquiz.e2e.di
 
 import com.rafalskrzypczyk.analytics.di.AnalyticsModule
+import com.rafalskrzypczyk.core.analytics.AnalyticsControls
 import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
 import com.rafalskrzypczyk.core.error.CrashReporter
 import com.rafalskrzypczyk.core.error.NoOpCrashReporter
@@ -35,6 +36,15 @@ object FakeAnalyticsModule {
     @Provides
     @Singleton
     fun provideAnalyticsLogger(recorder: RecordingAnalyticsLogger): AnalyticsLogger = recorder
+
+    /**
+     * Rekorder jest wystawiany bez bramki zgody: harness konstruuje ViewModele wprost i nigdy nie
+     * przechodzi przez AnalyticsConsentManager, wiec bramka byloby zamknieta i wszystkie asercje
+     * na zdarzeniach przestalyby cokolwiek widziec. Sama bramka ma wlasny test w :core.
+     */
+    @Provides
+    @Singleton
+    fun provideAnalyticsControls(recorder: RecordingAnalyticsLogger): AnalyticsControls = recorder
 
     @Provides
     @Singleton

@@ -6,6 +6,7 @@ import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
 import com.rafalskrzypczyk.core.analytics.AnalyticsUserProperty
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.domain.config.GameplayConfigProvider
+import com.rafalskrzypczyk.core.error.CrashReporter
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesService
 import com.rafalskrzypczyk.core.user_management.UserManager
@@ -29,6 +30,7 @@ class UserPropertySync @Inject constructor(
     private val analyticsLogger: AnalyticsLogger,
     private val premiumStatusProvider: PremiumStatusProvider,
     private val gameplayConfig: GameplayConfigProvider,
+    private val crashReporter: CrashReporter,
     private val userManager: UserManager,
     private val sharedPreferences: SharedPreferencesApi,
     private val rawSharedPreferences: SharedPreferences,
@@ -48,17 +50,57 @@ class UserPropertySync @Inject constructor(
             }
         }
 
-    fun start() {
-        refreshLocalState()
-        // Logowanie, wylogowanie i przelacznik powiadomien nie maja flow — obserwujemy wiec
-        // ich magazyn, inaczej obie wlasciwosci zamarzalyby na stanie ze startu procesu.
-        rawSharedPreferences.registerOnSharedPreferenceChangeListener(preferencesListener)
+    private var isStarted = false
 
+    /**
+     * Ostatnie znane wartosci z kolektorow. Bez nich [syncAll] nie mialby czego odtworzyc:
+     * kolektory maja `distinctUntilChanged`, wiec po wycofaniu i ponownym udzieleniu zgody
+     * nie powtorza niezmienionej wartosci.
+     */
+    private var lastPremiumTier: String? = null
+    private var lastAdsDisabled: String? = null
+    private var lastStreakBucket: String? = null
+
+    /**
+     * Wolane przy KAZDYM wejsciu zgody w stan udzielonej, nie tylko przy pierwszym.
+     * Wycofanie zgody wola `resetAnalyticsData()`, ktore kasuje app-instance-id razem z
+     * wlasciwosciami uzytkownika — po ponownej zgodzie mamy wiec nowa tozsamosc, ktora bez
+     * [syncAll] zostalaby bez zadnej segmentacji do konca zycia procesu.
+     */
+    fun onConsentGranted() {
+        if (!isStarted) {
+            isStarted = true
+            // Logowanie, wylogowanie i przelacznik powiadomien nie maja flow — obserwujemy wiec
+            // ich magazyn, inaczej obie wlasciwosci zamarzalyby na stanie ze startu procesu.
+            rawSharedPreferences.registerOnSharedPreferenceChangeListener(preferencesListener)
+            startCollectors()
+        }
+        syncAll()
+    }
+
+    private fun syncAll() {
+        // Typ builda ustawiamy tutaj, a nie przy budowie grafu DI: wariant staging ma ten sam
+        // applicationId co release, a wlasciwosc zapisana przy wylaczonym zbieraniu przepada.
+        val buildType = com.rafalskrzypczyk.analytics.BuildConfig.BUILD_TYPE_NAME
+        analyticsLogger.setUserProperty(AnalyticsUserProperty.BUILD_TYPE, buildType)
+        // Ta sama wartosc w Crashlytics: staging dzieli applicationId z produkcja, wiec bez
+        // tego klucza crashe z internal tracka mieszaja sie z produkcyjnymi.
+        crashReporter.setCustomKey(AnalyticsUserProperty.BUILD_TYPE.propertyName, buildType)
+        refreshLocalState()
+        lastPremiumTier?.let { analyticsLogger.setUserProperty(AnalyticsUserProperty.PREMIUM_TIER, it) }
+        lastAdsDisabled?.let { analyticsLogger.setUserProperty(AnalyticsUserProperty.ADS_DISABLED, it) }
+        lastStreakBucket?.let { analyticsLogger.setUserProperty(AnalyticsUserProperty.STREAK_BUCKET, it) }
+    }
+
+    private fun startCollectors() {
         externalScope.launch {
             premiumStatusProvider.ownedProductIds
                 .map { it.toPremiumTier() }
                 .distinctUntilChanged()
-                .collect { analyticsLogger.setUserProperty(AnalyticsUserProperty.PREMIUM_TIER, it) }
+                .collect {
+                    lastPremiumTier = it
+                    analyticsLogger.setUserProperty(AnalyticsUserProperty.PREMIUM_TIER, it)
+                }
         }
 
         externalScope.launch {
@@ -66,6 +108,7 @@ class UserPropertySync @Inject constructor(
                 .map { adsFree -> adsFree || !gameplayConfig.adsEnabled() }
                 .distinctUntilChanged()
                 .collect {
+                    lastAdsDisabled = it.toString()
                     analyticsLogger.setUserProperty(AnalyticsUserProperty.ADS_DISABLED, it.toString())
                 }
         }
@@ -74,7 +117,10 @@ class UserPropertySync @Inject constructor(
             scoreManager.getScoreFlow()
                 .map { it.streak.toStreakBucket() }
                 .distinctUntilChanged()
-                .collect { analyticsLogger.setUserProperty(AnalyticsUserProperty.STREAK_BUCKET, it) }
+                .collect {
+                    lastStreakBucket = it
+                    analyticsLogger.setUserProperty(AnalyticsUserProperty.STREAK_BUCKET, it)
+                }
         }
     }
 

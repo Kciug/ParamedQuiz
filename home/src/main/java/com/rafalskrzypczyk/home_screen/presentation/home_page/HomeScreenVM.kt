@@ -11,10 +11,12 @@ import com.rafalskrzypczyk.billing.domain.PurchaseResult
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
 import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
+import com.rafalskrzypczyk.core.analytics.NotificationPermissionTracker
 import com.rafalskrzypczyk.core.analytics.NotificationPromptAction
-import com.rafalskrzypczyk.core.analytics.PurchaseSurface
+import com.rafalskrzypczyk.core.analytics.Paywall
 import com.rafalskrzypczyk.core.analytics.RatingAction
 import com.rafalskrzypczyk.core.analytics.analyticsName
+import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.composables.rating.RatingPromptState
 import com.rafalskrzypczyk.core.domain.UserFeedback
@@ -42,7 +44,8 @@ class HomeScreenVM @Inject constructor(
     private val contentTopicManager: ContentTopicManager,
     private val feedbackManager: FeedbackManager,
     private val analyticsLogger: AnalyticsLogger,
-    private val purchaseFunnelTracker: PurchaseFunnelTracker
+    private val purchaseFunnelTracker: PurchaseFunnelTracker,
+    private val notificationPermissionTracker: NotificationPermissionTracker,
 ): ViewModel() {
     private val _state = MutableStateFlow(HomeScreenState())
     val state = _state.asStateFlow()
@@ -127,6 +130,8 @@ class HomeScreenVM @Inject constructor(
             HomeUIEvents.OnFeedbackErrorConsumed -> _state.update { it.copy(feedbackErrorMessage = null) }
             is HomeUIEvents.DismissNews -> dismissNews(event.id)
             HomeUIEvents.OnNotificationConsentAccepted -> onNotificationConsentAccepted()
+            is HomeUIEvents.OnSystemNotificationPermissionResult ->
+                notificationPermissionTracker.onSystemDialogAnswered(event.granted)
             HomeUIEvents.OnNotificationConsentDenied -> onNotificationConsentDenied()
             HomeUIEvents.OnNotificationConsentDismissed -> onNotificationConsentDismissed()
             HomeUIEvents.RecheckNotificationConsent -> checkNotificationConsentEligibility()
@@ -236,7 +241,7 @@ class HomeScreenVM @Inject constructor(
             // pojawienia sie karty.
             if (state.value.ratingPromptState == RatingPromptState.HIDDEN) {
                 hasLoggedRatingAnswer = false
-                analyticsLogger.log(AnalyticsEvent.RatingPromptShown)
+                analyticsLogger.log(AnalyticsEvent.RatingPromptViewed)
             }
             _state.update { it.copy(ratingPromptState = RatingPromptState.QUESTION) }
         }
@@ -245,7 +250,7 @@ class HomeScreenVM @Inject constructor(
     private fun checkNotificationConsentEligibility() {
         // Priming (dialog modalny) i prompt oceny (karta) żyją na różnych warstwach — mogą współistnieć.
         if (useCases.checkNotificationConsentEligibility()) {
-            analyticsLogger.log(AnalyticsEvent.NotificationPromptShown)
+            analyticsLogger.log(AnalyticsEvent.NotificationPromptViewed)
             useCases.markNotificationPromptShown()
             _state.update { it.copy(showNotificationConsentPrompt = true) }
         }
@@ -375,10 +380,11 @@ class HomeScreenVM @Inject constructor(
         // wiec bez tego warunku mianownik konwersji paywall -> zakup bylby zawyzony.
         if (!isModeUnlocked(modeId)) {
             analyticsLogger.log(
-                AnalyticsEvent.PaywallShown(
-                    surface = PurchaseSurface.HOME_SHEET,
+                AnalyticsEvent.PaywallViewed(
+                    paywall = Paywall.MODE,
                     productId = modeId,
                     hasPrice = productDetailsFor(modeId) != null,
+                    mode = modeNameFor(modeId),
                 )
             )
         }
@@ -403,15 +409,21 @@ class HomeScreenVM @Inject constructor(
         if (details != null) {
             pendingPurchaseModeId = modeId
             _state.update { it.copy(isPurchasing = true, purchaseError = null) }
-            purchaseFunnelTracker.onPurchaseStarted(PurchaseSurface.HOME_SHEET, details)
+            purchaseFunnelTracker.onPurchaseStarted(Paywall.MODE, details)
             billingRepository.launchBillingFlow(activity, details)
         } else {
             // Bez tego klikniecie "Kup" bez cen w cache jest cicha utrata przychodu:
             // metoda po prostu wychodzi, a UI nie pokazuje bledu.
             analyticsLogger.log(
-                AnalyticsEvent.PaywallPriceMissing(PurchaseSurface.HOME_SHEET, modeId)
+                AnalyticsEvent.PaywallPriceMissing(Paywall.MODE, modeId)
             )
         }
+    }
+
+    private fun modeNameFor(modeId: String): String? = when (modeId) {
+        BillingIds.ID_TRANSLATION_MODE -> QuizMode.TranslationMode.analyticsName()
+        BillingIds.ID_SWIPE_MODE -> QuizMode.SwipeMode.analyticsName()
+        else -> null
     }
 
     private fun isModeUnlocked(modeId: String): Boolean = when (modeId) {

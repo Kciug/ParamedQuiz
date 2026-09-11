@@ -31,6 +31,9 @@ Instrumentujemy **pytania, nie ekrany**:
 | Element | Lokalizacja | Rola |
 |---|---|---|
 | `AnalyticsLogger` | `core/analytics` | Jedyny punkt wysyłki. Żaden moduł nie woła Firebase bezpośrednio |
+| `AnalyticsControls` | `core/analytics` | Sterowanie dostawcą (zgody, zbieranie, reset). Konsumuje je wyłącznie menedżer zgody |
+| `AnalyticsConsentManager` | `core/analytics` | Właściciel decyzji użytkownika i jedyny pisarz zgód |
+| `ConsentGatedAnalyticsLogger` + `AnalyticsCollectionGate` | `core/analytics` | Odcinają zdarzenia przed zgodą |
 | `AnalyticsEvent` | `core/analytics` | `sealed interface` — cały kontrakt zdarzeń w jednym pliku |
 | `AnalyticsUserProperty` | `core/analytics` | Właściwości użytkownika |
 | `LogcatAnalyticsLogger` | `core/analytics` | Implementacja dla buildów debug |
@@ -58,20 +61,32 @@ Zasady:
 
 ## 3. Kontrakt zdarzeń
 
+Nazwy są konwencją Google, nie naszą: `obiekt_czasownik` w formie podstawowej (`quiz_start`,
+`tutorial_complete`, `select_item`), nigdy imiesłów. `sign_up` i `login` to zdarzenia
+**rekomendowane** przez Google — zasilają gotowe raporty i predefiniowane wymiary, więc nie mają
+własnych odpowiedników w naszej przestrzeni nazw. Parametry oznaczone `?` są opcjonalne:
+pomijamy je, gdy wartość jest nieznana — nigdy nie wysyłamy pustego stringa.
+
 ### 3.1 Monetyzacja
 
 | Event | Kiedy | Parametry |
 |---|---|---|
-| `paywall_shown` | Pokazanie oferty (sklep, panel na Home, okno kategorii, panel końca triala) | `surface`, `product_id`, `has_price` |
-| `purchase_started` | Klik w zakup, tuż przed `launchBillingFlow` | `surface`, `product_id`, `price_micros`, `currency` |
-| `purchase_completed` | `PurchaseResult.Success` | `surface`, `product_id`, `value`, `currency` |
-| `purchase` (standard GA4) | Razem z `purchase_completed` | `value`, `currency`, `items` |
-| `purchase_pending` | `PurchaseResult.Pending` | `surface`, `product_id` |
-| `purchase_cancelled` | `PurchaseResult.Cancelled` | `surface`, `product_id` |
-| `purchase_failed` | `PurchaseResult.Error` | `surface`, `product_id`, `error_code` |
-| `paywall_price_missing` | Próba zakupu bez `ProductDetails` w cache | `surface`, `product_id` |
-| `trial_started` | Start sesji trybu w wersji próbnej | `mode` |
-| `trial_wall_reached` | Wyczerpanie puli darmowych pytań | `mode`, `questions_answered` |
+| `paywall_view` | Pokazanie oferty (sklep, panel na Home, okno kategorii, panel końca triala) | `paywall`, `product_id`, `has_price`, `mode`?, `category_id`? |
+| `purchase_start` | Klik w zakup, tuż przed `launchBillingFlow` | `paywall`, `product_id`, `product_type`, `price_micros`, `currency` |
+| `purchase_complete` | `PurchaseResult.Success` | `paywall`, `product_id`, `product_type`, `mode`?, `category_id`? |
+| `purchase_pending` | `PurchaseResult.Pending` | `paywall`, `product_id` |
+| `purchase_cancel` | `PurchaseResult.Cancelled` | `paywall`, `product_id` |
+| `purchase_fail` | `PurchaseResult.Error` | `paywall`, `product_id`, `error_code` |
+| `paywall_price_missing` | Próba zakupu bez `ProductDetails` w cache | `paywall`, `product_id` |
+| `trial_start` | Start sesji trybu w wersji próbnej | `mode` |
+| `trial_wall_reach` | Wyczerpanie puli darmowych pytań | `mode`, `answered_count` |
+
+**Przychodu nie raportujemy własnym zdarzeniem.** `purchase_complete` jest znacznikiem lejka i
+celowo nie niesie `value` ani `currency`, a standardowego `purchase` nie wysyłamy wcale: Firebase
+zbiera `in_app_purchase` automatycznie, a GA4 **nie deduplikuje** go z ręcznie wysłanym `purchase`
+na strumieniach aplikacyjnych (deduplikacja po `transaction_id` działa tylko na strumieniach
+webowych). Oba zdarzenia razem podwajałyby raport przychodu. `price_micros` w `purchase_start`
+zostaje — to cena oferty w chwili kliku, nie transakcja.
 
 `paywall_price_missing` łapie cichą utratę przychodu: `launchBillingFlow` po cichu nie robi nic, gdy
 produktu nie ma w cache — użytkownik klika „Kup" i nie dzieje się nic.
@@ -80,33 +95,105 @@ produktu nie ma w cache — użytkownik klika „Kup" i nie dzieje się nic.
 
 | Event | Kiedy | Parametry |
 |---|---|---|
-| `screen_view` | Zmiana destynacji w głównym `NavHost` | `screen_name`, `screen_class` |
-| `mode_selected` | Wybór trybu z menu na ekranie głównym | `mode`, `locked` |
-| `addon_tapped` | Tap w dodatek | `addon`, `available` |
-| `category_selected` | Wybór kategorii | `mode`, `category_id`, `locked` |
-| `quiz_started` | Inicjalizacja sesji | `mode`, `source`, `questions_count`, `is_trial` |
-| `quiz_finished` | Finalizacja sesji | `mode`, `completion`, `questions_answered`, `correct_answers`, `duration_sec`, `is_trial` |
-| `revisions_configured` | Start sesji powtórek | `criterion`, `mode`, `categories_count`, `questions_count` |
-| `onboarding_finished` | Zakończenie onboardingu głównego | `skipped`, `last_page` |
-| `mode_onboarding_finished` | Zakończenie onboardingu trybu | `mode` |
+| `screen_view` | Zmiana destynacji w głównym `NavHost` | `screen_name`, `screen_class`, `mode`? |
+| `mode_select` | Wybór trybu z menu na ekranie głównym | `mode`, `locked` |
+| `addon_tap` | Tap w dodatek | `addon`, `available` |
+| `category_select` | Wybór kategorii | `mode`, `category_id`, `locked` |
+| `quiz_start` | Inicjalizacja sesji | `mode`, `quiz_type`, `question_count`, `is_free_preview`, `category_id`?, `category_name`? |
+| `question_answered` | Każda zatwierdzona odpowiedź (w powtórkach też ponowne podejścia) | `mode`, `quiz_type`, `is_correct`, `category_id`? |
+| `quiz_complete` | Finalizacja sesji | `mode`, `quiz_type`, `question_count`, `answered_count`, `correct_count`, `incorrect_count`, `is_early_exit`, `is_free_preview`, `duration_sec`, `max_streak`, `category_id`? |
+| `revision_config` | Start sesji powtórek | `criterion`, `mode`, `category_count`, `question_count` |
+| `onboarding_complete` | Zakończenie onboardingu głównego | `skipped`, `last_page` |
+| `mode_onboarding_complete` | Zakończenie onboardingu trybu | `mode` |
 
 `locked` zastępuje osobne zdarzenie o tapnięciu w zablokowaną treść — mierzy popyt na treść jeszcze
 niekupioną, co jest inną diagnozą niż sam wolumen sprzedaży.
+
+`screen_class` jest z definicji równe `screen_name` (tak ustala kontrakt iOS; GA4 ma dla klasy
+wbudowany wymiar, który bez tego wypełniałaby nazwa Activity — u nas zawsze ta sama). `mode` jest
+ustawiany dla korzeni trybów (`main_mode`, `daily_exercise` → `main`; `swipe_mode` → `swipe`;
+`translation_mode` → `translations`; `cem_mode` → `cem`), bo iOS rozróżnia „quiz w trybie głównym"
+od „quiz w Swipe" właśnie tym parametrem, a nie osobną nazwą ekranu.
+
+`max_streak` to najdłuższa seria poprawnych odpowiedzi **pod rząd** w jednej sesji, liczona
+w każdym trybie od zera (w Swipe osobno od `bestStreak`, który startuje od rekordu wszech czasów).
+Nie mylić z `streak_count` w `streak_increment` — tam chodzi o serię dni.
+
+`incorrect_count` liczymy w kontrakcie (`answered_count - correct_count`, przycięte do zera), żeby
+raport nie wymagał wyliczanej metryki w konsoli.
+
+**`question_answered` jest najliczniejszym zdarzeniem kontraktu** — w trybie Swipe i Tłumaczeń
+jedna sesja to cała pula pytań z Firestore, czyli setki emisji; sesja powtórek to do 100 pytań
+razy trzy podejścia. `mode` i `quiz_type` są wyliczane dokładnie tym samym wyrażeniem co
+w `quiz_start` tej samej sesji — inaczej odpowiedzi nie złożyłyby się w sesję. Zdarzenie zapada
+raz na zatwierdzenie: tryb główny, CEM i powtórki mają bramkę na `isAnswerSubmitted`
+(przycisk zatwierdzania jest renderowany bezwarunkowo i tylko przysłaniany animacją), a Tłumaczenia
+i Swipe wykluczają powtórne zatwierdzenie stanem pytania.
+
+**Sesja powtórek ma `mode` treści, którą powtarza** (`main`, `cem`, `swipe`, `translations`), a nie
+`revisions` — sam fakt powtórki niesie `quiz_type = revision`. Bez tego rozdziału nie dałoby się
+powiedzieć, czego użytkownik powtarza. Dotyczy to wszystkich zdarzeń sesji powtórek, łącznie
+z `issue_report`, więc `revisions` nie jest już emitowane jako wartość `mode` **nigdzie** —
+zostaje wyłącznie w słowniku `addon` (kafelek na ekranie głównym).
 
 ### 3.3 Retencja
 
 | Event | Kiedy | Parametry |
 |---|---|---|
-| `rating_prompt_shown` | Karta oceny na Home | — |
-| `rating_prompt_answered` | Wybór w karcie oceny | `rating`, `action` |
-| `notification_prompt_shown` | Prompt zgody na powiadomienia | — |
-| `notification_prompt_answered` | Odpowiedź na prompt | `action` |
-| `notification_opened` | Tap w powiadomienie (deep link) | `destination` |
-| `news_banner_dismissed` | Odrzucenie banera nowości | `banner_id` |
-| `signup_completed` | Udane logowanie lub rejestracja | `method` |
-| `issue_reported` | Wysłanie zgłoszenia problemu z pytaniem | `mode` |
+| `rating_prompt_view` | Karta oceny na Home | — |
+| `rating_prompt_answer` | Wybór w karcie oceny | `rating`, `action` |
+| `notification_prompt_view` | Prompt zgody na powiadomienia | — |
+| `notification_prompt_answer` | Odpowiedź na prompt | `action` |
+| `notification_tap` | Tap w powiadomienie (deep link) | `destination`, `is_remote` |
+| `news_banner_dismiss` | Odrzucenie banera nowości | `banner_id` |
+| `daily_quest_complete` | Zadanie dnia zaliczone (dzień zużyty) | `streak_count` |
+| `streak_increment` | Podbicie serii dziennej, najwyżej raz na dobę | `streak_count` |
+| `notification_permission` | Odpowiedź na **systemowy** dialog `POST_NOTIFICATIONS` | `granted` |
+| `sign_up` | Utworzenie konta (rekomendowane przez Google) | `method` |
+| `login` | Logowanie na istniejące konto (rekomendowane przez Google) | `method` |
+| `sign_out` | Wylogowanie zakończone powodzeniem | — |
+| `account_delete` | Konto usunięte na życzenie użytkownika | — |
+| `issue_report` | Wysłanie zgłoszenia problemu z pytaniem | `mode` |
 
-### 3.4 Zdrowie
+`notification_tap`, nie `notification_open`: ta druga nazwa jest zarezerwowana przez FCM i zbierana
+automatycznie.
+
+`daily_quest_complete` nie jest duplikatem `quiz_complete` z `quiz_type = daily_quest`: tamto zapada
+także przy wyjściu przed pierwszą odpowiedzią, kiedy dzień **nie** jest zużyty. To zdarzenie stoi tam,
+gdzie zapisujemy datę ostatniego zadania dnia.
+
+`streak_increment` emituje `StreakManager`, nie ViewModele — podbicie serii woła każdy z sześciu
+trybów, a warunek „ostatnia aktualizacja starsza niż dziś" jest jedyną trwałą bramką dobową.
+`streak_count` to seria **po** podbiciu, więc restart po przerwaniu widać jako `streak_count = 1`.
+Nie mylić z `max_streak` w `quiz_complete` — tam chodzi o serię poprawnych odpowiedzi w jednej sesji.
+
+`notification_permission` dotyczy dialogu systemowego, `notification_prompt_*` — naszego pytania,
+które go poprzedza. To pierwsze logujemy **raz na instalację** (`NotificationPermissionTracker`):
+Android pokazuje dialog najwyżej dwa razy, a po trwałej odmowie oddaje `false` natychmiast, więc bez
+bramki każde tapnięcie przełącznika w ustawieniach dawałoby fałszywe `granted = 0`.
+
+`sign_up` i `login` emituje `AuthRepositoryImpl`, nie ViewModele. `signInWithGoogle` prowadzi raz
+do rejestracji, raz do logowania (`additionalUserInfo.isNewUser`), a odtworzenie profilu po
+utracie dokumentu w Firestore to logowanie, którego żaden ViewModel nie widzi.
+
+### 3.4 Reklamy
+
+| Event | Kiedy | Parametry |
+|---|---|---|
+| `ad_shown` | Interstitial faktycznie wyświetlony | `ad_format`, `ad_unit`, `answers_since_last_ad` |
+| `ad_load_failed` | Nieudane załadowanie albo wyświetlenie | `stage`, `error_code`, `ad_unit` |
+
+`ad_shown` nie dubluje automatycznego `ad_impression` z AdMob: tamto niesie przychód, to odpowiada
+na pytanie, ile reklam widzi użytkownik i po ilu odpowiedziach — czyli czy częstotliwość z Remote
+Config nie jest za agresywna. Zdarzenie zapada w `onAdShowedFullScreenContent`, nie przy zleceniu
+pokazania. `answers_since_last_ad` liczy `QuizAdHandler` (jedyne miejsce, które widzi przebieg
+sesji) i przekazuje je do `AdManager` w chwili decyzji.
+
+**`error_code` w `ad_load_failed` wysyłamy jako tekst**, mimo że AdMob zwraca liczbę: ta nazwa
+parametru jest już zarejestrowana jako wymiar tekstowy dla `purchase_fail`, a GA4 pozwala
+zarejestrować nazwę raz — jako wymiar **albo** metrykę. Rozjazd typu wobec iOS, do uzgodnienia.
+
+### 3.5 Zdrowie
 
 | Event | Kiedy | Parametry |
 |---|---|---|
@@ -118,22 +205,33 @@ niekupioną, co jest inną diagnozą niż sam wolumen sprzedaży.
 
 | Parametr | Dozwolone wartości |
 |---|---|
-| `surface` | `store`, `home_sheet`, `category_sheet`, `trial_end`, `unknown` |
-| `mode` | `main`, `swipe`, `translation`, `cem`, `revisions` |
-| `source` | `home`, `category`, `daily_exercise`, `revisions` |
-| `completion` | `completed`, `early_exit` |
+| `paywall` | `store`, `category`, `mode`, `ad_free`, `trial_end`, `unknown` |
+| `product_type` | `category`, `mode`, `ad_free`, `premium` |
+| `mode` | `main`, `swipe`, `translations`, `cem` |
+| `quiz_type` | `category`, `daily_quest`, `revision`, `full`, `free_preview` |
 | `addon` | `daily`, `revisions`, `store` |
 | `criterion` | `worst`, `best`, `under_50` |
 | `destination` | `home`, `revisions` |
-| `method` | `password`, `google` |
+| `ad_format` | `interstitial` |
+| `ad_unit` | `test`, `production` |
+| `stage` | `load`, `present` |
+| `method` | `email`, `google` |
 | `action` (ocena) | `store`, `feedback`, `dismiss`, `never_again` |
 | `action` (powiadomienia) | `accepted`, `denied`, `dismissed` |
-| `error_code` | wariant `AppError.Billing` w snake_case, np. `item_already_owned` |
+| `error_code` | wariant `AppError.Billing` w snake_case (np. `item_already_owned`) albo kod AdMob jako tekst (np. `3`) |
 | `error_type` | wariant `AppError` z przestrzenią, np. `billing_product_details_missing`, `no_network` |
-| `product_id` | SKU z Google Play (`BillingIds`), w tym dynamiczne `mediquiz_<categoryId>` |
+| `product_id` | SKU z Google Play (`BillingIds`), w tym dynamiczne `mediquiz_<categoryId>`; `unknown` dla wyniku bez zapamiętanego startu |
 
-Wartości logiczne (`locked`, `is_trial`, `has_price`, `available`, `skipped`) wysyłamy jako tekst
-`true`/`false` — GA4 nie ma typu logicznego w parametrach.
+Uwaga na liczbę mnogą w `translations` — wartość zgadza się z SKU (`mediquiz_translations_mode`),
+nie z nazwą modułu. `QuizMode.RevisionsMode` ma odwzorowanie na `revisions` w `analyticsName()`,
+ale żadna ścieżka go już nie emituje — to wyłącznie zabezpieczenie wyczerpalności `when`. `paywall = ad_free` i `product_type = ad_free` są w słowniku dla zgodności z
+iOS; Android nie ma dziś osobnego paywalla „bez reklam" (sprzedaje go ekran sklepu), więc emituje
+wyłącznie `product_type`.
+
+**Wartości logiczne** (`locked`, `is_free_preview`, `is_early_exit`, `is_correct`, `is_remote`,
+`has_price`, `available`, `skipped`, `granted`) wysyłamy jako `Long` **1/0**, nie jako tekst `true`/`false` — GA4 nie ma
+typu logicznego w parametrach, a kontrakt cross-platform ustala postać liczbową. Właściwości
+użytkownika to osobna przestrzeń: tam wartości są zawsze tekstem (patrz §5).
 
 ---
 
@@ -141,7 +239,7 @@ Wartości logiczne (`locked`, `is_trial`, `has_price`, `available`, `skipped`) w
 
 | Właściwość | Wartości | Źródło |
 |---|---|---|
-| `build_type` | `release`, `staging`, `debug` | `BuildConfig` modułu `:analytics` |
+| `build_type` | `release`, `staging`, `debug` | `BuildConfig` modułu `:analytics`, ustawiane po włączeniu zbierania |
 | `premium_tier` | `none`, `partial`, `full` | `PremiumStatusProvider.ownedProductIds` |
 | `ads_disabled` | `true`, `false` | `PremiumStatusProvider.isAdsFree` + `GameplayConfigProvider.adsEnabled()` |
 | `is_logged_in` | `true`, `false` | `UserManager` |
@@ -149,27 +247,55 @@ Wartości logiczne (`locked`, `is_trial`, `has_price`, `available`, `skipped`) w
 | `streak_bucket` | `0`, `1_3`, `4_7`, `8_30`, `30_plus` | `ScoreManager.getScoreFlow()` |
 
 `build_type` nie jest opcjonalne: wariant `staging` ma **ten sam** `applicationId` co produkcja, więc
-bez tej właściwości ruch z internal tracka zanieczyściłby dane produkcyjne. Ta sama wartość idzie do
-Crashlytics jako custom key.
+bez tej właściwości ruch z internal tracka zanieczyściłby dane produkcyjne. Tę samą wartość
+`UserPropertySync` wpisuje do Crashlytics przez `CrashReporter.setCustomKey` — inaczej crashe ze
+stagingu byłyby tam nieodróżnialne od produkcyjnych (filtr po `versionName` z sufiksem `-staging`
+działa, ale gubi się przy porównaniach między wersjami).
 
 Właściwości są **kolekcjonowane**, nie odczytywane jednorazowo na starcie: premium startuje pustym
 zbiorem, a seria zerem — migawka w `Application.onCreate` raportowałaby `premium_tier = none` dla
 każdego płacącego przez pierwsze sekundy sesji.
 
----
-
-## 6. Zgody (Consent Mode)
-
-- Domyślne zgody (odmowa) są zadeklarowane w manifeście — działają zanim wystartuje kod aplikacji.
-- Przy starcie aplikacji czytamy zapisany stan TCF (`IABTCF_*` w domyślnych `SharedPreferences`) i
-  ustawiamy zgodę, żeby powracający użytkownik nie tracił pierwszych zdarzeń sesji.
-- Po ustaleniu zgody przez UMP (callback `gatherConsent` w `AdManagerImpl`) zgoda jest ustawiana
-  ponownie — to jedyny moment, w którym stan jest pewny. Wywołanie jest poza gałęzią warunkową,
-  więc obejmuje też użytkowników premium i okres wyłączonych reklam.
-- Mapowanie celów TCF (do potwierdzenia przy aktualizacji polityki prywatności — nie jest to opinia
-  prawna): P1 → `analytics_storage` i `ad_storage`; P1 + P7 → `ad_user_data`; P3 + P4 → `ad_personalization`.
+Komplet właściwości jest ustawiany od nowa przy **każdym** wejściu zgody w stan udzielonej, nie
+tylko przy pierwszym. Wycofanie zgody woła `resetAnalyticsData()`, które kasuje app-instance-id
+razem z właściwościami; po ponownym włączeniu przełącznika mamy więc nową tożsamość, a kolektory
+z `distinctUntilChanged` nie powtórzyłyby niezmienionych wartości.
 
 ---
+
+## 6. Zgody (model opt-in)
+
+Zbieranie jest **wyłączone domyślnie** i włącza je wyłącznie decyzja użytkownika. Model jest
+wspólny z iOS (`analytics-events.md`), a jego zakres to `MQ-69-T`.
+
+- **Stan decyzji** — `AnalyticsConsentState`: `UNDECIDED` | `GRANTED` | `DENIED`, zapisywany
+  lokalnie (`SharedPreferences`, klucz `analytics_consent`). Nierozpoznana wartość degraduje się
+  do `UNDECIDED`.
+- **Ekran zgody** — trasa `PrivacyConsent`, pokazywana po akceptacji regulaminu, a użytkownikom
+  sprzed aktualizacji przy pierwszym uruchomieniu. Bramka stoi w `MainActivityVM`, na ścieżce
+  prowadzącej do ekranu głównego: użytkownik z aktualnym regulaminem nigdy nie przechodzi przez
+  tamten ekran, a i tak musi zostać zapytany. Dwa jawne przyciski, brak pomijania i brak wyjścia
+  gestem wstecz.
+- **Wycofanie** — przełącznik w ustawieniach konta (sekcja „Prywatność"). Poza wyłączeniem
+  zbierania czyści zebrane dane (`resetAnalyticsData`) i niewysłane raporty awarii.
+- **Crashlytics podlega tej samej zgodzie.** Bez niej `isCrashlyticsCollectionEnabled = false`.
+- **Nic nie jest logowane przed zgodą** — nie „nic nie jest wysyłane". Wstrzykiwany wszędzie
+  `AnalyticsLogger` jest owinięty `ConsentGatedAnalyticsLogger`, który przy zamkniętej bramce nie
+  przepuszcza zdarzeń ani właściwości użytkownika. Samo wyłączenie SDK zatrzymuje wysyłkę, ale nie
+  powstrzymuje kodu przed produkowaniem zdarzeń, więc niezmiennik nie dałby się przetestować.
+- **Brak zdarzeń o samej zgodzie** — przed decyzją i tak by nie wyszły, a po zgodzie mierzyłyby
+  tylko jedną stronę rozkładu.
+- **UMP odpowiada wyłącznie za reklamy.** `TcfConsentReader` zwraca `AdConsent` (trzy flagi
+  reklamowe); `analytics_storage` pochodzi wyłącznie z decyzji użytkownika. Oba źródła są rozłączne
+  i scala je `AnalyticsConsentManager` — jedyny pisarz `setConsent` w aplikacji.
+- Mapowanie celów TCF na zgody reklamowe (do potwierdzenia przy aktualizacji polityki prywatności —
+  nie jest to opinia prawna): P1 → `ad_storage`; P1 + P7 → `ad_user_data`; P3 + P4 → `ad_personalization`.
+
+**Znane ograniczenie.** Firebase inicjalizuje się z `ContentProvidera`, zanim wykona się pierwsza
+linia naszego kodu. Dla świeżych instalacji zamykają to flagi `firebase_analytics_collection_enabled`
+i `firebase_crashlytics_collection_enabled` w manifeście. Na instalacjach, na których działał już
+build z włączonym zbieraniem, SDK wstaje z zapisanym stanem i może przeciec jedna sesja przy
+pierwszym uruchomieniu po aktualizacji — pierwsze zastosowanie zgody czyści te dane.
 
 ## 7. Weryfikacja
 
@@ -196,11 +322,19 @@ do DebugView i BigQuery, ale **nie** do standardowych raportów. To najczęstsza
 
 **Firebase → Analytics → Custom definitions**
 
-- Wymiary (tekstowe): `surface`, `product_id`, `mode`, `source`, `completion`, `error_code`,
-  `error_type`, `origin`, `action`, `addon`, `criterion`, `destination`, `method`, `category_id`,
-  `locked`, `is_trial`, `has_price`, `available`, `skipped`, `banner_id`
-- Metryki (liczbowe): `questions_count`, `questions_answered`, `correct_answers`, `duration_sec`,
-  `price_micros`, `value`, `rating`, `categories_count`, `last_page`
+- Wymiary tekstowe: `paywall`, `product_type`, `product_id`, `mode`, `quiz_type`, `currency`,
+  `error_code`, `error_type`, `origin`, `action`, `addon`, `criterion`, `destination`, `method`,
+  `banner_id`, `category_name`, `ad_format`, `ad_unit`, `stage`
+- Wymiary o wartościach liczbowych (służą do segmentacji, nie do sumowania): `category_id`,
+  `locked`, `has_price`, `available`, `skipped`, `is_free_preview`, `is_early_exit`, `is_correct`,
+  `is_remote`, `granted`
+- Metryki: `question_count`, `answered_count`, `correct_count`, `incorrect_count`, `duration_sec`,
+  `max_streak`, `price_micros`, `rating`, `category_count`, `last_page`, `streak_count`,
+  `answers_since_last_ad`
+
+`screen_name` i `screen_class` są parametrami zarezerwowanymi — rejestracji nie wymagają.
+Wartości logiczne rejestrujemy jako **wymiary**, mimo liczbowej postaci: interesuje nas podział
+ruchu na 1/0, a nie suma jedynek.
 
 **Pozostałe**
 
@@ -209,7 +343,7 @@ do DebugView i BigQuery, ale **nie** do standardowych raportów. To najczęstsza
 - [ ] Aktualizacja polityki prywatności o analitykę i Crashlytics (`MQ-65-T`)
 - [ ] Data Safety w Play Console (`MQ-64-T`)
 - [ ] Po 24 h: weryfikacja, czy wszystkie wymiary są widoczne w raportach
-- [ ] Kontrola zgodności: liczba `purchase_completed` względem transakcji w Play Console
+- [ ] Kontrola zgodności: liczba `purchase_complete` względem transakcji w Play Console
 
 ---
 
@@ -217,13 +351,58 @@ do DebugView i BigQuery, ale **nie** do standardowych raportów. To najczęstsza
 
 - Standardowe raporty GA4 mają opóźnienie do ~24 h. Do developmentu służą DebugView i Realtime.
 - GA4 nie robi backfillu — dane zaczynają się w dniu wydania wersji z instrumentacją.
-- Limity: 500 nazw zdarzeń (kontrakt definiuje ~27), 25 parametrów na zdarzenie, 25 właściwości
-  użytkownika, nazwa do 40 znaków, wartość parametru do 100 znaków.
+- `question_answered` jest o rząd wielkości liczniejsze od pozostałych zdarzeń. Nie dotyka to limitu
+  500 **nazw** zdarzeń, ale trzeba je mieć na uwadze przy darmowym dziennym limicie eksportu
+  do BigQuery.
+- Limity: 500 nazw zdarzeń (kontrakt definiuje 36), 25 parametrów na zdarzenie, 25 właściwości
+  użytkownika, 50 wymiarów o zasięgu zdarzenia, nazwa do 40 znaków, wartość parametru do 100 znaków.
+- Zmiana nazwy zdarzenia po wydaniu jest nieodwracalna: GA4 nie robi backfillu, a „Modify event"
+  nie działa wstecz — stara i nowa nazwa zostają dwoma trwale rozłącznymi szeregami.
 - Zagnieżdżone `NavHost`y trybów mają własne kontrolery i nie są objęte `screen_view`; ekrany
   wewnętrzne pokrywają jawne zdarzenia niosące więcej informacji.
-- `notification_opened` niesie tylko cel deep-linku (`home`/`revisions`), nie typ powiadomienia —
-  dopięcie do konkretnego przypomnienia wymagałoby zmiany kontraktu cross-platform.
-- `AppError.Billing.ItemAlreadyOwned` trafia do `purchase_failed` z własnym `error_code` — to nie
+- `notification_tap` rozróżnia push od lokalnego przypomnienia (`is_remote`) i niesie cel
+  deep-linku (`home`/`revisions`), ale nie konkretny rodzaj przypomnienia — to wymagałoby
+  zmiany kontraktu cross-platform.
+- `AppError.Billing.ItemAlreadyOwned` trafia do `purchase_fail` z własnym `error_code` — to nie
   jest utrata przychodu, tylko produkt już posiadany.
 - `AppError.Billing.ProductDetailsMissing` daje dwa zdarzenia: `app_error` (zdrowie) i
   `paywall_price_missing` (monetyzacja). Odpowiadają na różne pytania — świadomie nie deduplikujemy.
+
+### Rozbieżności wobec kontraktu iOS
+
+Kontrakt jest wspólny, ale nie identyczny. Poniższe zestawienie jest stanem na dziś — porównane
+pozycja po pozycji z `analytics-events.md` (MQ-11-T).
+
+**Tylko Android — zdarzenia.** Cały lejek zakupowy poza `purchase_complete` (`purchase_start`,
+`purchase_pending`, `purchase_cancel`, `purchase_fail`, `paywall_price_missing`), wersje próbne
+(`trial_start`, `trial_wall_reach`), nawigacja po treści (`mode_select`, `category_select`,
+`addon_tap`), `revision_config`, `mode_onboarding_complete`, prośba o ocenę
+(`rating_prompt_view`/`rating_prompt_answer`), własny prompt powiadomień
+(`notification_prompt_view`/`notification_prompt_answer`), `news_banner_dismiss`, `issue_report`,
+`app_error`.
+
+**Tylko Android — parametry.** `duration_sec` w sesji quizu; `skipped` i `last_page`
+w `onboarding_complete` (iOS wysyła je bez parametrów); `product_id` i `has_price` w `paywall_view`;
+`paywall` w zdarzeniach zakupu; wartości `paywall = trial_end` (rozdziela ścianę wersji próbnej od
+zwykłego panelu trybu — bez niej nie da się policzyć konwersji triala) i `paywall = unknown`
+(kubełek na wynik zakupu bez poprzedzającego startu, np. kod promocyjny z Google Play).
+
+**Tylko iOS — zdarzenia, których nie emitujemy.** Zostało jedno: `restore_purchases`. Aplikacja
+nie ma przycisku „Przywróć zakupy", a wszystkie wywołania `refreshPurchases()` są ciche (start
+ekranu, połączenie z Play, `ITEM_ALREADY_OWNED`) — kontrakt wymaga natomiast tapnięcia
+użytkownika. Wpięcie zdarzenia wymaga najpierw dodania tej akcji do UI.
+
+**Rozjazdy do rozstrzygnięcia.**
+
+| Element | iOS | Android |
+|---|---|---|
+| Właściwości użytkownika | `has_premium`, `is_ad_free`, `signed_in` (3, tekst `"true"`/`"false"`) | `build_type`, `premium_tier`, `ads_disabled`, `is_logged_in`, `notifications_on`, `streak_bucket` (6, zero wspólnych nazw) |
+| Porzucenie sesji | brak `quiz_complete` przy zerze odpowiedzi; porzucenia = `quiz_start` − `quiz_complete` | `quiz_complete` z `is_early_exit = 1` i `answered_count = 0` |
+| Słownik `screen_name` | `home`, `categories`, `quiz`, `quiz_end`, `store`, `revision_setup`, `account`, `settings`, `notification_settings`, `stats` | 16 wartości, wspólne tylko `home`, `store`, `notification_settings` |
+| Właściwości przed zgodą | zapamiętane i wysłane po jej udzieleniu | odrzucane przez bramkę, ustawiane od nowa po zgodzie |
+| `error_code` w `ad_load_failed` | `Int` | tekst — nazwa jest już wymiarem tekstowym w `purchase_fail` |
+| `question_answered` w Tłumaczeniach | jawne „pomiń" liczone jako błędna odpowiedź | brak akcji pominięcia; puste zatwierdzenie daje `is_correct = 0` |
+
+Ekrany zagnieżdżone (`quiz`, `quiz_end`, `categories`, `revision_setup`) żyją u nas w sześciu
+zagnieżdżonych `NavHost`ach z własnymi kontrolerami i nie trafiają do `screen_view`; pokrywają je
+jawne zdarzenia sesji quizu, niosące więcej informacji niż sama nazwa ekranu.

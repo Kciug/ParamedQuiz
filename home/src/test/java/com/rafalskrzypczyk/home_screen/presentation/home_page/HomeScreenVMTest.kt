@@ -5,9 +5,11 @@ import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
 import com.rafalskrzypczyk.core.analytics.HomeAddon
-import com.rafalskrzypczyk.core.analytics.PurchaseSurface
+import com.rafalskrzypczyk.core.analytics.NotificationPermissionTracker
+import com.rafalskrzypczyk.core.analytics.Paywall
 import com.rafalskrzypczyk.core.analytics.RatingAction
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
+import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
 import com.rafalskrzypczyk.core.testing.RecordingAnalyticsLogger
 import com.rafalskrzypczyk.core.feedback.NoOpFeedbackManager
 import com.rafalskrzypczyk.home_screen.domain.HomeScreenUseCases
@@ -39,6 +41,7 @@ class HomeScreenVMTest {
     private lateinit var reminderScheduler: ReminderScheduler
     private lateinit var contentTopicManager: ContentTopicManager
     private lateinit var analyticsLogger: RecordingAnalyticsLogger
+    private lateinit var sharedPreferences: SharedPreferencesApi
     private lateinit var purchaseFunnelTracker: PurchaseFunnelTracker
     private lateinit var viewModel: HomeScreenVM
 
@@ -52,6 +55,7 @@ class HomeScreenVMTest {
         reminderScheduler = mockk(relaxed = true)
         contentTopicManager = mockk(relaxed = true)
         analyticsLogger = RecordingAnalyticsLogger()
+        sharedPreferences = mockk(relaxed = true)
         purchaseFunnelTracker = mockk(relaxed = true)
 
         every { billingRepository.availableProducts } returns flowOf(emptyList())
@@ -68,6 +72,7 @@ class HomeScreenVMTest {
             NoOpFeedbackManager,
             analyticsLogger,
             purchaseFunnelTracker,
+            NotificationPermissionTracker(analyticsLogger, sharedPreferences),
         )
     }
 
@@ -84,7 +89,7 @@ class HomeScreenVMTest {
         viewModel.onEvent(HomeUIEvents.OnRatingSelected(5))
         viewModel.onEvent(HomeUIEvents.OnRateStore)
 
-        assertEquals(1, analyticsLogger.eventsOfType<AnalyticsEvent.RatingPromptShown>().size)
+        assertEquals(1, analyticsLogger.eventsOfType<AnalyticsEvent.RatingPromptViewed>().size)
         val answered = analyticsLogger.eventsOfType<AnalyticsEvent.RatingPromptAnswered>().single()
         assertEquals(5, answered.rating)
         assertEquals(RatingAction.STORE, answered.action)
@@ -97,7 +102,7 @@ class HomeScreenVMTest {
         viewModel.onEvent(HomeUIEvents.GetData)
         viewModel.onEvent(HomeUIEvents.GetData)
 
-        assertEquals(1, analyticsLogger.eventsOfType<AnalyticsEvent.RatingPromptShown>().size)
+        assertEquals(1, analyticsLogger.eventsOfType<AnalyticsEvent.RatingPromptViewed>().size)
     }
 
     @Test
@@ -135,8 +140,8 @@ class HomeScreenVMTest {
     fun `opening the mode sheet reports a paywall view`() = runTest {
         viewModel.onEvent(HomeUIEvents.OpenSwipeModePurchaseSheet)
 
-        val shown = analyticsLogger.eventsOfType<AnalyticsEvent.PaywallShown>().single()
-        assertEquals(PurchaseSurface.HOME_SHEET, shown.surface)
+        val shown = analyticsLogger.eventsOfType<AnalyticsEvent.PaywallViewed>().single()
+        assertEquals(Paywall.MODE, shown.paywall)
         assertEquals(BillingIds.ID_SWIPE_MODE, shown.productId)
     }
 

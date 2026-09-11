@@ -5,8 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
 import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
-import com.rafalskrzypczyk.core.analytics.QuizCompletion
-import com.rafalskrzypczyk.core.analytics.QuizSource
+import com.rafalskrzypczyk.core.analytics.QuizType
 import com.rafalskrzypczyk.core.analytics.analyticsName
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
@@ -65,6 +64,10 @@ class RevisionsQuizVM @Inject constructor(
 
     private var sessionStartTime = 0L
     private var hasLoggedQuizStarted = false
+
+    // Seria poprawnych odpowiedzi pod rzad w tej sesji (ponowne podejscia tez sie licza).
+    private var currentAnswerStreak = 0
+    private var sessionMaxStreak = 0
     private var hasLoggedQuizFinished = false
     private var exitedEarly = false
 
@@ -225,6 +228,9 @@ class RevisionsQuizVM @Inject constructor(
 
     private fun submitMultipleChoiceAnswer() {
         val currentQ = _state.value.currentQuestionUIM ?: return
+        // Ten sam bezwarunkowo renderowany przycisk co w trybie glownym — bez bramki drugi tap
+        // przed przejsciem do nastepnego pytania trafialby do silnika po raz drugi.
+        if (currentQ.isAnswerSubmitted) return
         val selectedAnswers = currentQ.answers.filter { it.isSelected }
         val selectedIds = selectedAnswers.map { it.id }
         val correctIds = currentQ.correctAnswerIds
@@ -262,6 +268,29 @@ class RevisionsQuizVM @Inject constructor(
                 mcQuestions = listOf(processedQ)
             )
         }
+
+        trackAnswer(isCorrect)
+    }
+
+    /**
+     * Ponowne podejscia do tego samego pytania sa liczone osobno — tak samo jak na iOS.
+     * `mode` niesie tryb powtarzanej tresci, dokladnie jak quiz_start i quiz_complete.
+     */
+    private fun trackAnswer(isCorrect: Boolean) {
+        if (isCorrect) {
+            currentAnswerStreak++
+            sessionMaxStreak = maxOf(sessionMaxStreak, currentAnswerStreak)
+        } else {
+            currentAnswerStreak = 0
+        }
+        analyticsLogger.log(
+            AnalyticsEvent.QuestionAnswered(
+                mode = mode.analyticsName(),
+                quizType = QuizType.REVISION,
+                isCorrect = isCorrect,
+                categoryId = categoryId,
+            )
+        )
     }
 
     private fun submitTranslationAnswer() {
@@ -295,6 +324,8 @@ class RevisionsQuizVM @Inject constructor(
                 translationQuestions = listOf(processedQ)
             )
         }
+
+        trackAnswer(isCorrect)
     }
 
     private fun displayNextQuestion() {
@@ -361,19 +392,22 @@ class RevisionsQuizVM @Inject constructor(
         sessionStartTime = System.currentTimeMillis()
 
         analyticsLogger.log(
-            AnalyticsEvent.RevisionsConfigured(
+            AnalyticsEvent.RevisionConfigured(
                 criterion = criterion.name.lowercase(),
                 mode = mode.analyticsName(),
-                categoriesCount = if (categoryId != null) 1 else 0,
-                questionsCount = engine.getInitialSize(),
+                categoryCount = if (categoryId != null) 1 else 0,
+                questionCount = engine.getInitialSize(),
             )
         )
         analyticsLogger.log(
             AnalyticsEvent.QuizStarted(
-                mode = QuizMode.RevisionsMode.analyticsName(),
-                source = QuizSource.REVISIONS,
-                questionsCount = engine.getInitialSize(),
-                isTrial = false,
+                // `mode` niesie tryb powtarzanej tresci — sam fakt powtorki opisuje quizType,
+                // wiec duplikowanie go w obu parametrach tylko gubiloby informacje.
+                mode = mode.analyticsName(),
+                quizType = QuizType.REVISION,
+                questionCount = engine.getInitialSize(),
+                isFreePreview = false,
+                categoryId = categoryId,
             )
         )
     }
@@ -381,20 +415,24 @@ class RevisionsQuizVM @Inject constructor(
     /** Logowane przed bramka reklamy, zeby interstitial nie wliczal sie w duration_sec. */
     private fun logQuizFinishedOnce() {
         // Wyjscie z ekranu, zanim pytania sie zaladuja, tez trafia tutaj (indeks silnika jest
-        // wtedy zerowy). Bez tej bramki lecialby quiz_finished bez pasujacego quiz_started,
+        // wtedy zerowy). Bez tej bramki lecialby quiz_complete bez pasujacego quiz_start,
         // zawyzajac early_exit u uzytkownikow ze slabym polaczeniem.
         if (!hasLoggedQuizStarted) return
         if (hasLoggedQuizFinished) return
         hasLoggedQuizFinished = true
 
         analyticsLogger.log(
-            AnalyticsEvent.QuizFinished(
-                mode = QuizMode.RevisionsMode.analyticsName(),
-                completion = if (exitedEarly) QuizCompletion.EARLY_EXIT else QuizCompletion.COMPLETED,
-                questionsAnswered = engine.getAttemptedQuestionIds().size,
-                correctAnswers = engine.getCorrectAnswersCount(),
+            AnalyticsEvent.QuizCompleted(
+                mode = mode.analyticsName(),
+                quizType = QuizType.REVISION,
+                questionCount = engine.getInitialSize(),
+                answeredCount = engine.getAttemptedQuestionIds().size,
+                correctCount = engine.getCorrectAnswersCount(),
+                isEarlyExit = exitedEarly,
+                isFreePreview = false,
                 durationSec = if (sessionStartTime == 0L) 0L else (System.currentTimeMillis() - sessionStartTime) / 1000,
-                isTrial = false,
+                maxStreak = sessionMaxStreak,
+                categoryId = categoryId,
             )
         )
     }
@@ -442,7 +480,7 @@ class RevisionsQuizVM @Inject constructor(
             reportIssueUC(report).collectLatest { response ->
                 if (response is Response.Success) {
                     analyticsLogger.log(
-                        AnalyticsEvent.IssueReported(QuizMode.RevisionsMode.analyticsName())
+                        AnalyticsEvent.IssueReported(mode.analyticsName())
                     )
                     _state.update {
                         it.copy(

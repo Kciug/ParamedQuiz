@@ -13,7 +13,7 @@ import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
 import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
-import com.rafalskrzypczyk.core.analytics.PurchaseSurface
+import com.rafalskrzypczyk.core.analytics.Paywall
 import com.rafalskrzypczyk.core.analytics.analyticsName
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.feedback.FeedbackEvent
@@ -218,10 +218,12 @@ class MMCategoriesVM @Inject constructor(
             )
         )
         analyticsLogger.log(
-            AnalyticsEvent.PaywallShown(
-                surface = PurchaseSurface.CATEGORY_SHEET,
+            AnalyticsEvent.PaywallViewed(
+                paywall = Paywall.CATEGORY,
                 productId = productId,
                 hasPrice = details != null,
+                mode = QuizMode.MainMode.analyticsName(),
+                categoryId = category.id,
             )
         )
 
@@ -248,11 +250,11 @@ class MMCategoriesVM @Inject constructor(
         
         if (productDetails != null) {
             _state.update { it.copy(isPurchasing = true, purchaseError = null, pendingPurchaseCategoryId = category.id) }
-            purchaseFunnelTracker.onPurchaseStarted(PurchaseSurface.CATEGORY_SHEET, productDetails)
+            purchaseFunnelTracker.onPurchaseStarted(Paywall.CATEGORY, productDetails)
             billingRepository.launchBillingFlow(activity, productDetails)
         } else {
             analyticsLogger.log(
-                AnalyticsEvent.PaywallPriceMissing(PurchaseSurface.CATEGORY_SHEET, productId)
+                AnalyticsEvent.PaywallPriceMissing(Paywall.CATEGORY, productId)
             )
             _state.update { it.copy(purchaseError = errorLogger.report(ORIGIN_BUY_CATEGORY, AppError.Billing.ProductDetailsMissing)) }
         }

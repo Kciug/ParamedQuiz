@@ -1,7 +1,7 @@
 package com.rafalskrzypczyk.ads
 
 import android.content.SharedPreferences
-import com.rafalskrzypczyk.core.analytics.AnalyticsConsent
+import com.rafalskrzypczyk.core.analytics.AdConsent
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.Assert.assertEquals
@@ -10,6 +10,11 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
+/**
+ * Czytnik odpowiada wyłącznie za zgody reklamowe. Zgoda na analitykę pochodzi z osobnej decyzji
+ * użytkownika (`AnalyticsConsentManager`) i nie da się jej stąd wyprowadzić — cele TCF opisują
+ * zgodę dla zadeklarowanych dostawców reklamowych, a nasza analityka pierwszej strony nim nie jest.
+ */
 class TcfConsentReaderTest {
 
     private lateinit var sharedPreferences: SharedPreferences
@@ -27,30 +32,29 @@ class TcfConsentReaderTest {
     }
 
     @Test
-    fun `grants everything when gdpr does not apply`() {
+    fun `grants every ad purpose when gdpr does not apply`() {
         givenTcf(gdprApplies = 0, purposeConsents = null)
 
         val consent = reader.read(canRequestAds = false)
 
-        assertEquals(AnalyticsConsent.granted(), consent)
+        assertEquals(AdConsent.granted(), consent)
     }
 
     @Test
     fun `falls back to canRequestAds when there is no tcf string yet`() {
         givenTcf(gdprApplies = 1, purposeConsents = null)
 
-        assertTrue(reader.read(canRequestAds = true).analyticsStorage)
-        assertFalse(reader.read(canRequestAds = false).analyticsStorage)
+        assertTrue(reader.read(canRequestAds = true).adStorage)
+        assertFalse(reader.read(canRequestAds = false).adStorage)
     }
 
     @Test
-    fun `device storage consent drives analytics and ad storage`() {
+    fun `device storage consent drives ad storage`() {
         // Cel 1 zgoda, pozostale odmowa.
         givenTcf(gdprApplies = 1, purposeConsents = "1000000000")
 
         val consent = reader.read(canRequestAds = true)
 
-        assertTrue(consent.analyticsStorage)
         assertTrue(consent.adStorage)
         assertFalse(consent.adUserData)
         assertFalse(consent.adPersonalization)
@@ -78,7 +82,6 @@ class TcfConsentReaderTest {
 
         val consent = reader.read(canRequestAds = true)
 
-        assertFalse(consent.analyticsStorage)
         assertFalse(consent.adStorage)
         assertFalse(consent.adUserData)
     }
@@ -88,6 +91,6 @@ class TcfConsentReaderTest {
         every { sharedPreferences.getInt("IABTCF_gdprApplies", any()) } throws ClassCastException()
         every { sharedPreferences.getString("IABTCF_PurposeConsents", null) } returns null
 
-        assertFalse(reader.read(canRequestAds = false).analyticsStorage)
+        assertFalse(reader.read(canRequestAds = false).adStorage)
     }
 }

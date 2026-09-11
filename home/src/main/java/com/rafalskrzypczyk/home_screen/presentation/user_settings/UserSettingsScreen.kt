@@ -35,6 +35,7 @@ import androidx.compose.material.icons.outlined.DeleteForever
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Insights
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Vibration
 import androidx.compose.material3.Scaffold
@@ -63,6 +64,7 @@ import com.rafalskrzypczyk.core.composables.PreviewContainer
 import com.rafalskrzypczyk.core.composables.SettingsCategoryCard
 import com.rafalskrzypczyk.core.composables.SettingsCategoryHeader
 import com.rafalskrzypczyk.core.composables.SettingsDialog
+import com.rafalskrzypczyk.core.composables.SettingsInfoPanel
 import com.rafalskrzypczyk.core.composables.SettingsItemRow
 import com.rafalskrzypczyk.core.composables.SettingsSwitchRow
 import com.rafalskrzypczyk.core.composables.TestBuildBanner
@@ -280,6 +282,19 @@ private fun UserSettingsContent(
                         icon = Icons.Outlined.DeleteForever,
                         onClick = { onEvent(UserSettingsUIEvents.ToggleDeleteProgressDialog(true)) }
                     )
+                }
+
+                SettingsCategoryHeader(stringResource(R.string.settings_category_privacy))
+
+                SettingsCategoryCard {
+                    SettingsSwitchRow(
+                        title = stringResource(R.string.settings_analytics),
+                        icon = Icons.Outlined.Insights,
+                        checked = state.analyticsEnabled,
+                        onCheckedChange = { onEvent(UserSettingsUIEvents.SetAnalyticsEnabled(it)) }
+                    )
+
+                    SettingsInfoPanel(stringResource(R.string.settings_analytics_info))
                 }
 
                 SettingsCategoryHeader(stringResource(R.string.settings_category_other))

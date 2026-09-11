@@ -5,8 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.core.ads.QuizAdHandler
 import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
 import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
-import com.rafalskrzypczyk.core.analytics.QuizCompletion
-import com.rafalskrzypczyk.core.analytics.QuizSource
+import com.rafalskrzypczyk.core.analytics.QuizType
 import com.rafalskrzypczyk.core.analytics.analyticsName
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
@@ -34,7 +33,8 @@ abstract class BaseQuizVM (
     protected val feedbackManager: FeedbackManager,
     private val analyticsLogger: AnalyticsLogger,
     private val quizMode: QuizMode,
-    private val analyticsSource: QuizSource,
+    private val quizType: QuizType,
+    private val analyticsCategoryId: Long?,
     private val gameMode: String,
     private val enforceSingleSelection: Boolean = false
 ): ViewModel() {
@@ -56,6 +56,10 @@ abstract class BaseQuizVM (
     private var hasLoggedQuizStarted = false
     private var hasLoggedQuizFinished = false
     private var exitedEarly = false
+
+    // Seria poprawnych odpowiedzi pod rzad w tej sesji — parametr max_streak.
+    private var currentAnswerStreak = 0
+    private var sessionMaxStreak = 0
 
     init {
         loadUserScore()
@@ -138,6 +142,10 @@ abstract class BaseQuizVM (
     }
 
     protected open fun submitAnswer() {
+        // Przycisk zatwierdzania jest renderowany bezwarunkowo i tylko przyslaniany animacja,
+        // wiec drugi tap w trakcie przejscia trafial tu ponownie i podwajal liczniki silnika.
+        if (state.value.question.isAnswerSubmitted) return
+
         val now = System.currentTimeMillis()
         val duration = now - currentQuestionStartTime
         
@@ -180,6 +188,26 @@ abstract class BaseQuizVM (
         if (domainQ != null) {
             earnedPoints += useCases.updateScore(domainQ.id, isCorrect)
         }
+
+        trackAnswer(isCorrect)
+    }
+
+    /** Te same wyrazenia co w [logQuizStartedOnce] — inaczej odpowiedzi nie zloza sie w sesje. */
+    private fun trackAnswer(isCorrect: Boolean) {
+        if (isCorrect) {
+            currentAnswerStreak++
+            sessionMaxStreak = maxOf(sessionMaxStreak, currentAnswerStreak)
+        } else {
+            currentAnswerStreak = 0
+        }
+        analyticsLogger.log(
+            AnalyticsEvent.QuestionAnswered(
+                mode = quizMode.analyticsName(),
+                quizType = quizType,
+                isCorrect = isCorrect,
+                categoryId = analyticsCategoryId,
+            )
+        )
     }
 
     protected fun initializeQuiz(questions: List<Question>, title: String) {
@@ -207,9 +235,13 @@ abstract class BaseQuizVM (
         analyticsLogger.log(
             AnalyticsEvent.QuizStarted(
                 mode = quizMode.analyticsName(),
-                source = analyticsSource,
-                questionsCount = quizEngine.getQuestionsCount(),
-                isTrial = false,
+                quizType = quizType,
+                questionCount = quizEngine.getQuestionsCount(),
+                isFreePreview = false,
+                categoryId = analyticsCategoryId,
+                // Tylko razem z identyfikatorem: `categoryTitle` niesie tytul ekranu, wiec dla
+                // Zadania dnia byla to zlokalizowana nazwa trybu, a nie zadna kategoria.
+                categoryName = analyticsCategoryId?.let { _state.value.categoryTitle.ifBlank { null } },
             )
         )
     }
@@ -221,7 +253,7 @@ abstract class BaseQuizVM (
      */
     private fun logQuizFinishedOnce() {
         // Wyjscie z ekranu, zanim pytania sie zaladuja, tez trafia tutaj (indeks silnika jest
-        // wtedy zerowy). Bez tej bramki lecialby quiz_finished bez pasujacego quiz_started,
+        // wtedy zerowy). Bez tej bramki lecialby quiz_complete bez pasujacego quiz_start,
         // zawyzajac early_exit u uzytkownikow ze slabym polaczeniem.
         if (!hasLoggedQuizStarted) return
         if (hasLoggedQuizFinished) return
@@ -229,13 +261,17 @@ abstract class BaseQuizVM (
 
         val startTime = _state.value.quizStartTime
         analyticsLogger.log(
-            AnalyticsEvent.QuizFinished(
+            AnalyticsEvent.QuizCompleted(
                 mode = quizMode.analyticsName(),
-                completion = if (exitedEarly) QuizCompletion.EARLY_EXIT else QuizCompletion.COMPLETED,
-                questionsAnswered = quizEngine.getAnsweredQuestions(),
-                correctAnswers = quizEngine.getCorrectAnswers(),
+                quizType = quizType,
+                questionCount = quizEngine.getQuestionsCount(),
+                answeredCount = quizEngine.getAnsweredQuestions(),
+                correctCount = quizEngine.getCorrectAnswers(),
+                isEarlyExit = exitedEarly,
+                isFreePreview = false,
                 durationSec = if (startTime == 0L) 0L else (System.currentTimeMillis() - startTime) / 1000,
-                isTrial = false,
+                maxStreak = sessionMaxStreak,
+                categoryId = analyticsCategoryId,
             )
         )
     }
@@ -293,7 +329,7 @@ abstract class BaseQuizVM (
         exitedEarly = true
         if(quizEngine.getCurrentQuestionIndex() == 0) {
             // Wyjście przed pierwszą odpowiedzią nie finalizuje sesji, więc bez tego
-            // quiz_started nie miałby zdarzenia terminalnego i lejek pokazywałby odpływ.
+            // quiz_start nie miałby zdarzenia terminalnego i lejek pokazywałby odpływ.
             logQuizFinishedOnce()
             navigateBack()
         }

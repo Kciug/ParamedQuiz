@@ -13,7 +13,7 @@ import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
 import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
-import com.rafalskrzypczyk.core.analytics.PurchaseSurface
+import com.rafalskrzypczyk.core.analytics.Paywall
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.domain.config.GameplayConfigProvider
 import com.rafalskrzypczyk.core.error.AppError
@@ -205,8 +205,8 @@ class StoreVM @Inject constructor(
         if (hasLoggedPaywall || products.isEmpty()) return
         hasLoggedPaywall = true
         analyticsLogger.log(
-            AnalyticsEvent.PaywallShown(
-                surface = PurchaseSurface.STORE,
+            AnalyticsEvent.PaywallViewed(
+                paywall = Paywall.STORE,
                 productId = BillingIds.ID_FULL_PACKAGE,
                 hasPrice = products.any { it.id == BillingIds.ID_FULL_PACKAGE },
             )
@@ -283,10 +283,10 @@ class StoreVM @Inject constructor(
         val details = availableProductsCache.find { it.id == productId }
         if (details != null) {
             _state.update { it.copy(isPurchasing = true, purchaseError = null, pendingPurchaseModeId = productId) }
-            purchaseFunnelTracker.onPurchaseStarted(PurchaseSurface.STORE, details)
+            purchaseFunnelTracker.onPurchaseStarted(Paywall.STORE, details)
             billingRepository.launchBillingFlow(activity, details)
         } else {
-            analyticsLogger.log(AnalyticsEvent.PaywallPriceMissing(PurchaseSurface.STORE, productId))
+            analyticsLogger.log(AnalyticsEvent.PaywallPriceMissing(Paywall.STORE, productId))
             _state.update { it.copy(purchaseError = errorLogger.report(ORIGIN_BUY_MODE, AppError.Billing.ProductDetailsMissing)) }
             loadPrices()
         }

@@ -1,11 +1,16 @@
 package com.rafalskrzypczyk.billing.analytics
 
 import com.rafalskrzypczyk.billing.domain.AppProduct
+import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.billing.domain.PurchaseResult
 import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
 import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
-import com.rafalskrzypczyk.core.analytics.PurchaseSurface
+import com.rafalskrzypczyk.core.analytics.Paywall
+import com.rafalskrzypczyk.core.analytics.ProductType
+import com.rafalskrzypczyk.core.analytics.productTypeOf
+import com.rafalskrzypczyk.core.utils.QuizMode
+import com.rafalskrzypczyk.core.analytics.analyticsName
 import com.rafalskrzypczyk.core.error.analyticsCode
 import com.rafalskrzypczyk.core.utils.TimeProvider
 import kotlinx.coroutines.CoroutineScope
@@ -56,18 +61,44 @@ class PurchaseFunnelTracker @Inject constructor(
         }
     }
 
-    /** Wołane przez ViewModel tuż przed `launchBillingFlow`. [surface] jest stały dla ViewModelu. */
-    fun onPurchaseStarted(surface: PurchaseSurface, product: AppProduct) {
-        startedPurchase = StartedPurchase(surface, product, timeProvider.now().time)
+    /** Wołane przez ViewModel tuż przed `launchBillingFlow`. [paywall] jest stały dla ViewModelu. */
+    fun onPurchaseStarted(paywall: Paywall, product: AppProduct) {
+        startedPurchase = StartedPurchase(paywall, product, timeProvider.now().time)
         analyticsLogger.log(
             AnalyticsEvent.PurchaseStarted(
-                surface = surface,
+                paywall = paywall,
                 productId = product.id,
+                productType = productTypeFor(product.id),
                 priceMicros = product.priceAmountMicros,
                 currency = product.priceCurrencyCode,
             )
         )
     }
+
+    private fun productTypeFor(productId: String): ProductType = productTypeOf(
+        productId = productId,
+        fullPackageId = BillingIds.ID_FULL_PACKAGE,
+        adFreeId = BillingIds.ID_AD_FREE,
+        modeIds = setOf(BillingIds.ID_SWIPE_MODE, BillingIds.ID_TRANSLATION_MODE),
+    )
+
+    /** SKU trybu → wartość słownika `mode`; dla pozostałych produktów parametr pomijamy. */
+    private fun modeFor(productId: String): String? = when (productId) {
+        BillingIds.ID_SWIPE_MODE -> QuizMode.SwipeMode.analyticsName()
+        BillingIds.ID_TRANSLATION_MODE -> QuizMode.TranslationMode.analyticsName()
+        else -> null
+    }
+
+    /**
+     * Odwrotność [getCategoryBillingId]. Bez tego zakup kategorii dałoby się połączyć z jej
+     * wyświetleniem tylko przez ręczne parsowanie SKU w raporcie.
+     */
+    private fun categoryIdFor(productId: String): Long? =
+        if (productTypeFor(productId) == ProductType.CATEGORY) {
+            productId.removePrefix(BillingIds.ID_PREFIX).toLongOrNull()
+        } else {
+            null
+        }
 
     private fun handleResult(result: PurchaseResult) {
         when (result) {
@@ -75,18 +106,17 @@ class PurchaseFunnelTracker @Inject constructor(
 
             is PurchaseResult.Pending -> {
                 // Pending nie jest wynikiem terminalnym — zakup moze sie jeszcze domknac, wiec
-                // slot musi przetrwac, inaczej pozniejszy purchase_completed straci surface
-                // i cene, a standardowy `purchase` w ogóle by nie poleciał.
+                // slot musi przetrwac, inaczej pozniejszy purchase_complete straci paywall.
                 val started = peekStarted(result.productId)
                 analyticsLogger.log(
-                    AnalyticsEvent.PurchasePending(started.surface(), result.productId)
+                    AnalyticsEvent.PurchasePending(started.paywall(), result.productId)
                 )
             }
 
             PurchaseResult.Cancelled -> {
                 val started = consumeStarted(productId = null)
                 analyticsLogger.log(
-                    AnalyticsEvent.PurchaseCancelled(started.surface(), started.productId())
+                    AnalyticsEvent.PurchaseCancelled(started.paywall(), started.productId())
                 )
             }
 
@@ -94,7 +124,7 @@ class PurchaseFunnelTracker @Inject constructor(
                 val started = consumeStarted(productId = null)
                 analyticsLogger.log(
                     AnalyticsEvent.PurchaseFailed(
-                        surface = started.surface(),
+                        paywall = started.paywall(),
                         productId = started.productId(),
                         errorCode = result.error.analyticsCode(),
                     )
@@ -117,22 +147,18 @@ class PurchaseFunnelTracker @Inject constructor(
         lastCompleted = CompletedPurchase(productId, now)
 
         val started = consumeStarted(productId)
-        val value = started?.product?.priceAmountMicros?.let { it / MICROS_IN_UNIT }
-        val currency = started?.product?.priceCurrencyCode.orEmpty()
 
+        // Bez `value` i `currency`: przychod raportuje automatyczne `in_app_purchase`, a GA4 nie
+        // deduplikuje go z recznie wyslanym `purchase` na strumieniach aplikacyjnych.
         analyticsLogger.log(
             AnalyticsEvent.PurchaseCompleted(
-                surface = started.surface(),
+                paywall = started.paywall(),
                 productId = productId,
-                value = value ?: 0.0,
-                currency = currency,
+                productType = productTypeFor(productId),
+                mode = modeFor(productId),
+                categoryId = categoryIdFor(productId),
             )
         )
-
-        // Standardowy `purchase` GA4 tylko ze znaną ceną — bez niej zaniżałby raport przychodu.
-        if (value != null && value > 0.0 && currency.isNotEmpty()) {
-            analyticsLogger.log(AnalyticsEvent.PurchaseStandard(productId, value, currency))
-        }
     }
 
     /** Odczyt bez konsumpcji — dla wyników nieterminalnych (Pending). */
@@ -159,12 +185,12 @@ class PurchaseFunnelTracker @Inject constructor(
         return started
     }
 
-    private fun StartedPurchase?.surface(): PurchaseSurface = this?.surface ?: PurchaseSurface.UNKNOWN
+    private fun StartedPurchase?.paywall(): Paywall = this?.paywall ?: Paywall.UNKNOWN
 
     private fun StartedPurchase?.productId(): String = this?.product?.id ?: PRODUCT_UNKNOWN
 
     private data class StartedPurchase(
-        val surface: PurchaseSurface,
+        val paywall: Paywall,
         val product: AppProduct,
         val atMillis: Long,
     )
@@ -175,8 +201,6 @@ class PurchaseFunnelTracker @Inject constructor(
     )
 
     private companion object {
-        const val MICROS_IN_UNIT = 1_000_000.0
-
         /** Po tym czasie start przestaje przypisywać wynik — inaczej stary ekran fałszowałby `surface`. */
         const val ATTRIBUTION_WINDOW_MS = 30 * 60 * 1000L
 

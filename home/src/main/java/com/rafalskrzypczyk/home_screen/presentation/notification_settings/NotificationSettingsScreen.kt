@@ -96,6 +96,7 @@ private fun NotificationSettingsContent(
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
+        onEvent(NotificationSettingsUIEvents.SystemPermissionResult(granted))
         systemEnabled = NotificationPermission.areNotificationsEnabled(context)
         if (granted) onEvent(NotificationSettingsUIEvents.SetNotificationsEnabled(true))
     }

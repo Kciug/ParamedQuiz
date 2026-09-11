@@ -31,6 +31,9 @@ sealed interface HomeUIEvents {
     data class DismissNews(val id: String) : HomeUIEvents
 
     data object OnNotificationConsentAccepted : HomeUIEvents
+
+    /** Odpowiedz na SYSTEMOWY dialog POST_NOTIFICATIONS, nie na nasz prompt. */
+    data class OnSystemNotificationPermissionResult(val granted: Boolean) : HomeUIEvents
     data object OnNotificationConsentDenied : HomeUIEvents
     data object OnNotificationConsentDismissed : HomeUIEvents
     data object RecheckNotificationConsent : HomeUIEvents

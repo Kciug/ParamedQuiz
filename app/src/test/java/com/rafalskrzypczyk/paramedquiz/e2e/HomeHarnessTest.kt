@@ -4,6 +4,7 @@ import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.core.app.ActivityScenario
+import com.rafalskrzypczyk.core.analytics.AnalyticsConsentState
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
 import com.rafalskrzypczyk.core.testing.TestTags
 import com.rafalskrzypczyk.paramedquiz.MainActivity
@@ -45,6 +46,21 @@ class HomeHarnessTest {
         // Stan „powracający użytkownik": onboarding za nami, aktualny regulamin (v1) zaakceptowany.
         sharedPrefs.setOnboardingStatus(true)
         sharedPrefs.setAcceptedTermsVersion(1)
+        sharedPrefs.setAnalyticsConsent(AnalyticsConsentState.DENIED)
+    }
+
+    @Test
+    fun `user without a privacy decision is asked before reaching home`() {
+        sharedPrefs.setAnalyticsConsent(AnalyticsConsentState.UNDECIDED)
+
+        ActivityScenario.launch(MainActivity::class.java).use {
+            composeRule.waitUntil(timeoutMillis = 30_000) {
+                composeRule.onAllNodesWithTag(TestTags.PRIVACY_CONSENT_ROOT)
+                    .fetchSemanticsNodes().isNotEmpty()
+            }
+
+            composeRule.onNodeWithTag(TestTags.PRIVACY_CONSENT_ROOT).assertExists()
+        }
     }
 
     @Test

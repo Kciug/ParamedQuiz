@@ -13,6 +13,9 @@ enum class NotificationDestination {
     companion object {
         const val EXTRA_DESTINATION = "notification_destination"
 
+        /** Rozroznia push z FCM od lokalnego przypomnienia (parametr `is_remote`). */
+        const val EXTRA_IS_REMOTE = "notification_is_remote"
+
         fun fromExtra(value: String?): NotificationDestination? =
             entries.firstOrNull { it.name == value }
     }

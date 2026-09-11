@@ -1,5 +1,7 @@
 package com.rafalskrzypczyk.score.domain
 
+import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
+import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
 import com.rafalskrzypczyk.core.domain.config.GameplayConfigProvider
 import com.rafalskrzypczyk.core.utils.TimeProvider
 import com.rafalskrzypczyk.core.utils.toDateOnly
@@ -10,7 +12,8 @@ import java.util.Date
 class StreakManager @Inject constructor(
     private val scoreManager: ScoreManager,
     private val gameplayConfig: GameplayConfigProvider,
-    private val timeProvider: TimeProvider
+    private val timeProvider: TimeProvider,
+    private val analyticsLogger: AnalyticsLogger,
 ) {
     private var increaseStreakPoints = 0
 
@@ -62,10 +65,15 @@ class StreakManager @Inject constructor(
         val lastUpdate = score.lastStreakUpdateDate?.toDateOnly()
 
         if (lastUpdate == null || lastUpdate < today) {
+            val newStreak = score.streak + 1
             scoreManager.updateScore(score.copy(
-                streak = score.streak + 1,
+                streak = newStreak,
                 lastStreakUpdateDate = today
             ))
+            // Zdarzenie stoi tutaj, a nie w ViewModelach: updateStreak() wola kazdy z szesciu
+            // trybow, a warunek powyzej jest jedyna trwala bramka „co najwyzej raz dziennie"
+            // (lastStreakUpdateDate jest utrwalane razem z wynikiem).
+            analyticsLogger.log(AnalyticsEvent.StreakIncremented(newStreak))
             return true
         }
         return false

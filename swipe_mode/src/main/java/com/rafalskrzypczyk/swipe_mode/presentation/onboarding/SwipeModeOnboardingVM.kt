@@ -17,7 +17,7 @@ class SwipeModeOnboardingVM @Inject constructor(
 
     fun finishOnboarding(onSuccess: () -> Unit) {
         sharedPreferences.setSwipeModeOnboardingSeen(true)
-        analyticsLogger.log(AnalyticsEvent.ModeOnboardingFinished(QuizMode.SwipeMode.analyticsName()))
+        analyticsLogger.log(AnalyticsEvent.ModeOnboardingCompleted(QuizMode.SwipeMode.analyticsName()))
         onSuccess()
     }
 }

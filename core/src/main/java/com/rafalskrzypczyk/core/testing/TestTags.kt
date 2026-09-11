@@ -9,6 +9,9 @@ object TestTags {
     // Regulamin (Terms of Service)
     const val TOS_ACCEPT_BUTTON = "tos_accept_button"
 
+    // Zgoda na analityke
+    const val PRIVACY_CONSENT_ROOT = "privacy_consent_root"
+
     // Ekran główny (Home)
     const val HOME_ROOT = "home_root"
 

@@ -30,7 +30,7 @@ class OnboardingVM @Inject constructor(
         when(event) {
             OnboardingUIEvents.CheckIsLogged -> checkIsLogged()
             is OnboardingUIEvents.Finished -> analyticsLogger.log(
-                AnalyticsEvent.OnboardingFinished(event.skipped, event.lastPage)
+                AnalyticsEvent.OnboardingCompleted(event.skipped, event.lastPage)
             )
         }
     }

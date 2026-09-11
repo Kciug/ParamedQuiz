@@ -22,6 +22,8 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.rememberNavController
 import com.rafalskrzypczyk.core.ads.AdManager
 import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
+import com.rafalskrzypczyk.core.analytics.AnalyticsConsentManager
+import com.rafalskrzypczyk.core.analytics.AnalyticsConsentState
 import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
 import com.rafalskrzypczyk.core.feedback.FeedbackManager
 import com.rafalskrzypczyk.core.feedback.LocalFeedbackManager
@@ -37,6 +39,7 @@ import com.rafalskrzypczyk.paramedquiz.navigation.navigateToRevisionsMode
 import com.rafalskrzypczyk.score.domain.ScoreManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -55,6 +58,9 @@ class MainActivity : ComponentActivity() {
 
     @Inject
     lateinit var analyticsLogger: AnalyticsLogger
+
+    @Inject
+    lateinit var analyticsConsentManager: AnalyticsConsentManager
 
     private val viewModel: MainActivityVM by viewModels()
 
@@ -128,12 +134,18 @@ class MainActivity : ComponentActivity() {
 
         // Po `?: return`: bez extra (zwykly start z launchera albo odtworzenie Activity ze
         // skonsumowanym intentem) nie ma tapniecia w powiadomienie.
-        analyticsLogger.log(AnalyticsEvent.NotificationOpened(destination.name.lowercase()))
+        analyticsLogger.log(
+            AnalyticsEvent.NotificationTapped(
+                destination = destination.name.lowercase(),
+                isRemote = intent?.getBooleanExtra(NotificationDestination.EXTRA_IS_REMOTE, false) == true,
+            )
+        )
         deepLinkDestination.value = destination
         // Konsumujemy extra, żeby zachowany intent nie odpalił deep-linku ponownie
         // przy kolejnym odtworzeniu Activity.
         intent?.let {
             it.removeExtra(NotificationDestination.EXTRA_DESTINATION)
+            it.removeExtra(NotificationDestination.EXTRA_IS_REMOTE)
             setIntent(it)
         }
     }
@@ -151,7 +163,7 @@ class MainActivity : ComponentActivity() {
                 analyticsLogger.log(
                     AnalyticsEvent.ScreenView(
                         screenName = ScreenNames.screenNameFor(route),
-                        screenClass = ScreenNames.screenClassFor(route),
+                        mode = ScreenNames.modeFor(route),
                     )
                 )
             }
@@ -167,6 +179,11 @@ class MainActivity : ComponentActivity() {
 
         LaunchedEffect(Unit) {
             deepLinkDestination.collect { destination ->
+                if (destination != null) {
+                    // Przy nierozstrzygnietej zgodzie przytrzymujemy deep link: bez tego wejscie
+                    // z powiadomienia przeskoczyloby ekran zgody i uzytkownik nie zostalby zapytany.
+                    analyticsConsentManager.state.first { it != AnalyticsConsentState.UNDECIDED }
+                }
                 when (destination) {
                     NotificationDestination.HOME -> navController.navigateToMainMenu()
                     NotificationDestination.REVISIONS -> navController.navigateToRevisionsMode()
@@ -181,7 +198,8 @@ class MainActivity : ComponentActivity() {
             navController = navController,
             startDestination = startDestination,
             isOnboarding = { getOnboardingState() },
-            onFinishOnboarding = { onFinishOnboarding() }
+            onFinishOnboarding = { onFinishOnboarding() },
+            onTermsAccepted = { viewModel.onEvent(MainActivityUIEvents.TermsAccepted) }
         )
     }
 

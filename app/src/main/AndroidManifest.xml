@@ -24,6 +24,16 @@
             android:name="google_analytics_automatic_screen_reporting_enabled"
             android:value="false" />
 
+        <!-- Model opt-in: zbieranie startuje wylaczone, wlacza je dopiero zgoda uzytkownika
+             (AnalyticsConsentManager). Flagi pokrywaja okno przed pierwsza linia naszego kodu -
+             Firebase wstaje z ContentProvidera przed Application.onCreate. -->
+        <meta-data
+            android:name="firebase_analytics_collection_enabled"
+            android:value="false" />
+        <meta-data
+            android:name="firebase_crashlytics_collection_enabled"
+            android:value="false" />
+
         <!-- Consent Mode: domyslnie odmowa, zanim UMP ustali zgode (odbiorca to EOG). -->
         <meta-data
             android:name="google_analytics_default_allow_analytics_storage"

@@ -10,6 +10,8 @@ import com.rafalskrzypczyk.home_screen.presentation.home_page.HomeScreen
 import com.rafalskrzypczyk.home_screen.presentation.home_page.HomeScreenVM
 import com.rafalskrzypczyk.home_screen.presentation.onboarding.OnboardingScreen
 import com.rafalskrzypczyk.home_screen.presentation.onboarding.OnboardingVM
+import com.rafalskrzypczyk.home_screen.presentation.privacy_consent.PrivacyConsentScreen
+import com.rafalskrzypczyk.home_screen.presentation.privacy_consent.PrivacyConsentVM
 import com.rafalskrzypczyk.home_screen.presentation.terms_of_service.TermsOfServiceScreen
 import com.rafalskrzypczyk.home_screen.presentation.terms_of_service.TermsOfServiceVM
 import com.rafalskrzypczyk.home_screen.presentation.user_page.UserPageScreen
@@ -361,6 +363,26 @@ fun NavController.navigateToDevOptions() {
     navigate(route = Dev)
 }
 
+/**
+ * Ekran zgody na analitykę. Nazwa trasy celowo nie brzmi `AnalyticsConsent` — tak nazywa się
+ * ładunek zgód w `core/analytics` i obie klasy trafiałyby do tych samych importów.
+ */
+@Serializable
+object PrivacyConsent
+
+fun NavGraphBuilder.privacyConsentDestination(
+    onDecided: () -> Unit
+) {
+    composable<PrivacyConsent> {
+        val viewModel = hiltViewModel<PrivacyConsentVM>()
+
+        PrivacyConsentScreen(
+            onEvent = viewModel::onEvent,
+            onDecided = onDecided
+        )
+    }
+}
+
 @Serializable
 data class TermsOfService(val isMandatory: Boolean = true)
 
@@ -406,4 +428,4 @@ fun NavGraphBuilder.revisionsModeDestination(
 
 fun NavController.navigateToRevisionsMode() {
     navigate(route = RevisionsMode)
-}
+}

@@ -1,6 +1,7 @@
 package com.rafalskrzypczyk.home_screen.presentation.notification_settings
 
 import androidx.lifecycle.ViewModel
+import com.rafalskrzypczyk.core.analytics.NotificationPermissionTracker
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
 import com.rafalskrzypczyk.notifications.ContentTopicManager
 import com.rafalskrzypczyk.notifications.ReminderScheduler
@@ -14,7 +15,8 @@ import javax.inject.Inject
 class NotificationSettingsVM @Inject constructor(
     private val sharedPrefs: SharedPreferencesApi,
     private val reminderScheduler: ReminderScheduler,
-    private val contentTopicManager: ContentTopicManager
+    private val contentTopicManager: ContentTopicManager,
+    private val notificationPermissionTracker: NotificationPermissionTracker,
 ) : ViewModel() {
     private val _state = MutableStateFlow(NotificationSettingsState())
     val state = _state.asStateFlow()
@@ -26,6 +28,8 @@ class NotificationSettingsVM @Inject constructor(
     fun onEvent(event: NotificationSettingsUIEvents) {
         when (event) {
             is NotificationSettingsUIEvents.SetNotificationsEnabled -> setNotificationsEnabled(event.enabled)
+            is NotificationSettingsUIEvents.SystemPermissionResult ->
+                notificationPermissionTracker.onSystemDialogAnswered(event.granted)
             is NotificationSettingsUIEvents.SetRemindersEnabled -> setRemindersEnabled(event.enabled)
             is NotificationSettingsUIEvents.SetNewsEnabled -> setNewsEnabled(event.enabled)
             is NotificationSettingsUIEvents.SetMarketingEnabled -> setMarketingEnabled(event.enabled)

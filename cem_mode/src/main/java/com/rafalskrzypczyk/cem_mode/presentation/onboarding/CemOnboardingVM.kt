@@ -17,7 +17,7 @@ class CemOnboardingVM @Inject constructor(
 
     fun finishOnboarding(onSuccess: () -> Unit) {
         sharedPreferences.setCemModeOnboardingSeen(true)
-        analyticsLogger.log(AnalyticsEvent.ModeOnboardingFinished(QuizMode.CemMode.analyticsName()))
+        analyticsLogger.log(AnalyticsEvent.ModeOnboardingCompleted(QuizMode.CemMode.analyticsName()))
         onSuccess()
     }
 }

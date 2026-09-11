@@ -26,7 +26,8 @@ class Notifier @Inject constructor(
         title: String,
         text: String,
         destination: NotificationDestination,
-        channelId: String = NotificationChannels.REMINDERS_CHANNEL_ID
+        channelId: String = NotificationChannels.REMINDERS_CHANNEL_ID,
+        isRemote: Boolean = false,
     ) {
         if (!NotificationPermission.areNotificationsEnabled(context)) return
 
@@ -38,23 +39,30 @@ class Notifier @Inject constructor(
             .setContentText(text)
             .setStyle(NotificationCompat.BigTextStyle().bigText(text))
             .setAutoCancel(true)
-            .setContentIntent(buildContentIntent(destination))
+            .setContentIntent(buildContentIntent(destination, isRemote))
             .build()
 
         NotificationManagerCompat.from(context).notify(notificationId, notification)
     }
 
-    private fun buildContentIntent(destination: NotificationDestination): PendingIntent {
+    private fun buildContentIntent(
+        destination: NotificationDestination,
+        isRemote: Boolean,
+    ): PendingIntent {
         val launchIntent = context.packageManager
             .getLaunchIntentForPackage(context.packageName)
             ?.apply {
                 addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 putExtra(NotificationDestination.EXTRA_DESTINATION, destination.name)
+                putExtra(NotificationDestination.EXTRA_IS_REMOTE, isRemote)
             }
 
+        // Kod zadania musi rozroznic zrodlo: FLAG_UPDATE_CURRENT nadpisuje extras istniejacego
+        // PendingIntentu o tym samym kodzie, wiec push i przypomnienie o tym samym celu
+        // raportowalyby to samo `is_remote`.
         return PendingIntent.getActivity(
             context,
-            destination.ordinal,
+            destination.ordinal * 2 + if (isRemote) 1 else 0,
             launchIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )

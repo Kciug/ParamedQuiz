@@ -1,9 +1,6 @@
 package com.rafalskrzypczyk.signup.register
 
 import androidx.lifecycle.ViewModel
-import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
-import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
-import com.rafalskrzypczyk.core.analytics.AuthMethod
 import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.auth.domain.AuthRepository
 import com.rafalskrzypczyk.core.api_response.Response
@@ -20,7 +17,6 @@ import javax.inject.Inject
 @HiltViewModel
 class RegisterVM @Inject constructor(
     private val authRepository: AuthRepository,
-    private val analyticsLogger: AnalyticsLogger
 ) : ViewModel() {
     private val _state = MutableStateFlow<AuthenticationState>(AuthenticationState())
     val state: StateFlow<AuthenticationState> = _state.asStateFlow()
@@ -41,10 +37,7 @@ class RegisterVM @Inject constructor(
                         isLoading = false
                     ) }
                     Response.Loading -> _state.update { it.copy(isLoading = true) }
-                    is Response.Success -> {
-                        analyticsLogger.log(AnalyticsEvent.SignupCompleted(AuthMethod.PASSWORD))
-                        _state.update { it.copy(isSuccess = true) }
-                    }
+                    is Response.Success -> _state.update { it.copy(isSuccess = true) }
                 }
             }
         }

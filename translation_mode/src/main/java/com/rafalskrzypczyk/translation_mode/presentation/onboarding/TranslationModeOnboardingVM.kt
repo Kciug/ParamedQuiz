@@ -17,7 +17,7 @@ class TranslationModeOnboardingVM @Inject constructor(
 
     fun finishOnboarding(onSuccess: () -> Unit) {
         sharedPreferences.setTranslationModeOnboardingSeen(true)
-        analyticsLogger.log(AnalyticsEvent.ModeOnboardingFinished(QuizMode.TranslationMode.analyticsName()))
+        analyticsLogger.log(AnalyticsEvent.ModeOnboardingCompleted(QuizMode.TranslationMode.analyticsName()))
         onSuccess()
     }
 }

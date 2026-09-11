@@ -12,9 +12,8 @@ import com.rafalskrzypczyk.billing.domain.PurchaseResult
 import com.rafalskrzypczyk.core.ads.QuizAdHandler
 import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
 import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
-import com.rafalskrzypczyk.core.analytics.PurchaseSurface
-import com.rafalskrzypczyk.core.analytics.QuizCompletion
-import com.rafalskrzypczyk.core.analytics.QuizSource
+import com.rafalskrzypczyk.core.analytics.Paywall
+import com.rafalskrzypczyk.core.analytics.QuizType
 import com.rafalskrzypczyk.core.analytics.analyticsName
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
@@ -78,6 +77,9 @@ class SwipeModeVM @Inject constructor(
     private var correctAnswers: Int = 0
     private var currentStreak: Int = 0
     private var bestStreak: Int = 0
+    // bestStreak startuje od rekordu wszech czasow (patrz loadUserScore), wiec do max_streak
+    // potrzebny jest osobny licznik liczony od zera na sesje.
+    private var sessionMaxStreak: Int = 0
     private var initialBestCombo: Int = 0
     private var earnedPoints: Int = 0
     private var isStreakUpdatedInSession = false
@@ -217,9 +219,9 @@ class SwipeModeVM @Inject constructor(
                             analyticsLogger.log(
                                 AnalyticsEvent.QuizStarted(
                                     mode = SWIPE_MODE,
-                                    source = QuizSource.HOME,
-                                    questionsCount = questions.size,
-                                    isTrial = isTrialActive,
+                                    quizType = quizType(),
+                                    questionCount = questions.size,
+                                    isFreePreview = isTrialActive,
                                 )
                             )
                         }
@@ -282,10 +284,11 @@ class SwipeModeVM @Inject constructor(
 
         analyticsLogger.log(AnalyticsEvent.TrialWallReached(SWIPE_MODE, currentQuestionIndex))
         analyticsLogger.log(
-            AnalyticsEvent.PaywallShown(
-                surface = PurchaseSurface.TRIAL_END,
+            AnalyticsEvent.PaywallViewed(
+                paywall = Paywall.TRIAL_END,
                 productId = BillingIds.ID_SWIPE_MODE,
                 hasPrice = swipeModeProductDetails != null,
+                mode = SWIPE_MODE,
             )
         )
     }
@@ -298,7 +301,7 @@ class SwipeModeVM @Inject constructor(
             }
         } else {
             analyticsLogger.log(
-                AnalyticsEvent.PaywallPriceMissing(PurchaseSurface.TRIAL_END, BillingIds.ID_SWIPE_MODE)
+                AnalyticsEvent.PaywallPriceMissing(Paywall.TRIAL_END, BillingIds.ID_SWIPE_MODE)
             )
         }
     }
@@ -309,7 +312,7 @@ class SwipeModeVM @Inject constructor(
      */
     fun launchBillingFlow(activity: Activity) {
         swipeModeProductDetails?.let {
-            purchaseFunnelTracker.onPurchaseStarted(PurchaseSurface.TRIAL_END, it)
+            purchaseFunnelTracker.onPurchaseStarted(Paywall.TRIAL_END, it)
             billingRepository.launchBillingFlow(activity, it)
         }
     }
@@ -449,6 +452,16 @@ class SwipeModeVM @Inject constructor(
         ) }
 
         updateStreak(answeredCorrectly)
+        // Przed displayNextQuestion(): ono potrafi domknac sesje i wyslac quiz_complete,
+        // a odpowiedz musi wyjsc przed zdarzeniem terminalnym.
+        analyticsLogger.log(
+            AnalyticsEvent.QuestionAnswered(
+                mode = SWIPE_MODE,
+                quizType = quizType(),
+                // `isCorrect` w sygnaturze to kierunek swipe'a, poprawnosc niesie answeredCorrectly.
+                isCorrect = answeredCorrectly,
+            )
+        )
         displayNextQuestion()
         earnedPoints += useCases.updateScore(questionId, answeredCorrectly)
 
@@ -462,6 +475,7 @@ class SwipeModeVM @Inject constructor(
         if(isAnswerCorrect) {
             currentStreak++
             bestStreak = maxOf(currentStreak, bestStreak)
+            sessionMaxStreak = maxOf(currentStreak, sessionMaxStreak)
         } else {
             currentStreak = 0
         }
@@ -472,7 +486,7 @@ class SwipeModeVM @Inject constructor(
         _state.update { it.copy(showExitConfirmation = false) }
         exitedEarly = true
         if(currentQuestionIndex == 0) {
-            // Wyjscie bez zadnej odpowiedzi nie finalizuje sesji, wiec bez tego quiz_started
+            // Wyjscie bez zadnej odpowiedzi nie finalizuje sesji, wiec bez tego quiz_start
             // nie mialby zdarzenia terminalnego.
             logQuizFinishedOnce()
             navigateBack()
@@ -480,23 +494,30 @@ class SwipeModeVM @Inject constructor(
         else setFinishedState()
     }
 
+    /** Pula probna i pelna to w kontrakcie dwa rozne rodzaje sesji, nie jedna z flaga. */
+    private fun quizType(): QuizType =
+        if (isTrialActive) QuizType.FREE_PREVIEW else QuizType.FULL
+
     /** Logowane przed bramka reklamy, zeby interstitial nie wliczal sie w duration_sec. */
     private fun logQuizFinishedOnce() {
         // Wyjscie z ekranu, zanim pytania sie zaladuja, tez trafia tutaj (indeks silnika jest
-        // wtedy zerowy). Bez tej bramki lecialby quiz_finished bez pasujacego quiz_started,
+        // wtedy zerowy). Bez tej bramki lecialby quiz_complete bez pasujacego quiz_start,
         // zawyzajac early_exit u uzytkownikow ze slabym polaczeniem.
         if (quizStartTime == 0L) return
         if (hasLoggedQuizFinished) return
         hasLoggedQuizFinished = true
 
         analyticsLogger.log(
-            AnalyticsEvent.QuizFinished(
+            AnalyticsEvent.QuizCompleted(
                 mode = SWIPE_MODE,
-                completion = if (exitedEarly) QuizCompletion.EARLY_EXIT else QuizCompletion.COMPLETED,
-                questionsAnswered = currentQuestionIndex,
-                correctAnswers = correctAnswers,
+                quizType = quizType(),
+                questionCount = questions.size,
+                answeredCount = currentQuestionIndex,
+                correctCount = correctAnswers,
+                isEarlyExit = exitedEarly,
+                isFreePreview = isTrialActive,
                 durationSec = if (quizStartTime == 0L) 0L else (System.currentTimeMillis() - quizStartTime) / 1000,
-                isTrial = isTrialActive,
+                maxStreak = sessionMaxStreak,
             )
         )
     }

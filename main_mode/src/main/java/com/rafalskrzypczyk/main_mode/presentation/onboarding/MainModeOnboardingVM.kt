@@ -17,7 +17,7 @@ class MainModeOnboardingVM @Inject constructor(
 
     fun finishOnboarding(onSuccess: () -> Unit) {
         sharedPreferences.setMainModeOnboardingSeen(true)
-        analyticsLogger.log(AnalyticsEvent.ModeOnboardingFinished(QuizMode.MainMode.analyticsName()))
+        analyticsLogger.log(AnalyticsEvent.ModeOnboardingCompleted(QuizMode.MainMode.analyticsName()))
         onSuccess()
     }
 }

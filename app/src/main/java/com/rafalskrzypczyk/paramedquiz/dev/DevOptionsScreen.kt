@@ -112,6 +112,14 @@ fun DevOptionsScreen(
                             onClick = { onEvent(DevOptionsUIEvents.ClearTermsAcceptance) }
                         )
                         DevActionRow(
+                            title = "Reset zgody na analityke",
+                            icon = Icons.Outlined.RestartAlt,
+                            info = "Przywraca stan sprzed pierwszego pytania, wylacza zbieranie " +
+                                "i czysci zebrane dane. Ekran zgody pojawi sie przy nastepnym starcie.",
+                            onClick = { onEvent(DevOptionsUIEvents.ResetAnalyticsConsent) }
+                        )
+
+                        DevActionRow(
                             title = "Reset zgody reklamowej",
                             icon = Icons.Outlined.RestartAlt,
                             info = "Czyści zgodę UMP. Formularz pojawi się przy następnym starcie " +

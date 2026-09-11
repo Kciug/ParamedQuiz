@@ -1,11 +1,10 @@
 package com.rafalskrzypczyk.analytics
 
 import android.os.Bundle
-import android.os.Parcelable
 import com.google.firebase.analytics.FirebaseAnalytics
+import com.rafalskrzypczyk.core.analytics.AnalyticsBackend
 import com.rafalskrzypczyk.core.analytics.AnalyticsConsent
 import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
-import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
 import com.rafalskrzypczyk.core.analytics.AnalyticsUserProperty
 
 /**
@@ -16,7 +15,7 @@ import com.rafalskrzypczyk.core.analytics.AnalyticsUserProperty
  */
 class FirebaseAnalyticsLogger(
     private val firebaseAnalytics: FirebaseAnalytics,
-) : AnalyticsLogger {
+) : AnalyticsBackend {
 
     override fun log(event: AnalyticsEvent) {
         firebaseAnalytics.logEvent(event.name, event.toBundle())
@@ -37,6 +36,14 @@ class FirebaseAnalyticsLogger(
         )
     }
 
+    override fun setCollectionEnabled(enabled: Boolean) {
+        firebaseAnalytics.setAnalyticsCollectionEnabled(enabled)
+    }
+
+    override fun resetAnalyticsData() {
+        firebaseAnalytics.resetAnalyticsData()
+    }
+
     private fun Boolean.toStatus() =
         if (this) FirebaseAnalytics.ConsentStatus.GRANTED else FirebaseAnalytics.ConsentStatus.DENIED
 
@@ -51,18 +58,7 @@ class FirebaseAnalyticsLogger(
                 else -> bundle.putString(key, value.toString())
             }
         }
-        if (this is AnalyticsEvent.PurchaseStandard) bundle.putItems(this)
         return bundle
     }
 
-    /** Standardowy `purchase` w GA4 wymaga tablicy `items` — jedyne pole spoza mapy parametrów. */
-    private fun Bundle.putItems(event: AnalyticsEvent.PurchaseStandard) {
-        val item = Bundle().apply {
-            putString(FirebaseAnalytics.Param.ITEM_ID, event.productId)
-            putDouble(FirebaseAnalytics.Param.PRICE, event.value)
-            putString(FirebaseAnalytics.Param.CURRENCY, event.currency)
-            putLong(FirebaseAnalytics.Param.QUANTITY, 1L)
-        }
-        putParcelableArray(FirebaseAnalytics.Param.ITEMS, arrayOf<Parcelable>(item))
-    }
 }

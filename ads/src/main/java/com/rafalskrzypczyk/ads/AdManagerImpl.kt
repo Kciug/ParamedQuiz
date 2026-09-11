@@ -10,6 +10,10 @@ import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.rafalskrzypczyk.core.ads.AdManager
+import com.rafalskrzypczyk.core.analytics.AdStage
+import com.rafalskrzypczyk.core.analytics.AdUnit
+import com.rafalskrzypczyk.core.analytics.AnalyticsConsentManager
+import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
 import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.domain.config.GameplayConfigProvider
@@ -24,6 +28,7 @@ class AdManagerImpl @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val premiumStatusProvider: PremiumStatusProvider,
     private val gameplayConfig: GameplayConfigProvider,
+    private val analyticsConsentManager: AnalyticsConsentManager,
     private val analyticsLogger: AnalyticsLogger,
     private val tcfConsentReader: TcfConsentReader,
     externalScope: CoroutineScope
@@ -33,6 +38,19 @@ class AdManagerImpl @Inject constructor(
     private var interstitialAd: InterstitialAd? = null
 
     private val adUnitId = BuildConfig.ADMOB_INTERSTITIAL_UNIT_ID
+
+    /**
+     * Jednostki testowe Google maja staly wydawce; w debug i staging `local.defaults.properties`
+     * podaje wlasnie je. Bez tego podzialu odslony testowe weszlyby w dane produkcyjne.
+     */
+    private val adUnit =
+        if (adUnitId.startsWith(GOOGLE_TEST_PUBLISHER)) AdUnit.TEST else AdUnit.PRODUCTION
+
+    /**
+     * Liczba odpowiedzi od poprzedniej reklamy, przekazana przez QuizAdHandler w chwili decyzji.
+     * Reklama startowa (preload przy inicjalizacji) nie ma zadnej sesji quizu, wiec zostaje zero.
+     */
+    private var answersSinceLastAd = 0
 
     private var isAdsFree = false
     private var isMobileAdsInitialized = false
@@ -48,6 +66,10 @@ class AdManagerImpl @Inject constructor(
         }
     }
 
+    override fun onInterstitialTriggered(answersSinceLastAd: Int) {
+        this.answersSinceLastAd = answersSinceLastAd
+    }
+
     override fun resetConsent() {
         consentManager.reset()
     }
@@ -61,7 +83,7 @@ class AdManagerImpl @Inject constructor(
         consentManager.gatherConsent(activity) { _ ->
             // Jedyny moment, w którym zgoda jest ustalona. Ustawiamy ją poza gałęzią poniżej,
             // żeby propagacja objęła też użytkowników premium i okres wyłączonych reklam.
-            analyticsLogger.setConsent(tcfConsentReader.read(consentManager.canRequestAds))
+            analyticsConsentManager.updateAdConsent(tcfConsentReader.read(consentManager.canRequestAds))
 
             if (consentManager.canRequestAds && !areAdsBlocked()) {
                 ensureMobileAdsInitialized()
@@ -85,6 +107,7 @@ class AdManagerImpl @Inject constructor(
         InterstitialAd.load(context, adUnitId, adRequest, object : InterstitialAdLoadCallback() {
             override fun onAdFailedToLoad(adError: LoadAdError) {
                 interstitialAd = null
+                logAdFailure(AdStage.LOAD, adError.code)
             }
 
             override fun onAdLoaded(ad: InterstitialAd) {
@@ -111,12 +134,15 @@ class AdManagerImpl @Inject constructor(
                     onAdDismissed()
                 }
 
-                override fun onAdFailedToShowFullScreenContent(p0: AdError) {
+                override fun onAdFailedToShowFullScreenContent(adError: AdError) {
                     interstitialAd = null
+                    logAdFailure(AdStage.PRESENT, adError.code)
                     onAdDismissed()
                 }
 
                 override fun onAdShowedFullScreenContent() {
+                    // Dopiero tutaj reklama jest naprawde na ekranie — show() samo tego nie gwarantuje.
+                    analyticsLogger.log(AnalyticsEvent.AdShown(adUnit, answersSinceLastAd))
                     onAdShown()
                     interstitialAd = null 
                 }
@@ -126,5 +152,20 @@ class AdManagerImpl @Inject constructor(
             loadInterstitial() // Try to load for next time
             onAdDismissed()
         }
+    }
+
+    /** Kod AdMob jako tekst — patrz uzasadnienie w [AnalyticsEvent.AdLoadFailed]. */
+    private fun logAdFailure(stage: AdStage, errorCode: Int) {
+        analyticsLogger.log(
+            AnalyticsEvent.AdLoadFailed(
+                stage = stage,
+                errorCode = errorCode.toString(),
+                adUnit = adUnit,
+            )
+        )
+    }
+
+    private companion object {
+        const val GOOGLE_TEST_PUBLISHER = "ca-app-pub-3940256099942544"
     }
 }

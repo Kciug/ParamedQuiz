@@ -71,7 +71,8 @@ class ContentMessagingService : FirebaseMessagingService() {
             title = title,
             text = body,
             destination = destination,
-            channelId = channelId
+            channelId = channelId,
+            isRemote = true,
         )
     }
 }

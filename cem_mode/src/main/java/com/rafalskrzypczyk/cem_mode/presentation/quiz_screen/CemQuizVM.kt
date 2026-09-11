@@ -6,7 +6,7 @@ import com.rafalskrzypczyk.cem_mode.domain.use_cases.CemQuestionsUseCases
 import com.rafalskrzypczyk.core.ads.QuizAdHandler
 import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
 import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
-import com.rafalskrzypczyk.core.analytics.QuizSource
+import com.rafalskrzypczyk.core.analytics.QuizType
 import com.rafalskrzypczyk.core.analytics.analyticsName
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
@@ -35,7 +35,8 @@ class CemQuizVM @Inject constructor(
     feedbackManager = feedbackManager,
     analyticsLogger = analyticsLogger,
     quizMode = QuizMode.CemMode,
-    analyticsSource = QuizSource.CATEGORY,
+    quizType = QuizType.CATEGORY,
+    analyticsCategoryId = savedStateHandle.get<Long>("categoryId"),
     gameMode = GAME_MODE_NAME,
     enforceSingleSelection = true
 ) {

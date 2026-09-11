@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.core.ads.AdManager
 import com.rafalskrzypczyk.core.domain.config.GameplayConfigProvider
+import com.rafalskrzypczyk.core.analytics.AnalyticsConsentManager
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
 import com.rafalskrzypczyk.notifications.NotificationChannels
 import com.rafalskrzypczyk.notifications.NotificationDestination
@@ -33,7 +34,8 @@ class DevVM @Inject constructor(
     private val scoreManager: ScoreManager,
     private val notificationConfigRepository: NotificationConfigRepository,
     private val gameplayConfig: GameplayConfigProvider,
-    private val adManager: AdManager
+    private val adManager: AdManager,
+    private val analyticsConsentManager: AnalyticsConsentManager
 ): ViewModel() {
 
     private val _state = MutableStateFlow(DevOptionsState())
@@ -53,6 +55,7 @@ class DevVM @Inject constructor(
             DevOptionsUIEvents.ResetModularOnboarding -> resetModularOnboarding()
             DevOptionsUIEvents.ClearTermsAcceptance -> clearTerms()
             DevOptionsUIEvents.ResetAdsConsent -> adManager.resetConsent()
+            DevOptionsUIEvents.ResetAnalyticsConsent -> analyticsConsentManager.reset()
             DevOptionsUIEvents.ResetRatingStats -> resetRatingStats()
             DevOptionsUIEvents.TriggerRatingPrompt -> triggerRatingPrompt()
             DevOptionsUIEvents.ResetNews -> resetNews()
@@ -76,14 +79,16 @@ class DevVM @Inject constructor(
                 title = "🆕 Nowy zestaw pytań",
                 text = "Sprawdź nowe pytania dodane do aplikacji!",
                 destination = NotificationDestination.HOME,
-                channelId = NotificationChannels.NEWS_CHANNEL_ID
+                channelId = NotificationChannels.NEWS_CHANNEL_ID,
+                isRemote = true,
             )
             DevOptionsUIEvents.SimulateMarketingNotification -> notifier.show(
                 notificationId = NotificationIds.MARKETING,
                 title = "🎉 Promocja Premium",
                 text = "Odblokuj wszystkie tryby w super cenie!",
                 destination = NotificationDestination.HOME,
-                channelId = NotificationChannels.MARKETING_CHANNEL_ID
+                channelId = NotificationChannels.MARKETING_CHANNEL_ID,
+                isRemote = true,
             )
         }
     }

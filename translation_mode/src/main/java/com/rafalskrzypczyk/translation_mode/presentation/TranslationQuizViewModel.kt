@@ -11,9 +11,8 @@ import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.billing.domain.PurchaseResult
 import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
 import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
-import com.rafalskrzypczyk.core.analytics.PurchaseSurface
-import com.rafalskrzypczyk.core.analytics.QuizCompletion
-import com.rafalskrzypczyk.core.analytics.QuizSource
+import com.rafalskrzypczyk.core.analytics.Paywall
+import com.rafalskrzypczyk.core.analytics.QuizType
 import com.rafalskrzypczyk.core.analytics.analyticsName
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
@@ -74,6 +73,10 @@ class TranslationQuizViewModel @Inject constructor(
     private var hasLoggedTrialWall = false
     private var sessionStartTime = 0L
     private var hasLoggedQuizStarted = false
+
+    // Seria poprawnych odpowiedzi pod rzad w tej sesji — parametr max_streak.
+    private var currentAnswerStreak = 0
+    private var sessionMaxStreak = 0
     private var hasLoggedQuizFinished = false
     private var exitedEarly = false
 
@@ -295,10 +298,11 @@ class TranslationQuizViewModel @Inject constructor(
         val answered = _state.value.questions.count { it.isAnswered }
         analyticsLogger.log(AnalyticsEvent.TrialWallReached(TRANSLATION_MODE, answered))
         analyticsLogger.log(
-            AnalyticsEvent.PaywallShown(
-                surface = PurchaseSurface.TRIAL_END,
+            AnalyticsEvent.PaywallViewed(
+                paywall = Paywall.TRIAL_END,
                 productId = BillingIds.ID_TRANSLATION_MODE,
                 hasPrice = translationModeProductDetails != null,
+                mode = TRANSLATION_MODE,
             )
         )
     }
@@ -312,7 +316,7 @@ class TranslationQuizViewModel @Inject constructor(
         } else {
             analyticsLogger.log(
                 AnalyticsEvent.PaywallPriceMissing(
-                    PurchaseSurface.TRIAL_END,
+                    Paywall.TRIAL_END,
                     BillingIds.ID_TRANSLATION_MODE,
                 )
             )
@@ -325,7 +329,7 @@ class TranslationQuizViewModel @Inject constructor(
      */
     fun launchBillingFlow(activity: Activity) {
         translationModeProductDetails?.let {
-            purchaseFunnelTracker.onPurchaseStarted(PurchaseSurface.TRIAL_END, it)
+            purchaseFunnelTracker.onPurchaseStarted(Paywall.TRIAL_END, it)
             billingRepository.launchBillingFlow(activity, it)
         }
     }
@@ -337,7 +341,7 @@ class TranslationQuizViewModel @Inject constructor(
         
         exitedEarly = true
         if (!isStarted) {
-            // Bez tego wyjscie przed pierwsza odpowiedzia zostawialoby quiz_started bez terminala.
+            // Bez tego wyjscie przed pierwsza odpowiedzia zostawialoby quiz_start bez terminala.
             logQuizFinishedOnce()
             navigateBack()
         } else {
@@ -357,16 +361,20 @@ class TranslationQuizViewModel @Inject constructor(
         analyticsLogger.log(
             AnalyticsEvent.QuizStarted(
                 mode = TRANSLATION_MODE,
-                source = QuizSource.HOME,
-                questionsCount = questionsCount,
-                isTrial = isTrialActive,
+                quizType = quizType(),
+                questionCount = questionsCount,
+                isFreePreview = isTrialActive,
             )
         )
     }
 
+    /** Pula probna i pelna to w kontrakcie dwa rozne rodzaje sesji, nie jedna z flaga. */
+    private fun quizType(): QuizType =
+        if (isTrialActive) QuizType.FREE_PREVIEW else QuizType.FULL
+
     private fun logQuizFinishedOnce() {
         // Wyjscie z ekranu, zanim pytania sie zaladuja, tez trafia tutaj (indeks silnika jest
-        // wtedy zerowy). Bez tej bramki lecialby quiz_finished bez pasujacego quiz_started,
+        // wtedy zerowy). Bez tej bramki lecialby quiz_complete bez pasujacego quiz_start,
         // zawyzajac early_exit u uzytkownikow ze slabym polaczeniem.
         if (!hasLoggedQuizStarted) return
         if (hasLoggedQuizFinished) return
@@ -374,13 +382,16 @@ class TranslationQuizViewModel @Inject constructor(
 
         val state = _state.value
         analyticsLogger.log(
-            AnalyticsEvent.QuizFinished(
+            AnalyticsEvent.QuizCompleted(
                 mode = TRANSLATION_MODE,
-                completion = if (exitedEarly) QuizCompletion.EARLY_EXIT else QuizCompletion.COMPLETED,
-                questionsAnswered = state.questions.count { it.isAnswered },
-                correctAnswers = state.correctAnswersCount,
+                quizType = quizType(),
+                questionCount = state.questions.size,
+                answeredCount = state.questions.count { it.isAnswered },
+                correctCount = state.correctAnswersCount,
+                isEarlyExit = exitedEarly,
+                isFreePreview = isTrialActive,
                 durationSec = if (sessionStartTime == 0L) 0L else (System.currentTimeMillis() - sessionStartTime) / 1000,
-                isTrial = isTrialActive,
+                maxStreak = sessionMaxStreak,
             )
         )
     }
@@ -421,6 +432,24 @@ class TranslationQuizViewModel @Inject constructor(
                 correctAnswersCount = newCorrectCount
             )
         }
+
+        trackAnswer(isCorrect)
+    }
+
+    private fun trackAnswer(isCorrect: Boolean) {
+        if (isCorrect) {
+            currentAnswerStreak++
+            sessionMaxStreak = maxOf(sessionMaxStreak, currentAnswerStreak)
+        } else {
+            currentAnswerStreak = 0
+        }
+        analyticsLogger.log(
+            AnalyticsEvent.QuestionAnswered(
+                mode = TRANSLATION_MODE,
+                quizType = quizType(),
+                isCorrect = isCorrect,
+            )
+        )
     }
 
     private fun nextQuestion() {

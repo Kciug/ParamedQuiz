@@ -1,7 +1,7 @@
 package com.rafalskrzypczyk.ads
 
 import android.content.SharedPreferences
-import com.rafalskrzypczyk.core.analytics.AnalyticsConsent
+import com.rafalskrzypczyk.core.analytics.AdConsent
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -25,15 +25,14 @@ class TcfConsentReader @Inject constructor(
      * [canRequestAds] jest używane wyłącznie jako fallback, gdy nie ma jeszcze ciągu TCF
      * (pierwsze uruchomienie, przed pokazaniem formularza).
      */
-    fun read(canRequestAds: Boolean): AnalyticsConsent {
-        if (gdprApplies() == GDPR_DOES_NOT_APPLY) return AnalyticsConsent.granted()
+    fun read(canRequestAds: Boolean): AdConsent {
+        if (gdprApplies() == GDPR_DOES_NOT_APPLY) return AdConsent.granted()
 
         val purposes = purposeConsents()
-            ?: return if (canRequestAds) AnalyticsConsent.granted() else AnalyticsConsent.denied()
+            ?: return if (canRequestAds) AdConsent.granted() else AdConsent.denied()
 
         val deviceStorage = purposes.hasConsentFor(PURPOSE_STORE_INFO)
-        return AnalyticsConsent(
-            analyticsStorage = deviceStorage,
+        return AdConsent(
             adStorage = deviceStorage,
             adUserData = deviceStorage && purposes.hasConsentFor(PURPOSE_MEASURE_ADS),
             adPersonalization = purposes.hasConsentFor(PURPOSE_ADS_PROFILE) &&
