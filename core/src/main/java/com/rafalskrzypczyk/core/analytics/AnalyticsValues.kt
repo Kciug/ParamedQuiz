@@ -21,7 +21,6 @@ object AnalyticsParams {
     const val MODE = "mode"
     const val QUIZ_TYPE = "quiz_type"
     const val QUESTION_COUNT = "question_count"
-    const val IS_CORRECT = "is_correct"
     const val ANSWERED_COUNT = "answered_count"
     const val CORRECT_COUNT = "correct_count"
     const val INCORRECT_COUNT = "incorrect_count"
@@ -68,6 +67,18 @@ enum class Paywall(val value: String) {
     AD_FREE("ad_free"),
     TRIAL_END("trial_end"),
     UNKNOWN("unknown"),
+}
+
+/**
+ * Nazwy ekranow zagniezdzonych `NavHost`ow trybow, wspolne z iOS. Nazwy ekranow glownego
+ * `NavHost`a mapuje `ScreenNames` w module `:app` — te tutaj sa potrzebne poza nim, bo
+ * `quiz_end` raportuja ViewModele (ekran wyniku to stan, nie trasa).
+ */
+object ScreenName {
+    const val CATEGORIES = "categories"
+    const val QUIZ = "quiz"
+    const val QUIZ_END = "quiz_end"
+    const val REVISION_SETUP = "revision_setup"
 }
 
 /** Jedyny format reklamy, jaki emitujemy — pozostaje parametrem, bo tak chce kontrakt iOS. */

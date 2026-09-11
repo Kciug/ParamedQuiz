@@ -6,6 +6,7 @@ import com.rafalskrzypczyk.core.ads.QuizAdHandler
 import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
 import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
 import com.rafalskrzypczyk.core.analytics.QuizType
+import com.rafalskrzypczyk.core.analytics.ScreenName
 import com.rafalskrzypczyk.core.analytics.analyticsName
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
@@ -55,6 +56,7 @@ abstract class BaseQuizVM (
 
     private var hasLoggedQuizStarted = false
     private var hasLoggedQuizFinished = false
+    private var hasLoggedQuizEnd = false
     private var exitedEarly = false
 
     // Seria poprawnych odpowiedzi pod rzad w tej sesji — parametr max_streak.
@@ -192,7 +194,7 @@ abstract class BaseQuizVM (
         trackAnswer(isCorrect)
     }
 
-    /** Te same wyrazenia co w [logQuizStartedOnce] — inaczej odpowiedzi nie zloza sie w sesje. */
+    /** Seria poprawnych odpowiedzi pod rzad — parametr `max_streak` w quiz_complete. */
     private fun trackAnswer(isCorrect: Boolean) {
         if (isCorrect) {
             currentAnswerStreak++
@@ -200,14 +202,6 @@ abstract class BaseQuizVM (
         } else {
             currentAnswerStreak = 0
         }
-        analyticsLogger.log(
-            AnalyticsEvent.QuestionAnswered(
-                mode = quizMode.analyticsName(),
-                quizType = quizType,
-                isCorrect = isCorrect,
-                categoryId = analyticsCategoryId,
-            )
-        )
     }
 
     protected fun initializeQuiz(questions: List<Question>, title: String) {
@@ -274,6 +268,17 @@ abstract class BaseQuizVM (
                 categoryId = analyticsCategoryId,
             )
         )
+    }
+
+    /**
+     * Ekran wyniku to stan, nie trasa, wiec `screen_view` dla niego nie wyjdzie z NavHosta.
+     * Osobno od quiz_complete: tamto zapada przed reklama, ten ekran pojawia sie po niej, a przy
+     * wyjsciu przed pierwsza odpowiedzia nie pojawia sie wcale.
+     */
+    private fun logQuizEndScreenOnce() {
+        if (hasLoggedQuizEnd) return
+        hasLoggedQuizEnd = true
+        analyticsLogger.log(AnalyticsEvent.ScreenView(ScreenName.QUIZ_END, mode = quizMode.analyticsName()))
     }
 
     protected fun updateQuizData(questions: List<Question>) {
@@ -352,6 +357,7 @@ abstract class BaseQuizVM (
 
     protected open fun finishQuiz() {
         logQuizFinishedOnce()
+        logQuizEndScreenOnce()
         useCases.incrementCompletedQuizzes()
         feedbackManager.perform(FeedbackEvent.QUIZ_COMPLETED)
         _state.update { it.copy(

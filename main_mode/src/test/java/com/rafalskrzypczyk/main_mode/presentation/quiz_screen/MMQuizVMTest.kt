@@ -143,37 +143,19 @@ class MMQuizVMTest {
         assertEquals(1, analyticsLogger.eventsOfType<AnalyticsEvent.QuizStarted>().size)
     }
 
-    @Test
-    fun `a submitted answer is reported with the session dimensions`() = runTest {
-        every { baseUseCases.evaluateAnswers(any(), any()) } returns true
-        val viewModel = createViewModel()
-
-        viewModel.onEvent(MMQuizUIEvents.OnAnswerClicked(1L))
-        viewModel.onEvent(MMQuizUIEvents.OnSubmitAnswer)
-
-        val answered = analyticsLogger.eventsOfType<AnalyticsEvent.QuestionAnswered>().single()
-        assertEquals("main", answered.mode)
-        assertEquals(QuizType.CATEGORY, answered.quizType)
-        assertEquals(1L, answered.categoryId)
-        assertEquals(true, answered.isCorrect)
-    }
-
     /**
      * Przycisk zatwierdzania jest renderowany bezwarunkowo i tylko przyslaniany animacja, wiec
-     * drugi tap w trakcie przejscia trafial do silnika ponownie — psuc nie tylko to zdarzenie,
-     * ale i answered_count/correct_count w quiz_complete.
+     * drugi tap w trakcie przejscia trafial do silnika ponownie i podwajal answered_count
+     * oraz correct_count w quiz_complete.
      */
     @Test
-    fun `submitting the same answer twice reports it once`() = runTest {
+    fun `submitting the same answer twice counts it once`() = runTest {
         every { baseUseCases.evaluateAnswers(any(), any()) } returns true
         val viewModel = createViewModel()
 
         viewModel.onEvent(MMQuizUIEvents.OnAnswerClicked(1L))
         viewModel.onEvent(MMQuizUIEvents.OnSubmitAnswer)
         viewModel.onEvent(MMQuizUIEvents.OnSubmitAnswer)
-
-        assertEquals(1, analyticsLogger.eventsOfType<AnalyticsEvent.QuestionAnswered>().size)
-
         viewModel.onEvent(MMQuizUIEvents.OnNextQuestion)
         val finished = analyticsLogger.eventsOfType<AnalyticsEvent.QuizCompleted>().single()
         assertEquals(1, finished.answeredCount)
@@ -213,17 +195,41 @@ class MMQuizVMTest {
         val finished = analyticsLogger.eventsOfType<AnalyticsEvent.QuizCompleted>().single()
         assertEquals(2, finished.maxStreak)
         assertEquals(3, finished.correctCount)
-        assertEquals(4, analyticsLogger.eventsOfType<AnalyticsEvent.QuestionAnswered>().size)
     }
 
+    /**
+     * Ekran wyniku to stan, nie trasa — `screen_view` dla niego wychodzi z ViewModelu. Przy
+     * wyjsciu przed pierwsza odpowiedzia ekran sie nie pojawia, wiec zdarzenia byc nie moze.
+     */
     @Test
-    fun `leaving without answering reports no answer at all`() = runTest {
+    fun `leaving without answering shows no end screen`() = runTest {
         val viewModel = createViewModel()
 
         viewModel.onEvent(MMQuizUIEvents.OnBackPressed)
         viewModel.onEvent(MMQuizUIEvents.OnBackConfirmed {})
 
-        assertTrue(analyticsLogger.eventsOfType<AnalyticsEvent.QuestionAnswered>().isEmpty())
+        assertTrue(analyticsLogger.eventsOfType<AnalyticsEvent.ScreenView>().isEmpty())
+    }
+
+    @Test
+    fun `the end screen is reported once with the mode, after the ad`() = runTest {
+        every { adHandler.shouldShowAd(any(), any(), any()) } returns true
+        val viewModel = createViewModel()
+
+        viewModel.onEvent(MMQuizUIEvents.OnAnswerClicked(1L))
+        viewModel.onEvent(MMQuizUIEvents.OnSubmitAnswer)
+        viewModel.onEvent(MMQuizUIEvents.OnNextQuestion)
+        // quiz_complete juz poszlo, ekranu wyniku jeszcze nie ma — trwa reklama
+        assertTrue(analyticsLogger.eventsOfType<AnalyticsEvent.ScreenView>().isEmpty())
+
+        every { adHandler.handleAdDismissed(any(), any()) } answers { secondArg<() -> Unit>().invoke() }
+        viewModel.onEvent(MMQuizUIEvents.OnAdDismissed)
+        viewModel.onEvent(MMQuizUIEvents.OnAdDismissed)
+
+        val end = analyticsLogger.eventsOfType<AnalyticsEvent.ScreenView>().single()
+        assertEquals("quiz_end", end.screenName)
+        assertEquals("quiz_end", end.screenClass)
+        assertEquals("main", end.mode)
     }
 
     @Test

@@ -25,6 +25,7 @@ import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
 import com.rafalskrzypczyk.core.analytics.AnalyticsConsentManager
 import com.rafalskrzypczyk.core.analytics.AnalyticsConsentState
 import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
+import com.rafalskrzypczyk.core.analytics.LocalAnalyticsLogger
 import com.rafalskrzypczyk.core.feedback.FeedbackManager
 import com.rafalskrzypczyk.core.feedback.LocalFeedbackManager
 import com.rafalskrzypczyk.core.composables.ErrorDialog
@@ -85,7 +86,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ParamedQuizTheme {
-                CompositionLocalProvider(LocalFeedbackManager provides feedbackManager) {
+                CompositionLocalProvider(
+                    LocalFeedbackManager provides feedbackManager,
+                    LocalAnalyticsLogger provides analyticsLogger,
+                ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -156,16 +160,11 @@ class MainActivity : ComponentActivity() {
 
         // Ręczne raportowanie ekranów. Automatyczne jest wyłączone w manifeście — aplikacja ma
         // jedno Activity, więc raportowałoby wyłącznie MainActivity. Zagnieżdżone NavHosty trybów
-        // mają własne kontrolery i tu nie trafiają (pokrywają je jawne zdarzenia sesji quizu).
+        // mają własne kontrolery i raportują same (TrackScreenViews); ich korzenie tutaj pomijamy,
+        // żeby wejście w tryb nie dawało dwóch ekranów.
         LaunchedEffect(navController) {
             navController.currentBackStackEntryFlow.collect { entry ->
-                val route = entry.destination.route
-                analyticsLogger.log(
-                    AnalyticsEvent.ScreenView(
-                        screenName = ScreenNames.screenNameFor(route),
-                        mode = ScreenNames.modeFor(route),
-                    )
-                )
+                ScreenNames.screenViewFor(entry.destination.route)?.let(analyticsLogger::log)
             }
         }
 

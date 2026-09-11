@@ -154,15 +154,39 @@ class AdManagerImpl @Inject constructor(
         }
     }
 
-    /** Kod AdMob jako tekst — patrz uzasadnienie w [AnalyticsEvent.AdLoadFailed]. */
     private fun logAdFailure(stage: AdStage, errorCode: Int) {
         analyticsLogger.log(
             AnalyticsEvent.AdLoadFailed(
                 stage = stage,
-                errorCode = errorCode.toString(),
+                errorCode = adErrorName(stage, errorCode),
                 adUnit = adUnit,
             )
         )
+    }
+
+    /**
+     * Kody AdMob jako nazwy — wspolny slownik z iOS, nieznane jako `code_<n>`. Przestrzenie kodow
+     * ladowania i prezentacji nakladaja sie numerycznie (0 to blad wewnetrzny w obu, ale 1 to raz
+     * bledne zadanie, raz ponowne uzycie reklamy), stad rozgalezienie po [stage].
+     */
+    private fun adErrorName(stage: AdStage, code: Int): String = when (stage) {
+        AdStage.LOAD -> when (code) {
+            AdRequest.ERROR_CODE_INTERNAL_ERROR -> "internal_error"
+            AdRequest.ERROR_CODE_INVALID_REQUEST -> "invalid_request"
+            AdRequest.ERROR_CODE_NETWORK_ERROR -> "network_error"
+            AdRequest.ERROR_CODE_NO_FILL -> "no_fill"
+            AdRequest.ERROR_CODE_APP_ID_MISSING -> "app_id_missing"
+            AdRequest.ERROR_CODE_MEDIATION_NO_FILL -> "mediation_no_fill"
+            else -> "code_$code"
+        }
+        AdStage.PRESENT -> when (code) {
+            FullScreenContentCallback.ERROR_CODE_INTERNAL_ERROR -> "internal_error"
+            FullScreenContentCallback.ERROR_CODE_AD_REUSED -> "ad_reused"
+            FullScreenContentCallback.ERROR_CODE_NOT_READY -> "not_ready"
+            FullScreenContentCallback.ERROR_CODE_APP_NOT_FOREGROUND -> "app_not_foreground"
+            FullScreenContentCallback.ERROR_CODE_MEDIATION_SHOW_ERROR -> "mediation_show_error"
+            else -> "code_$code"
+        }
     }
 
     private companion object {

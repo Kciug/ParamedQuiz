@@ -13,6 +13,7 @@ import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
 import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
 import com.rafalskrzypczyk.core.analytics.Paywall
 import com.rafalskrzypczyk.core.analytics.QuizType
+import com.rafalskrzypczyk.core.analytics.ScreenName
 import com.rafalskrzypczyk.core.analytics.analyticsName
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
@@ -73,10 +74,20 @@ class TranslationQuizViewModel @Inject constructor(
     private var hasLoggedTrialWall = false
     private var sessionStartTime = 0L
     private var hasLoggedQuizStarted = false
+    private var hasLoggedQuizEnd = false
 
     // Seria poprawnych odpowiedzi pod rzad w tej sesji — parametr max_streak.
     private var currentAnswerStreak = 0
     private var sessionMaxStreak = 0
+
+    /**
+     * Rodzaj sesji zamrozony przy quiz_start. Zakup w trakcie triala przelacza [isTrialActive]
+     * na false, ale sesja dalej jest ta, ktora ruszyla jako darmowy fragment — inaczej quiz_start
+     * i quiz_complete tej samej sesji mialyby rozne quiz_type i lejek konwersji by sie rozjechal.
+     * Ustalone z iOS: sesja zachowuje typ, z jakim wystartowala.
+     */
+    private var sessionQuizType: QuizType = QuizType.FULL
+    private var sessionIsFreePreview: Boolean = false
     private var hasLoggedQuizFinished = false
     private var exitedEarly = false
 
@@ -357,20 +368,18 @@ class TranslationQuizViewModel @Inject constructor(
         if (hasLoggedQuizStarted) return
         hasLoggedQuizStarted = true
         sessionStartTime = System.currentTimeMillis()
+        sessionIsFreePreview = isTrialActive
+        sessionQuizType = if (isTrialActive) QuizType.FREE_PREVIEW else QuizType.FULL
 
         analyticsLogger.log(
             AnalyticsEvent.QuizStarted(
                 mode = TRANSLATION_MODE,
-                quizType = quizType(),
+                quizType = sessionQuizType,
                 questionCount = questionsCount,
-                isFreePreview = isTrialActive,
+                isFreePreview = sessionIsFreePreview,
             )
         )
     }
-
-    /** Pula probna i pelna to w kontrakcie dwa rozne rodzaje sesji, nie jedna z flaga. */
-    private fun quizType(): QuizType =
-        if (isTrialActive) QuizType.FREE_PREVIEW else QuizType.FULL
 
     private fun logQuizFinishedOnce() {
         // Wyjscie z ekranu, zanim pytania sie zaladuja, tez trafia tutaj (indeks silnika jest
@@ -384,12 +393,14 @@ class TranslationQuizViewModel @Inject constructor(
         analyticsLogger.log(
             AnalyticsEvent.QuizCompleted(
                 mode = TRANSLATION_MODE,
-                quizType = quizType(),
+                quizType = sessionQuizType,
+                // Pula w chwili zakonczenia: po konwersji triala jest wieksza niz w quiz_start,
+                // ale answered_count nigdy jej nie przekroczy.
                 questionCount = state.questions.size,
                 answeredCount = state.questions.count { it.isAnswered },
                 correctCount = state.correctAnswersCount,
                 isEarlyExit = exitedEarly,
-                isFreePreview = isTrialActive,
+                isFreePreview = sessionIsFreePreview,
                 durationSec = if (sessionStartTime == 0L) 0L else (System.currentTimeMillis() - sessionStartTime) / 1000,
                 maxStreak = sessionMaxStreak,
             )
@@ -436,6 +447,14 @@ class TranslationQuizViewModel @Inject constructor(
         trackAnswer(isCorrect)
     }
 
+    /** Ekran wyniku to stan, nie trasa — patrz BaseQuizVM.logQuizEndScreenOnce. */
+    private fun logQuizEndScreenOnce() {
+        if (hasLoggedQuizEnd) return
+        hasLoggedQuizEnd = true
+        analyticsLogger.log(AnalyticsEvent.ScreenView(ScreenName.QUIZ_END, mode = TRANSLATION_MODE))
+    }
+
+    /** Seria poprawnych odpowiedzi pod rzad — parametr `max_streak` w quiz_complete. */
     private fun trackAnswer(isCorrect: Boolean) {
         if (isCorrect) {
             currentAnswerStreak++
@@ -443,13 +462,6 @@ class TranslationQuizViewModel @Inject constructor(
         } else {
             currentAnswerStreak = 0
         }
-        analyticsLogger.log(
-            AnalyticsEvent.QuestionAnswered(
-                mode = TRANSLATION_MODE,
-                quizType = quizType(),
-                isCorrect = isCorrect,
-            )
-        )
     }
 
     private fun nextQuestion() {
@@ -467,6 +479,7 @@ class TranslationQuizViewModel @Inject constructor(
 
     private fun finishQuiz() {
         logQuizFinishedOnce()
+        logQuizEndScreenOnce()
         useCases.incrementCompletedQuizzes()
         feedbackManager.perform(FeedbackEvent.QUIZ_COMPLETED)
         _state.update {

@@ -1,5 +1,7 @@
 package com.rafalskrzypczyk.paramedquiz.analytics
 
+import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
+import com.rafalskrzypczyk.core.analytics.ScreenName
 import com.rafalskrzypczyk.core.analytics.analyticsName
 import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.paramedquiz.navigation.CemMode
@@ -27,48 +29,54 @@ import com.rafalskrzypczyk.paramedquiz.navigation.UserSettings
  * nazwy pakietu" jest zdradliwy: `Onboarding` jest zadeklarowane osobno w czterech modułach i
  * cztery różne ekrany scaliłyby się w jedną wartość. Stąd jawna mapa.
  *
- * Trasy zagnieżdżonych `NavHost`ów tu nie trafiają — mają własne kontrolery i są pokryte jawnymi
- * zdarzeniami (`quiz_start`, `category_select`), które niosą więcej informacji.
+ * Słownik jest wspólny z iOS: `home`, `store`, `account`, `settings`, `notification_settings`.
+ * Ekrany wewnątrz trybów (`categories`, `quiz`, `quiz_end`, `revision_setup`) raportują zagnieżdżone
+ * `NavHost`y przez `TrackScreenViews` — korzenie trybów są tu **pomijane**, żeby wejście w tryb nie
+ * dawało dwóch ekranów. `signup`, `onboarding`, `privacy_consent`, `terms_of_service` i `dev_options`
+ * to nasze dodatki.
  */
 object ScreenNames {
     const val UNKNOWN = "unknown"
 
     private val byRoute: Map<String, String> = mapOf(
         qualifiedName<Signup>() to "signup",
-        qualifiedName<DailyExercise>() to "daily_exercise",
+        qualifiedName<DailyExercise>() to ScreenName.QUIZ,
         qualifiedName<MainMenu>() to "home",
-        qualifiedName<UserPage>() to "user_page",
-        qualifiedName<UserSettings>() to "user_settings",
+        qualifiedName<UserPage>() to "account",
+        qualifiedName<UserSettings>() to "settings",
         qualifiedName<NotificationSettings>() to "notification_settings",
-        qualifiedName<MainMode>() to "main_mode",
-        qualifiedName<SwipeMode>() to "swipe_mode",
-        qualifiedName<TranslationMode>() to "translation_mode",
-        qualifiedName<CemMode>() to "cem_mode",
         qualifiedName<Onboarding>() to "onboarding",
         qualifiedName<PrivacyConsent>() to "privacy_consent",
         qualifiedName<Store>() to "store",
         qualifiedName<Dev>() to "dev_options",
         qualifiedName<TermsOfService>() to "terms_of_service",
-        qualifiedName<RevisionsMode>() to "revisions_mode",
     )
 
-    /**
-     * Tryb dla korzeni trybow. iOS rozroznia „quiz w trybie glownym" od „quiz w Swipe" parametrem
-     * `mode` na `screen_view`, nie osobna nazwa ekranu — bez tego parametru wspolny raport
-     * ekranow nie da sie zlozyc. Zadanie dnia to tresc trybu glownego. Powtorki nie maja trybu
-     * na poziomie trasy (tryb tresci jest znany dopiero wewnatrz).
-     */
+    /** Zadanie dnia to quiz z treścią trybu głównego — iOS nie ma dla niego osobnej nazwy ekranu. */
     private val modeByRoute: Map<String, String> = mapOf(
-        qualifiedName<MainMode>() to QuizMode.MainMode.analyticsName(),
         qualifiedName<DailyExercise>() to QuizMode.MainMode.analyticsName(),
-        qualifiedName<SwipeMode>() to QuizMode.SwipeMode.analyticsName(),
-        qualifiedName<TranslationMode>() to QuizMode.TranslationMode.analyticsName(),
-        qualifiedName<CemMode>() to QuizMode.CemMode.analyticsName(),
     )
 
-    fun screenNameFor(route: String?): String = byRoute[normalize(route)] ?: UNKNOWN
+    /** Korzenie zagnieżdżonych `NavHost`ów — ekran raportuje kontroler wewnętrzny, nie kontener. */
+    private val containers: Set<String> = setOf(
+        qualifiedName<MainMode>(),
+        qualifiedName<SwipeMode>(),
+        qualifiedName<TranslationMode>(),
+        qualifiedName<CemMode>(),
+        qualifiedName<RevisionsMode>(),
+    )
 
-    fun modeFor(route: String?): String? = modeByRoute[normalize(route)]
+    /** `null` dla kontenerów: ich ekrany raportują zagnieżdżone `NavHost`y. */
+    fun screenViewFor(route: String?): AnalyticsEvent.ScreenView? {
+        val key = normalize(route)
+        if (key != null && key in containers) return null
+        return AnalyticsEvent.ScreenView(
+            screenName = byRoute[key] ?: UNKNOWN,
+            mode = modeByRoute[key],
+        )
+    }
+
+    fun isContainer(route: String?): Boolean = normalize(route) in containers
 
     /** Obcina argumenty trasy: `...SwipeMode?isTrial={isTrial}` oraz `.../{categoryId}`. */
     private fun normalize(route: String?): String? =

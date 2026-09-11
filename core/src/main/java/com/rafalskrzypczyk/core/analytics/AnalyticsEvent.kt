@@ -217,28 +217,6 @@ sealed interface AnalyticsEvent {
     }
 
     /**
-     * Każda zatwierdzona odpowiedź, łącznie z ponownymi podejściami w powtórkach.
-     *
-     * Najliczniejsze zdarzenie kontraktu: w trybie Swipe i Tłumaczeń jedna sesja to cała pula
-     * pytań z Firestore, więc setki emisji. `mode` i `quiz_type` muszą być wyliczone dokładnie
-     * tak, jak w [QuizStarted] tej samej sesji — inaczej odpowiedzi nie dołożą się do sesji.
-     */
-    data class QuestionAnswered(
-        val mode: String,
-        val quizType: QuizType,
-        val isCorrect: Boolean,
-        val categoryId: Long? = null,
-    ) : AnalyticsEvent {
-        override val name = "question_answered"
-        override val params = buildMap<String, Any> {
-            put(P.MODE, mode)
-            put(P.QUIZ_TYPE, quizType.value)
-            put(P.IS_CORRECT, isCorrect.asParam())
-            categoryId?.let { put(P.CATEGORY_ID, it) }
-        }
-    }
-
-    /**
      * [durationSec] jest dodatkiem Androida wobec kontraktu iOS — mierzone od inicjalizacji sesji
      * do jej logicznego końca, bez czasu oglądania reklamy.
      *
@@ -427,10 +405,9 @@ sealed interface AnalyticsEvent {
     /**
      * Nieudane załadowanie albo wyświetlenie reklamy pełnoekranowej.
      *
-     * [errorCode] jest **tekstem**, mimo że AdMob zwraca liczbę i mimo że kontrakt iOS mówi o `Int`:
-     * `error_code` jest już zarejestrowane jako wymiar tekstowy dla `purchase_fail`, a GA4 pozwala
-     * zarejestrować nazwę parametru tylko raz — jako wymiar **albo** metrykę. Wysłanie liczby pod tą
-     * samą nazwą zepsułoby istniejący wymiar. Do uzgodnienia z iOS.
+     * [errorCode] to **nazwa** kodu AdMob (`no_fill`, `network_error`, …; nieznane jako `code_<n>`),
+     * nie liczba — ustalone z iOS. `error_code` jest jednym wymiarem tekstowym dla `purchase_fail`
+     * i tego zdarzenia, a GA4 pozwala zarejestrować nazwę parametru tylko raz.
      */
     data class AdLoadFailed(
         val stage: AdStage,

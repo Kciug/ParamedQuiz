@@ -35,6 +35,8 @@ Instrumentujemy **pytania, nie ekrany**:
 | `AnalyticsConsentManager` | `core/analytics` | Właściciel decyzji użytkownika i jedyny pisarz zgód |
 | `ConsentGatedAnalyticsLogger` + `AnalyticsCollectionGate` | `core/analytics` | Odcinają zdarzenia przed zgodą |
 | `AnalyticsEvent` | `core/analytics` | `sealed interface` — cały kontrakt zdarzeń w jednym pliku |
+| `LocalAnalyticsLogger` + `TrackScreenViews` | `core/analytics` | `screen_view` z zagnieżdżonych `NavHost`ów, które nie mają ViewModelu |
+| `ScreenNames` | `:app/analytics` | Mapa tras głównego `NavHost`a na nazwy ekranów; pomija kontenery trybów |
 | `AnalyticsUserProperty` | `core/analytics` | Właściwości użytkownika |
 | `LogcatAnalyticsLogger` | `core/analytics` | Implementacja dla buildów debug |
 | `RecordingAnalyticsLogger` | `core/testing` | Atrapa dla testów (brak `testFixtures` w projekcie) |
@@ -95,12 +97,11 @@ produktu nie ma w cache — użytkownik klika „Kup" i nie dzieje się nic.
 
 | Event | Kiedy | Parametry |
 |---|---|---|
-| `screen_view` | Zmiana destynacji w głównym `NavHost` | `screen_name`, `screen_class`, `mode`? |
+| `screen_view` | Zmiana destynacji w głównym `NavHost` **i** w zagnieżdżonych `NavHost`ach trybów; ekran wyniku z ViewModelu | `screen_name`, `screen_class`, `mode`? |
 | `mode_select` | Wybór trybu z menu na ekranie głównym | `mode`, `locked` |
 | `addon_tap` | Tap w dodatek | `addon`, `available` |
 | `category_select` | Wybór kategorii | `mode`, `category_id`, `locked` |
 | `quiz_start` | Inicjalizacja sesji | `mode`, `quiz_type`, `question_count`, `is_free_preview`, `category_id`?, `category_name`? |
-| `question_answered` | Każda zatwierdzona odpowiedź (w powtórkach też ponowne podejścia) | `mode`, `quiz_type`, `is_correct`, `category_id`? |
 | `quiz_complete` | Finalizacja sesji | `mode`, `quiz_type`, `question_count`, `answered_count`, `correct_count`, `incorrect_count`, `is_early_exit`, `is_free_preview`, `duration_sec`, `max_streak`, `category_id`? |
 | `revision_config` | Start sesji powtórek | `criterion`, `mode`, `category_count`, `question_count` |
 | `onboarding_complete` | Zakończenie onboardingu głównego | `skipped`, `last_page` |
@@ -109,11 +110,20 @@ produktu nie ma w cache — użytkownik klika „Kup" i nie dzieje się nic.
 `locked` zastępuje osobne zdarzenie o tapnięciu w zablokowaną treść — mierzy popyt na treść jeszcze
 niekupioną, co jest inną diagnozą niż sam wolumen sprzedaży.
 
-`screen_class` jest z definicji równe `screen_name` (tak ustala kontrakt iOS; GA4 ma dla klasy
-wbudowany wymiar, który bez tego wypełniałaby nazwa Activity — u nas zawsze ta sama). `mode` jest
-ustawiany dla korzeni trybów (`main_mode`, `daily_exercise` → `main`; `swipe_mode` → `swipe`;
-`translation_mode` → `translations`; `cem_mode` → `cem`), bo iOS rozróżnia „quiz w trybie głównym"
-od „quiz w Swipe" właśnie tym parametrem, a nie osobną nazwą ekranu.
+**Słownik `screen_name`** jest wspólny z iOS: `home`, `store`, `account`, `settings`,
+`notification_settings` (główny `NavHost`, mapa w `ScreenNames`) oraz `categories`, `quiz`,
+`quiz_end`, `revision_setup` (wewnątrz trybów). Te ostatnie raportują zagnieżdżone `NavHost`y
+przez `TrackScreenViews` z loggerem z `LocalAnalyticsLogger`; **korzenie trybów są pomijane**,
+żeby wejście w tryb nie dawało dwóch ekranów. `quiz_end` wychodzi z ViewModelu przy przejściu
+w stan zakończenia — ekran wyniku to stan, nie trasa — i nie pojawia się przy wyjściu przed
+pierwszą odpowiedzią. Nasze dodatki: `signup`, `onboarding`, `privacy_consent`,
+`terms_of_service`, `dev_options`; `stats` zostaje iOS-only. Zadanie dnia to `quiz` z `mode = main`.
+
+`mode` towarzyszy `categories`, `quiz` i `quiz_end` — iOS rozróżnia „quiz w trybie głównym" od
+„quiz w Swipe" właśnie tym parametrem, a nie osobną nazwą ekranu. W powtórkach to tryb
+powtarzanej treści, tak jak w zdarzeniach sesji. `screen_class` jest z definicji równe
+`screen_name` (GA4 ma dla klasy wbudowany wymiar, który bez tego wypełniałaby nazwa Activity —
+u nas zawsze ta sama).
 
 `max_streak` to najdłuższa seria poprawnych odpowiedzi **pod rząd** w jednej sesji, liczona
 w każdym trybie od zera (w Swipe osobno od `bestStreak`, który startuje od rekordu wszech czasów).
@@ -122,13 +132,12 @@ Nie mylić z `streak_count` w `streak_increment` — tam chodzi o serię dni.
 `incorrect_count` liczymy w kontrakcie (`answered_count - correct_count`, przycięte do zera), żeby
 raport nie wymagał wyliczanej metryki w konsoli.
 
-**`question_answered` jest najliczniejszym zdarzeniem kontraktu** — w trybie Swipe i Tłumaczeń
-jedna sesja to cała pula pytań z Firestore, czyli setki emisji; sesja powtórek to do 100 pytań
-razy trzy podejścia. `mode` i `quiz_type` są wyliczane dokładnie tym samym wyrażeniem co
-w `quiz_start` tej samej sesji — inaczej odpowiedzi nie złożyłyby się w sesję. Zdarzenie zapada
-raz na zatwierdzenie: tryb główny, CEM i powtórki mają bramkę na `isAnswerSubmitted`
-(przycisk zatwierdzania jest renderowany bezwarunkowo i tylko przysłaniany animacją), a Tłumaczenia
-i Swipe wykluczają powtórne zatwierdzenie stanem pytania.
+**`quiz_type` i `is_free_preview` są zamrażane przy `quiz_start`.** Zakup w trakcie wersji próbnej
+(Swipe, Tłumaczenia) przełącza sesję na pełną pulę bez restartu, ale `quiz_complete` raportuje typ,
+z jakim sesja ruszyła — inaczej start i koniec tej samej sesji miałyby różne `quiz_type` i lejek
+konwersji rozjeżdżałby się dokładnie na kohorcie, która kupiła. Ustalone z iOS (u nich tak samo).
+`question_count` w `quiz_complete` to pula w chwili zakończenia — po konwersji większa niż
+w `quiz_start`, ale `answered_count` nigdy jej nie przekroczy. Konwersję znaczy `purchase_complete`.
 
 **Sesja powtórek ma `mode` treści, którą powtarza** (`main`, `cem`, `swipe`, `translations`), a nie
 `revisions` — sam fakt powtórki niesie `quiz_type = revision`. Bez tego rozdziału nie dałoby się
@@ -189,9 +198,11 @@ Config nie jest za agresywna. Zdarzenie zapada w `onAdShowedFullScreenContent`, 
 pokazania. `answers_since_last_ad` liczy `QuizAdHandler` (jedyne miejsce, które widzi przebieg
 sesji) i przekazuje je do `AdManager` w chwili decyzji.
 
-**`error_code` w `ad_load_failed` wysyłamy jako tekst**, mimo że AdMob zwraca liczbę: ta nazwa
-parametru jest już zarejestrowana jako wymiar tekstowy dla `purchase_fail`, a GA4 pozwala
-zarejestrować nazwę raz — jako wymiar **albo** metrykę. Rozjazd typu wobec iOS, do uzgodnienia.
+`error_code` w `ad_load_failed` to **nazwa** kodu AdMob, nie liczba — wspólny słownik z iOS:
+`no_fill`, `network_error`, `internal_error`, `invalid_request`, `app_id_missing`,
+`mediation_no_fill` (ładowanie); `ad_reused`, `not_ready`, `app_not_foreground`,
+`mediation_show_error` (prezentacja); nieznane jako `code_<n>`. Jedna nazwa parametru może być
+w GA4 zarejestrowana raz, a `error_code` jest już wymiarem tekstowym dla `purchase_fail`.
 
 ### 3.5 Zdrowie
 
@@ -218,7 +229,7 @@ zarejestrować nazwę raz — jako wymiar **albo** metrykę. Rozjazd typu wobec 
 | `method` | `email`, `google` |
 | `action` (ocena) | `store`, `feedback`, `dismiss`, `never_again` |
 | `action` (powiadomienia) | `accepted`, `denied`, `dismissed` |
-| `error_code` | wariant `AppError.Billing` w snake_case (np. `item_already_owned`) albo kod AdMob jako tekst (np. `3`) |
+| `error_code` | wariant `AppError.Billing` w snake_case (np. `item_already_owned`) albo nazwa kodu AdMob (np. `no_fill`, nieznane `code_<n>`) |
 | `error_type` | wariant `AppError` z przestrzenią, np. `billing_product_details_missing`, `no_network` |
 | `product_id` | SKU z Google Play (`BillingIds`), w tym dynamiczne `mediquiz_<categoryId>`; `unknown` dla wyniku bez zapamiętanego startu |
 
@@ -228,7 +239,7 @@ ale żadna ścieżka go już nie emituje — to wyłącznie zabezpieczenie wycze
 iOS; Android nie ma dziś osobnego paywalla „bez reklam" (sprzedaje go ekran sklepu), więc emituje
 wyłącznie `product_type`.
 
-**Wartości logiczne** (`locked`, `is_free_preview`, `is_early_exit`, `is_correct`, `is_remote`,
+**Wartości logiczne** (`locked`, `is_free_preview`, `is_early_exit`, `is_remote`,
 `has_price`, `available`, `skipped`, `granted`) wysyłamy jako `Long` **1/0**, nie jako tekst `true`/`false` — GA4 nie ma
 typu logicznego w parametrach, a kontrakt cross-platform ustala postać liczbową. Właściwości
 użytkownika to osobna przestrzeń: tam wartości są zawsze tekstem (patrz §5).
@@ -239,7 +250,7 @@ użytkownika to osobna przestrzeń: tam wartości są zawsze tekstem (patrz §5)
 
 | Właściwość | Wartości | Źródło |
 |---|---|---|
-| `build_type` | `release`, `staging`, `debug` | `BuildConfig` modułu `:analytics`, ustawiane po włączeniu zbierania |
+| `build_type` | `release`, `staging`, `debug` (iOS: `debug`, `release`; TestFlight raportuje `release`) | `BuildConfig` modułu `:analytics`, ustawiane po włączeniu zbierania |
 | `premium_tier` | `none`, `partial`, `full` | `PremiumStatusProvider.ownedProductIds` |
 | `ads_disabled` | `true`, `false` | `PremiumStatusProvider.isAdsFree` + `GameplayConfigProvider.adsEnabled()` |
 | `is_logged_in` | `true`, `false` | `UserManager` |
@@ -326,8 +337,8 @@ do DebugView i BigQuery, ale **nie** do standardowych raportów. To najczęstsza
   `error_code`, `error_type`, `origin`, `action`, `addon`, `criterion`, `destination`, `method`,
   `banner_id`, `category_name`, `ad_format`, `ad_unit`, `stage`
 - Wymiary o wartościach liczbowych (służą do segmentacji, nie do sumowania): `category_id`,
-  `locked`, `has_price`, `available`, `skipped`, `is_free_preview`, `is_early_exit`, `is_correct`,
-  `is_remote`, `granted`
+  `locked`, `has_price`, `available`, `skipped`, `is_free_preview`, `is_early_exit`, `is_remote`,
+  `granted`
 - Metryki: `question_count`, `answered_count`, `correct_count`, `incorrect_count`, `duration_sec`,
   `max_streak`, `price_micros`, `rating`, `category_count`, `last_page`, `streak_count`,
   `answers_since_last_ad`
@@ -351,10 +362,11 @@ ruchu na 1/0, a nie suma jedynek.
 
 - Standardowe raporty GA4 mają opóźnienie do ~24 h. Do developmentu służą DebugView i Realtime.
 - GA4 nie robi backfillu — dane zaczynają się w dniu wydania wersji z instrumentacją.
-- `question_answered` jest o rząd wielkości liczniejsze od pozostałych zdarzeń. Nie dotyka to limitu
-  500 **nazw** zdarzeń, ale trzeba je mieć na uwadze przy darmowym dziennym limicie eksportu
-  do BigQuery.
-- Limity: 500 nazw zdarzeń (kontrakt definiuje 36), 25 parametrów na zdarzenie, 25 właściwości
+- Nie ma zdarzenia per odpowiedź (`question_answered`). Obie platformy je wycofały: byłoby o rząd
+  wielkości liczniejsze od wszystkich pozostałych razem (w Swipe i Tłumaczeniach jedna sesja to
+  cała pula z Firestore), a `quiz_complete` niesie `answered_count`, `correct_count` i `max_streak`.
+  Statystyki per pytanie mierzy Firestore.
+- Limity: 500 nazw zdarzeń (kontrakt definiuje 35), 25 parametrów na zdarzenie, 25 właściwości
   użytkownika, 50 wymiarów o zasięgu zdarzenia, nazwa do 40 znaków, wartość parametru do 100 znaków.
 - Zmiana nazwy zdarzenia po wydaniu jest nieodwracalna: GA4 nie robi backfillu, a „Modify event"
   nie działa wstecz — stara i nowa nazwa zostają dwoma trwale rozłącznymi szeregami.
@@ -392,17 +404,11 @@ nie ma przycisku „Przywróć zakupy", a wszystkie wywołania `refreshPurchases
 ekranu, połączenie z Play, `ITEM_ALREADY_OWNED`) — kontrakt wymaga natomiast tapnięcia
 użytkownika. Wpięcie zdarzenia wymaga najpierw dodania tej akcji do UI.
 
-**Rozjazdy do rozstrzygnięcia.**
+**Uzgodnione z iOS:** właściwości użytkownika — iOS przyjął nasze `premium_tier`, `ads_disabled`,
+`is_logged_in`, `build_type` (`notifications_on` i `streak_bucket` zostają tylko u nas, u iOS puste);
+porzucenia liczone po naszemu, jako `quiz_complete` z `answered_count = 0`; słownik `screen_name`
+w całości (patrz §3.2); `quiz_type` zamrażany przy starcie sesji; `question_answered` wycofane na obu
+platformach; `error_code` jako nazwy.
 
-| Element | iOS | Android |
-|---|---|---|
-| Właściwości użytkownika | `has_premium`, `is_ad_free`, `signed_in` (3, tekst `"true"`/`"false"`) | `build_type`, `premium_tier`, `ads_disabled`, `is_logged_in`, `notifications_on`, `streak_bucket` (6, zero wspólnych nazw) |
-| Porzucenie sesji | brak `quiz_complete` przy zerze odpowiedzi; porzucenia = `quiz_start` − `quiz_complete` | `quiz_complete` z `is_early_exit = 1` i `answered_count = 0` |
-| Słownik `screen_name` | `home`, `categories`, `quiz`, `quiz_end`, `store`, `revision_setup`, `account`, `settings`, `notification_settings`, `stats` | 16 wartości, wspólne tylko `home`, `store`, `notification_settings` |
-| Właściwości przed zgodą | zapamiętane i wysłane po jej udzieleniu | odrzucane przez bramkę, ustawiane od nowa po zgodzie |
-| `error_code` w `ad_load_failed` | `Int` | tekst — nazwa jest już wymiarem tekstowym w `purchase_fail` |
-| `question_answered` w Tłumaczeniach | jawne „pomiń" liczone jako błędna odpowiedź | brak akcji pominięcia; puste zatwierdzenie daje `is_correct = 0` |
-
-Ekrany zagnieżdżone (`quiz`, `quiz_end`, `categories`, `revision_setup`) żyją u nas w sześciu
-zagnieżdżonych `NavHost`ach z własnymi kontrolerami i nie trafiają do `screen_view`; pokrywają je
-jawne zdarzenia sesji quizu, niosące więcej informacji niż sama nazwa ekranu.
+`terms_of_service` i `privacy_consent` są w mapie tras, ale przed zgodą bramka je odrzuca — `privacy_consent` nie wychodzi nigdy, `terms_of_service` tylko wtedy,
+gdy użytkownik ze zgodą musi zaakceptować nową wersję regulaminu.

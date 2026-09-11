@@ -14,6 +14,7 @@ import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
 import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
 import com.rafalskrzypczyk.core.analytics.Paywall
 import com.rafalskrzypczyk.core.analytics.QuizType
+import com.rafalskrzypczyk.core.analytics.ScreenName
 import com.rafalskrzypczyk.core.analytics.analyticsName
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
@@ -69,6 +70,7 @@ class SwipeModeVM @Inject constructor(
     private var swipeModeProductDetails: AppProduct? = null
     private var hasLoggedTrialWall = false
     private var hasLoggedQuizFinished = false
+    private var hasLoggedQuizEnd = false
     private var exitedEarly = false
 
     private var questions: List<SwipeQuestion> = emptyList()
@@ -80,6 +82,15 @@ class SwipeModeVM @Inject constructor(
     // bestStreak startuje od rekordu wszech czasow (patrz loadUserScore), wiec do max_streak
     // potrzebny jest osobny licznik liczony od zera na sesje.
     private var sessionMaxStreak: Int = 0
+
+    /**
+     * Rodzaj sesji zamrozony przy quiz_start. Zakup w trakcie triala przelacza [isTrialActive]
+     * na false, ale sesja dalej jest ta, ktora ruszyla jako darmowy fragment — inaczej quiz_start
+     * i quiz_complete tej samej sesji mialyby rozne quiz_type i lejek konwersji by sie rozjechal.
+     * Ustalone z iOS: sesja zachowuje typ, z jakim wystartowala.
+     */
+    private var sessionQuizType: QuizType = QuizType.FULL
+    private var sessionIsFreePreview: Boolean = false
     private var initialBestCombo: Int = 0
     private var earnedPoints: Int = 0
     private var isStreakUpdatedInSession = false
@@ -216,12 +227,14 @@ class SwipeModeVM @Inject constructor(
                             // Ten sam warunek trzyma jednorazowosc startu sesji: loadQuestions()
                             // leci ponownie po zakupie w trialu (unlockFullMode).
                             quizStartTime = System.currentTimeMillis()
+                            sessionIsFreePreview = isTrialActive
+                            sessionQuizType = if (isTrialActive) QuizType.FREE_PREVIEW else QuizType.FULL
                             analyticsLogger.log(
                                 AnalyticsEvent.QuizStarted(
                                     mode = SWIPE_MODE,
-                                    quizType = quizType(),
+                                    quizType = sessionQuizType,
                                     questionCount = questions.size,
-                                    isFreePreview = isTrialActive,
+                                    isFreePreview = sessionIsFreePreview,
                                 )
                             )
                         }
@@ -452,16 +465,6 @@ class SwipeModeVM @Inject constructor(
         ) }
 
         updateStreak(answeredCorrectly)
-        // Przed displayNextQuestion(): ono potrafi domknac sesje i wyslac quiz_complete,
-        // a odpowiedz musi wyjsc przed zdarzeniem terminalnym.
-        analyticsLogger.log(
-            AnalyticsEvent.QuestionAnswered(
-                mode = SWIPE_MODE,
-                quizType = quizType(),
-                // `isCorrect` w sygnaturze to kierunek swipe'a, poprawnosc niesie answeredCorrectly.
-                isCorrect = answeredCorrectly,
-            )
-        )
         displayNextQuestion()
         earnedPoints += useCases.updateScore(questionId, answeredCorrectly)
 
@@ -494,10 +497,6 @@ class SwipeModeVM @Inject constructor(
         else setFinishedState()
     }
 
-    /** Pula probna i pelna to w kontrakcie dwa rozne rodzaje sesji, nie jedna z flaga. */
-    private fun quizType(): QuizType =
-        if (isTrialActive) QuizType.FREE_PREVIEW else QuizType.FULL
-
     /** Logowane przed bramka reklamy, zeby interstitial nie wliczal sie w duration_sec. */
     private fun logQuizFinishedOnce() {
         // Wyjscie z ekranu, zanim pytania sie zaladuja, tez trafia tutaj (indeks silnika jest
@@ -510,12 +509,14 @@ class SwipeModeVM @Inject constructor(
         analyticsLogger.log(
             AnalyticsEvent.QuizCompleted(
                 mode = SWIPE_MODE,
-                quizType = quizType(),
+                quizType = sessionQuizType,
+                // Pula w chwili zakonczenia: po konwersji triala jest wieksza niz w quiz_start,
+                // ale answered_count nigdy jej nie przekroczy.
                 questionCount = questions.size,
                 answeredCount = currentQuestionIndex,
                 correctCount = correctAnswers,
                 isEarlyExit = exitedEarly,
-                isFreePreview = isTrialActive,
+                isFreePreview = sessionIsFreePreview,
                 durationSec = if (quizStartTime == 0L) 0L else (System.currentTimeMillis() - quizStartTime) / 1000,
                 maxStreak = sessionMaxStreak,
             )
@@ -524,6 +525,7 @@ class SwipeModeVM @Inject constructor(
 
     private fun finishQuiz() {
         logQuizFinishedOnce()
+        logQuizEndScreenOnce()
         val isNewComboRecord = bestStreak > initialBestCombo
 
         feedbackManager.perform(if (isNewComboRecord) FeedbackEvent.NEW_RECORD else FeedbackEvent.QUIZ_COMPLETED)
@@ -558,6 +560,13 @@ class SwipeModeVM @Inject constructor(
                 streak = useCases.getStreak() 
             )
         ) }
+    }
+
+    /** Ekran wyniku to stan, nie trasa — patrz BaseQuizVM.logQuizEndScreenOnce. */
+    private fun logQuizEndScreenOnce() {
+        if (hasLoggedQuizEnd) return
+        hasLoggedQuizEnd = true
+        analyticsLogger.log(AnalyticsEvent.ScreenView(ScreenName.QUIZ_END, mode = SWIPE_MODE))
     }
 
     private fun setFinishedState() {
