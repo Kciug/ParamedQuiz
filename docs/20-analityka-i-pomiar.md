@@ -37,6 +37,7 @@ Instrumentujemy **pytania, nie ekrany**:
 | `AnalyticsEvent` | `core/analytics` | `sealed interface` — cały kontrakt zdarzeń w jednym pliku |
 | `LocalAnalyticsLogger` + `TrackScreenViews` | `core/analytics` | `screen_view` z zagnieżdżonych `NavHost`ów, które nie mają ViewModelu |
 | `ScreenNames` | `:app/analytics` | Mapa tras głównego `NavHost`a na nazwy ekranów; pomija kontenery trybów |
+| `RecentAnalyticsEvents` | `core/analytics` | Bufor ostatnich 50 zdarzeń i właściwości **za bramką** — podgląd w opcjach deweloperskich |
 | `AnalyticsUserProperty` | `core/analytics` | Właściwości użytkownika |
 | `LogcatAnalyticsLogger` | `core/analytics` | Implementacja dla buildów debug |
 | `RecordingAnalyticsLogger` | `core/testing` | Atrapa dla testów (brak `testFixtures` w projekcie) |
@@ -209,6 +210,10 @@ w GA4 zarejestrowana raz, a `error_code` jest już wymiarem tekstowym dla `purch
 | Event | Kiedy | Parametry |
 |---|---|---|
 | `app_error` | Każde wywołanie `ErrorLogger.log` | `origin`, `error_type` |
+| `dev_test_event` | Przycisk w opcjach deweloperskich (debug i staging) | — |
+
+`dev_test_event` idzie przez ten sam bramkowany logger co reszta aplikacji — sprawdza cały tor
+bramka → SDK → DebugView, a przy braku zgody jego nieobecność jest testem bramki. Wspólne z iOS.
 
 ---
 
@@ -318,6 +323,23 @@ adb shell setprop debug.firebase.analytics.app com.frontfolks.mediquiz
 
 Wyłączenie: `adb shell setprop debug.firebase.analytics.app .none.`
 
+**Opcje deweloperskie (debug i staging), sekcja „Analityka":**
+
+- podgląd stanu zgody, `build_type` i jednostki reklamowej (`test`/`production`);
+- **„Wyślij zdarzenie testowe"** — `dev_test_event` przez bramkowany logger; przy `GRANTED` pojawia
+  się na liście poniżej i w DebugView, przy `DENIED`/`UNDECIDED` nigdzie — oba wyniki są poprawne;
+- **lista ostatnich zdarzeń** — 50 ostatnich zdarzeń i właściwości użytkownika, które przeszły
+  przez bramkę, z czasem i parametrami. Pozwala przejść scenariusze z §6 bez kabla: wyłącz zgodę →
+  zagraj → lista pusta → włącz → zdarzenia i właściwości wracają. Bufor jest zasilany **za** bramką,
+  więc nie pokazuje niczego, co nie wyszło;
+- „Reset bramki notification_permission" — zdarzenie leci raz na instalację, reset pozwala
+  przetestować je ponownie (dialog systemowy Android pokaże tylko, jeśli uprawnienie nie jest
+  trwale odrzucone);
+- „Reset zgody na analitykę" (sekcja „Onboarding i zgody") — `UNDECIDED`, wyłączone zbieranie,
+  wyczyszczone dane, ekran zgody przy następnym starcie.
+
+Debug używa `LogcatAnalyticsLogger`, więc ścieżka Firebase da się sprawdzić tylko na stagingu.
+
 W testach jednostkowych używamy `RecordingAnalyticsLogger` (`core/testing`) albo mocka interfejsu.
 Harness E2E podmienia całą warstwę przez `FakeAnalyticsModule` — bez tego testy budowałyby
 `FirebaseAnalyticsLogger`, a `FirebaseAnalytics.getInstance()` bez zainicjalizowanego `FirebaseApp`
@@ -366,7 +388,7 @@ ruchu na 1/0, a nie suma jedynek.
   wielkości liczniejsze od wszystkich pozostałych razem (w Swipe i Tłumaczeniach jedna sesja to
   cała pula z Firestore), a `quiz_complete` niesie `answered_count`, `correct_count` i `max_streak`.
   Statystyki per pytanie mierzy Firestore.
-- Limity: 500 nazw zdarzeń (kontrakt definiuje 35), 25 parametrów na zdarzenie, 25 właściwości
+- Limity: 500 nazw zdarzeń (kontrakt definiuje 36, w tym `dev_test_event`), 25 parametrów na zdarzenie, 25 właściwości
   użytkownika, 50 wymiarów o zasięgu zdarzenia, nazwa do 40 znaków, wartość parametru do 100 znaków.
 - Zmiana nazwy zdarzenia po wydaniu jest nieodwracalna: GA4 nie robi backfillu, a „Modify event"
   nie działa wstecz — stara i nowa nazwa zostają dwoma trwale rozłącznymi szeregami.

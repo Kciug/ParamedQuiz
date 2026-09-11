@@ -12,6 +12,7 @@ import com.rafalskrzypczyk.core.analytics.AnalyticsControls
 import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
 import com.rafalskrzypczyk.core.analytics.ConsentGatedAnalyticsLogger
 import com.rafalskrzypczyk.core.analytics.LogcatAnalyticsLogger
+import com.rafalskrzypczyk.core.analytics.RecentAnalyticsEvents
 import com.rafalskrzypczyk.core.error.CrashReporter
 import com.rafalskrzypczyk.core.error.NoOpCrashReporter
 import dagger.Module
@@ -66,7 +67,8 @@ object AnalyticsModule {
     fun provideAnalyticsLogger(
         backend: AnalyticsBackend,
         gate: AnalyticsCollectionGate,
-    ): AnalyticsLogger = ConsentGatedAnalyticsLogger(backend, gate)
+        recent: RecentAnalyticsEvents,
+    ): AnalyticsLogger = ConsentGatedAnalyticsLogger(backend, gate, recent)
 
     @Provides
     @Singleton

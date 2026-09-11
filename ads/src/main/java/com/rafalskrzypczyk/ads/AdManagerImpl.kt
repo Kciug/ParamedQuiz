@@ -11,7 +11,7 @@ import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.rafalskrzypczyk.core.ads.AdManager
 import com.rafalskrzypczyk.core.analytics.AdStage
-import com.rafalskrzypczyk.core.analytics.AdUnit
+import com.rafalskrzypczyk.core.analytics.adUnitOf
 import com.rafalskrzypczyk.core.analytics.AnalyticsConsentManager
 import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
 import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
@@ -40,11 +40,10 @@ class AdManagerImpl @Inject constructor(
     private val adUnitId = BuildConfig.ADMOB_INTERSTITIAL_UNIT_ID
 
     /**
-     * Jednostki testowe Google maja staly wydawce; w debug i staging `local.defaults.properties`
-     * podaje wlasnie je. Bez tego podzialu odslony testowe weszlyby w dane produkcyjne.
+     * W debug i staging `local.defaults.properties` podaje jednostki testowe Google. Bez tego
+     * podzialu odslony testowe weszlyby w dane produkcyjne.
      */
-    private val adUnit =
-        if (adUnitId.startsWith(GOOGLE_TEST_PUBLISHER)) AdUnit.TEST else AdUnit.PRODUCTION
+    private val adUnit = adUnitOf(adUnitId)
 
     /**
      * Liczba odpowiedzi od poprzedniej reklamy, przekazana przez QuizAdHandler w chwili decyzji.
@@ -189,7 +188,4 @@ class AdManagerImpl @Inject constructor(
         }
     }
 
-    private companion object {
-        const val GOOGLE_TEST_PUBLISHER = "ca-app-pub-3940256099942544"
-    }
 }

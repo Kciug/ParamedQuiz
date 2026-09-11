@@ -435,6 +435,14 @@ sealed interface AnalyticsEvent {
         override val params = mapOf(P.ORIGIN to origin, P.ERROR_TYPE to errorType)
     }
 
+    /**
+     * Wyłącznie z opcji deweloperskich. Przechodzi przez bramkę zgody jak każde inne zdarzenie,
+     * więc sprawdza cały tor: bramka → SDK → DebugView. Wspólne z iOS (`dev_test_event`).
+     */
+    data object DevTestEvent : AnalyticsEvent {
+        override val name = "dev_test_event"
+    }
+
     // endregion
 
     companion object {

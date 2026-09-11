@@ -164,6 +164,10 @@ class SharedPreferencesService @Inject constructor(
         sharedPreferences.edit { putBoolean(KEY_NOTIFICATION_PERMISSION_ASKED, true) }
     }
 
+    override fun clearNotificationPermissionAsked() {
+        sharedPreferences.edit { remove(KEY_NOTIFICATION_PERMISSION_ASKED) }
+    }
+
     override fun setAnalyticsConsent(state: AnalyticsConsentState) {
         sharedPreferences.edit {
             putString(KEY_ANALYTICS_CONSENT, state.name)

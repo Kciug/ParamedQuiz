@@ -6,6 +6,10 @@ import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.core.ads.AdManager
 import com.rafalskrzypczyk.core.domain.config.GameplayConfigProvider
 import com.rafalskrzypczyk.core.analytics.AnalyticsConsentManager
+import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
+import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
+import com.rafalskrzypczyk.core.analytics.RecentAnalyticsEvents
+import com.rafalskrzypczyk.core.analytics.adUnitOf
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
 import com.rafalskrzypczyk.notifications.NotificationChannels
 import com.rafalskrzypczyk.notifications.NotificationDestination
@@ -35,7 +39,9 @@ class DevVM @Inject constructor(
     private val notificationConfigRepository: NotificationConfigRepository,
     private val gameplayConfig: GameplayConfigProvider,
     private val adManager: AdManager,
-    private val analyticsConsentManager: AnalyticsConsentManager
+    private val analyticsConsentManager: AnalyticsConsentManager,
+    private val analyticsLogger: AnalyticsLogger,
+    private val recentAnalytics: RecentAnalyticsEvents,
 ): ViewModel() {
 
     private val _state = MutableStateFlow(DevOptionsState())
@@ -43,6 +49,22 @@ class DevVM @Inject constructor(
 
     init {
         readAdsFlag()
+        _state.update {
+            it.copy(
+                buildType = com.rafalskrzypczyk.analytics.BuildConfig.BUILD_TYPE_NAME,
+                adUnit = adUnitOf(com.rafalskrzypczyk.ads.BuildConfig.ADMOB_INTERSTITIAL_UNIT_ID),
+            )
+        }
+        viewModelScope.launch {
+            analyticsConsentManager.state.collect { consent ->
+                _state.update { it.copy(analyticsConsent = consent) }
+            }
+        }
+        viewModelScope.launch {
+            recentAnalytics.entries.collect { entries ->
+                _state.update { it.copy(recentAnalytics = entries) }
+            }
+        }
     }
 
     private fun readAdsFlag() {
@@ -56,6 +78,11 @@ class DevVM @Inject constructor(
             DevOptionsUIEvents.ClearTermsAcceptance -> clearTerms()
             DevOptionsUIEvents.ResetAdsConsent -> adManager.resetConsent()
             DevOptionsUIEvents.ResetAnalyticsConsent -> analyticsConsentManager.reset()
+            // Przez ten sam bramkowany logger co reszta aplikacji — przy braku zgody nie wyjdzie.
+            DevOptionsUIEvents.SendTestAnalyticsEvent -> analyticsLogger.log(AnalyticsEvent.DevTestEvent)
+            DevOptionsUIEvents.ClearRecentAnalytics -> recentAnalytics.clear()
+            DevOptionsUIEvents.ResetNotificationPermissionGate ->
+                sharedPreferences.clearNotificationPermissionAsked()
             DevOptionsUIEvents.ResetRatingStats -> resetRatingStats()
             DevOptionsUIEvents.TriggerRatingPrompt -> triggerRatingPrompt()
             DevOptionsUIEvents.ResetNews -> resetNews()

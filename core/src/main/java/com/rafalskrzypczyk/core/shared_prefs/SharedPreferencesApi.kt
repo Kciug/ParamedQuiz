@@ -33,6 +33,9 @@ interface SharedPreferencesApi {
     /** Czy systemowy dialog POST_NOTIFICATIONS zdazyl juz zwrocic odpowiedz. */
     fun isNotificationPermissionAsked(): Boolean
     fun setNotificationPermissionAsked()
+
+    /** Wylacznie dla opcji deweloperskich — pozwala ponownie przetestowac `notification_permission`. */
+    fun clearNotificationPermissionAsked()
     fun setAnalyticsConsent(state: AnalyticsConsentState)
 
     fun getInstallDate(): Long

@@ -99,6 +99,12 @@ enum class AdUnit(val value: String) {
     PRODUCTION("production"),
 }
 
+/** Jednostki testowe Google maja staly identyfikator wydawcy. */
+fun adUnitOf(adUnitId: String): AdUnit =
+    if (adUnitId.startsWith(GOOGLE_TEST_AD_PUBLISHER)) AdUnit.TEST else AdUnit.PRODUCTION
+
+private const val GOOGLE_TEST_AD_PUBLISHER = "ca-app-pub-3940256099942544"
+
 /** Rodzaj kupowanego produktu. */
 enum class ProductType(val value: String) {
     CATEGORY("category"),
