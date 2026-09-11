@@ -3,6 +3,7 @@ package com.rafalskrzypczyk.main_mode.presentation.categories_screen
 import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rafalskrzypczyk.billing.analytics.PurchaseFunnelTracker
 import com.rafalskrzypczyk.billing.domain.AppProduct
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.billing.domain.BillingRepository
@@ -10,6 +11,10 @@ import com.rafalskrzypczyk.billing.domain.PurchaseResult
 import com.rafalskrzypczyk.billing.domain.getCategoryBillingId
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
+import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
+import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
+import com.rafalskrzypczyk.core.analytics.Paywall
+import com.rafalskrzypczyk.core.analytics.analyticsName
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.feedback.FeedbackEvent
 import com.rafalskrzypczyk.core.error.AppError
@@ -17,6 +22,7 @@ import com.rafalskrzypczyk.core.error.ErrorLogger
 import com.rafalskrzypczyk.core.error.report
 import com.rafalskrzypczyk.core.feedback.FeedbackManager
 import com.rafalskrzypczyk.core.quiz.models.CategoryUIM
+import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.main_mode.domain.quiz_categories.MMCategoriesUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -37,7 +43,9 @@ class MMCategoriesVM @Inject constructor(
     private val billingRepository: BillingRepository,
     private val premiumStatusProvider: PremiumStatusProvider,
     private val feedbackManager: FeedbackManager,
-    private val errorLogger: ErrorLogger
+    private val errorLogger: ErrorLogger,
+    private val analyticsLogger: AnalyticsLogger,
+    private val purchaseFunnelTracker: PurchaseFunnelTracker
 ): ViewModel() {
     private val _state = MutableStateFlow(MMCategoriesState())
     val state = _state.asStateFlow()
@@ -199,6 +207,26 @@ class MMCategoriesVM @Inject constructor(
         val details = availableProducts.find { it.id == productId }
         
         _state.update { it.copy(selectedCategoryForPurchase = category, productPrice = details?.price) }
+
+        // Jedyna interakcja z kategoria, ktora widzi ten ViewModel — sciezka odblokowanej
+        // kategorii idzie z composable wprost do nawigacji.
+        analyticsLogger.log(
+            AnalyticsEvent.CategorySelected(
+                mode = QuizMode.MainMode.analyticsName(),
+                categoryId = category.id,
+                locked = true,
+            )
+        )
+        analyticsLogger.log(
+            AnalyticsEvent.PaywallViewed(
+                paywall = Paywall.CATEGORY,
+                productId = productId,
+                hasPrice = details != null,
+                mode = QuizMode.MainMode.analyticsName(),
+                categoryId = category.id,
+            )
+        )
+
         
         viewModelScope.launch {
             billingRepository.queryProducts(listOf(productId))
@@ -222,8 +250,12 @@ class MMCategoriesVM @Inject constructor(
         
         if (productDetails != null) {
             _state.update { it.copy(isPurchasing = true, purchaseError = null, pendingPurchaseCategoryId = category.id) }
+            purchaseFunnelTracker.onPurchaseStarted(Paywall.CATEGORY, productDetails)
             billingRepository.launchBillingFlow(activity, productDetails)
         } else {
+            analyticsLogger.log(
+                AnalyticsEvent.PaywallPriceMissing(Paywall.CATEGORY, productId)
+            )
             _state.update { it.copy(purchaseError = errorLogger.report(ORIGIN_BUY_CATEGORY, AppError.Billing.ProductDetailsMissing)) }
         }
     }

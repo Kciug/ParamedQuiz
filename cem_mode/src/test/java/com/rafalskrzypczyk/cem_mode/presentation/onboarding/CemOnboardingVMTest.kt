@@ -1,6 +1,7 @@
 package com.rafalskrzypczyk.cem_mode.presentation.onboarding
 
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
+import com.rafalskrzypczyk.core.testing.RecordingAnalyticsLogger
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.Before
@@ -14,7 +15,7 @@ class CemOnboardingVMTest {
     @Before
     fun setup() {
         sharedPreferences = mockk(relaxed = true)
-        viewModel = CemOnboardingVM(sharedPreferences)
+        viewModel = CemOnboardingVM(sharedPreferences, RecordingAnalyticsLogger())
     }
 
     @Test

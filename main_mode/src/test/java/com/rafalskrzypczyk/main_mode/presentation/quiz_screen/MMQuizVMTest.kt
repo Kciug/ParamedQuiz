@@ -2,8 +2,11 @@ package com.rafalskrzypczyk.main_mode.presentation.quiz_screen
 
 import androidx.lifecycle.SavedStateHandle
 import com.rafalskrzypczyk.core.ads.QuizAdHandler
+import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
+import com.rafalskrzypczyk.core.analytics.QuizType
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.feedback.NoOpFeedbackManager
+import com.rafalskrzypczyk.core.testing.RecordingAnalyticsLogger
 import com.rafalskrzypczyk.core.report_issues.IssueReport
 import com.rafalskrzypczyk.main_mode.domain.models.Answer
 import com.rafalskrzypczyk.main_mode.domain.models.Question
@@ -24,6 +27,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -34,6 +38,7 @@ class MMQuizVMTest {
     private lateinit var useCases: MMQuizUseCases
     private lateinit var adHandler: QuizAdHandler
     private lateinit var savedStateHandle: SavedStateHandle
+    private lateinit var analyticsLogger: RecordingAnalyticsLogger
 
     @Before
     fun setup() {
@@ -42,6 +47,7 @@ class MMQuizVMTest {
         baseUseCases = mockk(relaxed = true)
         useCases = mockk(relaxed = true)
         adHandler = mockk(relaxed = true)
+        analyticsLogger = RecordingAnalyticsLogger()
         savedStateHandle = SavedStateHandle(
             mapOf(
                 "categoryId" to 1L,
@@ -74,8 +80,185 @@ class MMQuizVMTest {
             savedStateHandle = savedStateHandle,
             useCases = useCases,
             adHandler = adHandler,
-            feedbackManager = NoOpFeedbackManager
+            feedbackManager = NoOpFeedbackManager,
+            analyticsLogger = analyticsLogger
         )
+    }
+
+    @Test
+    fun `leaving while the questions are still loading closes nothing`() = runTest {
+        // Back dziala juz nad spinnerem, a indeks silnika jest wtedy zerowy — bez bramki
+        // startu polecialby quiz_complete bez pasujacego quiz_start.
+        every { useCases.getQuestionsForCategory(1L) } returns flowOf(Response.Loading)
+
+        val viewModel = MMQuizVM(
+            savedStateHandle = savedStateHandle,
+            useCases = useCases,
+            adHandler = adHandler,
+            feedbackManager = NoOpFeedbackManager,
+            analyticsLogger = analyticsLogger
+        )
+
+        viewModel.onEvent(MMQuizUIEvents.OnBackPressed)
+        viewModel.onEvent(MMQuizUIEvents.OnBackConfirmed {})
+
+        assertEquals(0, analyticsLogger.eventsOfType<AnalyticsEvent.QuizStarted>().size)
+        assertEquals(0, analyticsLogger.eventsOfType<AnalyticsEvent.QuizCompleted>().size)
+    }
+
+    @Test
+    fun `quiz start is reported once with mode and quiz type`() = runTest {
+        createViewModel()
+
+        val started = analyticsLogger.eventsOfType<AnalyticsEvent.QuizStarted>().single()
+        assertEquals("main", started.mode)
+        assertEquals(QuizType.CATEGORY, started.quizType)
+        assertEquals(1, started.questionCount)
+        assertEquals(1L, started.categoryId)
+    }
+
+    @Test
+    fun `repeated question emissions do not duplicate the start event`() = runTest {
+        val question = Question(
+            id = 100L,
+            questionText = "Pytanie",
+            answers = listOf(
+                Answer(id = 1L, answerText = "A", isCorrect = true),
+                Answer(id = 2L, answerText = "B", isCorrect = false)
+            )
+        )
+        every { useCases.getQuestionsForCategory(1L) } returns flowOf(
+            Response.Success(listOf(question)),
+            Response.Success(listOf(question))
+        )
+
+        MMQuizVM(
+            savedStateHandle = savedStateHandle,
+            useCases = useCases,
+            adHandler = adHandler,
+            feedbackManager = NoOpFeedbackManager,
+            analyticsLogger = analyticsLogger
+        )
+
+        assertEquals(1, analyticsLogger.eventsOfType<AnalyticsEvent.QuizStarted>().size)
+    }
+
+    /**
+     * Przycisk zatwierdzania jest renderowany bezwarunkowo i tylko przyslaniany animacja, wiec
+     * drugi tap w trakcie przejscia trafial do silnika ponownie i podwajal answered_count
+     * oraz correct_count w quiz_complete.
+     */
+    @Test
+    fun `submitting the same answer twice counts it once`() = runTest {
+        every { baseUseCases.evaluateAnswers(any(), any()) } returns true
+        val viewModel = createViewModel()
+
+        viewModel.onEvent(MMQuizUIEvents.OnAnswerClicked(1L))
+        viewModel.onEvent(MMQuizUIEvents.OnSubmitAnswer)
+        viewModel.onEvent(MMQuizUIEvents.OnSubmitAnswer)
+        viewModel.onEvent(MMQuizUIEvents.OnNextQuestion)
+        val finished = analyticsLogger.eventsOfType<AnalyticsEvent.QuizCompleted>().single()
+        assertEquals(1, finished.answeredCount)
+        assertEquals(1, finished.correctCount)
+    }
+
+    /** `max_streak` to najdluzsza seria poprawnych odpowiedzi pod rzad — nie liczba poprawnych. */
+    @Test
+    fun `max streak is the longest run of correct answers in the session`() = runTest {
+        val questions = (1L..4L).map { id ->
+            Question(
+                id = id,
+                questionText = "Pytanie $id",
+                answers = listOf(
+                    Answer(id = 1L, answerText = "A", isCorrect = true),
+                    Answer(id = 2L, answerText = "B", isCorrect = false)
+                )
+            )
+        }
+        every { useCases.getQuestionsForCategory(1L) } returns flowOf(Response.Success(questions))
+        // poprawna, poprawna, bledna, poprawna -> najdluzsza seria 2, poprawnych 3
+        every { baseUseCases.evaluateAnswers(any(), any()) } returnsMany listOf(true, true, false, true)
+        val viewModel = MMQuizVM(
+            savedStateHandle = savedStateHandle,
+            useCases = useCases,
+            adHandler = adHandler,
+            feedbackManager = NoOpFeedbackManager,
+            analyticsLogger = analyticsLogger
+        )
+
+        repeat(4) {
+            viewModel.onEvent(MMQuizUIEvents.OnAnswerClicked(1L))
+            viewModel.onEvent(MMQuizUIEvents.OnSubmitAnswer)
+            viewModel.onEvent(MMQuizUIEvents.OnNextQuestion)
+        }
+
+        val finished = analyticsLogger.eventsOfType<AnalyticsEvent.QuizCompleted>().single()
+        assertEquals(2, finished.maxStreak)
+        assertEquals(3, finished.correctCount)
+    }
+
+    /**
+     * Ekran wyniku to stan, nie trasa — `screen_view` dla niego wychodzi z ViewModelu. Przy
+     * wyjsciu przed pierwsza odpowiedzia ekran sie nie pojawia, wiec zdarzenia byc nie moze.
+     */
+    @Test
+    fun `leaving without answering shows no end screen`() = runTest {
+        val viewModel = createViewModel()
+
+        viewModel.onEvent(MMQuizUIEvents.OnBackPressed)
+        viewModel.onEvent(MMQuizUIEvents.OnBackConfirmed {})
+
+        assertTrue(analyticsLogger.eventsOfType<AnalyticsEvent.ScreenView>().isEmpty())
+    }
+
+    @Test
+    fun `the end screen is reported once with the mode, after the ad`() = runTest {
+        every { adHandler.shouldShowAd(any(), any(), any()) } returns true
+        val viewModel = createViewModel()
+
+        viewModel.onEvent(MMQuizUIEvents.OnAnswerClicked(1L))
+        viewModel.onEvent(MMQuizUIEvents.OnSubmitAnswer)
+        viewModel.onEvent(MMQuizUIEvents.OnNextQuestion)
+        // quiz_complete juz poszlo, ekranu wyniku jeszcze nie ma — trwa reklama
+        assertTrue(analyticsLogger.eventsOfType<AnalyticsEvent.ScreenView>().isEmpty())
+
+        every { adHandler.handleAdDismissed(any(), any()) } answers { secondArg<() -> Unit>().invoke() }
+        viewModel.onEvent(MMQuizUIEvents.OnAdDismissed)
+        viewModel.onEvent(MMQuizUIEvents.OnAdDismissed)
+
+        val end = analyticsLogger.eventsOfType<AnalyticsEvent.ScreenView>().single()
+        assertEquals("quiz_end", end.screenName)
+        assertEquals("quiz_end", end.screenClass)
+        assertEquals("main", end.mode)
+    }
+
+    @Test
+    fun `finished session is reported before the ad gate`() = runTest {
+        every { adHandler.shouldShowAd(any(), any(), any()) } returns true
+        val viewModel = createViewModel()
+
+        viewModel.onEvent(MMQuizUIEvents.OnAnswerClicked(1L))
+        viewModel.onEvent(MMQuizUIEvents.OnSubmitAnswer)
+        viewModel.onEvent(MMQuizUIEvents.OnNextQuestion)
+
+        val finished = analyticsLogger.eventsOfType<AnalyticsEvent.QuizCompleted>().single()
+        assertEquals(false, finished.isEarlyExit)
+        assertEquals(1, finished.answeredCount)
+        // Reklama dopiero sie pokazuje, a zdarzenie juz poleci - inaczej przepadaloby przy
+        // ubiciu aplikacji w trakcie interstitiala, a jej czas wszedlby w duration_sec.
+        assertTrue(viewModel.state.value.showAd)
+    }
+
+    @Test
+    fun `leaving before the first answer still closes the funnel`() = runTest {
+        val viewModel = createViewModel()
+
+        viewModel.onEvent(MMQuizUIEvents.OnBackPressed)
+        viewModel.onEvent(MMQuizUIEvents.OnBackConfirmed {})
+
+        val finished = analyticsLogger.eventsOfType<AnalyticsEvent.QuizCompleted>().single()
+        assertEquals(true, finished.isEarlyExit)
+        assertEquals(0, finished.answeredCount)
     }
 
     @Test

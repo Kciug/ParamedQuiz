@@ -14,6 +14,9 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.UserInfo
 import com.rafalskrzypczyk.auth.domain.GoogleCredentialsProvider
+import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
+import com.rafalskrzypczyk.core.analytics.AuthMethod
+import com.rafalskrzypczyk.core.testing.RecordingAnalyticsLogger
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.error.AppError
 import com.rafalskrzypczyk.core.error.ErrorLogger
@@ -55,6 +58,8 @@ class AuthRepositoryImplTest {
     private val scoreManager: ScoreManager = mockk(relaxed = true)
     private val context: Context = mockk(relaxed = true)
 
+    private val analyticsLogger = RecordingAnalyticsLogger()
+
     private lateinit var repository: AuthRepositoryImpl
 
     @Before
@@ -68,7 +73,8 @@ class AuthRepositoryImplTest {
             userManager = userManager,
             authErrorMapper = AuthErrorMapper(errorLogger),
             googleCredentialsProvider = googleCredentialsProvider,
-            scoreManager = scoreManager
+            scoreManager = scoreManager,
+            analyticsLogger = analyticsLogger,
         )
     }
 
@@ -448,6 +454,118 @@ class AuthRepositoryImplTest {
             assertEquals(Response.Error(AppError.Auth.InvalidEmail), awaitItem())
             awaitComplete()
         }
+    }
+
+    /**
+     * Rozdzielenie `sign_up` i `login` da się zrobić tylko w repozytorium: to samo wejście przez
+     * Google prowadzi raz do rejestracji, raz do logowania, a ViewModel widzi w obu przypadkach
+     * ten sam `Response.Success`.
+     */
+    @Test
+    fun `google sign in reports a sign up for a brand new account`() = runTest {
+        coEvery { googleCredentialsProvider.getGoogleIdToken(context) } returns TEST_ID_TOKEN
+        every { firebaseAuth.signInWithCredential(any()) } returns
+                completedTask(authResult(user = firebaseUser(), isNewUser = true))
+        every { firestoreApi.updateUserData(any()) } returns flowOf(Response.Success(Unit))
+
+        repository.signInWithGoogle(context).test {
+            skipItems(1)
+            awaitItem()
+            awaitComplete()
+        }
+
+        assertEquals(AuthMethod.GOOGLE, analyticsLogger.eventsOfType<AnalyticsEvent.SignUp>().single().method)
+        assertTrue(analyticsLogger.eventsOfType<AnalyticsEvent.Login>().isEmpty())
+    }
+
+    @Test
+    fun `google sign in reports a login for a returning account`() = runTest {
+        coEvery { googleCredentialsProvider.getGoogleIdToken(context) } returns TEST_ID_TOKEN
+        every { firebaseAuth.signInWithCredential(any()) } returns
+                completedTask(authResult(user = firebaseUser(), isNewUser = false))
+        every { firestoreApi.getUserData(TEST_UID) } returns
+                flowOf(Response.Success(UserDataDTO(id = TEST_UID, name = TEST_NAME)))
+
+        repository.signInWithGoogle(context).test {
+            skipItems(1)
+            awaitItem()
+            awaitComplete()
+        }
+
+        assertEquals(AuthMethod.GOOGLE, analyticsLogger.eventsOfType<AnalyticsEvent.Login>().single().method)
+        assertTrue(analyticsLogger.eventsOfType<AnalyticsEvent.SignUp>().isEmpty())
+    }
+
+    @Test
+    fun `registration with credentials reports a sign up with the email method`() = runTest {
+        every { firebaseAuth.createUserWithEmailAndPassword(any(), any()) } returns
+                completedTask(authResult(user = firebaseUser(providerData = passwordProviders())))
+        every { firestoreApi.updateUserData(any()) } returns flowOf(Response.Success(Unit))
+
+        repository.registerWithEmailAndPassword(TEST_EMAIL, "secret", TEST_NAME).test {
+            skipItems(1)
+            awaitItem()
+            awaitComplete()
+        }
+
+        assertEquals(AuthMethod.EMAIL, analyticsLogger.eventsOfType<AnalyticsEvent.SignUp>().single().method)
+    }
+
+    /** Odtworzenie profilu dotyczy konta, które już istnieje — inaczej zawyżałoby rejestracje. */
+    @Test
+    fun `recreating a missing profile still counts as a login`() = runTest {
+        every { firebaseAuth.signInWithEmailAndPassword(any(), any()) } returns
+                completedTask(authResult(user = firebaseUser(providerData = passwordProviders())))
+        every { firestoreApi.getUserData(TEST_UID) } returns flowOf(Response.Error(AppError.Data.NoData))
+        every { firestoreApi.updateUserData(any()) } returns flowOf(Response.Success(Unit))
+
+        repository.loginWithEmailAndPassword(TEST_EMAIL, "secret").test {
+            skipItems(1)
+            awaitItem()
+            awaitComplete()
+        }
+
+        assertEquals(AuthMethod.EMAIL, analyticsLogger.eventsOfType<AnalyticsEvent.Login>().single().method)
+        assertTrue(analyticsLogger.eventsOfType<AnalyticsEvent.SignUp>().isEmpty())
+    }
+
+    @Test
+    fun `signing out is reported`() = runTest {
+        repository.signOut()
+
+        assertEquals(listOf("sign_out"), analyticsLogger.eventNames())
+    }
+
+    @Test
+    fun `account deletion is reported only after both removals succeed`() = runTest {
+        val user = firebaseUser()
+        every { firebaseAuth.currentUser } returns user
+        every { user.delete() } returns completedTask(null)
+        every { firestoreApi.deleteUserAccountData(TEST_UID) } returns flowOf(Response.Success(Unit))
+
+        repository.deleteUser().test {
+            skipItems(1)
+            awaitItem()
+            awaitComplete()
+        }
+
+        assertEquals(listOf("account_delete"), analyticsLogger.eventNames())
+    }
+
+    @Test
+    fun `a failed data removal reports no deletion`() = runTest {
+        val user = firebaseUser()
+        every { firebaseAuth.currentUser } returns user
+        every { firestoreApi.deleteUserAccountData(TEST_UID) } returns
+                flowOf(Response.Error(AppError.Data.PermissionDenied))
+
+        repository.deleteUser().test {
+            skipItems(1)
+            awaitItem()
+            awaitComplete()
+        }
+
+        assertTrue(analyticsLogger.events.isEmpty())
     }
 
     private fun passwordProviders(): List<UserInfo> = listOf(userInfo("firebase"), userInfo("password"))

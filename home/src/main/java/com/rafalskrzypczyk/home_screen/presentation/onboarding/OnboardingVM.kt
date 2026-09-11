@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.auth.domain.AuthRepository
 import com.rafalskrzypczyk.billing.domain.BillingIds
+import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
+import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.user_management.UserManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,7 +20,8 @@ import javax.inject.Inject
 class OnboardingVM @Inject constructor(
     private val authRepository: AuthRepository,
     private val userManager: UserManager,
-    private val premiumStatusProvider: PremiumStatusProvider
+    private val premiumStatusProvider: PremiumStatusProvider,
+    private val analyticsLogger: AnalyticsLogger
 ): ViewModel() {
     private val _state = MutableStateFlow(OnboardingState())
     val state = _state.asStateFlow()
@@ -26,6 +29,9 @@ class OnboardingVM @Inject constructor(
     fun onEvent(event: OnboardingUIEvents) {
         when(event) {
             OnboardingUIEvents.CheckIsLogged -> checkIsLogged()
+            is OnboardingUIEvents.Finished -> analyticsLogger.log(
+                AnalyticsEvent.OnboardingCompleted(event.skipped, event.lastPage)
+            )
         }
     }
 

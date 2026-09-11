@@ -9,6 +9,9 @@ import com.rafalskrzypczyk.auth.domain.AuthRepository
 import com.rafalskrzypczyk.auth.domain.GoogleCredentialsProvider
 import com.rafalskrzypczyk.auth.domain.toDTO
 import com.rafalskrzypczyk.auth.domain.toDomain
+import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
+import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
+import com.rafalskrzypczyk.core.analytics.AuthMethod
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.error.AppError
 import com.rafalskrzypczyk.core.user_management.UserAuthenticationMethod
@@ -47,7 +50,8 @@ class AuthRepositoryImpl @Inject constructor(
     private val userManager: UserManager,
     private val authErrorMapper: AuthErrorMapper,
     private val googleCredentialsProvider: GoogleCredentialsProvider,
-    private val scoreManager: ScoreManager
+    private val scoreManager: ScoreManager,
+    private val analyticsLogger: AnalyticsLogger,
 ) : AuthRepository {
     override fun isUserLoggedIn(): Boolean = firebaseAuth.currentUser != null
 
@@ -72,7 +76,7 @@ class AuthRepositoryImpl @Inject constructor(
             return@flow
         }
 
-        loginUser(user).collect { emit(it) }
+        loginUser(user, AuthMethod.EMAIL).collect { emit(it) }
     }
 
     override fun registerWithEmailAndPassword(
@@ -99,13 +103,14 @@ class AuthRepositoryImpl @Inject constructor(
 
         user.sendEmailVerification()
 
-        registerUser(user, email, userName).collect { emit(it) }
+        registerUser(user, email, userName, AuthMethod.EMAIL).collect { emit(it) }
     }
 
     override suspend fun signOut() {
         scoreManager.onUserLogOut()
         firebaseAuth.signOut()
         userManager.clearUserDataLocal()
+        analyticsLogger.log(AnalyticsEvent.SignOut)
     }
 
     override fun sendPasswordResetToEmail(email: String): Flow<Response<Unit>> = flow {
@@ -244,6 +249,8 @@ class AuthRepositoryImpl @Inject constructor(
         }
 
         userManager.clearUserDataLocal()
+        // Dopiero tutaj: wczesniejsze return@flow to bledy usuwania danych albo samego konta.
+        analyticsLogger.log(AnalyticsEvent.AccountDeleted)
         emit(Response.Success(Unit))
     }
 
@@ -281,13 +288,18 @@ class AuthRepositoryImpl @Inject constructor(
         }
 
         if (authResult.additionalUserInfo?.isNewUser ?: true) {
-            registerUser(user, user.email.orEmpty(), displayNameOf(user)).collect { emit(it) }
+            registerUser(user, user.email.orEmpty(), displayNameOf(user), AuthMethod.GOOGLE).collect { emit(it) }
         } else {
-            loginUser(user).collect { emit(it) }
+            loginUser(user, AuthMethod.GOOGLE).collect { emit(it) }
         }
     }
 
-    private fun registerUser(user: FirebaseUser, email: String, userName: String): Flow<Response<UserData>> = flow {
+    private fun registerUser(
+        user: FirebaseUser,
+        email: String,
+        userName: String,
+        method: AuthMethod,
+    ): Flow<Response<UserData>> = flow {
         val newUser = UserData(
             user.uid,
             email,
@@ -302,13 +314,14 @@ class AuthRepositoryImpl @Inject constructor(
                 is Response.Success -> {
                     userManager.saveUserDataInLocal(newUser)
                     scoreManager.onUserRegister()
+                    analyticsLogger.log(AnalyticsEvent.SignUp(method))
                     emit(Response.Success(newUser))
                 }
             }
         }
     }
 
-    private fun loginUser(user: FirebaseUser): Flow<Response<UserData>> = flow {
+    private fun loginUser(user: FirebaseUser, method: AuthMethod): Flow<Response<UserData>> = flow {
         val authMethod = authenticationMethodOf(user)
 
         firestoreApi.getUserData(user.uid).collect { response ->
@@ -321,10 +334,11 @@ class AuthRepositoryImpl @Inject constructor(
                     )
                     userManager.saveUserDataInLocal(userData)
                     scoreManager.onUserLogIn()
+                    analyticsLogger.log(AnalyticsEvent.Login(method))
                     emit(Response.Success(userData))
                 }
                 is Response.Error -> {
-                    if (response.error == AppError.Data.NoData) emitAll(restoreUserProfile(user, authMethod))
+                    if (response.error == AppError.Data.NoData) emitAll(restoreUserProfile(user, authMethod, method))
                     else emit(response)
                 }
             }
@@ -333,7 +347,8 @@ class AuthRepositoryImpl @Inject constructor(
 
     private fun restoreUserProfile(
         user: FirebaseUser,
-        authMethod: UserAuthenticationMethod
+        authMethod: UserAuthenticationMethod,
+        method: AuthMethod,
     ): Flow<Response<UserData>> = flow {
         val restoredUser = UserData(
             id = user.uid,
@@ -349,8 +364,11 @@ class AuthRepositoryImpl @Inject constructor(
                     Response.Error(authErrorMapper.report(ORIGIN_LOGIN_USER, AppError.Auth.ProfileRestoreFailed))
                 )
                 is Response.Success -> {
+                    // Odtworzenie profilu to nadal logowanie na istniejace konto Firebase — konto
+                    // juz istnieje, wiec sign_up zawyzalby liczbe rejestracji.
                     userManager.saveUserDataInLocal(restoredUser)
                     scoreManager.onUserLogIn()
+                    analyticsLogger.log(AnalyticsEvent.Login(method))
                     emit(Response.Success(restoredUser))
                 }
             }

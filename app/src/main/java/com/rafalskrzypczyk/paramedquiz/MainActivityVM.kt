@@ -2,11 +2,13 @@ package com.rafalskrzypczyk.paramedquiz
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rafalskrzypczyk.core.analytics.AnalyticsConsentState
 import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
 import com.rafalskrzypczyk.firestore.domain.models.TermsOfServiceStatus
 import com.rafalskrzypczyk.firestore.domain.use_cases.ListenTermsOfServiceUpdatesUC
 import com.rafalskrzypczyk.paramedquiz.navigation.MainMenu
 import com.rafalskrzypczyk.paramedquiz.navigation.Onboarding
+import com.rafalskrzypczyk.paramedquiz.navigation.PrivacyConsent
 import com.rafalskrzypczyk.paramedquiz.navigation.TermsOfService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -57,6 +59,7 @@ class MainActivityVM @Inject constructor(
     fun onEvent(event: MainActivityUIEvents) {
         when (event) {
             MainActivityUIEvents.OnboardingFinished -> onOnboardingFinished()
+            MainActivityUIEvents.TermsAccepted -> onTermsAccepted()
         }
     }
 
@@ -64,6 +67,17 @@ class MainActivityVM @Inject constructor(
         sharedPrefs.setOnboardingStatus(true)
         viewModelScope.launch {
             _navigationEvent.emit(resolveStartDestination())
+        }
+    }
+
+    /**
+     * Po akceptacji regulaminu nie odpytujemy Firestore ponownie — regulamin wlasnie zostal
+     * zaakceptowany, a [resolveStartDestination] dokladaloby do 3 s oczekiwania na ekranie,
+     * ktory nie ma stanu ladowania i nie jest juz przykryty splashem.
+     */
+    private fun onTermsAccepted() {
+        viewModelScope.launch {
+            _navigationEvent.emit(destinationAfterTerms())
         }
     }
 
@@ -93,10 +107,21 @@ class MainActivityVM @Inject constructor(
         }
         return when (getDefinitiveStatus()) {
             is TermsOfServiceStatus.NeedsAcceptance -> TermsOfService(isMandatory = true)
-            is TermsOfServiceStatus.Accepted -> MainMenu
-            else -> MainMenu
+            is TermsOfServiceStatus.Accepted -> destinationAfterTerms()
+            else -> destinationAfterTerms()
         }
     }
+
+    /**
+     * Bramka zgody na analitykę. Stoi tu, a nie na sciezce regulaminu, bo uzytkownik ktory
+     * zaakceptowal juz obowiazujaca wersje regulaminu nigdy przez tamten ekran nie przechodzi.
+     */
+    private fun destinationAfterTerms(): Any =
+        if (sharedPrefs.getAnalyticsConsent() == AnalyticsConsentState.UNDECIDED) {
+            PrivacyConsent
+        } else {
+            MainMenu
+        }
 
     private suspend fun getDefinitiveStatus(): TermsOfServiceStatus? {
         return withTimeoutOrNull(3000L.milliseconds) {

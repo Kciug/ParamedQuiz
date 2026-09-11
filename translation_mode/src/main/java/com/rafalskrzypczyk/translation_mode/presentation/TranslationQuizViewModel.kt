@@ -4,16 +4,24 @@ import android.app.Activity
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rafalskrzypczyk.billing.analytics.PurchaseFunnelTracker
 import com.rafalskrzypczyk.billing.domain.AppProduct
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.billing.domain.PurchaseResult
+import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
+import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
+import com.rafalskrzypczyk.core.analytics.Paywall
+import com.rafalskrzypczyk.core.analytics.QuizType
+import com.rafalskrzypczyk.core.analytics.ScreenName
+import com.rafalskrzypczyk.core.analytics.analyticsName
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedState
 import com.rafalskrzypczyk.core.feedback.FeedbackEvent
 import com.rafalskrzypczyk.core.feedback.FeedbackManager
+import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.firestore.data.FirestoreCollections
 import com.rafalskrzypczyk.firestore.domain.models.IssueReportDTO
 import com.rafalskrzypczyk.firestore.domain.models.TranslationQuestionDTO
@@ -35,6 +43,8 @@ import javax.inject.Inject
 
 import com.rafalskrzypczyk.core.utils.QuizSideEffect
 
+private val TRANSLATION_MODE = QuizMode.TranslationMode.analyticsName()
+
 sealed interface TranslationModeSideEffect {
     object BuyMode : TranslationModeSideEffect
 }
@@ -45,6 +55,8 @@ class TranslationQuizViewModel @Inject constructor(
     private val billingRepository: BillingRepository,
     private val premiumStatusProvider: PremiumStatusProvider,
     private val feedbackManager: FeedbackManager,
+    private val analyticsLogger: AnalyticsLogger,
+    private val purchaseFunnelTracker: PurchaseFunnelTracker,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -59,6 +71,25 @@ class TranslationQuizViewModel @Inject constructor(
 
     private var isTrialActive: Boolean = savedStateHandle.get<Boolean>("isTrial") ?: false
     private var translationModeProductDetails: AppProduct? = null
+    private var hasLoggedTrialWall = false
+    private var sessionStartTime = 0L
+    private var hasLoggedQuizStarted = false
+    private var hasLoggedQuizEnd = false
+
+    // Seria poprawnych odpowiedzi pod rzad w tej sesji — parametr max_streak.
+    private var currentAnswerStreak = 0
+    private var sessionMaxStreak = 0
+
+    /**
+     * Rodzaj sesji zamrozony przy quiz_start. Zakup w trakcie triala przelacza [isTrialActive]
+     * na false, ale sesja dalej jest ta, ktora ruszyla jako darmowy fragment — inaczej quiz_start
+     * i quiz_complete tej samej sesji mialyby rozne quiz_type i lejek konwersji by sie rozjechal.
+     * Ustalone z iOS: sesja zachowuje typ, z jakim wystartowala.
+     */
+    private var sessionQuizType: QuizType = QuizType.FULL
+    private var sessionIsFreePreview: Boolean = false
+    private var hasLoggedQuizFinished = false
+    private var exitedEarly = false
 
     private var loadDataJob: Job? = null
     private var questionsListenerJob: Job? = null
@@ -82,6 +113,7 @@ class TranslationQuizViewModel @Inject constructor(
 
         if (isTrialActive) {
             setupTrial()
+            analyticsLogger.log(AnalyticsEvent.TrialStarted(TRANSLATION_MODE))
         }
 
         // Wynik użytkownika nie zależy od stanu triala, więc kolektor zostaje poza loadData() -
@@ -177,6 +209,7 @@ class TranslationQuizViewModel @Inject constructor(
                             )
                         }
                     }
+                    logQuizStartedOnce(_state.value.questions.size)
                     attachQuestionsListener()
                 }
             }
@@ -267,17 +300,47 @@ class TranslationQuizViewModel @Inject constructor(
         }
     }
 
+    /** Listener Firestore potrafi ponowic sciezke konca puli — stad flaga jednorazowosci. */
+    private fun showTrialWall() {
+        _state.update { it.copy(showTrialFinishedPanel = true) }
+        if (hasLoggedTrialWall) return
+        hasLoggedTrialWall = true
+
+        val answered = _state.value.questions.count { it.isAnswered }
+        analyticsLogger.log(AnalyticsEvent.TrialWallReached(TRANSLATION_MODE, answered))
+        analyticsLogger.log(
+            AnalyticsEvent.PaywallViewed(
+                paywall = Paywall.TRIAL_END,
+                productId = BillingIds.ID_TRANSLATION_MODE,
+                hasPrice = translationModeProductDetails != null,
+                mode = TRANSLATION_MODE,
+            )
+        )
+    }
+
     private fun buyMode() {
         if (translationModeProductDetails != null) {
             _state.update { it.copy(isPurchasing = true, purchaseError = null) }
             viewModelScope.launch {
                 _billingEffect.emit(TranslationModeSideEffect.BuyMode)
             }
+        } else {
+            analyticsLogger.log(
+                AnalyticsEvent.PaywallPriceMissing(
+                    Paywall.TRIAL_END,
+                    BillingIds.ID_TRANSLATION_MODE,
+                )
+            )
         }
     }
 
+    /**
+     * Wolane z NavHosta po side effekcie — dopiero tutaj zakup realnie trafia do Google Play,
+     * wiec tu (a nie w [buyMode]) jest start lejka.
+     */
     fun launchBillingFlow(activity: Activity) {
         translationModeProductDetails?.let {
+            purchaseFunnelTracker.onPurchaseStarted(Paywall.TRIAL_END, it)
             billingRepository.launchBillingFlow(activity, it)
         }
     }
@@ -287,11 +350,61 @@ class TranslationQuizViewModel @Inject constructor(
         val state = _state.value
         val isStarted = state.currentQuestionIndex > 0 || state.questions.getOrNull(0)?.isAnswered == true
         
+        exitedEarly = true
         if (!isStarted) {
+            // Bez tego wyjscie przed pierwsza odpowiedzia zostawialoby quiz_start bez terminala.
+            logQuizFinishedOnce()
             navigateBack()
         } else {
             finishQuiz()
         }
+    }
+
+    /**
+     * loadData() leci dwa razy przy konwersji trialu na pelny tryb (przeladowanie z zachowaniem
+     * postepu), a listener Firestore potrafi ja powtorzyc — stad flaga.
+     */
+    private fun logQuizStartedOnce(questionsCount: Int) {
+        if (hasLoggedQuizStarted) return
+        hasLoggedQuizStarted = true
+        sessionStartTime = System.currentTimeMillis()
+        sessionIsFreePreview = isTrialActive
+        sessionQuizType = if (isTrialActive) QuizType.FREE_PREVIEW else QuizType.FULL
+
+        analyticsLogger.log(
+            AnalyticsEvent.QuizStarted(
+                mode = TRANSLATION_MODE,
+                quizType = sessionQuizType,
+                questionCount = questionsCount,
+                isFreePreview = sessionIsFreePreview,
+            )
+        )
+    }
+
+    private fun logQuizFinishedOnce() {
+        // Wyjscie z ekranu, zanim pytania sie zaladuja, tez trafia tutaj (indeks silnika jest
+        // wtedy zerowy). Bez tej bramki lecialby quiz_complete bez pasujacego quiz_start,
+        // zawyzajac early_exit u uzytkownikow ze slabym polaczeniem.
+        if (!hasLoggedQuizStarted) return
+        if (hasLoggedQuizFinished) return
+        hasLoggedQuizFinished = true
+
+        val state = _state.value
+        analyticsLogger.log(
+            AnalyticsEvent.QuizCompleted(
+                mode = TRANSLATION_MODE,
+                quizType = sessionQuizType,
+                // Pula w chwili zakonczenia: po konwersji triala jest wieksza niz w quiz_start,
+                // ale answered_count nigdy jej nie przekroczy.
+                questionCount = state.questions.size,
+                answeredCount = state.questions.count { it.isAnswered },
+                correctCount = state.correctAnswersCount,
+                isEarlyExit = exitedEarly,
+                isFreePreview = sessionIsFreePreview,
+                durationSec = if (sessionStartTime == 0L) 0L else (System.currentTimeMillis() - sessionStartTime) / 1000,
+                maxStreak = sessionMaxStreak,
+            )
+        )
     }
 
     private fun submitAnswer() {
@@ -330,6 +443,25 @@ class TranslationQuizViewModel @Inject constructor(
                 correctAnswersCount = newCorrectCount
             )
         }
+
+        trackAnswer(isCorrect)
+    }
+
+    /** Ekran wyniku to stan, nie trasa — patrz BaseQuizVM.logQuizEndScreenOnce. */
+    private fun logQuizEndScreenOnce() {
+        if (hasLoggedQuizEnd) return
+        hasLoggedQuizEnd = true
+        analyticsLogger.log(AnalyticsEvent.ScreenView(ScreenName.QUIZ_END, mode = TRANSLATION_MODE))
+    }
+
+    /** Seria poprawnych odpowiedzi pod rzad — parametr `max_streak` w quiz_complete. */
+    private fun trackAnswer(isCorrect: Boolean) {
+        if (isCorrect) {
+            currentAnswerStreak++
+            sessionMaxStreak = maxOf(sessionMaxStreak, currentAnswerStreak)
+        } else {
+            currentAnswerStreak = 0
+        }
     }
 
     private fun nextQuestion() {
@@ -339,13 +471,15 @@ class TranslationQuizViewModel @Inject constructor(
         if (nextIndex < currentState.questions.size) {
             _state.update { it.copy(currentQuestionIndex = nextIndex) }
         } else if (isTrialActive && currentState.questions.isNotEmpty()) {
-            _state.update { it.copy(showTrialFinishedPanel = true) }
+            showTrialWall()
         } else {
             finishQuiz()
         }
     }
 
     private fun finishQuiz() {
+        logQuizFinishedOnce()
+        logQuizEndScreenOnce()
         useCases.incrementCompletedQuizzes()
         feedbackManager.perform(FeedbackEvent.QUIZ_COMPLETED)
         _state.update {
@@ -378,6 +512,7 @@ class TranslationQuizViewModel @Inject constructor(
                      showReportDialog = false, 
                      reportIssueDescription = ""
                  ) }
+                 analyticsLogger.log(AnalyticsEvent.IssueReported(TRANSLATION_MODE))
                  feedbackManager.perform(FeedbackEvent.SUCCESS)
                  _effect.emit(QuizSideEffect.ShowReportSuccess)
              }

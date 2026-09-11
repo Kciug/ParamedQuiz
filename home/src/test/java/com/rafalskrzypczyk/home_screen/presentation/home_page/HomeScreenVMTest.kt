@@ -1,12 +1,21 @@
 package com.rafalskrzypczyk.home_screen.presentation.home_page
 
+import com.rafalskrzypczyk.billing.analytics.PurchaseFunnelTracker
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.billing.domain.BillingRepository
+import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
+import com.rafalskrzypczyk.core.analytics.HomeAddon
+import com.rafalskrzypczyk.core.analytics.NotificationPermissionTracker
+import com.rafalskrzypczyk.core.analytics.Paywall
+import com.rafalskrzypczyk.core.analytics.RatingAction
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
+import com.rafalskrzypczyk.core.shared_prefs.SharedPreferencesApi
+import com.rafalskrzypczyk.core.testing.RecordingAnalyticsLogger
 import com.rafalskrzypczyk.core.feedback.NoOpFeedbackManager
 import com.rafalskrzypczyk.home_screen.domain.HomeScreenUseCases
 import com.rafalskrzypczyk.notifications.ContentTopicManager
 import com.rafalskrzypczyk.notifications.ReminderScheduler
+import com.rafalskrzypczyk.core.utils.QuizMode
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
@@ -18,6 +27,8 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -29,6 +40,9 @@ class HomeScreenVMTest {
     private lateinit var billingRepository: BillingRepository
     private lateinit var reminderScheduler: ReminderScheduler
     private lateinit var contentTopicManager: ContentTopicManager
+    private lateinit var analyticsLogger: RecordingAnalyticsLogger
+    private lateinit var sharedPreferences: SharedPreferencesApi
+    private lateinit var purchaseFunnelTracker: PurchaseFunnelTracker
     private lateinit var viewModel: HomeScreenVM
 
     @Before
@@ -40,18 +54,95 @@ class HomeScreenVMTest {
         billingRepository = mockk(relaxed = true)
         reminderScheduler = mockk(relaxed = true)
         contentTopicManager = mockk(relaxed = true)
+        analyticsLogger = RecordingAnalyticsLogger()
+        sharedPreferences = mockk(relaxed = true)
+        purchaseFunnelTracker = mockk(relaxed = true)
 
         every { billingRepository.availableProducts } returns flowOf(emptyList())
         every { useCases.getUserScore() } returns flowOf(mockk(relaxed = true))
         every { useCases.getUserData() } returns flowOf(mockk(relaxed = true))
         every { premiumStatusProvider.ownedProductIds } returns flowOf(emptySet())
         
-        viewModel = HomeScreenVM(useCases, premiumStatusProvider, billingRepository, reminderScheduler, contentTopicManager, NoOpFeedbackManager)
+        viewModel = HomeScreenVM(
+            useCases,
+            premiumStatusProvider,
+            billingRepository,
+            reminderScheduler,
+            contentTopicManager,
+            NoOpFeedbackManager,
+            analyticsLogger,
+            purchaseFunnelTracker,
+            NotificationPermissionTracker(analyticsLogger, sharedPreferences),
+        )
     }
 
     @After
     fun tearDown() {
         Dispatchers.resetMain()
+    }
+
+    @Test
+    fun `rating funnel reports the prompt and the chosen action`() = runTest {
+        every { useCases.checkAppRatingEligibility() } returns true
+
+        viewModel.onEvent(HomeUIEvents.GetData)
+        viewModel.onEvent(HomeUIEvents.OnRatingSelected(5))
+        viewModel.onEvent(HomeUIEvents.OnRateStore)
+
+        assertEquals(1, analyticsLogger.eventsOfType<AnalyticsEvent.RatingPromptViewed>().size)
+        val answered = analyticsLogger.eventsOfType<AnalyticsEvent.RatingPromptAnswered>().single()
+        assertEquals(5, answered.rating)
+        assertEquals(RatingAction.STORE, answered.action)
+    }
+
+    @Test
+    fun `rating prompt is reported once even though the check runs on every home entry`() = runTest {
+        every { useCases.checkAppRatingEligibility() } returns true
+
+        viewModel.onEvent(HomeUIEvents.GetData)
+        viewModel.onEvent(HomeUIEvents.GetData)
+
+        assertEquals(1, analyticsLogger.eventsOfType<AnalyticsEvent.RatingPromptViewed>().size)
+    }
+
+    @Test
+    fun `dismissing the rating card reports only the closing decision`() = runTest {
+        every { useCases.checkAppRatingEligibility() } returns true
+        viewModel.onEvent(HomeUIEvents.GetData)
+
+        // Pierwsze odrzucenie otwiera opcje zamkniecia, dopiero drugie zamyka karte.
+        viewModel.onEvent(HomeUIEvents.OnDismissRating)
+        viewModel.onEvent(HomeUIEvents.OnDismissRating)
+
+        val answered = analyticsLogger.eventsOfType<AnalyticsEvent.RatingPromptAnswered>().single()
+        assertEquals(RatingAction.DISMISS, answered.action)
+    }
+
+    @Test
+    fun `mode tap is reported with the lock state from the home state`() = runTest {
+        viewModel.onEvent(HomeUIEvents.ModeSelected(QuizMode.SwipeMode, locked = true))
+
+        val selected = analyticsLogger.eventsOfType<AnalyticsEvent.ModeSelected>().single()
+        assertEquals("swipe", selected.mode)
+        assertTrue(selected.locked)
+    }
+
+    @Test
+    fun `addon tap is reported with its availability`() = runTest {
+        viewModel.onEvent(HomeUIEvents.AddonTapped(HomeAddon.DAILY, available = false))
+
+        val tapped = analyticsLogger.eventsOfType<AnalyticsEvent.AddonTapped>().single()
+        assertEquals(HomeAddon.DAILY, tapped.addon)
+        assertEquals(false, tapped.available)
+    }
+
+    @Test
+    fun `opening the mode sheet reports a paywall view`() = runTest {
+        viewModel.onEvent(HomeUIEvents.OpenSwipeModePurchaseSheet)
+
+        val shown = analyticsLogger.eventsOfType<AnalyticsEvent.PaywallViewed>().single()
+        assertEquals(Paywall.MODE, shown.paywall)
+        assertEquals(BillingIds.ID_SWIPE_MODE, shown.productId)
     }
 
     @Test

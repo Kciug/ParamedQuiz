@@ -15,5 +15,7 @@ class NoOpAdManager : AdManager {
         onAdDismissed()
     }
 
+    override fun onInterstitialTriggered(answersSinceLastAd: Int) = Unit
+
     override fun resetConsent() = Unit
 }

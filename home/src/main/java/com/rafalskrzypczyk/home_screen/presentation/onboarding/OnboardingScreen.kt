@@ -41,7 +41,10 @@ fun OnboardingScreen(
                 state = state,
                 onBackToWelcomePage = { moveToOnboarding = false },
                 navigateToLogin = navigateToLogin,
-                onFinish = onFinishOnboarding
+                onFinish = { skipped, lastPage ->
+                    onEvent(OnboardingUIEvents.Finished(skipped, lastPage))
+                    onFinishOnboarding()
+                }
             )
         } else {
             OnboardingWelcomePage(

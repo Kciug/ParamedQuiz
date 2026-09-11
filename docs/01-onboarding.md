@@ -50,6 +50,8 @@ Po rozpoczęciu prezentowana jest sekwencja stron:
 1. Po „Zakończ" onboarding jest oznaczany jako ukończony (trwale).
 2. Aplikacja wyznacza **trasę startową**:
    - jeśli wymagana jest akceptacja regulaminu → ekran [Regulaminu](02-regulamin.md) (obowiązkowy),
+   - w przeciwnym razie, jeśli decyzja o zgodzie na analitykę jest jeszcze niepodjęta →
+     [ekran zgody](20-analityka-i-pomiar.md#6-zgody-model-opt-in) (obowiązkowy, bez pomijania),
    - w przeciwnym razie → ekran główny.
 
 ---

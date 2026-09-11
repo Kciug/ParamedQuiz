@@ -9,7 +9,8 @@ import javax.inject.Inject
 
 class QuizAdHandler @Inject constructor(
     private val premiumStatusProvider: PremiumStatusProvider,
-    private val gameplayConfig: GameplayConfigProvider
+    private val gameplayConfig: GameplayConfigProvider,
+    private val adManager: AdManager,
 ) {
     private var isAdsFree = false
     private var isFinishingQuiz = false
@@ -37,6 +38,7 @@ class QuizAdHandler @Inject constructor(
         if (isQuizFinished) {
             if (ignoreThreshold || questionsSinceLastAd >= gameplayConfig.exitAdThreshold()) {
                 isFinishingQuiz = true
+                adManager.onInterstitialTriggered(questionsSinceLastAd)
                 return true
             }
             return false
@@ -45,6 +47,7 @@ class QuizAdHandler @Inject constructor(
         if (answeredCount > 0 && answeredCount % gameplayConfig.adFrequency() == 0 && answeredCount > lastAdAnsweredCount) {
             isFinishingQuiz = false
             lastAdAnsweredCount = answeredCount
+            adManager.onInterstitialTriggered(questionsSinceLastAd)
             return true
         }
 

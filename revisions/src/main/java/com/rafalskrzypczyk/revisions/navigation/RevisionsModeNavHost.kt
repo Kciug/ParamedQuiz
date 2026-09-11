@@ -14,6 +14,13 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavDestination.Companion.hasRoute
+import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
+import com.rafalskrzypczyk.core.analytics.ScreenName
+import com.rafalskrzypczyk.core.analytics.TrackScreenViews
+import com.rafalskrzypczyk.core.analytics.analyticsName
+import kotlinx.coroutines.flow.map
+import androidx.navigation.toRoute
 import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.revisions.domain.models.RevisionCriterion
 import com.rafalskrzypczyk.revisions.presentation.RevisionsConfigScreen
@@ -38,6 +45,20 @@ fun RevisionsModeNavHost(
     onExit: () -> Unit
 ) {
     val revisionsNavController = rememberNavController()
+    TrackScreenViews(revisionsNavController) {
+        revisionsNavController.currentBackStackEntryFlow.map { entry ->
+            when {
+                entry.destination.hasRoute<RevisionsConfigRoute>() ->
+                    AnalyticsEvent.ScreenView(ScreenName.REVISION_SETUP)
+                // `mode` to tryb powtarzanej tresci — tak samo jak w zdarzeniach sesji powtorek.
+                entry.destination.hasRoute<RevisionsQuizRoute>() -> AnalyticsEvent.ScreenView(
+                    ScreenName.QUIZ,
+                    QuizMode.valueOf(entry.toRoute<RevisionsQuizRoute>().mode).analyticsName(),
+                )
+                else -> null
+            }
+        }
+    }
 
     NavHost(
         modifier = Modifier.background(MaterialTheme.colorScheme.background),

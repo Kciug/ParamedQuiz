@@ -20,6 +20,7 @@ fun AppNavHost(
     startDestination: Any,
     isOnboarding: () -> Boolean,
     onFinishOnboarding: () -> Unit,
+    onTermsAccepted: () -> Unit,
 ) {
     val context = LocalContext.current
     val privacyPolicyUrl = stringResource(com.rafalskrzypczyk.home.R.string.privacy_policy_url)
@@ -53,8 +54,13 @@ fun AppNavHost(
         }
     ) {
         termsOfServiceDestination(
-            onAccepted = { navController.navigateToMainMenu() },
+            // O celu decyduje MainActivityVM — po regulaminie moze jeszcze czekac ekran zgody.
+            onAccepted = onTermsAccepted,
             onNavigateBack = { navController.popBackStack() }
+        )
+
+        privacyConsentDestination(
+            onDecided = { navController.navigateToMainMenu() }
         )
 
         signupDestination(

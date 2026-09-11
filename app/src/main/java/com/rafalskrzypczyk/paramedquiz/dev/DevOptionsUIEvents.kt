@@ -5,6 +5,10 @@ sealed interface DevOptionsUIEvents {
     object ResetModularOnboarding: DevOptionsUIEvents
     object ClearTermsAcceptance: DevOptionsUIEvents
     object ResetAdsConsent: DevOptionsUIEvents
+    object ResetAnalyticsConsent: DevOptionsUIEvents
+    object SendTestAnalyticsEvent: DevOptionsUIEvents
+    object ClearRecentAnalytics: DevOptionsUIEvents
+    object ResetNotificationPermissionGate: DevOptionsUIEvents
     object ResetRatingStats: DevOptionsUIEvents
     object TriggerRatingPrompt: DevOptionsUIEvents
     object ResetNews: DevOptionsUIEvents

@@ -5,6 +5,10 @@ import android.content.res.Configuration
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -20,6 +24,8 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CloudSync
+import androidx.compose.material.icons.outlined.DeleteSweep
+import androidx.compose.material.icons.outlined.Send
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.RestartAlt
 import androidx.compose.material.icons.outlined.Science
@@ -27,6 +33,8 @@ import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
@@ -37,6 +45,11 @@ import com.rafalskrzypczyk.core.composables.SettingsCategoryCard
 import com.rafalskrzypczyk.core.composables.SettingsCategoryHeader
 import com.rafalskrzypczyk.core.composables.SettingsInfoPanel
 import com.rafalskrzypczyk.core.composables.SettingsItemRow
+import com.rafalskrzypczyk.core.composables.TextCaption
+import com.rafalskrzypczyk.core.analytics.RecentAnalyticsEvents
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import com.rafalskrzypczyk.core.composables.top_bars.NavTopBar
 import com.rafalskrzypczyk.notifications.NotificationPermission
 
@@ -112,12 +125,68 @@ fun DevOptionsScreen(
                             onClick = { onEvent(DevOptionsUIEvents.ClearTermsAcceptance) }
                         )
                         DevActionRow(
+                            title = "Reset zgody na analityke",
+                            icon = Icons.Outlined.RestartAlt,
+                            info = "Przywraca stan sprzed pierwszego pytania, wylacza zbieranie " +
+                                "i czysci zebrane dane. Ekran zgody pojawi sie przy nastepnym starcie.",
+                            onClick = { onEvent(DevOptionsUIEvents.ResetAnalyticsConsent) }
+                        )
+
+                        DevActionRow(
                             title = "Reset zgody reklamowej",
                             icon = Icons.Outlined.RestartAlt,
                             info = "Czyści zgodę UMP. Formularz pojawi się przy następnym starcie " +
                                 "(tylko w EOG/UK). Język formularza zależy od języka systemu i konfiguracji w AdMob.",
                             onClick = { onEvent(DevOptionsUIEvents.ResetAdsConsent) }
                         )
+                    }
+                }
+
+                // === Analityka ===
+                item { SettingsCategoryHeader("Analityka") }
+                item {
+                    DevCategoryCard {
+                        SettingsInfoPanel(
+                            text = "Zgoda: ${state.analyticsConsent.name} · build_type: ${state.buildType} · " +
+                                "jednostka reklamowa: ${state.adUnit.value}. " +
+                                "Reset zgody jest w sekcji „Onboarding i zgody\", wycofanie i ponowne " +
+                                "udzielenie — w ustawieniach konta (Prywatność)."
+                        )
+                        DevActionRow(
+                            title = "Wyślij zdarzenie testowe",
+                            icon = Icons.Outlined.Send,
+                            info = "dev_test_event przez ten sam bramkowany logger co reszta aplikacji. " +
+                                "Przy zgodzie innej niż GRANTED nie wyjdzie i nie pojawi się na liście " +
+                                "poniżej — to też jest test. W buildzie debug idzie do logcata, " +
+                                "w staging do Firebase (DebugView po `adb shell setprop " +
+                                "debug.firebase.analytics.app <pakiet>`).",
+                            onClick = { onEvent(DevOptionsUIEvents.SendTestAnalyticsEvent) }
+                        )
+                        DevActionRow(
+                            title = "Reset bramki notification_permission",
+                            icon = Icons.Outlined.RestartAlt,
+                            info = "Zdarzenie leci raz na instalację. Po resecie następna odpowiedź na " +
+                                "systemowy dialog znów zostanie zaraportowana — sam dialog Android pokaże " +
+                                "tylko, jeśli uprawnienie nie jest trwale odrzucone.",
+                            onClick = { onEvent(DevOptionsUIEvents.ResetNotificationPermissionGate) }
+                        )
+                        DevActionRow(
+                            title = "Wyczyść listę zdarzeń",
+                            icon = Icons.Outlined.DeleteSweep,
+                            onClick = { onEvent(DevOptionsUIEvents.ClearRecentAnalytics) }
+                        )
+                    }
+                }
+                item {
+                    DevCategoryCard {
+                        if (state.recentAnalytics.isEmpty()) {
+                            SettingsInfoPanel(
+                                text = "Brak zdarzeń za bramką. Przy zgodzie GRANTED zagraj quiz albo " +
+                                    "wyślij zdarzenie testowe; przy DENIED pusta lista jest oczekiwana."
+                            )
+                        } else {
+                            state.recentAnalytics.forEach { entry -> RecentAnalyticsRow(entry) }
+                        }
                     }
                 }
 
@@ -256,6 +325,37 @@ private fun DevCategoryCard(content: @Composable ColumnScope.() -> Unit) {
     SettingsCategoryCard {
         content()
         Spacer(modifier = Modifier.height(Dimens.SMALL_PADDING))
+    }
+}
+
+private val timeFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+
+/** Jeden wpis bufora: czas, nazwa, parametry — od najnowszego. */
+@Composable
+private fun RecentAnalyticsRow(entry: RecentAnalyticsEvents.Entry) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Dimens.DEFAULT_PADDING, vertical = Dimens.ELEMENTS_SPACING_SMALL)
+    ) {
+        Row {
+            TextCaption(text = timeFormat.format(Date(entry.atMillis)))
+            Spacer(modifier = Modifier.width(Dimens.ELEMENTS_SPACING_SMALL))
+            when (entry) {
+                is RecentAnalyticsEvents.Entry.Event ->
+                    TextCaption(text = entry.name, fontWeight = FontWeight.Bold)
+                is RecentAnalyticsEvents.Entry.Property ->
+                    TextCaption(text = "user_property ${entry.name} = ${entry.value}", fontWeight = FontWeight.Bold)
+            }
+        }
+        if (entry is RecentAnalyticsEvents.Entry.Event && entry.params.isNotEmpty()) {
+            androidx.compose.material3.Text(
+                text = entry.params.entries.joinToString(", ") { "${it.key}=${it.value}" },
+                style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
+                fontFamily = FontFamily.Monospace,
+                color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }
 

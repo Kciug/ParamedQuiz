@@ -3,11 +3,20 @@ package com.rafalskrzypczyk.home_screen.presentation.home_page
 import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rafalskrzypczyk.billing.analytics.PurchaseFunnelTracker
 import com.rafalskrzypczyk.billing.domain.AppProduct
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.billing.domain.PurchaseResult
 import com.rafalskrzypczyk.core.api_response.Response
+import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
+import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
+import com.rafalskrzypczyk.core.analytics.NotificationPermissionTracker
+import com.rafalskrzypczyk.core.analytics.NotificationPromptAction
+import com.rafalskrzypczyk.core.analytics.Paywall
+import com.rafalskrzypczyk.core.analytics.RatingAction
+import com.rafalskrzypczyk.core.analytics.analyticsName
+import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.composables.rating.RatingPromptState
 import com.rafalskrzypczyk.core.domain.UserFeedback
@@ -33,7 +42,10 @@ class HomeScreenVM @Inject constructor(
     private val billingRepository: BillingRepository,
     private val reminderScheduler: ReminderScheduler,
     private val contentTopicManager: ContentTopicManager,
-    private val feedbackManager: FeedbackManager
+    private val feedbackManager: FeedbackManager,
+    private val analyticsLogger: AnalyticsLogger,
+    private val purchaseFunnelTracker: PurchaseFunnelTracker,
+    private val notificationPermissionTracker: NotificationPermissionTracker,
 ): ViewModel() {
     private val _state = MutableStateFlow(HomeScreenState())
     val state = _state.asStateFlow()
@@ -44,6 +56,7 @@ class HomeScreenVM @Inject constructor(
     private var translationModeProductDetails: AppProduct? = null
     private var swipeModeProductDetails: AppProduct? = null
     private var pendingPurchaseModeId: String? = null
+    private var hasLoggedRatingAnswer = false
 
     init {
         viewModelScope.launch {
@@ -100,6 +113,12 @@ class HomeScreenVM @Inject constructor(
             is HomeUIEvents.BuyTranslationMode -> buyMode(event.activity, BillingIds.ID_TRANSLATION_MODE)
             is HomeUIEvents.BuySwipeMode -> buyMode(event.activity, BillingIds.ID_SWIPE_MODE)
             HomeUIEvents.NavigationConsumed -> consumeNavigation()
+            is HomeUIEvents.ModeSelected -> analyticsLogger.log(
+                AnalyticsEvent.ModeSelected(event.mode.analyticsName(), event.locked)
+            )
+            is HomeUIEvents.AddonTapped -> analyticsLogger.log(
+                AnalyticsEvent.AddonTapped(event.addon, event.available)
+            )
             is HomeUIEvents.OnRatingSelected -> handleRatingSelected(event.rating)
             HomeUIEvents.OnDismissRating -> dismissRating()
             HomeUIEvents.OnRateStore -> rateStore()
@@ -111,13 +130,16 @@ class HomeScreenVM @Inject constructor(
             HomeUIEvents.OnFeedbackErrorConsumed -> _state.update { it.copy(feedbackErrorMessage = null) }
             is HomeUIEvents.DismissNews -> dismissNews(event.id)
             HomeUIEvents.OnNotificationConsentAccepted -> onNotificationConsentAccepted()
+            is HomeUIEvents.OnSystemNotificationPermissionResult ->
+                notificationPermissionTracker.onSystemDialogAnswered(event.granted)
             HomeUIEvents.OnNotificationConsentDenied -> onNotificationConsentDenied()
-            HomeUIEvents.OnNotificationConsentDismissed -> _state.update { it.copy(showNotificationConsentPrompt = false) }
+            HomeUIEvents.OnNotificationConsentDismissed -> onNotificationConsentDismissed()
             HomeUIEvents.RecheckNotificationConsent -> checkNotificationConsentEligibility()
         }
     }
 
     private fun dismissNews(id: String) {
+        analyticsLogger.log(AnalyticsEvent.NewsBannerDismissed(id))
         useCases.markNewsAsSeen(id)
         _state.update { it.copy(newsBanners = it.newsBanners.filter { banner -> banner.id != id }) }
     }
@@ -214,6 +236,13 @@ class HomeScreenVM @Inject constructor(
 
     private fun checkRatingEligibility() {
         if (useCases.checkAppRatingEligibility()) {
+            // Warunek nie zapisuje faktu pokazania (w odroznieniu od promptu powiadomien), a
+            // metoda leci na kazdym wejsciu na Home — bez tej bramki liczylibysmy wejscia, nie
+            // pojawienia sie karty.
+            if (state.value.ratingPromptState == RatingPromptState.HIDDEN) {
+                hasLoggedRatingAnswer = false
+                analyticsLogger.log(AnalyticsEvent.RatingPromptViewed)
+            }
             _state.update { it.copy(ratingPromptState = RatingPromptState.QUESTION) }
         }
     }
@@ -221,12 +250,16 @@ class HomeScreenVM @Inject constructor(
     private fun checkNotificationConsentEligibility() {
         // Priming (dialog modalny) i prompt oceny (karta) żyją na różnych warstwach — mogą współistnieć.
         if (useCases.checkNotificationConsentEligibility()) {
+            analyticsLogger.log(AnalyticsEvent.NotificationPromptViewed)
             useCases.markNotificationPromptShown()
             _state.update { it.copy(showNotificationConsentPrompt = true) }
         }
     }
 
     private fun onNotificationConsentAccepted() {
+        // Zgoda na prompt wewnetrzny — systemowe uprawnienie POST_NOTIFICATIONS rozstrzyga sie
+        // warstwe wyzej, w composable.
+        logNotificationPromptAnswered(NotificationPromptAction.ACCEPTED)
         useCases.setNotificationsEnabled(true)
         reminderScheduler.schedule()
         contentTopicManager.ensureSubscription()
@@ -234,6 +267,7 @@ class HomeScreenVM @Inject constructor(
     }
 
     private fun onNotificationConsentDenied() {
+        logNotificationPromptAnswered(NotificationPromptAction.DENIED)
         useCases.disableNotificationPrompt()
         _state.update { it.copy(showNotificationConsentPrompt = false) }
     }
@@ -259,11 +293,14 @@ class HomeScreenVM @Inject constructor(
     }
 
     private fun finalDismiss() {
+        // dismissRating() jest dwustopniowe — logujemy dopiero decyzje domykajaca karte.
+        logRatingAnswered(RatingAction.DISMISS)
         useCases.dismissAppRating()
         _state.update { it.copy(ratingPromptState = RatingPromptState.HIDDEN) }
     }
 
     private fun rateStore() {
+        logRatingAnswered(RatingAction.STORE)
         useCases.setAppRated()
         _state.update { it.copy(ratingPromptState = RatingPromptState.HIDDEN) }
         viewModelScope.launch {
@@ -273,6 +310,7 @@ class HomeScreenVM @Inject constructor(
 
     private fun sendFeedback() {
         val currentState = state.value
+        logRatingAnswered(RatingAction.FEEDBACK)
         val feedback = UserFeedback(
             feedback = currentState.feedbackText,
             rating = currentState.ratingValue
@@ -296,7 +334,31 @@ class HomeScreenVM @Inject constructor(
         }
     }
 
+    private fun onNotificationConsentDismissed() {
+        logNotificationPromptAnswered(NotificationPromptAction.DISMISSED)
+        _state.update { it.copy(showNotificationConsentPrompt = false) }
+    }
+
+    /**
+     * Ocena pochodzi z [handleRatingSelected]; przy odrzuceniu bez wyboru gwiazdek zostaje 0.
+     *
+     * Jedna odpowiedz na jedno pokazanie karty: wysylka feedbacku loguje sie w momencie tapniecia,
+     * a przy bledzie sieci przycisk wraca do stanu aktywnego i uzytkownik moze sprobowac ponownie.
+     */
+    private fun logRatingAnswered(action: RatingAction) {
+        if (hasLoggedRatingAnswer) return
+        hasLoggedRatingAnswer = true
+        analyticsLogger.log(
+            AnalyticsEvent.RatingPromptAnswered(state.value.ratingValue, action)
+        )
+    }
+
+    private fun logNotificationPromptAnswered(action: NotificationPromptAction) {
+        analyticsLogger.log(AnalyticsEvent.NotificationPromptAnswered(action))
+    }
+
     private fun neverAskAgain() {
+        logRatingAnswered(RatingAction.NEVER_AGAIN)
         useCases.disableRatingPrompt()
         _state.update { it.copy(ratingPromptState = RatingPromptState.HIDDEN) }
     }
@@ -313,6 +375,18 @@ class HomeScreenVM @Inject constructor(
                 else -> it
             }
             base.copy(purchaseError = null, isPurchasing = false)
+        }
+        // Panel otwiera sie takze dla posiadanego trybu (pokazuje wtedy "Zacznij", nie oferte),
+        // wiec bez tego warunku mianownik konwersji paywall -> zakup bylby zawyzony.
+        if (!isModeUnlocked(modeId)) {
+            analyticsLogger.log(
+                AnalyticsEvent.PaywallViewed(
+                    paywall = Paywall.MODE,
+                    productId = modeId,
+                    hasPrice = productDetailsFor(modeId) != null,
+                    mode = modeNameFor(modeId),
+                )
+            )
         }
         viewModelScope.launch {
             billingRepository.queryProducts(listOf(modeId))
@@ -331,16 +405,37 @@ class HomeScreenVM @Inject constructor(
     }
 
     private fun buyMode(activity: Activity, modeId: String) {
-        val details = when(modeId) {
-            BillingIds.ID_TRANSLATION_MODE -> translationModeProductDetails
-            BillingIds.ID_SWIPE_MODE -> swipeModeProductDetails
-            else -> null
-        }
+        val details = productDetailsFor(modeId)
         if (details != null) {
             pendingPurchaseModeId = modeId
             _state.update { it.copy(isPurchasing = true, purchaseError = null) }
+            purchaseFunnelTracker.onPurchaseStarted(Paywall.MODE, details)
             billingRepository.launchBillingFlow(activity, details)
+        } else {
+            // Bez tego klikniecie "Kup" bez cen w cache jest cicha utrata przychodu:
+            // metoda po prostu wychodzi, a UI nie pokazuje bledu.
+            analyticsLogger.log(
+                AnalyticsEvent.PaywallPriceMissing(Paywall.MODE, modeId)
+            )
         }
+    }
+
+    private fun modeNameFor(modeId: String): String? = when (modeId) {
+        BillingIds.ID_TRANSLATION_MODE -> QuizMode.TranslationMode.analyticsName()
+        BillingIds.ID_SWIPE_MODE -> QuizMode.SwipeMode.analyticsName()
+        else -> null
+    }
+
+    private fun isModeUnlocked(modeId: String): Boolean = when (modeId) {
+        BillingIds.ID_TRANSLATION_MODE -> state.value.isTranslationModeUnlocked
+        BillingIds.ID_SWIPE_MODE -> state.value.isSwipeModeUnlocked
+        else -> false
+    }
+
+    private fun productDetailsFor(modeId: String): AppProduct? = when (modeId) {
+        BillingIds.ID_TRANSLATION_MODE -> translationModeProductDetails
+        BillingIds.ID_SWIPE_MODE -> swipeModeProductDetails
+        else -> null
     }
 
     private fun consumeNavigation() {

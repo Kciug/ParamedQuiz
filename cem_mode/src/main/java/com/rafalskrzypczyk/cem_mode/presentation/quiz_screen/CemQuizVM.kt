@@ -4,10 +4,15 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.cem_mode.domain.use_cases.CemQuestionsUseCases
 import com.rafalskrzypczyk.core.ads.QuizAdHandler
+import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
+import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
+import com.rafalskrzypczyk.core.analytics.QuizType
+import com.rafalskrzypczyk.core.analytics.analyticsName
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.feedback.FeedbackEvent
 import com.rafalskrzypczyk.core.feedback.FeedbackManager
+import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.main_mode.presentation.quiz_base.BaseQuizVM
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collectLatest
@@ -22,11 +27,16 @@ class CemQuizVM @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val useCases: CemQuestionsUseCases,
     adHandler: QuizAdHandler,
-    feedbackManager: FeedbackManager
+    feedbackManager: FeedbackManager,
+    private val analyticsLogger: AnalyticsLogger
 ): BaseQuizVM(
     useCases = useCases.base,
     adHandler = adHandler,
     feedbackManager = feedbackManager,
+    analyticsLogger = analyticsLogger,
+    quizMode = QuizMode.CemMode,
+    quizType = QuizType.CATEGORY,
+    analyticsCategoryId = savedStateHandle.get<Long>("categoryId"),
     gameMode = GAME_MODE_NAME,
     enforceSingleSelection = true
 ) {
@@ -34,6 +44,16 @@ class CemQuizVM @Inject constructor(
     private val categoryTitle: String = savedStateHandle.get<String>("categoryTitle") ?: ""
 
     init {
+        // CemCategoriesUIEvents nie ma zdarzenia wyboru — klik idzie z composable wprost do
+        // nawigacji, więc kategoria jest widoczna dopiero tutaj.
+        analyticsLogger.log(
+            AnalyticsEvent.CategorySelected(
+                mode = QuizMode.CemMode.analyticsName(),
+                categoryId = categoryId,
+                locked = false,
+            )
+        )
+
         viewModelScope.launch {
             loadQuestions()
         }

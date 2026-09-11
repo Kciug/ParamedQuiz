@@ -3,6 +3,7 @@ plugins {
     id("paramedquiz.android.compose")
     id("paramedquiz.android.hilt")
     alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
     alias(libs.plugins.kotlin.serialization)
 }
 
@@ -63,12 +64,14 @@ dependencies {
     implementation(project(":firestore"))
     implementation(project(":revisions"))
     implementation(project(":notifications"))
+    implementation(project(":analytics"))
 
 
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.compose.runtime)
     
     testImplementation(libs.junit)
+    testImplementation(libs.mockk)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 

@@ -1,5 +1,6 @@
 package com.rafalskrzypczyk.core.shared_prefs
 
+import com.rafalskrzypczyk.core.analytics.AnalyticsConsentState
 import com.rafalskrzypczyk.core.user_management.UserData
 
 interface SharedPreferencesApi {
@@ -26,6 +27,16 @@ interface SharedPreferencesApi {
 
     fun getAcceptedTermsVersion(): Int
     fun setAcceptedTermsVersion(version: Int)
+
+    fun getAnalyticsConsent(): AnalyticsConsentState
+
+    /** Czy systemowy dialog POST_NOTIFICATIONS zdazyl juz zwrocic odpowiedz. */
+    fun isNotificationPermissionAsked(): Boolean
+    fun setNotificationPermissionAsked()
+
+    /** Wylacznie dla opcji deweloperskich — pozwala ponownie przetestowac `notification_permission`. */
+    fun clearNotificationPermissionAsked()
+    fun setAnalyticsConsent(state: AnalyticsConsentState)
 
     fun getInstallDate(): Long
     fun setInstallDate(timestamp: Long)

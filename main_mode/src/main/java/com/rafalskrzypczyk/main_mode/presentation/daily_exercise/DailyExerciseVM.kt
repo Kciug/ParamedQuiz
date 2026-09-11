@@ -2,11 +2,15 @@ package com.rafalskrzypczyk.main_mode.presentation.daily_exercise
 
 import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.core.ads.QuizAdHandler
+import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
+import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
+import com.rafalskrzypczyk.core.analytics.QuizType
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.domain.config.GameplayConfigProvider
 import com.rafalskrzypczyk.core.feedback.FeedbackEvent
 import com.rafalskrzypczyk.core.feedback.FeedbackManager
+import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.core.utils.ResourceProvider
 import com.rafalskrzypczyk.main_mode.R
 import com.rafalskrzypczyk.main_mode.domain.daily_exercise.DailyExerciseUseCases
@@ -27,13 +31,20 @@ class DailyExerciseVM @Inject constructor(
     private val scoreManager: ScoreManager,
     private val gameplayConfig: GameplayConfigProvider,
     adHandler: QuizAdHandler,
-    feedbackManager: FeedbackManager
+    feedbackManager: FeedbackManager,
+    private val analyticsLogger: AnalyticsLogger,
 ): BaseQuizVM(
     useCases = useCases.base,
     adHandler = adHandler,
     feedbackManager = feedbackManager,
+    analyticsLogger = analyticsLogger,
+    quizMode = QuizMode.MainMode,
+    quizType = QuizType.DAILY_QUEST,
+    analyticsCategoryId = null,
     gameMode = GAME_MODE_NAME
 ) {
+    private var hasLoggedDailyQuest = false
+
     init {
         viewModelScope.launch { loadQuestions() }
     }
@@ -71,6 +82,22 @@ class DailyExerciseVM @Inject constructor(
         }
         useCases.updateLastDailyExerciseDate()
         scoreManager.forceSync()
+        logDailyQuestCompletedOnce()
         super.finishQuiz()
+    }
+
+    /**
+     * Tutaj, a nie w quiz_complete: to jest moment, w ktorym dzien jest zuzyty
+     * ([DailyExerciseUseCases.updateLastDailyExerciseDate]). quiz_complete zapada takze przy
+     * wyjsciu przed pierwsza odpowiedzia, kiedy zadanie dnia zostaje dostepne.
+     *
+     * Bramka jest konieczna: finishQuiz() nie ma wlasnej, a doklada sie do niego zarowno
+     * setFinishedState(), jak i zamkniecie reklamy.
+     */
+    private fun logDailyQuestCompletedOnce() {
+        if (hasLoggedDailyQuest) return
+        hasLoggedDailyQuest = true
+        // Po updateStreak(), zeby streak_count zgadzal sie z tym, co widzi uzytkownik na wyniku.
+        analyticsLogger.log(AnalyticsEvent.DailyQuestCompleted(scoreManager.getScore().streak))
     }
 }

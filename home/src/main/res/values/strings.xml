@@ -136,6 +136,11 @@
     <string name="btn_register_login">Zarejestruj się / Zaloguj</string>
     <string name="user_anonymous">Anonimowy użytkownik</string>
 
+    <string name="points_for_what">Za co dostajesz punkty?</string>
+    <string name="points_for_first_answer">Za pierwszą poprawną odpowiedź na dane pytanie</string>
+    <string name="points_for_next_answer">Za każdą następną poprawną odpowiedź na to samo pytanie</string>
+    <string name="points_value">+%1$d</string>
+
     <string name="settings_category_account">Konto</string>
     <string name="settings_category_app">Aplikacja</string>
     <string name="settings_category_data">Dane</string>
@@ -204,4 +209,12 @@
     <string name="store_section_packs_desc">Odblokuj tematy, których potrzebujesz teraz</string>
     <string name="store_section_convenience">Wygoda</string>
     <string name="store_section_convenience_desc">Drobne usprawnienia, duża różnica</string>
+    <!-- Zgoda na analitykę -->
+    <string name="privacy_consent_title">Pomóż nam ulepszać MediQuiz</string>
+    <string name="privacy_consent_message">Za Twoją zgodą zbieramy anonimowe dane o tym, jak korzystasz z aplikacji — z których trybów korzystasz i gdzie coś przestaje działać. Nie zbieramy danych osobowych ani treści, które wpisujesz. Zgodę możesz wycofać w każdej chwili w ustawieniach.</string>
+    <string name="privacy_consent_accept">Zgadzam się</string>
+    <string name="privacy_consent_decline">Nie teraz</string>
+    <string name="settings_category_privacy">Prywatność</string>
+    <string name="settings_analytics">Analityka i diagnostyka</string>
+    <string name="settings_analytics_info">Anonimowe dane o korzystaniu z aplikacji i raporty awarii. Wyłączenie usuwa dane zebrane do tej pory.</string>
 </resources>

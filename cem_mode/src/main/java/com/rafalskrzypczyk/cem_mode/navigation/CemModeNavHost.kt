@@ -13,6 +13,13 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavDestination.Companion.hasRoute
+import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
+import com.rafalskrzypczyk.core.analytics.ScreenName
+import com.rafalskrzypczyk.core.analytics.TrackScreenViews
+import com.rafalskrzypczyk.core.analytics.analyticsName
+import kotlinx.coroutines.flow.map
+import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.cem_mode.presentation.categories_screen.CemCategoriesScreen
 import com.rafalskrzypczyk.cem_mode.presentation.categories_screen.CemCategoriesVM
 import com.rafalskrzypczyk.cem_mode.presentation.quiz_screen.CemQuizVM
@@ -28,6 +35,16 @@ fun CemModeNavHost(
     onUserPanel: () -> Unit
 ) {
     val cemNavController = rememberNavController()
+    TrackScreenViews(cemNavController) {
+        val mode = QuizMode.CemMode.analyticsName()
+        cemNavController.currentBackStackEntryFlow.map { entry ->
+            when {
+                entry.destination.hasRoute<CemCategoriesRoute>() -> AnalyticsEvent.ScreenView(ScreenName.CATEGORIES, mode)
+                entry.destination.hasRoute<CemQuizRoute>() -> AnalyticsEvent.ScreenView(ScreenName.QUIZ, mode)
+                else -> null
+            }
+        }
+    }
     val entryViewModel = hiltViewModel<CemModeEntryVM>()
     val startDestination = if (entryViewModel.isOnboardingSeen()) CemCategoriesRoute() else CemOnboardingRoute
 

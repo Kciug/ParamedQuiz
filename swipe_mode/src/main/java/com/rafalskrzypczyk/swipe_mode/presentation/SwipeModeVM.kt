@@ -4,11 +4,18 @@ import android.app.Activity
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rafalskrzypczyk.billing.analytics.PurchaseFunnelTracker
 import com.rafalskrzypczyk.billing.domain.AppProduct
 import com.rafalskrzypczyk.billing.domain.BillingIds
 import com.rafalskrzypczyk.billing.domain.BillingRepository
 import com.rafalskrzypczyk.billing.domain.PurchaseResult
 import com.rafalskrzypczyk.core.ads.QuizAdHandler
+import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
+import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
+import com.rafalskrzypczyk.core.analytics.Paywall
+import com.rafalskrzypczyk.core.analytics.QuizType
+import com.rafalskrzypczyk.core.analytics.ScreenName
+import com.rafalskrzypczyk.core.analytics.analyticsName
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
@@ -16,6 +23,7 @@ import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedState
 import com.rafalskrzypczyk.core.feedback.FeedbackEvent
 import com.rafalskrzypczyk.core.feedback.FeedbackManager
 import com.rafalskrzypczyk.core.report_issues.IssueReport
+import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.firestore.data.FirestoreCollections
 import com.rafalskrzypczyk.swipe_mode.domain.SwipeModeUseCases
 import com.rafalskrzypczyk.swipe_mode.domain.SwipeQuestion
@@ -32,6 +40,8 @@ import javax.inject.Inject
 
 import com.rafalskrzypczyk.core.utils.QuizSideEffect
 
+private val SWIPE_MODE = QuizMode.SwipeMode.analyticsName()
+
 sealed interface SwipeModeSideEffect {
     object BuyMode : SwipeModeSideEffect
 }
@@ -43,6 +53,8 @@ class SwipeModeVM @Inject constructor(
     private val billingRepository: BillingRepository,
     private val premiumStatusProvider: PremiumStatusProvider,
     private val feedbackManager: FeedbackManager,
+    private val analyticsLogger: AnalyticsLogger,
+    private val purchaseFunnelTracker: PurchaseFunnelTracker,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     private val _state = MutableStateFlow(SwipeModeState())
@@ -56,6 +68,10 @@ class SwipeModeVM @Inject constructor(
 
     private var isTrialActive: Boolean = savedStateHandle.get<Boolean>("isTrial") ?: false
     private var swipeModeProductDetails: AppProduct? = null
+    private var hasLoggedTrialWall = false
+    private var hasLoggedQuizFinished = false
+    private var hasLoggedQuizEnd = false
+    private var exitedEarly = false
 
     private var questions: List<SwipeQuestion> = emptyList()
     private var currentQuestionIndex: Int = 0
@@ -63,6 +79,18 @@ class SwipeModeVM @Inject constructor(
     private var correctAnswers: Int = 0
     private var currentStreak: Int = 0
     private var bestStreak: Int = 0
+    // bestStreak startuje od rekordu wszech czasow (patrz loadUserScore), wiec do max_streak
+    // potrzebny jest osobny licznik liczony od zera na sesje.
+    private var sessionMaxStreak: Int = 0
+
+    /**
+     * Rodzaj sesji zamrozony przy quiz_start. Zakup w trakcie triala przelacza [isTrialActive]
+     * na false, ale sesja dalej jest ta, ktora ruszyla jako darmowy fragment — inaczej quiz_start
+     * i quiz_complete tej samej sesji mialyby rozne quiz_type i lejek konwersji by sie rozjechal.
+     * Ustalone z iOS: sesja zachowuje typ, z jakim wystartowala.
+     */
+    private var sessionQuizType: QuizType = QuizType.FULL
+    private var sessionIsFreePreview: Boolean = false
     private var initialBestCombo: Int = 0
     private var earnedPoints: Int = 0
     private var isStreakUpdatedInSession = false
@@ -120,6 +148,7 @@ class SwipeModeVM @Inject constructor(
         
         if (isTrialActive) {
             setupTrial()
+            analyticsLogger.log(AnalyticsEvent.TrialStarted(SWIPE_MODE))
         }
 
         loadQuestions()
@@ -194,7 +223,21 @@ class SwipeModeVM @Inject constructor(
                                 isLastAnswerFeedbackVisible = false
                             )
                         }
-                        if (quizStartTime == 0L) quizStartTime = System.currentTimeMillis()
+                        if (quizStartTime == 0L) {
+                            // Ten sam warunek trzyma jednorazowosc startu sesji: loadQuestions()
+                            // leci ponownie po zakupie w trialu (unlockFullMode).
+                            quizStartTime = System.currentTimeMillis()
+                            sessionIsFreePreview = isTrialActive
+                            sessionQuizType = if (isTrialActive) QuizType.FREE_PREVIEW else QuizType.FULL
+                            analyticsLogger.log(
+                                AnalyticsEvent.QuizStarted(
+                                    mode = SWIPE_MODE,
+                                    quizType = sessionQuizType,
+                                    questionCount = questions.size,
+                                    isFreePreview = sessionIsFreePreview,
+                                )
+                            )
+                        }
                         displayQuestion()
                         attachQuestionsListener()
                     }
@@ -243,17 +286,46 @@ class SwipeModeVM @Inject constructor(
         }
     }
 
+    /**
+     * Sciana triala ma dwie sciezki (ponowne wejscie w displayQuestion i normalne zakonczenie
+     * ostatniego pytania), a listener Firestore potrafi je powtorzyc — stad flaga.
+     */
+    private fun showTrialWall() {
+        _state.update { it.copy(showTrialFinishedPanel = true) }
+        if (hasLoggedTrialWall) return
+        hasLoggedTrialWall = true
+
+        analyticsLogger.log(AnalyticsEvent.TrialWallReached(SWIPE_MODE, currentQuestionIndex))
+        analyticsLogger.log(
+            AnalyticsEvent.PaywallViewed(
+                paywall = Paywall.TRIAL_END,
+                productId = BillingIds.ID_SWIPE_MODE,
+                hasPrice = swipeModeProductDetails != null,
+                mode = SWIPE_MODE,
+            )
+        )
+    }
+
     private fun buySwipeMode() {
         if (swipeModeProductDetails != null) {
             _state.update { it.copy(isPurchasing = true, purchaseError = null) }
             viewModelScope.launch {
                 _effect.emit(SwipeModeSideEffect.BuyMode)
             }
+        } else {
+            analyticsLogger.log(
+                AnalyticsEvent.PaywallPriceMissing(Paywall.TRIAL_END, BillingIds.ID_SWIPE_MODE)
+            )
         }
     }
 
+    /**
+     * Wolane z NavHosta po side effekcie — dopiero tutaj zakup realnie trafia do Google Play,
+     * wiec tu (a nie w [buySwipeMode]) jest start lejka.
+     */
     fun launchBillingFlow(activity: Activity) {
         swipeModeProductDetails?.let {
+            purchaseFunnelTracker.onPurchaseStarted(Paywall.TRIAL_END, it)
             billingRepository.launchBillingFlow(activity, it)
         }
     }
@@ -294,6 +366,7 @@ class SwipeModeVM @Inject constructor(
                             showReportDialog = false, 
                             reportIssueDescription = ""
                         ) }
+                        analyticsLogger.log(AnalyticsEvent.IssueReported(SWIPE_MODE))
                         feedbackManager.perform(FeedbackEvent.SUCCESS)
                         _quizEffect.emit(QuizSideEffect.ShowReportSuccess)
                     }
@@ -305,7 +378,7 @@ class SwipeModeVM @Inject constructor(
     private fun displayQuestion() {
         if(questions.indices.contains(currentQuestionIndex).not()) {
             if (isTrialActive && questions.isNotEmpty()) {
-                _state.update { it.copy(showTrialFinishedPanel = true) }
+                showTrialWall()
             } else {
                 setFinishedState()
             }
@@ -347,7 +420,7 @@ class SwipeModeVM @Inject constructor(
             answerResult = SwipeModeAnswerResult(result = SwipeQuizResult.NONE)
         ) }
         if (isTrialActive && questions.isNotEmpty()) {
-            _state.update { it.copy(showTrialFinishedPanel = true) }
+            showTrialWall()
         } else {
             setFinishedState()
         }
@@ -405,6 +478,7 @@ class SwipeModeVM @Inject constructor(
         if(isAnswerCorrect) {
             currentStreak++
             bestStreak = maxOf(currentStreak, bestStreak)
+            sessionMaxStreak = maxOf(currentStreak, sessionMaxStreak)
         } else {
             currentStreak = 0
         }
@@ -413,11 +487,45 @@ class SwipeModeVM @Inject constructor(
 
     private fun handleExitQuiz(navigateBack: () -> Unit) {
         _state.update { it.copy(showExitConfirmation = false) }
-        if(currentQuestionIndex == 0) navigateBack()
+        exitedEarly = true
+        if(currentQuestionIndex == 0) {
+            // Wyjscie bez zadnej odpowiedzi nie finalizuje sesji, wiec bez tego quiz_start
+            // nie mialby zdarzenia terminalnego.
+            logQuizFinishedOnce()
+            navigateBack()
+        }
         else setFinishedState()
     }
 
+    /** Logowane przed bramka reklamy, zeby interstitial nie wliczal sie w duration_sec. */
+    private fun logQuizFinishedOnce() {
+        // Wyjscie z ekranu, zanim pytania sie zaladuja, tez trafia tutaj (indeks silnika jest
+        // wtedy zerowy). Bez tej bramki lecialby quiz_complete bez pasujacego quiz_start,
+        // zawyzajac early_exit u uzytkownikow ze slabym polaczeniem.
+        if (quizStartTime == 0L) return
+        if (hasLoggedQuizFinished) return
+        hasLoggedQuizFinished = true
+
+        analyticsLogger.log(
+            AnalyticsEvent.QuizCompleted(
+                mode = SWIPE_MODE,
+                quizType = sessionQuizType,
+                // Pula w chwili zakonczenia: po konwersji triala jest wieksza niz w quiz_start,
+                // ale answered_count nigdy jej nie przekroczy.
+                questionCount = questions.size,
+                answeredCount = currentQuestionIndex,
+                correctCount = correctAnswers,
+                isEarlyExit = exitedEarly,
+                isFreePreview = sessionIsFreePreview,
+                durationSec = if (quizStartTime == 0L) 0L else (System.currentTimeMillis() - quizStartTime) / 1000,
+                maxStreak = sessionMaxStreak,
+            )
+        )
+    }
+
     private fun finishQuiz() {
+        logQuizFinishedOnce()
+        logQuizEndScreenOnce()
         val isNewComboRecord = bestStreak > initialBestCombo
 
         feedbackManager.perform(if (isNewComboRecord) FeedbackEvent.NEW_RECORD else FeedbackEvent.QUIZ_COMPLETED)
@@ -454,7 +562,15 @@ class SwipeModeVM @Inject constructor(
         ) }
     }
 
+    /** Ekran wyniku to stan, nie trasa — patrz BaseQuizVM.logQuizEndScreenOnce. */
+    private fun logQuizEndScreenOnce() {
+        if (hasLoggedQuizEnd) return
+        hasLoggedQuizEnd = true
+        analyticsLogger.log(AnalyticsEvent.ScreenView(ScreenName.QUIZ_END, mode = SWIPE_MODE))
+    }
+
     private fun setFinishedState() {
+        logQuizFinishedOnce()
         if (adHandler.shouldShowAd(
                 answeredCount = currentQuestionIndex,
                 isQuizFinished = true

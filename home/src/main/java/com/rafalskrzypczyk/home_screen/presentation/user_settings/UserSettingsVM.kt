@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.core.api_response.Response
+import com.rafalskrzypczyk.core.analytics.AnalyticsConsentManager
+import com.rafalskrzypczyk.core.analytics.AnalyticsConsentState
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.home_screen.domain.use_cases.UserSettingsUseCases
 import com.rafalskrzypczyk.billing.domain.BillingIds
@@ -21,7 +23,8 @@ import javax.inject.Inject
 class UserSettingsVM @Inject constructor(
     private val useCases: UserSettingsUseCases,
     private val premiumStatusProvider: PremiumStatusProvider,
-    private val sharedPrefs: SharedPreferencesApi
+    private val sharedPrefs: SharedPreferencesApi,
+    private val analyticsConsentManager: AnalyticsConsentManager
 ) : ViewModel() {
     private val _state = MutableStateFlow(UserSettingsState())
     val state = _state.asStateFlow()
@@ -45,6 +48,7 @@ class UserSettingsVM @Inject constructor(
             is UserSettingsUIEvents.ToggleDeleteProgressDialog -> _state.update { it.copy(showDeleteProgressDialog = event.show) }
             UserSettingsUIEvents.OnSuccessToastShown -> _state.update { it.copy(showSuccessToast = false) }
             UserSettingsUIEvents.DeleteProgress -> deleteProgress()
+            is UserSettingsUIEvents.SetAnalyticsEnabled -> setAnalyticsEnabled(event.enabled)
             is UserSettingsUIEvents.SetSoundEnabled -> setSoundEnabled(event.enabled)
             is UserSettingsUIEvents.SetHapticEnabled -> setHapticEnabled(event.enabled)
         }
@@ -53,10 +57,20 @@ class UserSettingsVM @Inject constructor(
     private fun loadAppSettings() {
         _state.update {
             it.copy(
+                analyticsEnabled = analyticsConsentManager.state.value == AnalyticsConsentState.GRANTED,
                 soundEnabled = sharedPrefs.isSoundEnabled(),
                 hapticEnabled = sharedPrefs.isHapticEnabled()
             )
         }
+    }
+
+    /**
+     * Wycofanie idzie przez [AnalyticsConsentManager.withdraw], a nie przez zwykla odmowe:
+     * poza wylaczeniem zbierania musi jeszcze wyczyscic zebrane dane.
+     */
+    private fun setAnalyticsEnabled(enabled: Boolean) {
+        if (enabled) analyticsConsentManager.grant() else analyticsConsentManager.withdraw()
+        _state.update { it.copy(analyticsEnabled = enabled) }
     }
 
     private fun setSoundEnabled(enabled: Boolean) {

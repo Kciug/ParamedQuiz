@@ -20,4 +20,6 @@ secrets {
 dependencies {
     implementation(project(":core"))
     implementation(libs.play.services.ads)
+
+    testImplementation(libs.bundles.unit.test)
 }

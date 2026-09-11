@@ -3,6 +3,11 @@ package com.rafalskrzypczyk.revisions.presentation.quiz
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
+import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
+import com.rafalskrzypczyk.core.analytics.QuizType
+import com.rafalskrzypczyk.core.analytics.ScreenName
+import com.rafalskrzypczyk.core.analytics.analyticsName
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedState
@@ -41,7 +46,8 @@ class RevisionsQuizVM @Inject constructor(
     private val streakManager: StreakManager,
     private val reportIssueUC: ReportIssueUC,
     private val adHandler: QuizAdHandler,
-    private val feedbackManager: FeedbackManager
+    private val feedbackManager: FeedbackManager,
+    private val analyticsLogger: AnalyticsLogger
 ) : ViewModel() {
 
     private val mode: QuizMode = QuizMode.valueOf(savedStateHandle.get<String>("mode") ?: QuizMode.MainMode.name)
@@ -56,6 +62,16 @@ class RevisionsQuizVM @Inject constructor(
 
     private var currentQuestionStartTime = 0L
     private var isStreakUpdatedInSession = false
+
+    private var sessionStartTime = 0L
+    private var hasLoggedQuizStarted = false
+    private var hasLoggedQuizEnd = false
+
+    // Seria poprawnych odpowiedzi pod rzad w tej sesji (ponowne podejscia tez sie licza).
+    private var currentAnswerStreak = 0
+    private var sessionMaxStreak = 0
+    private var hasLoggedQuizFinished = false
+    private var exitedEarly = false
 
     init {
         collectScore()
@@ -86,6 +102,7 @@ class RevisionsQuizVM @Inject constructor(
                                 totalQuestions = engine.getInitialSize()
                             )
                         }
+                        logSessionStartedOnce()
                         displayCurrentQuestion()
                     }
                     is Response.Error -> {
@@ -213,6 +230,9 @@ class RevisionsQuizVM @Inject constructor(
 
     private fun submitMultipleChoiceAnswer() {
         val currentQ = _state.value.currentQuestionUIM ?: return
+        // Ten sam bezwarunkowo renderowany przycisk co w trybie glownym — bez bramki drugi tap
+        // przed przejsciem do nastepnego pytania trafialby do silnika po raz drugi.
+        if (currentQ.isAnswerSubmitted) return
         val selectedAnswers = currentQ.answers.filter { it.isSelected }
         val selectedIds = selectedAnswers.map { it.id }
         val correctIds = currentQ.correctAnswerIds
@@ -250,6 +270,28 @@ class RevisionsQuizVM @Inject constructor(
                 mcQuestions = listOf(processedQ)
             )
         }
+
+        trackAnswer(isCorrect)
+    }
+
+    /** Ekran wyniku to stan, nie trasa — patrz BaseQuizVM.logQuizEndScreenOnce. */
+    private fun logQuizEndScreenOnce() {
+        if (hasLoggedQuizEnd) return
+        hasLoggedQuizEnd = true
+        analyticsLogger.log(AnalyticsEvent.ScreenView(ScreenName.QUIZ_END, mode = mode.analyticsName()))
+    }
+
+    /**
+     * Seria poprawnych odpowiedzi pod rzad — parametr `max_streak` w quiz_complete. Ponowne
+     * podejscia do tego samego pytania licza sie jak kazda inna odpowiedz.
+     */
+    private fun trackAnswer(isCorrect: Boolean) {
+        if (isCorrect) {
+            currentAnswerStreak++
+            sessionMaxStreak = maxOf(sessionMaxStreak, currentAnswerStreak)
+        } else {
+            currentAnswerStreak = 0
+        }
     }
 
     private fun submitTranslationAnswer() {
@@ -283,12 +325,16 @@ class RevisionsQuizVM @Inject constructor(
                 translationQuestions = listOf(processedQ)
             )
         }
+
+        trackAnswer(isCorrect)
     }
 
     private fun displayNextQuestion() {
         val nextQuestion = engine.getCurrentQuestion()
         val isFinished = nextQuestion == null
         val answeredCount = engine.getAttemptedQuestionIds().size
+
+        if (isFinished) logQuizFinishedOnce()
 
         if (adHandler.shouldShowAd(
                 answeredCount = answeredCount,
@@ -313,6 +359,8 @@ class RevisionsQuizVM @Inject constructor(
 
     private fun handleExitQuiz() {
         _state.update { it.copy(showExitConfirmation = false) }
+        exitedEarly = true
+        logQuizFinishedOnce()
         val answeredCount = engine.getAttemptedQuestionIds().size
         if (adHandler.shouldShowAd(
                 answeredCount = answeredCount,
@@ -334,7 +382,65 @@ class RevisionsQuizVM @Inject constructor(
         )
     }
 
+    /**
+     * Sesja powtorek nie ma osobnego ekranu konfiguracji po stronie ViewModelu (dialog wola
+     * nawigacje wprost), wiec argumenty nawigacji sa jedynym miejscem, gdzie widac konfiguracje
+     * faktycznie wystartowanej sesji.
+     */
+    private fun logSessionStartedOnce() {
+        if (hasLoggedQuizStarted) return
+        hasLoggedQuizStarted = true
+        sessionStartTime = System.currentTimeMillis()
+
+        analyticsLogger.log(
+            AnalyticsEvent.RevisionConfigured(
+                criterion = criterion.name.lowercase(),
+                mode = mode.analyticsName(),
+                categoryCount = if (categoryId != null) 1 else 0,
+                questionCount = engine.getInitialSize(),
+            )
+        )
+        analyticsLogger.log(
+            AnalyticsEvent.QuizStarted(
+                // `mode` niesie tryb powtarzanej tresci — sam fakt powtorki opisuje quizType,
+                // wiec duplikowanie go w obu parametrach tylko gubiloby informacje.
+                mode = mode.analyticsName(),
+                quizType = QuizType.REVISION,
+                questionCount = engine.getInitialSize(),
+                isFreePreview = false,
+                categoryId = categoryId,
+            )
+        )
+    }
+
+    /** Logowane przed bramka reklamy, zeby interstitial nie wliczal sie w duration_sec. */
+    private fun logQuizFinishedOnce() {
+        // Wyjscie z ekranu, zanim pytania sie zaladuja, tez trafia tutaj (indeks silnika jest
+        // wtedy zerowy). Bez tej bramki lecialby quiz_complete bez pasujacego quiz_start,
+        // zawyzajac early_exit u uzytkownikow ze slabym polaczeniem.
+        if (!hasLoggedQuizStarted) return
+        if (hasLoggedQuizFinished) return
+        hasLoggedQuizFinished = true
+
+        analyticsLogger.log(
+            AnalyticsEvent.QuizCompleted(
+                mode = mode.analyticsName(),
+                quizType = QuizType.REVISION,
+                questionCount = engine.getInitialSize(),
+                answeredCount = engine.getAttemptedQuestionIds().size,
+                correctCount = engine.getCorrectAnswersCount(),
+                isEarlyExit = exitedEarly,
+                isFreePreview = false,
+                durationSec = if (sessionStartTime == 0L) 0L else (System.currentTimeMillis() - sessionStartTime) / 1000,
+                maxStreak = sessionMaxStreak,
+                categoryId = categoryId,
+            )
+        )
+    }
+
     private fun finishQuiz() {
+        logQuizFinishedOnce()
+        logQuizEndScreenOnce()
         feedbackManager.perform(FeedbackEvent.QUIZ_COMPLETED)
         _state.update {
             it.copy(
@@ -375,6 +481,9 @@ class RevisionsQuizVM @Inject constructor(
         viewModelScope.launch {
             reportIssueUC(report).collectLatest { response ->
                 if (response is Response.Success) {
+                    analyticsLogger.log(
+                        AnalyticsEvent.IssueReported(mode.analyticsName())
+                    )
                     _state.update {
                         it.copy(
                             showReportDialog = false,

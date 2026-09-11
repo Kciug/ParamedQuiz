@@ -47,6 +47,9 @@ Zasady:
 
 ---
 
+> Formularz UMP odpowiada **wyłącznie za zgody reklamowe**. Zgoda na analitykę i diagnostykę
+> awarii jest osobną decyzją użytkownika — patrz [Analityka i pomiar](20-analityka-i-pomiar.md).
+
 ## 5. Reguły biznesowe
 
 - **Zależność od zakupów:** pełny pakiet lub „brak reklam" trwale wyłącza reklamy.

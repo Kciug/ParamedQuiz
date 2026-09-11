@@ -1,5 +1,6 @@
 package com.rafalskrzypczyk.core.shared_prefs
 
+import com.rafalskrzypczyk.core.analytics.AnalyticsConsentState
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.rafalskrzypczyk.core.user_management.UserData
@@ -17,6 +18,8 @@ class SharedPreferencesService @Inject constructor(
         const val KEY_ONBOARDING_TRANSLATION_MODE_STATUS = "onboarding_translation_mode_done"
         const val KEY_ONBOARDING_CEM_MODE_STATUS = "onboarding_cem_mode_done"
         const val KEY_ACCEPTED_TERMS_VERSION = "accepted_terms_version"
+        const val KEY_ANALYTICS_CONSENT = "analytics_consent"
+        const val KEY_NOTIFICATION_PERMISSION_ASKED = "notification_permission_asked"
         const val KEY_INSTALL_DATE = "install_date"
         const val KEY_COMPLETED_QUIZZES_COUNT = "completed_quizzes_count"
         const val KEY_APP_RATED = "app_rated"
@@ -144,6 +147,30 @@ class SharedPreferencesService @Inject constructor(
     override fun setAcceptedTermsVersion(version: Int) {
         sharedPreferences.edit {
             putInt(KEY_ACCEPTED_TERMS_VERSION, version)
+        }
+    }
+
+    override fun getAnalyticsConsent(): AnalyticsConsentState {
+        val stored = sharedPreferences.getString(KEY_ANALYTICS_CONSENT, null)
+        if (stored.isNullOrEmpty()) return AnalyticsConsentState.UNDECIDED
+        return runCatching { AnalyticsConsentState.valueOf(stored) }
+            .getOrDefault(AnalyticsConsentState.UNDECIDED)
+    }
+
+    override fun isNotificationPermissionAsked(): Boolean =
+        sharedPreferences.getBoolean(KEY_NOTIFICATION_PERMISSION_ASKED, false)
+
+    override fun setNotificationPermissionAsked() {
+        sharedPreferences.edit { putBoolean(KEY_NOTIFICATION_PERMISSION_ASKED, true) }
+    }
+
+    override fun clearNotificationPermissionAsked() {
+        sharedPreferences.edit { remove(KEY_NOTIFICATION_PERMISSION_ASKED) }
+    }
+
+    override fun setAnalyticsConsent(state: AnalyticsConsentState) {
+        sharedPreferences.edit {
+            putString(KEY_ANALYTICS_CONSENT, state.name)
         }
     }
 

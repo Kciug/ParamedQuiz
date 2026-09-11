@@ -13,6 +13,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavDestination.Companion.hasRoute
+import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
+import com.rafalskrzypczyk.core.analytics.ScreenName
+import com.rafalskrzypczyk.core.analytics.TrackScreenViews
+import com.rafalskrzypczyk.core.analytics.analyticsName
+import kotlinx.coroutines.flow.map
+import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.translation_mode.presentation.TranslationQuizScreen
 import com.rafalskrzypczyk.translation_mode.presentation.TranslationQuizViewModel
 import com.rafalskrzypczyk.translation_mode.presentation.onboarding.TranslationModeOnboardingScreen
@@ -27,6 +34,15 @@ fun TranslationModeNavHost(
 ) {
     val navController = rememberNavController()
     val startDest: Any = remember(showOnboarding, isTrial) { if (showOnboarding) Onboarding else TranslationQuiz(isTrial) }
+    TrackScreenViews(navController) {
+        navController.currentBackStackEntryFlow.map { entry ->
+            if (entry.destination.hasRoute<TranslationQuiz>()) {
+                AnalyticsEvent.ScreenView(ScreenName.QUIZ, QuizMode.TranslationMode.analyticsName())
+            } else {
+                null
+            }
+        }
+    }
 
     NavHost(
         modifier = Modifier.background(MaterialTheme.colorScheme.background),

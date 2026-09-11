@@ -14,6 +14,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavDestination.Companion.hasRoute
+import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
+import com.rafalskrzypczyk.core.analytics.ScreenName
+import com.rafalskrzypczyk.core.analytics.TrackScreenViews
+import com.rafalskrzypczyk.core.analytics.analyticsName
+import kotlinx.coroutines.flow.map
+import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.swipe_mode.presentation.SwipeModeScreen
 import com.rafalskrzypczyk.swipe_mode.presentation.SwipeModeVM
 import com.rafalskrzypczyk.swipe_mode.presentation.onboarding.SwipeModeOnboardingScreen
@@ -28,6 +35,15 @@ fun SwipeModeNavHost(
 ) {
     val navController = rememberNavController()
     val startDest: Any = remember(showOnboarding, isTrial) { if (showOnboarding) Onboarding else SwipeQuiz(isTrial) }
+    TrackScreenViews(navController) {
+        navController.currentBackStackEntryFlow.map { entry ->
+            if (entry.destination.hasRoute<SwipeQuiz>()) {
+                AnalyticsEvent.ScreenView(ScreenName.QUIZ, QuizMode.SwipeMode.analyticsName())
+            } else {
+                null
+            }
+        }
+    }
 
     NavHost(
         modifier = Modifier.background(MaterialTheme.colorScheme.background),

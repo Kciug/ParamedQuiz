@@ -17,6 +17,7 @@ data class UserSettingsState(
     
     val isAnonymous: Boolean = false,
 
+    val analyticsEnabled: Boolean = false,
     val soundEnabled: Boolean = true,
     val hapticEnabled: Boolean = true,
 

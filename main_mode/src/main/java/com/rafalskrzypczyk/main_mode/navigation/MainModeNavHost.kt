@@ -15,6 +15,13 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavDestination.Companion.hasRoute
+import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
+import com.rafalskrzypczyk.core.analytics.ScreenName
+import com.rafalskrzypczyk.core.analytics.TrackScreenViews
+import com.rafalskrzypczyk.core.analytics.analyticsName
+import kotlinx.coroutines.flow.map
+import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.main_mode.presentation.categories_screen.MMCategoriesScreen
 import com.rafalskrzypczyk.main_mode.presentation.categories_screen.MMCategoriesVM
 import com.rafalskrzypczyk.main_mode.presentation.onboarding.MainModeOnboardingScreen
@@ -30,6 +37,16 @@ fun MainModeNavHost(
     showOnboarding: Boolean
 ) {
     val mainModeNavController = rememberNavController()
+    TrackScreenViews(mainModeNavController) {
+        val mode = QuizMode.MainMode.analyticsName()
+        mainModeNavController.currentBackStackEntryFlow.map { entry ->
+            when {
+                entry.destination.hasRoute<Categories>() -> AnalyticsEvent.ScreenView(ScreenName.CATEGORIES, mode)
+                entry.destination.hasRoute<Quiz>() -> AnalyticsEvent.ScreenView(ScreenName.QUIZ, mode)
+                else -> null
+            }
+        }
+    }
     val startDest: Any = remember { if (showOnboarding) Onboarding else Categories }
 
     NavHost(

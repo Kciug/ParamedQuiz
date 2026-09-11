@@ -2,6 +2,9 @@ package com.rafalskrzypczyk.home_screen.presentation.notification_settings
 
 sealed interface NotificationSettingsUIEvents {
     data class SetNotificationsEnabled(val enabled: Boolean) : NotificationSettingsUIEvents
+
+    /** Odpowiedz na SYSTEMOWY dialog POST_NOTIFICATIONS. */
+    data class SystemPermissionResult(val granted: Boolean) : NotificationSettingsUIEvents
     data class SetRemindersEnabled(val enabled: Boolean) : NotificationSettingsUIEvents
     data class SetNewsEnabled(val enabled: Boolean) : NotificationSettingsUIEvents
     data class SetMarketingEnabled(val enabled: Boolean) : NotificationSettingsUIEvents

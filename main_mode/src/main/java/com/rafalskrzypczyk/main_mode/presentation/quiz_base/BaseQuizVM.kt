@@ -3,12 +3,18 @@ package com.rafalskrzypczyk.main_mode.presentation.quiz_base
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rafalskrzypczyk.core.ads.QuizAdHandler
+import com.rafalskrzypczyk.core.analytics.AnalyticsEvent
+import com.rafalskrzypczyk.core.analytics.AnalyticsLogger
+import com.rafalskrzypczyk.core.analytics.QuizType
+import com.rafalskrzypczyk.core.analytics.ScreenName
+import com.rafalskrzypczyk.core.analytics.analyticsName
 import com.rafalskrzypczyk.core.api_response.Response
 import com.rafalskrzypczyk.core.api_response.ResponseState
 import com.rafalskrzypczyk.core.composables.quiz_finished.QuizFinishedState
 import com.rafalskrzypczyk.core.feedback.FeedbackEvent
 import com.rafalskrzypczyk.core.feedback.FeedbackManager
 import com.rafalskrzypczyk.core.report_issues.IssueReport
+import com.rafalskrzypczyk.core.utils.QuizMode
 import com.rafalskrzypczyk.main_mode.domain.models.Question
 import com.rafalskrzypczyk.main_mode.domain.quiz_base.BaseQuizUseCases
 import com.rafalskrzypczyk.main_mode.domain.quiz_base.QuizEngine
@@ -26,6 +32,10 @@ abstract class BaseQuizVM (
     private val useCases: BaseQuizUseCases,
     protected val adHandler: QuizAdHandler,
     protected val feedbackManager: FeedbackManager,
+    private val analyticsLogger: AnalyticsLogger,
+    private val quizMode: QuizMode,
+    private val quizType: QuizType,
+    private val analyticsCategoryId: Long?,
     private val gameMode: String,
     private val enforceSingleSelection: Boolean = false
 ): ViewModel() {
@@ -43,6 +53,15 @@ abstract class BaseQuizVM (
     
     // Timing
     private var currentQuestionStartTime: Long = 0L
+
+    private var hasLoggedQuizStarted = false
+    private var hasLoggedQuizFinished = false
+    private var hasLoggedQuizEnd = false
+    private var exitedEarly = false
+
+    // Seria poprawnych odpowiedzi pod rzad w tej sesji — parametr max_streak.
+    private var currentAnswerStreak = 0
+    private var sessionMaxStreak = 0
 
     init {
         loadUserScore()
@@ -104,6 +123,7 @@ abstract class BaseQuizVM (
                         showReportDialog = false, 
                         reportIssueDescription = ""
                     ) }
+                    analyticsLogger.log(AnalyticsEvent.IssueReported(quizMode.analyticsName()))
                     feedbackManager.perform(FeedbackEvent.SUCCESS)
                     _effect.emit(QuizSideEffect.ShowReportSuccess)
                 }
@@ -124,6 +144,10 @@ abstract class BaseQuizVM (
     }
 
     protected open fun submitAnswer() {
+        // Przycisk zatwierdzania jest renderowany bezwarunkowo i tylko przyslaniany animacja,
+        // wiec drugi tap w trakcie przejscia trafial tu ponownie i podwajal liczniki silnika.
+        if (state.value.question.isAnswerSubmitted) return
+
         val now = System.currentTimeMillis()
         val duration = now - currentQuestionStartTime
         
@@ -166,6 +190,18 @@ abstract class BaseQuizVM (
         if (domainQ != null) {
             earnedPoints += useCases.updateScore(domainQ.id, isCorrect)
         }
+
+        trackAnswer(isCorrect)
+    }
+
+    /** Seria poprawnych odpowiedzi pod rzad — parametr `max_streak` w quiz_complete. */
+    private fun trackAnswer(isCorrect: Boolean) {
+        if (isCorrect) {
+            currentAnswerStreak++
+            sessionMaxStreak = maxOf(sessionMaxStreak, currentAnswerStreak)
+        } else {
+            currentAnswerStreak = 0
+        }
     }
 
     protected fun initializeQuiz(questions: List<Question>, title: String) {
@@ -178,7 +214,71 @@ abstract class BaseQuizVM (
                 quizStartTime = System.currentTimeMillis()
             )
         }
+        logQuizStartedOnce()
         displayQuestion()
+    }
+
+    /**
+     * [initializeQuiz] siedzi w collectLatest na flow z Firestore — kolejna emisja Success
+     * reinicjalizuje sesję, więc bez flagi start poleciałby wielokrotnie na jedną sesję.
+     */
+    private fun logQuizStartedOnce() {
+        if (hasLoggedQuizStarted) return
+        hasLoggedQuizStarted = true
+
+        analyticsLogger.log(
+            AnalyticsEvent.QuizStarted(
+                mode = quizMode.analyticsName(),
+                quizType = quizType,
+                questionCount = quizEngine.getQuestionsCount(),
+                isFreePreview = false,
+                categoryId = analyticsCategoryId,
+                // Tylko razem z identyfikatorem: `categoryTitle` niesie tytul ekranu, wiec dla
+                // Zadania dnia byla to zlokalizowana nazwa trybu, a nie zadna kategoria.
+                categoryName = analyticsCategoryId?.let { _state.value.categoryTitle.ifBlank { null } },
+            )
+        )
+    }
+
+    /**
+     * Logujemy na logicznym końcu sesji ([setFinishedState]), a nie w [finishQuiz]: w czterech
+     * z pięciu trybów finalizację potrafi opóźnić interstitial, więc zdarzenie przepadłoby przy
+     * ubiciu aplikacji w trakcie reklamy, a jej czas wliczyłby się w duration_sec.
+     */
+    private fun logQuizFinishedOnce() {
+        // Wyjscie z ekranu, zanim pytania sie zaladuja, tez trafia tutaj (indeks silnika jest
+        // wtedy zerowy). Bez tej bramki lecialby quiz_complete bez pasujacego quiz_start,
+        // zawyzajac early_exit u uzytkownikow ze slabym polaczeniem.
+        if (!hasLoggedQuizStarted) return
+        if (hasLoggedQuizFinished) return
+        hasLoggedQuizFinished = true
+
+        val startTime = _state.value.quizStartTime
+        analyticsLogger.log(
+            AnalyticsEvent.QuizCompleted(
+                mode = quizMode.analyticsName(),
+                quizType = quizType,
+                questionCount = quizEngine.getQuestionsCount(),
+                answeredCount = quizEngine.getAnsweredQuestions(),
+                correctCount = quizEngine.getCorrectAnswers(),
+                isEarlyExit = exitedEarly,
+                isFreePreview = false,
+                durationSec = if (startTime == 0L) 0L else (System.currentTimeMillis() - startTime) / 1000,
+                maxStreak = sessionMaxStreak,
+                categoryId = analyticsCategoryId,
+            )
+        )
+    }
+
+    /**
+     * Ekran wyniku to stan, nie trasa, wiec `screen_view` dla niego nie wyjdzie z NavHosta.
+     * Osobno od quiz_complete: tamto zapada przed reklama, ten ekran pojawia sie po niej, a przy
+     * wyjsciu przed pierwsza odpowiedzia nie pojawia sie wcale.
+     */
+    private fun logQuizEndScreenOnce() {
+        if (hasLoggedQuizEnd) return
+        hasLoggedQuizEnd = true
+        analyticsLogger.log(AnalyticsEvent.ScreenView(ScreenName.QUIZ_END, mode = quizMode.analyticsName()))
     }
 
     protected fun updateQuizData(questions: List<Question>) {
@@ -216,6 +316,7 @@ abstract class BaseQuizVM (
 
     protected open fun displayNextQuestion() {
         val next = quizEngine.nextQuestion()
+        if (next == null) logQuizFinishedOnce()
         if (adHandler.shouldShowAd(
                 answeredCount = state.value.answeredQuestions.size,
                 isQuizFinished = next == null,
@@ -230,11 +331,18 @@ abstract class BaseQuizVM (
 
     protected open fun handleExitQuiz(navigateBack: () -> Unit) {
         _state.update { it.copy(showExitConfirmation = false) }
-        if(quizEngine.getCurrentQuestionIndex() == 0) navigateBack()
+        exitedEarly = true
+        if(quizEngine.getCurrentQuestionIndex() == 0) {
+            // Wyjście przed pierwszą odpowiedzią nie finalizuje sesji, więc bez tego
+            // quiz_start nie miałby zdarzenia terminalnego i lejek pokazywałby odpływ.
+            logQuizFinishedOnce()
+            navigateBack()
+        }
         else setFinishedState()
     }
 
     protected open fun setFinishedState() {
+        logQuizFinishedOnce()
         if (adHandler.shouldShowAd(
                 answeredCount = state.value.answeredQuestions.size,
                 isQuizFinished = true,
@@ -248,6 +356,8 @@ abstract class BaseQuizVM (
     }
 
     protected open fun finishQuiz() {
+        logQuizFinishedOnce()
+        logQuizEndScreenOnce()
         useCases.incrementCompletedQuizzes()
         feedbackManager.perform(FeedbackEvent.QUIZ_COMPLETED)
         _state.update { it.copy(

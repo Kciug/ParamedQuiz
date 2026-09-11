@@ -13,7 +13,7 @@
 
 ## 1. Cel funkcji
 
-Ustawienia konta pozwalają użytkownikowi zarządzać swoim kontem (zmiana nazwy, zmiana hasła, wylogowanie, usunięcie konta), swoim **postępem** (skasowanie postępu) oraz **preferencjami powiadomień** (włączenie/wyłączenie, godzina przypomnień).
+Ustawienia konta pozwalają użytkownikowi zarządzać swoim kontem (zmiana nazwy, zmiana hasła, wylogowanie, usunięcie konta), swoim **postępem** (skasowanie postępu), **preferencjami powiadomień** (włączenie/wyłączenie, godzina przypomnień) oraz **prywatnością** (zgoda na analitykę).
 
 ---
 
@@ -22,7 +22,16 @@ Ustawienia konta pozwalają użytkownikowi zarządzać swoim kontem (zmiana nazw
 - Operacje na koncie (zmiana nazwy/hasła, usunięcie konta) dotyczą **zalogowanego** użytkownika.
 - Zmiana **hasła** dotyczy kont **e-mail + hasło**; dla kont **zewnętrznych** (Google) usunięcie konta wykorzystuje ponowne uwierzytelnienie przez dostawcę.
 - Ekran rozpoznaje **typ konta** (metodę logowania) oraz stan **anonimowy** (brak danych konta).
-- Ustawienia **powiadomień** są dostępne niezależnie od konta.
+- Ustawienia **powiadomień** i **prywatności** są dostępne niezależnie od konta.
+
+---
+
+## 2a. Prywatność
+
+Sekcja „Prywatność" zawiera przełącznik zgody na analitykę i diagnostykę awarii. Wyłączenie
+zatrzymuje zbieranie **i czyści dane zebrane do tej pory**; włączenie działa jak zgoda udzielona na
+ekranie powitalnym. Pierwsza decyzja zapada na osobnym ekranie po akceptacji regulaminu — szczegóły
+w [Analityka i pomiar](20-analityka-i-pomiar.md).
 
 ---
 

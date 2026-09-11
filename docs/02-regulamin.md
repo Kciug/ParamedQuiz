@@ -36,7 +36,10 @@ Regulamin można też otworzyć **dobrowolnie** (np. z ekranu powitalnego onboar
 2. Wyświetlany jest ekran regulaminu z pobraną treścią.
 3. Użytkownik zapoznaje się z treścią i wybiera **Akceptuję**.
 4. Zaakceptowana **wersja** jest zapamiętywana lokalnie.
-5. Użytkownik przechodzi do ekranu głównego.
+5. Jeżeli decyzja o zgodzie na analitykę jest jeszcze niepodjęta, pojawia się obowiązkowy
+   [ekran zgody](20-analityka-i-pomiar.md#6-zgody-model-opt-in) — dopiero po nim ekran główny.
+   Dotyczy to także użytkowników z aktualną wersją regulaminu, którzy ten ekran już mają za sobą.
+6. Użytkownik przechodzi do ekranu głównego.
 
 ### 3.2 Wymuszenie po aktualizacji wersji
 1. Backend publikuje nowszą wersję regulaminu.

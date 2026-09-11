@@ -4,6 +4,7 @@ import com.rafalskrzypczyk.core.billing.PremiumStatusProvider
 import com.rafalskrzypczyk.core.domain.config.GameplayConfigProvider
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.TestScope
@@ -28,12 +29,14 @@ class QuizAdHandlerTest {
     private val testDispatcher = UnconfinedTestDispatcher()
     private val testScope = TestScope(testDispatcher)
 
+    private val adManager: AdManager = mockk(relaxed = true)
+
     private lateinit var sut: QuizAdHandler
 
     @Before
     fun setUp() {
         isAdsFreeFlow.value = false
-        sut = QuizAdHandler(premiumStatusProvider, gameplayConfig)
+        sut = QuizAdHandler(premiumStatusProvider, gameplayConfig, adManager)
         sut.initialize(testScope)
     }
 
@@ -107,6 +110,34 @@ class QuizAdHandlerTest {
 
         every { gameplayConfig.adsEnabled() } returns true
         assertTrue(sut.shouldShowAd(answeredCount = 20, isQuizFinished = false))
+    }
+
+    /**
+     * `answers_since_last_ad` jest liczone tutaj, bo tylko ten obiekt widzi przebieg quizu.
+     * AdManager zapamietuje wartosc na potrzeby zdarzenia `ad_shown`.
+     */
+    @Test
+    fun `a mid-quiz ad reports how many answers passed since the previous one`() {
+        sut.shouldShowAd(answeredCount = 20, isQuizFinished = false)
+        verify { adManager.onInterstitialTriggered(20) }
+
+        sut.shouldShowAd(answeredCount = 40, isQuizFinished = false)
+        verify { adManager.onInterstitialTriggered(20) }
+    }
+
+    @Test
+    fun `an exit ad reports the answers since the last mid-quiz ad`() {
+        sut.shouldShowAd(answeredCount = 20, isQuizFinished = false)
+        sut.shouldShowAd(answeredCount = 35, isQuizFinished = true)
+
+        verify { adManager.onInterstitialTriggered(15) }
+    }
+
+    @Test
+    fun `a skipped ad reports nothing`() {
+        sut.shouldShowAd(answeredCount = 5, isQuizFinished = false)
+
+        verify(exactly = 0) { adManager.onInterstitialTriggered(any()) }
     }
 
     @Test

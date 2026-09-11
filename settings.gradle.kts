@@ -37,4 +37,5 @@ include(":ads")
 include(":billing")
 include(":revisions")
 include(":notifications")
+include(":analytics")
 
