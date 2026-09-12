@@ -109,7 +109,7 @@
     <string name="terms_of_service">Regulamin</string>
     <string name="terms_of_service_url">https://www.frontfolks.com/</string>
     <string name="privacy_policy">Polityka prywatności</string>
-    <string name="privacy_policy_url">https://frontfolks.com/mediquiz/polityka-prywatnosci/</string>
+    <string name="privacy_policy_url">https://frontfolks.com/medi-quiz-polityka-prywatnosci/</string>
 
     <string name="ob_btn_start">Rozpocznij</string>
     <string name="ob_btn_navigate_to_login">Posiadasz już konto? Zaloguj się!</string>
