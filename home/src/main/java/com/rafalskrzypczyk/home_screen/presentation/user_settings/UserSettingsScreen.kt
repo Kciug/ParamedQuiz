@@ -295,6 +295,12 @@ private fun UserSettingsContent(
                     )
 
                     SettingsInfoPanel(stringResource(R.string.settings_analytics_info))
+
+                    SettingsItemRow(
+                        title = stringResource(R.string.privacy_policy),
+                        icon = Icons.Outlined.Description,
+                        onClick = onPrivacyPolicy
+                    )
                 }
 
                 SettingsCategoryHeader(stringResource(R.string.settings_category_other))
@@ -304,12 +310,6 @@ private fun UserSettingsContent(
                         title = stringResource(R.string.terms_of_service_title),
                         icon = Icons.Outlined.Description,
                         onClick = onTermsOfService
-                    )
-
-                    SettingsItemRow(
-                        title = stringResource(R.string.privacy_policy),
-                        icon = Icons.Outlined.Description,
-                        onClick = onPrivacyPolicy
                     )
 
                     SettingsItemRow(
