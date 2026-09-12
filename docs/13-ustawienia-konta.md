@@ -28,11 +28,12 @@ Ustawienia konta pozwalają użytkownikowi zarządzać swoim kontem (zmiana nazw
 
 ## 2a. Prywatność
 
-Sekcja „Prywatność" zawiera przełącznik zgody na analitykę i diagnostykę awarii oraz link do
-**polityki prywatności** (otwieranej w przeglądarce). Wyłączenie zgody zatrzymuje zbieranie
-**i czyści dane zebrane do tej pory**; włączenie działa jak zgoda udzielona na ekranie powitalnym.
-Pierwsza decyzja zapada na osobnym ekranie po akceptacji regulaminu — szczegóły
-w [Analityka i pomiar](20-analityka-i-pomiar.md).
+Sekcja „Prywatność" zawiera pozycję **„Analityka i diagnostyka"** (z wartością Włączone/Wyłączone)
+oraz link do **polityki prywatności** (otwieranej w przeglądarce). Pozycja analityki otwiera dialog
+z opisem zbieranych danych i przełącznikiem zgody — przełącznik działa natychmiast, przycisk OK
+tylko zamyka dialog. Wyłączenie zgody zatrzymuje zbieranie **i czyści dane zebrane do tej pory**;
+włączenie działa jak zgoda udzielona na ekranie powitalnym. Pierwsza decyzja zapada na osobnym
+ekranie po akceptacji regulaminu — szczegóły w [Analityka i pomiar](20-analityka-i-pomiar.md).
 
 ---
 

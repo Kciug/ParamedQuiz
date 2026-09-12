@@ -46,6 +46,7 @@ class UserSettingsVM @Inject constructor(
             is UserSettingsUIEvents.ToggleChangeUsernameDialog -> _state.update { it.copy(showChangeUsernameDialog = event.show) }
             is UserSettingsUIEvents.ToggleDeleteAccountDialog -> _state.update { it.copy(showDeleteAccountDialog = event.show) }
             is UserSettingsUIEvents.ToggleDeleteProgressDialog -> _state.update { it.copy(showDeleteProgressDialog = event.show) }
+            is UserSettingsUIEvents.ToggleAnalyticsDialog -> _state.update { it.copy(showAnalyticsDialog = event.show) }
             UserSettingsUIEvents.OnSuccessToastShown -> _state.update { it.copy(showSuccessToast = false) }
             UserSettingsUIEvents.DeleteProgress -> deleteProgress()
             is UserSettingsUIEvents.SetAnalyticsEnabled -> setAnalyticsEnabled(event.enabled)

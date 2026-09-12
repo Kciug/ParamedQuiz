@@ -216,5 +216,8 @@
     <string name="privacy_consent_decline">Nie teraz</string>
     <string name="settings_category_privacy">Prywatność</string>
     <string name="settings_analytics">Analityka i diagnostyka</string>
-    <string name="settings_analytics_info">Anonimowe dane o korzystaniu z aplikacji i raporty awarii. Wyłączenie usuwa dane zebrane do tej pory.</string>
+    <string name="settings_analytics_info">Za Twoją zgodą zbieramy anonimowe dane o korzystaniu z aplikacji i raporty awarii — dzięki nim wiemy, które tryby są używane i gdzie coś przestaje działać. Nie zbieramy danych osobowych ani treści, które wpisujesz.\n\nWyłączenie zatrzymuje zbieranie i usuwa dane zebrane do tej pory.</string>
+    <string name="settings_analytics_switch">Zezwalaj na zbieranie danych</string>
+    <string name="settings_value_enabled">Włączone</string>
+    <string name="settings_value_disabled">Wyłączone</string>
 </resources>

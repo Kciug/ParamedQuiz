@@ -292,8 +292,9 @@ wspólny z iOS (`analytics-events.md`), a jego zakres to `MQ-69-T`.
   prowadzącej do ekranu głównego: użytkownik z aktualnym regulaminem nigdy nie przechodzi przez
   tamten ekran, a i tak musi zostać zapytany. Dwa jawne przyciski, brak pomijania i brak wyjścia
   gestem wstecz.
-- **Wycofanie** — przełącznik w ustawieniach konta (sekcja „Prywatność"). Poza wyłączeniem
-  zbierania czyści zebrane dane (`resetAnalyticsData`) i niewysłane raporty awarii.
+- **Wycofanie** — przełącznik w dialogu „Analityka i diagnostyka" w ustawieniach konta (sekcja
+  „Prywatność"). Poza wyłączeniem zbierania czyści zebrane dane (`resetAnalyticsData`) i niewysłane
+  raporty awarii.
 - **Crashlytics podlega tej samej zgodzie.** Bez niej `isCrashlyticsCollectionEnabled = false`.
 - **Nic nie jest logowane przed zgodą** — nie „nic nie jest wysyłane". Wstrzykiwany wszędzie
   `AnalyticsLogger` jest owinięty `ConsentGatedAnalyticsLogger`, który przy zamkniętej bramce nie

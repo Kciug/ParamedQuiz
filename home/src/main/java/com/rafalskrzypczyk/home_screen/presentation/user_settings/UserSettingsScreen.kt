@@ -64,7 +64,6 @@ import com.rafalskrzypczyk.core.composables.PreviewContainer
 import com.rafalskrzypczyk.core.composables.SettingsCategoryCard
 import com.rafalskrzypczyk.core.composables.SettingsCategoryHeader
 import com.rafalskrzypczyk.core.composables.SettingsDialog
-import com.rafalskrzypczyk.core.composables.SettingsInfoPanel
 import com.rafalskrzypczyk.core.composables.SettingsItemRow
 import com.rafalskrzypczyk.core.composables.SettingsSwitchRow
 import com.rafalskrzypczyk.core.composables.TestBuildBanner
@@ -188,6 +187,14 @@ fun UserSettingsScreen(
         )
     }
 
+    if (state.showAnalyticsDialog) {
+        UserSettingsAnalyticsDialog(
+            enabled = state.analyticsEnabled,
+            onEnabledChange = { onEvent(UserSettingsUIEvents.SetAnalyticsEnabled(it)) },
+            onDismiss = { onEvent(UserSettingsUIEvents.ToggleAnalyticsDialog(false)) }
+        )
+    }
+
     if (showAboutDialog) {
         InfoDialog(
             title = stringResource(R.string.about_app_title),
@@ -287,14 +294,14 @@ private fun UserSettingsContent(
                 SettingsCategoryHeader(stringResource(R.string.settings_category_privacy))
 
                 SettingsCategoryCard {
-                    SettingsSwitchRow(
+                    SettingsItemRow(
                         title = stringResource(R.string.settings_analytics),
                         icon = Icons.Outlined.Insights,
-                        checked = state.analyticsEnabled,
-                        onCheckedChange = { onEvent(UserSettingsUIEvents.SetAnalyticsEnabled(it)) }
+                        value = stringResource(
+                            if (state.analyticsEnabled) R.string.settings_value_enabled else R.string.settings_value_disabled
+                        ),
+                        onClick = { onEvent(UserSettingsUIEvents.ToggleAnalyticsDialog(true)) }
                     )
-
-                    SettingsInfoPanel(stringResource(R.string.settings_analytics_info))
 
                     SettingsItemRow(
                         title = stringResource(R.string.privacy_policy),
