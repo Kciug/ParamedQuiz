@@ -45,9 +45,9 @@ Zarządzanie już zalogowanym kontem (zmiana nazwy/hasła, usunięcie konta, wyl
 4. Błąd → komunikat (np. błędne dane logowania).
 
 ### 3.3 Logowanie przez Google
-1. Użytkownik wybiera logowanie przez Google.
+1. Użytkownik wybiera logowanie przez Google — stan ładowania trwa od kliknięcia, także w trakcie wyboru konta.
 2. Przechodzi natywny wybór konta Google.
-3. Powodzenie → uwierzytelnienie i powrót; błąd/anulowanie → komunikat / brak zmiany.
+3. Powodzenie → uwierzytelnienie i powrót; błąd → komunikat; anulowanie → powrót do formularza bez komunikatu.
 
 ### 3.4 Reset hasła
 1. Użytkownik podaje **e-mail**.
@@ -77,7 +77,7 @@ Zarządzanie już zalogowanym kontem (zmiana nazwy/hasła, usunięcie konta, wyl
 | Hasła w rejestracji różne / puste | Rejestracja niedostępna (przycisk nieaktywny). |
 | E-mail już zarejestrowany | Błąd rejestracji z komunikatem. |
 | Błędne dane logowania | Komunikat o błędzie; brak sesji. |
-| Anulowanie logowania Google | Brak zmiany stanu; ewentualny komunikat. |
+| Anulowanie logowania Google | Brak zmiany stanu; stan ładowania jest kończony bez komunikatu. Zdarzenie jest logowane (Crashlytics non-fatal + `app_error` z `google_cancelled`), bo na Androidzie ≤13 Credential Manager zgłasza tak samo anulowanie przez użytkownika i przerwanie flow po stronie Play Services. |
 | Reset hasła dla nieznanego / błędnego e-maila | Zachowanie zgodne z odpowiedzią backendu (komunikat błędu lub potwierdzenie wysłania). |
 | Brak sieci | Operacja kończy się błędem z komunikatem; stan ładowania jest kończony. |
 | Korzystanie bez konta | Dozwolone; funkcje wymagające tożsamości pozostają niedostępne do zalogowania. |

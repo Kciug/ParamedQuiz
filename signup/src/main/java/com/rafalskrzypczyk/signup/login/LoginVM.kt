@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -39,12 +40,22 @@ class LoginVM @Inject constructor(
         }
     }
 
+    /**
+     * Anulowanie wyboru konta kończy flow bez [Response.Error] i bez [Response.Success], a stan
+     * ładowania trwa od kliknięcia — [onCompletion] zdejmuje go w tym jednym przypadku.
+     */
     private fun loginWithGoogle(context: Context) {
         viewModelScope.launch {
-            authRepository.signInWithGoogle(context).collectLatest { response ->
-                handleLoginResponse(response)
-            }
+            authRepository.signInWithGoogle(context)
+                .onCompletion { clearLoadingWithoutResult() }
+                .collectLatest { response ->
+                    handleLoginResponse(response)
+                }
         }
+    }
+
+    private fun clearLoadingWithoutResult() {
+        _state.update { if (it.isSuccess) it else it.copy(isLoading = false) }
     }
 
     private fun handleLoginResponse(response: Response<UserData>) {

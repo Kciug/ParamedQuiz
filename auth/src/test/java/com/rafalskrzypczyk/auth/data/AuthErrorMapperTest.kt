@@ -92,10 +92,12 @@ class AuthErrorMapperTest {
     }
 
     @Test
-    fun `does not log user cancellation`() {
-        mapper.toAppError(ORIGIN, GetCredentialCancellationException())
+    fun `logs cancellation with its cause because play services cancels on its own too`() {
+        val exception = GetCredentialCancellationException("[16] Account reauth failed")
 
-        verify(exactly = 0) { errorLogger.log(any(), any(), any()) }
+        mapper.toAppError(ORIGIN, exception)
+
+        verify(exactly = 1) { errorLogger.log(ORIGIN, AppError.Google.Cancelled, exception) }
     }
 
     @Test
