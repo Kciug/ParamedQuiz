@@ -18,6 +18,7 @@ sealed interface UserSettingsUIEvents {
     data class ToggleChangeUsernameDialog(val show: Boolean) : UserSettingsUIEvents
     data class ToggleDeleteAccountDialog(val show: Boolean) : UserSettingsUIEvents
     data class ToggleDeleteProgressDialog(val show: Boolean) : UserSettingsUIEvents
+    data class ToggleAnalyticsDialog(val show: Boolean) : UserSettingsUIEvents
 
     data class SetAnalyticsEnabled(val enabled: Boolean) : UserSettingsUIEvents
     data class SetSoundEnabled(val enabled: Boolean) : UserSettingsUIEvents

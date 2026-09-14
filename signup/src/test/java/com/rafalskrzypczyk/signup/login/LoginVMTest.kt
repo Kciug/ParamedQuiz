@@ -12,6 +12,8 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -56,12 +58,37 @@ class LoginVMTest {
 
     @Test
     fun `marks loading while the repository works`() = runTest {
-        every { authRepository.signInWithGoogle(context) } returns flowOf(Response.Loading)
+        every { authRepository.signInWithGoogle(context) } returns flow {
+            emit(Response.Loading)
+            awaitCancellation()
+        }
 
         viewModel.onEvent(LoginUIEvents.LoginWithGoogle(context))
 
         assertTrue(viewModel.state.value.isLoading)
         assertNull(viewModel.state.value.error)
+    }
+
+    @Test
+    fun `stops loading when google sign in ends without a result`() = runTest {
+        every { authRepository.signInWithGoogle(context) } returns flowOf(Response.Loading)
+
+        viewModel.onEvent(LoginUIEvents.LoginWithGoogle(context))
+
+        assertFalse(viewModel.state.value.isLoading)
+        assertNull(viewModel.state.value.error)
+        assertFalse(viewModel.state.value.isSuccess)
+    }
+
+    @Test
+    fun `keeps the success state after the google flow completes`() = runTest {
+        every { authRepository.signInWithGoogle(context) } returns
+                flowOf(Response.Loading, Response.Success(userData()))
+
+        viewModel.onEvent(LoginUIEvents.LoginWithGoogle(context))
+
+        assertTrue(viewModel.state.value.isSuccess)
+        assertTrue(viewModel.state.value.isLoading)
     }
 
     @Test

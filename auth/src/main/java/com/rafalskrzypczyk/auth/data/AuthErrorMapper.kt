@@ -17,16 +17,20 @@ import javax.inject.Inject
 /**
  * Tłumaczy wyjątki Firebase Auth i Credential Managera na [AppError].
  *
- * Każde wywołanie [toAppError] i [report] jest jednocześnie punktem logowania.
- * Wyjątkiem jest [AppError.Google.Cancelled], czyli zamknięcie okna wyboru konta
- * przez użytkownika, które nie jest awarią.
+ * Każde wywołanie [toAppError] i [report] jest jednocześnie punktem logowania — także
+ * [AppError.Google.Cancelled]. Na Androidzie 13 i niższych Credential Manager zwraca
+ * [GetCredentialCancellationException] dla każdego `RESULT_CANCELED` z Activity Play Services,
+ * więc anulowanie przez użytkownika jest nieodróżnialne od przerwania flow po stronie GMS
+ * (np. „[16] Account reauth failed"). Bez logu takie przypadki nie zostawiały żadnego śladu
+ * (MQ-23-B); Google zaleca monitorować częstość tych „anulowań", bo ich nadmiar oznacza problem
+ * z konfiguracją lub z usługami.
  */
 class AuthErrorMapper @Inject constructor(
     private val errorLogger: ErrorLogger
 ) {
     fun toAppError(origin: String, throwable: Throwable): AppError {
         val error = map(throwable)
-        if (error != AppError.Google.Cancelled) errorLogger.log(origin, error, throwable)
+        errorLogger.log(origin, error, throwable)
         return error
     }
 

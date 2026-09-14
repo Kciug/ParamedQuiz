@@ -254,7 +254,15 @@ class AuthRepositoryImpl @Inject constructor(
         emit(Response.Success(Unit))
     }
 
+    /**
+     * [Response.Loading] idzie przed wyborem konta, nie po nim: na Androidzie 13 i niższych okno
+     * Play Services potrafi zamknąć się samo z anulowaniem, a bez stanu „w toku" ekran wyglądał
+     * wtedy tak, jakby przycisk w ogóle nie zadziałał (MQ-23-B). Anulowanie nadal nie emituje
+     * błędu — flow kończy się bez wyniku, a stan ładowania zdejmuje warstwa prezentacji.
+     */
     override fun signInWithGoogle(context: Context): Flow<Response<UserData>> = flow {
+        emit(Response.Loading)
+
         val idToken = try {
             googleCredentialsProvider.getGoogleIdToken(context)
         } catch (e: CancellationException) {
@@ -264,8 +272,6 @@ class AuthRepositoryImpl @Inject constructor(
             if (error != AppError.Google.Cancelled) emit(Response.Error(error))
             return@flow
         }
-
-        emit(Response.Loading)
 
         if (idToken == null) {
             emit(Response.Error(authErrorMapper.report(ORIGIN_SIGN_IN_WITH_GOOGLE, AppError.Google.UnsupportedCredential)))

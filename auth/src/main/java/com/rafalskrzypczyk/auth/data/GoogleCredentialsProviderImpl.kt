@@ -16,9 +16,7 @@ class GoogleCredentialsProviderImpl @Inject constructor() : GoogleCredentialsPro
     override suspend fun getGoogleIdToken(context: Context): String? {
         val signInWithGoogleOption = GetSignInWithGoogleOption.Builder(
             serverClientId = BuildConfig.GOOGLE_WEB_CLIENT_ID
-        )
-            .setNonce("")
-            .build()
+        ).build()
 
         val request = GetCredentialRequest.Builder()
             .addCredentialOption(signInWithGoogleOption)

@@ -35,6 +35,7 @@ import com.rafalskrzypczyk.core.user_management.UserAuthenticationMethod
 import io.mockk.verifyOrder
 import io.mockk.coVerifyOrder
 import io.mockk.coVerify
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -84,14 +85,27 @@ class AuthRepositoryImplTest {
     }
 
     @Test
-    fun `signInWithGoogle emits nothing and completes when user dismisses the account picker`() = runTest {
-        coEvery { googleCredentialsProvider.getGoogleIdToken(context) } throws GetCredentialCancellationException()
+    fun `signInWithGoogle emits only loading and completes when the account picker is dismissed`() = runTest {
+        val cancellation = GetCredentialCancellationException()
+        coEvery { googleCredentialsProvider.getGoogleIdToken(context) } throws cancellation
 
         repository.signInWithGoogle(context).test {
+            assertEquals(Response.Loading, awaitItem())
             awaitComplete()
         }
 
-        verify(exactly = 0) { errorLogger.log(any(), any(), any()) }
+        verify(exactly = 1) { errorLogger.log(any(), AppError.Google.Cancelled, cancellation) }
+    }
+
+    @Test
+    fun `signInWithGoogle is loading while the account picker is open`() = runTest {
+        coEvery { googleCredentialsProvider.getGoogleIdToken(context) } coAnswers { awaitCancellation() }
+
+        repository.signInWithGoogle(context).test {
+            assertEquals(Response.Loading, awaitItem())
+            expectNoEvents()
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
     @Test
@@ -99,6 +113,7 @@ class AuthRepositoryImplTest {
         coEvery { googleCredentialsProvider.getGoogleIdToken(context) } throws NoCredentialException()
 
         repository.signInWithGoogle(context).test {
+            assertEquals(Response.Loading, awaitItem())
             assertEquals(Response.Error(AppError.Google.NoCredentialAvailable), awaitItem())
             awaitComplete()
         }

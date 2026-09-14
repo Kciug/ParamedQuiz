@@ -25,6 +25,7 @@ data class UserSettingsState(
     val showChangeUsernameDialog: Boolean = false,
     val showDeleteAccountDialog: Boolean = false,
     val showDeleteProgressDialog: Boolean = false,
+    val showAnalyticsDialog: Boolean = false,
 
     val showSuccessToast: Boolean = false
 )
